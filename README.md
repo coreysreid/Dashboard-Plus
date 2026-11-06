@@ -1,8 +1,10 @@
 # Dashboard Plus
 
-A free, portable, local-first "CRM for a home". A household records what it
-cares about (pets, a wine cellar, projects, costs), sees it in charts, and gets
-gentle questions that help it understand *why* numbers change.
+A free, portable, local-first "CRM for a home", built around resilience: know
+what your household has, what is running low and what is about to expire
+(pantry, emergency water, tools and hardware), alongside pets and anything else
+you choose to track. See it in charts, and get gentle questions that help you
+understand *why* numbers change.
 
 **Status: planning.** No application code exists yet. Start with the documents
 in `docs/`:

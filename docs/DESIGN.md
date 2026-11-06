@@ -144,6 +144,22 @@ Time is first-class because the question loop depends on it.
   sheet disagrees on detail but agrees on the day's total, the total wins
   (section 6, Pets).
 
+### 5.1 Watch views (resilience in the core)
+
+Two column flags let any module take part in resilience without code:
+
+- `minimum` on a quantity column: rows where the quantity is below the minimum
+  appear in a shared **Running low** view, newest shortage first.
+- `expires` on a date column: rows expiring within a configurable window (default
+  30 days) appear in a shared **Expiring soon** view; past-date rows show as
+  expired.
+
+A third declaration, `supply` (per-person and per-pet daily need plus a target
+number of days), lets a table report **days of cover** for the household. All
+three are plain facts from the declarations, shown with how they were worked
+out. They are views, not alarms: the program does not send messages outside the
+computer.
+
 ## 6. Modules
 
 A module is a folder:
@@ -251,7 +267,26 @@ number and the core can load both for a transition period.
   daily food totals, medications and doses given, vet visits, litter or walk
   logs. Not tied to one animal: species is a choice, and every record links to
   a pet. Supports entering data off paper (below).
-- **Wine collection** (declarative). Tables: wines (name, producer, vintage,
+- **Household stock** (declarative; the resilience heart of v1). Tables:
+  items (name, category such as pantry, water, medical, tool, hardware, fuel;
+  unit; location), stock (current quantity, minimum, target, expiry date, where
+  stored), purchases (a weekly shopping receipt: shop, date, total, with lines
+  linking to items and quantities), and places (shelf, cupboard, garage box,
+  so "where is the ladder?" has an answer). Behaviour comes from files plus
+  the core's watch views (section 5.1), not module code:
+  - *Running low* and *Expiring soon* lists.
+  - *Supply cover* for emergency basics: the household's people and pets come
+    from the first-run wizard; the module declares a per-person and per-pet
+    daily need and a target number of days. The household sees plain language
+    ("about 2 days of water; about 12 litres short of 3 days"). The default
+    figures are a starting point the household can change, and the advice of
+    its own country or local authority takes priority.
+  - *Receipt in, stock up:* a receipt entered by hand or proposed from a photo
+    through the inbox arrives as reviewable rows; approving them raises the
+    stock levels. Nothing changes stock until a person approves.
+  - Tools and hardware work the same way as pantry items (a quantity, a
+    minimum, a place), so "which screws do I have, which do I need" is a list.
+- **Wine collection** (declarative, a small example of how easy a module is). Tables: wines (name, producer, vintage,
   region, grape), bottles or stock (quantity, location, bought, price), tasting
   notes. About one page of files; its purpose is to prove how easy a module is.
 - **Graphing** (module). Charts over any table or measure or daily-fact view,
@@ -650,8 +685,9 @@ about the product: screens, wording, what the household sees and does.
 8. Core: backups, restore, export, safe close.
 9. Core: first-run wizard and settings.
 10. Module: Pets (files only), with the off-paper entry guidance.
-11. Module: Wine (files only). If anything needed a core change, fix the core
-    here, then re-check Pets.
+11. Module: Household stock (files only), with the watch views (section 5.1)
+    and receipt entry; then Wine (files only, small). If anything needed a core
+    change, fix the core here, then re-check Pets.
 12. Module: Graphing.
 13. Module: Analysis and the question loop, one correlation view.
 14. Module: API connector, with fixtures and the weekly health check.
@@ -699,7 +735,8 @@ Open a module's own INDEX.md before its files.
 | Entry | What it is | Open it when |
 |---|---|---|
 | pets/ | Pets, weight, food, medication, vet visits (files only) | changing pet tables or forms |
-| wine/ | Wine cellar (files only) | changing wine tables |
+| stock/ | Pantry, emergency water, tools and hardware, receipts (files only) | changing stock, reorder or supply-cover behaviour |
+| wine/ | Small example: a wine cellar (files only) | changing wine tables |
 | graphing/ | Charts over any table | changing chart behaviour |
 | analysis/ | Statistics and the question loop | changing how findings are made |
 | api_connector/ | Pulls data from outside APIs | adding or fixing a source |

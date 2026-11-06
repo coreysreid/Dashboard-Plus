@@ -19,3 +19,4 @@ hard it is to undo, and the sign that it was the wrong call.
 | [0012](0012-each-module-has-its-own-migration-track.md) | Each module has its own migration track | Accepted |
 | [0013](0013-a-short-index-md-in-every-folder-checked-by-ci.md) | A short INDEX.md in every folder, checked by CI | Accepted |
 | [0014](0014-mit-licence.md) | MIT licence | Accepted |
+| [0015](0015-household-stock-and-watch-views-in-v1.md) | Household stock module and watch views in v1 | Accepted |

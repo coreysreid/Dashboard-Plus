@@ -34,6 +34,9 @@ exported, and survives updates, crashes and unplugged USB sticks.**
 11. **Module loader.** A versioned contract (`core_api = "1"`). A broken module
     is switched off with a plain-language message; the rest keeps working.
 12. **Settings and first-run wizard** in the browser.
+13. **Watch views.** Any table can mark a quantity with a minimum and a date
+    column as an expiry. The core then shows "running low" and "expiring soon"
+    across all modules, so resilience is not rebuilt per topic.
 
 ## How we check we kept the promise (the acceptance list)
 
@@ -43,7 +46,13 @@ with no Python installed:
 - [ ] Unzip, click *Open Dashboard*, and the wizard appears. No install, no
       admin rights, no registry or PATH changes.
 - [ ] The wizard sets up household members and modules without editing a file.
-- [ ] Pets and Wine work with no module code at all (files only).
+- [ ] Household stock, Pets and Wine work with no module code at all (files
+      only).
+- [ ] A household can enter its people and pets, record pantry items with
+      minimums, and see "running low", "expiring soon" and "days of water
+      on hand" without any setup beyond the wizard.
+- [ ] Typing in a weekly shopping receipt (or approving one from a photo)
+      raises the right stock levels, all as reviewable proposals.
 - [ ] A helper can `POST /api/propose` twice with the same `request_key` and
       only one set of rows appears, flagged "needs review".
 - [ ] A helper cannot change a row after the person has edited it.
@@ -67,6 +76,6 @@ with no Python installed:
 
 ## What the core refuses to do
 
-Anything specific to one topic (pets, wine, weather). Charts. Statistics.
+Anything specific to one topic (pets, wine, water, tools, weather). Charts. Statistics.
 Fetching from outside. Those are modules. If the core needs to know about cats,
 the design has failed.

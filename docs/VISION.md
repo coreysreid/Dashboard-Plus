@@ -2,17 +2,46 @@
 
 ## The idea in one paragraph
 
-Most households already track things: a pet's weight, the wine in the cellar,
-what a renovation has cost. They do it in notebooks, spreadsheets, phone photos
-and memory. Dashboard Plus is a single place on your own computer where you
-define what you want to track, enter it (or let a helper enter it for you),
-see it in charts, and get gentle questions that help you understand *why*
-numbers change.
+Most households already track things in notebooks, spreadsheets, phone photos
+and memory, and most of it is out of date when it is needed. Dashboard Plus is
+a single place on your own computer where you define what you want to track,
+enter it (or let a helper enter it for you), see it in charts, and get gentle
+questions that help you understand *why* numbers change.
 
-Think of it as Salesforce for a home: people and pets (CRM), stock and a wine
-cellar (inventory), things that could go wrong (risk), jobs in progress
-(projects), a pile of unsorted photos and notes (inbox), and later, money
-(finance). You decide which of these you use.
+Think of it as Salesforce for a home: people and pets (CRM), household stock
+and storage (a small warehouse system), things that could go wrong (risk),
+jobs in progress (projects), a pile of unsorted photos, notes and receipts
+(inbox), and later, money (finance). You decide which of these you use.
+
+## The heart of it: a resilient home
+
+The reason this exists is **resilience**: knowing what your household has,
+where it is, and whether it is enough, *before* you need it. Not in a crisis,
+when it is too late to count.
+
+Concretely, a household can:
+
+- **Keep the pantry stocked.** Track staples, set a minimum for each, and see
+  at a glance what is running low so reordering is a habit, not a surprise.
+  Record the weekly shopping receipt (type it, or drop in a photo and approve
+  what was read) so stock goes up when shopping comes home.
+- **Know the emergency water supply.** Many countries now advise households to
+  hold at least three days of water and basics. Say how many people and pets
+  live here, and see in plain words: "You have about 2 days of water. You need
+  roughly 12 more litres for 3 days." Stored water and food show their expiry
+  dates so they get rotated.
+- **Know the tools and hardware.** Which screws, fixings and fuses you have and
+  do not have, before the shop is shut. Where the ladder, the generator or the
+  spare torch batteries are stacked away.
+- **Spot trouble early.** A water bottle past its date, a medication running
+  out, a pet's food intake changing: the same watching-and-asking loop below
+  applies to all of it.
+- **Survive its own failures.** The records are yours, backed up automatically,
+  exportable in plain files, and work with no internet. A tracker that is down
+  when you need it is not resilient.
+
+Wine, hobbies and collections are welcome too. They are small examples of how
+easily a household adds its own topic, not the point of the product.
 
 ## What makes it different
 
@@ -53,19 +82,25 @@ review queue until a person approves it.
 6. **Outlives its maintainer.** Few dependencies, a stable file format
    (SQLite), failure-tolerant outside sources, and documents written for a
    newcomer, and a short `INDEX.md` in every folder so a person or an AI
-   assistant can skim the project and only go deeper where needed. If the original author disappears, someone else can pick it up.
+   assistant can skim the project and only go deeper where needed. If the
+   original author disappears, someone else can pick it up.
 7. **Safe by default.** Listens on this computer only. Declarative modules
    cannot run code. Code modules say clearly that they can.
 8. **Nothing personal in the public repository.** Ever.
-9. **Every technical decision has a written reason.** Choices are recorded
+9. **Resilience first.** The product earns its place by telling a household
+   what it has, what is running low and what is about to expire, with no
+   internet and no account.
+10. **Every technical decision has a written reason.** Choices are recorded
    in `docs/decisions/` with their downsides and the sign that they were
    wrong, so any of them can be judged and reversed later.
 
 ## What ships first
 
-A core plus five modules: Pets, Wine collection, Graphing, Analysis and an
-API connector. Pets and Wine are deliberately made from files alone, to prove
-the core can build real features from a description. If it cannot, the design
+A core plus six modules: **Household stock** (pantry, emergency water, tools
+and hardware, shopping receipts), **Pets**, **Wine collection** (a small
+example), Graphing, Analysis and an API connector. Household stock, Pets and
+Wine are deliberately made from files alone, to prove the core can build real
+features from a description. If it cannot, the design
 is wrong and we change the core.
 
 ## Non-goals
