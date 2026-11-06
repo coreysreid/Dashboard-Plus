@@ -37,6 +37,11 @@ Concretely, a household can:
 - **Know the tools and hardware.** Which screws, fixings and fuses you have and
   do not have, before the shop is shut. Where the ladder, the generator or the
   spare torch batteries are stacked away.
+- **Know the people.** People are the first pillar of resilience: who to call,
+  who has a key, who has an allergy or a care need, who is the neighbour, the
+  doctor, the vet, the plumber. Keep that on file with the important details
+  attached, and print a one-page emergency sheet that works with the power and
+  internet off.
 - **Spot trouble early.** A water bottle past its date, a medication running
   out, a pet's food intake changing: the same watching-and-asking loop below
   applies to all of it.
@@ -49,7 +54,8 @@ Concretely, a household can:
 Stock and supplies are where the product starts, but the tool is built to
 adapt. One household tracks an art project, another an electronics hobby, a
 third the Lego sets they buy and resell, a fourth a wine collection, a fifth
-the medication log for an ageing cat. Each of those matters a great deal to
+the medication log for an ageing cat, a sixth the vegetable garden: what was
+sown where, when it was harvested, what it saved at the shops. Each of those matters a great deal to
 someone, and none of them matters to everyone. That is exactly why the product
 is modular: nobody has to carry modules they don't use, and nobody's interest
 is treated as a side-show.
@@ -78,6 +84,36 @@ a cause; it only ever asks. The same principle governs data that arrives from
 outside: anything entered by an assistant or imported from a file waits in a
 review queue until a person approves it.
 
+**Ask sensible questions.** Asking beats asserting, but a dumb question is
+worse than none. Tyre wear on the car is not going to be related to how much
+water the garden hose uses, and the program should never wonder aloud about it.
+Questions are only asked about things a module has said could plausibly be
+connected (food and weather, a new routine and appetite), and a household can
+tell the program "that doesn't make sense", which stops that kind of question
+for good. Fewer, better questions are the goal.
+
+## Useful, and able to show it
+
+A tracker that only stores things is a chore. This one has to earn the time
+people put into it by showing a difference. You put in time and information;
+it should give back results that matter, in plain numbers:
+
+- "Food waste is down 25% from last month since you started using the reorder
+  list."
+- "The soup kits replaced four takeaway nights in the last fortnight."
+- "The vet caught this early because three months of food records showed it."
+- "You went through the whole month without running out of anything on the
+  essentials list."
+
+Records exist to find trends and insights and to make better decisions later.
+The rules for this are strict, because impressive-sounding numbers that are
+wrong would be worse than none: a result is only claimed when it is computed
+from the household's own records with the basis shown, or when a person has
+confirmed it ("Did the soup kits replace takeaway? Yes"). Nothing is counted
+until there is enough history to compare with, and the program says so. Over
+time the household also tells us whether each insight was useful, which is how
+we learn whether the product is doing its job.
+
 ## Who it is for
 
 - A household member who is not technical and will never edit a config file.
@@ -89,8 +125,9 @@ review queue until a person approves it.
 ## Principles
 
 1. **Local first.** Your data lives in a folder you own. No account, no cloud.
-2. **Ask, don't assert.** Every automated finding is a question or a
-   suggestion. Words like "associated with" are allowed; "caused by" is not.
+2. **Ask, don't assert, and ask sensibly.** Every automated finding is a
+   question or a suggestion. Words like "associated with" are allowed;
+   "caused by" is not. Only plausible connections are ever raised.
 3. **A small, finished core and many modules.** The core is meant to become
    stable and stop changing. New topics are modules.
 4. **No lock-in.** One click exports everything as CSV and plain files.
@@ -108,18 +145,30 @@ review queue until a person approves it.
    household what it has, what is running low and what is about to expire, with
    no internet and no account. That habit of stewardship is what builds
    resilience.
-10. **Every technical decision has a written reason.** Choices are recorded
+10. **Prove it's useful.** Results are shown as plain numbers that come from the
+    household's own records or from something a person confirmed, never from
+    guesswork, and the household can say whether each one helped.
+11. **Every technical decision has a written reason.** Choices are recorded
    in `docs/decisions/` with their downsides and the sign that they were
    wrong, so any of them can be judged and reversed later.
 
 ## What ships first
 
-A core plus six modules: **Household stock** (pantry, emergency water, tools
-and hardware, shopping receipts), **Pets**, **Wine collection** (a compact
-module), Graphing, Analysis and an API connector. Household stock, Pets and
-Wine are deliberately made from files alone, to prove the core can build real
-features from a description. If it cannot, the design
-is wrong and we change the core.
+A core plus eight modules:
+
+- **People** (contacts with the important details attached, and the emergency
+  sheet). On by default, because people are a pillar of resilience.
+- **Household stock** (pantry, emergency water, tools and hardware, shopping
+  receipts).
+- **Pets**.
+- **Vegetable garden**, the worked example that shows how to build a module.
+- **Wine collection** (a compact module).
+- **Graphing**, **Analysis** and an **API connector**.
+
+People, Household stock, Pets, Garden and Wine are deliberately made from files
+alone, to prove the core can build real features from a description. If it
+cannot, the design is wrong and we change the core. The core also provides the
+monthly "difference this made" screen.
 
 ## Non-goals
 
@@ -133,11 +182,13 @@ These are choices, not omissions. Requests for them will be politely declined.
   Moving it means copying the folder.
 - **Replacing a bank's or doctor's system.** It is a notebook with charts, not
   a medical record or accounting system of record.
+- **Automatic usage tracking.** The program never reports on its users. A
+  household may choose to save and send a counts-only usefulness report.
 - **Anything that needs your data to leave your computer.** Optional outside
   sources may fetch public information (weather, exchange rates). They do not
   upload your records.
 
 ## Later (not v1)
 
-Rules and workflows ("if weight drops 10% in a month, flag it"), a finance
+An optional passphrase for the whole data folder, rules and workflows ("if weight drops 10% in a month, flag it"), a finance
 model, project management, forecasting, and Home Assistant integration.

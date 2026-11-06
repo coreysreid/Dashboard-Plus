@@ -8,8 +8,9 @@ module or waits.
 
 **A non-technical person can unzip a folder, click *Open Dashboard*, say who
 lives in the house and what they want to track, enter data by hand or approve
-what a helper entered, see it in charts, and answer a few questions that make
-the picture smarter. Their data never leaves their computer, can always be
+what a helper entered, see it in charts, answer a few sensible questions that make
+the picture smarter, and see the difference it made (less waste, fewer shortages,
+problems caught early). Their data never leaves their computer, can always be
 exported, and survives updates, crashes and unplugged USB sticks.**
 
 ## What the core provides (and nothing more)
@@ -37,6 +38,9 @@ exported, and survives updates, crashes and unplugged USB sticks.**
 13. **Watch views.** Any table can mark a quantity with a minimum and a date
     column as an expiry. The core then shows "running low" and "expiring soon"
     across all modules, so resilience is not rebuilt per topic.
+14. **Outcomes.** Metrics that compare this period with the last, wins that a
+    person confirms (money saved, waste avoided, something caught early), and a
+    monthly "difference this made" screen. Every figure shows its basis.
 
 ## How we check we kept the promise (the acceptance list)
 
@@ -64,6 +68,18 @@ with no Python installed:
 - [ ] Every statistic shows how many days it is based on.
 - [ ] Updating (replace the app folder, keep `data/`) backs up first, then
       migrates, and the old data is intact.
+- [ ] A question about two things with no plausible connection (car tyre wear
+      and the garden hose) is never asked, and answering "that doesn't make
+      sense" stops that kind of question for good.
+- [ ] The monthly screen shows at least one metric against the previous period,
+      says how many days it is based on, and shows nothing until there is
+      enough history.
+- [ ] A claimed win ("soup kits replaced four takeaway nights") appears only
+      after a person confirms it, with the records it rests on.
+- [ ] The wizard creates the household in the People module, and a one-page
+      emergency sheet prints with no internet.
+- [ ] Sensitive details (such as allergies) are hidden from helpers unless the
+      helper was explicitly given access.
 - [ ] Pulling the USB stick out after *Close Dashboard safely* loses nothing.
 - [ ] A failing outside source shows "unavailable" and the app keeps running.
 - [ ] *Export everything* produces CSV and plain files that open without this

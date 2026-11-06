@@ -1,7 +1,6 @@
 # docs/decisions/  (summary: why each technical choice was made)
-One record per decision. Records are never deleted; reversed ones are marked
-Superseded. Start a new one from `TEMPLATE.md`. Each lists the downsides, how
-hard it is to undo, and the sign that it was the wrong call.
+One record per decision, from `TEMPLATE.md`. Never deleted; reversed ones are
+marked Superseded. Each lists downsides, cost to undo, and the sign it was wrong.
 
 | Record | Decision | Status |
 |---|---|---|
@@ -20,3 +19,7 @@ hard it is to undo, and the sign that it was the wrong call.
 | [0013](0013-a-short-index-md-in-every-folder-checked-by-ci.md) | A short INDEX.md in every folder, checked by CI | Accepted |
 | [0014](0014-mit-licence.md) | MIT licence | Accepted |
 | [0015](0015-household-stock-and-watch-views-in-v1.md) | Household stock module and watch views in v1 | Accepted |
+| [0016](0016-people-module-in-v1-on-by-default.md) | People module in v1, on by default | Accepted |
+| [0017](0017-only-ask-plausible-questions.md) | Only ask plausible questions | Accepted |
+| [0018](0018-outcomes-wins-and-monthly-screen.md) | Outcomes, confirmed wins and a monthly screen | Accepted |
+| [0019](0019-vegetable-garden-as-the-worked-example.md) | Vegetable garden as the worked example module | Accepted |

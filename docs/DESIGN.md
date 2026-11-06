@@ -83,7 +83,8 @@ code), `measure` (a number with a unit, used by analysis), `file` (path inside
 
 Each column may declare: `required`, `default`, `min`, `max`, `unit`,
 `choices` (the dropdown values, each with a stable key and a friendly label),
-and `help` text.
+`sensitive` (hidden by default, kept from helpers unless granted; see
+section 12) and `help` text.
 
 Dropdown values are stored by stable key (`dry_food`), shown by label
 ("Dry food"). Renaming a label never changes stored data.
@@ -267,12 +268,31 @@ number and the core can load both for a transition period.
   daily food totals, medications and doses given, vet visits, litter or walk
   logs. Not tied to one animal: species is a choice, and every record links to
   a pet. Supports entering data off paper (below).
+- **People** (declarative; on by default; a pillar of resilience). Tables:
+  - *people*: name, preferred name, lives here (yes/no), relationship, birthday,
+    phone, email, address, notes.
+  - *roles*: a person and a role (emergency contact, family, neighbour, doctor,
+    dentist, vet, tradesperson, school, workplace, key holder, other) with a
+    priority order, so "who do I call first" has an answer.
+  - *important_info*: a person and a kind (allergy, condition, medication,
+    care or mobility need, dietary, access instructions, other) with detail.
+    These columns are marked `sensitive`.
+  - *dates*: birthdays, anniversaries and appointments; these recur through
+    core events.
+  - Behaviour: a **Who do I call?** view by role, a **printable emergency
+    sheet** (one page, offline, household members first), and a **gaps** check
+    ("your emergency contact has no phone number"). The first-run wizard writes
+    "who lives here" into this module. Pets link their owner and vet to people,
+    through `requires = ["people"]`. This is a notebook with a print button, not
+    a medical record (see the non-goals).
 - **Household stock** (declarative; the resilience heart of v1). Tables:
   items (name, category such as pantry, water, medical, tool, hardware, fuel;
   unit; location), stock (current quantity, minimum, target, expiry date, where
   stored), purchases (a weekly shopping receipt: shop, date, total, with lines
-  linking to items and quantities), and places (shelf, cupboard, garage box,
-  so "where is the ladder?" has an answer). Behaviour comes from files plus
+  linking to items and quantities), movements (stock in and out, each with a
+  reason: used, expired, discarded, gifted, bought, so waste can be measured),
+  and places (shelf, cupboard, garage box, so "where is the ladder?" has an
+  answer). Behaviour comes from files plus
   the core's watch views (section 5.1), not module code:
   - *Running low* and *Expiring soon* lists.
   - *Supply cover* for emergency basics: the household's people and pets come
@@ -286,6 +306,15 @@ number and the core can load both for a transition period.
     stock levels. Nothing changes stock until a person approves.
   - Tools and hardware work the same way as pantry items (a quantity, a
     minimum, a place), so "which screws do I have, which do I need" is a list.
+- **Vegetable garden** (declarative; the worked example for module authors).
+  Tables: beds (name, kind, size, sun), crops (name, variety, days to harvest),
+  plantings (crop, bed, sown or planted date), harvests (date, planting,
+  quantity, unit, weight), garden jobs (watering, feeding, pest notes, which
+  recur as events), and water used. It is the best teaching example because it
+  touches everything: seeds are stock items, seasons are time, weather arrives
+  from the API connector, jobs are recurring events, and the outcome is a
+  money-saved figure. A step-by-step "build this module" guide uses it. It is
+  an optional module, off unless chosen in the wizard.
 - **Wine collection** (declarative; a serious module for collectors, kept compact on purpose so it also shows how little a new module takes). Tables: wines (name, producer, vintage,
   region, grape), bottles or stock (quantity, location, bought, price), tasting
   notes. About one page of files; its purpose is to prove how easy a module is.
@@ -438,6 +467,9 @@ refused.
 - Once the **person edits** a row, `edited_by_person` is set and the agent can no
   longer amend or undo it.
 - An agent can fix or withdraw **only its own unreviewed rows**.
+- Columns marked `sensitive` (allergies, conditions, medications) are never
+  returned to an agent and cannot be written by one unless the token was issued
+  with `--sensitive`, and the Settings screen shows which agents have it.
 - Validation uses the same declaration as the forms. Errors name the table,
   the field and the allowed values, in plain language, so an AI helper can
   correct itself.
@@ -485,6 +517,33 @@ Questions are always phrased with "may", "could" and "is this related", never
 "because". A question states how many days it is based on. The number of open
 questions shown at once is capped so the panel is helpful and not nagging.
 
+#### Asking sensible questions
+
+Time closeness alone is a bad reason to ask. Tyre wear and the garden hose will
+both drift over a summer, which proves nothing. So a candidate must pass a
+**plausibility gate** before time closeness is even considered:
+
+1. **Declared topics.** Modules tag their measures and events with topics
+   (`food`, `weather`, `routine`, `pet-health`, `money`, `garden`, `vehicle`).
+   A watch lists the topics it may be explained by. Anything outside those
+   topics is never a candidate. By default only the same subject (the same pet)
+   or the same module qualifies; crossing modules needs an explicit declaration.
+2. **Both tests.** A candidate needs plausibility *and* time closeness. Close in
+   time but not plausible: dropped. Plausible but far away: dropped.
+3. **A fourth answer: "That doesn't make sense."** Besides Yes / No / Not sure,
+   this stops that topic pairing for this household for good, and is counted so
+   we learn which declarations are poor. After repeated dismissals the program
+   quietly mutes that kind of question.
+4. **Budget.** A small cap on questions per week, and a preference for the ones
+   that are most plausible and best supported by data.
+5. **Explore mode.** A person can deliberately compare any two measures they
+   like. This is labelled exploratory, uses a stricter correction for the
+   number of comparisons, and says "no obvious reason these would be linked"
+   when topics do not overlap. The decision to look is theirs.
+
+A side benefit: asking about fewer pairs also shrinks the multiple-comparison
+penalty in section 10.3, so real findings are easier to detect.
+
 `insights.toml` (example):
 
 ```toml
@@ -494,6 +553,7 @@ subject = "pet"                       # compute separately for each pet
 detect = "change_point"               # change_point | trend | threshold
 min_points = 20
 look_in = ["core__events", "core__notes"]
+may_relate_to = ["routine", "weather", "pet-health", "food"]   # plausibility gate
 window_days = 14
 phrase = "{measure_label} {direction} about {percent}% from {date}"
 ```
@@ -529,6 +589,57 @@ the correction note. Example questions the person cares about: do days with
 less eating tend to be hotter? Do takeaway purchases line up with recurring
 meetings?
 
+### 10.4 Outcomes: showing the difference it made
+
+The loop explains changes. Outcomes answer the question "was it worth my
+time?". Two parts, both local.
+
+**Metrics.** A module can declare metrics in `insights.toml`:
+
+```toml
+[[metric]]
+name = "Food waste"
+measure = "stock__movements.discarded_value"   # a daily-facts measure
+per = "month"
+compare = "previous_period"
+good_direction = "down"
+phrase = "Food waste is {change} from last {period} ({days} days of records)"
+```
+
+The core computes the figure for each period, compares it with the previous
+one, and states the basis. Nothing is shown until there are at least two full
+periods to compare, and the screen says "collecting your baseline" until then.
+When a metric moves right after a change the household made (started using the
+reorder list), the program asks whether the two are related, using the same
+question loop and plausibility rules. It never claims the cause itself.
+
+**Wins.** A *win* is a record in `core__outcomes`: a kind (money saved, time
+saved, waste avoided, caught early, shortage avoided), a title, an amount and
+unit if there is one, the records it rests on (linked through "about"), and a
+status (`proposed`, `confirmed`, `dismissed`). Wins come from three places:
+
+- *Computed from records*, with the basis shown: "no stock-outs on the essentials
+  list this month".
+- *Proposed as a question*, then confirmed by a person: "You had soup kits on
+  four nights and no takeaway on those nights. Did the kits replace takeaway?"
+  A Yes records the win. A saving in money uses the household's own typical
+  takeaway cost, entered once, never a guess.
+- *Recorded by the person*: after a vet visit, "Did your records help?" and a
+  note. "Caught early because you tracked three months of food intake" is a win
+  linked to those months of records.
+
+**The monthly screen** ("What your records did for you") shows the metrics
+against last period, the confirmed wins with their evidence, items rotated
+before expiry, days of cover against target, and what is still collecting a
+baseline. Every item has *Was this useful? Yes / No*.
+
+**Learning whether it works, privately.** Usefulness answers, the share of
+questions answered, and the count of "that doesn't make sense" replies are kept
+locally. A *Usefulness report* button saves a small file of counts only (no
+names, no content) that a household may choose to send to the maintainers. There
+is no automatic reporting of any kind (see the non-goals). Over time this is how
+we find out whether the product delivers the experience intended.
+
 ## 11. Audit, backup, export
 
 - **Audit.** `core__audit(id, at, actor, action, table, record_id, before,
@@ -561,6 +672,11 @@ meetings?
 - **Outside contact is opt-in and listed.** Each module's `module.toml` lists
   the hosts it may contact. The Settings screen shows them all in one place.
   Nothing contacts anywhere until the person switches a source on.
+- **Sensitive details.** Columns marked `sensitive` (allergies, conditions,
+  medications, access instructions) are masked on screen until the person
+  chooses to show them, are kept from helpers unless granted, and are included
+  in the person's own export and backups like all other data. They never appear
+  in the repository, in logs, or in a *Save a report* file.
 - **Secrets** (API keys, token hashes) live in `data/secrets/`, never in the
   repository, never in exports, and never in backups of the config unless the
   person chooses.
@@ -684,12 +800,15 @@ about the product: screens, wording, what the household sees and does.
 7. Core: time (events, recurrence, daily facts), annotations.
 8. Core: backups, restore, export, safe close.
 9. Core: first-run wizard and settings.
-10. Module: Pets (files only), with the off-paper entry guidance.
+10. Module: People (files only), with the emergency sheet and wizard link. Then
+    Pets (files only), with the off-paper entry guidance.
 11. Module: Household stock (files only), with the watch views (section 5.1)
     and receipt entry; then Wine (files only, small). If anything needed a core
     change, fix the core here, then re-check Pets.
-12. Module: Graphing.
-13. Module: Analysis and the question loop, one correlation view.
+12. Module: Garden (files only; also written up as the "build your first
+    module" guide). Then Graphing.
+13. Module: Analysis and the question loop (with the plausibility gate), one
+    correlation view, then metrics, wins and the monthly screen (section 10.4).
 14. Module: API connector, with fixtures and the weekly health check.
 15. Portable build, release workflow, README with the unknown-publisher
     guidance, final `PROJECT_MAP.md`.
@@ -735,6 +854,8 @@ Open a module's own INDEX.md before its files.
 | Entry | What it is | Open it when |
 |---|---|---|
 | pets/ | Pets, weight, food, medication, vet visits (files only) | changing pet tables or forms |
+| people/ | Contacts, roles, important details, emergency sheet (files only) | changing who-to-call, emergency sheet or sensitive fields |
+| garden/ | Vegetable garden; the worked example module (files only) | learning to build a module |
 | stock/ | Pantry, emergency water, tools and hardware, receipts (files only) | changing stock, reorder or supply-cover behaviour |
 | wine/ | Wine collection (files only; compact module) | changing wine tables |
 | graphing/ | Charts over any table | changing chart behaviour |
