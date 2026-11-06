@@ -466,7 +466,7 @@ phrase = "{measure_label} {direction} about {percent}% from {date}"
 ### 10.3 The Analysis module
 
 Basic, honest statistics running locally. Standard library by default, with at
-most one small, pinned dependency if it is clearly worth it (decision 15.4).
+most one small, pinned dependency if it is clearly worth it (decision record 0005).
 
 - **Correlation:** Pearson, and Spearman for skewed data.
 - **Lagged correlation:** "hotter yesterday" (shift one series by N days).
@@ -571,7 +571,7 @@ meetings?
 
 ### Choosing the bundling method
 
-See decision 15.2. Both options keep the same folder layout so the choice can be
+See decision record 0003. Both options keep the same folder layout so the choice can be
 changed later.
 
 ## 14. Testing and CI
