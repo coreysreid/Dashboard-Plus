@@ -57,6 +57,9 @@ review queue until a person approves it.
 7. **Safe by default.** Listens on this computer only. Declarative modules
    cannot run code. Code modules say clearly that they can.
 8. **Nothing personal in the public repository.** Ever.
+9. **Every technical decision has a written reason.** Choices are recorded
+   in `docs/decisions/` with their downsides and the sign that they were
+   wrong, so any of them can be judged and reversed later.
 
 ## What ships first
 

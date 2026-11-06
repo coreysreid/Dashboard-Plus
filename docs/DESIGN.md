@@ -8,7 +8,7 @@ Contents: 1 Layers · 2 Folders · 3 Object model · 4 Links · 5 Time ·
 6 Modules · 7 Migrations · 8 Review and inbox · 9 Agent API ·
 10 Annotations and the question loop · 11 Audit, backup, export ·
 12 Security and privacy · 13 Packaging · 14 Testing and CI ·
-15 Decisions for Corey · 16 Build order · 17 Agent-friendly layout
+15 Decisions and their records · 16 Build order · 17 Agent-friendly layout
 
 ## 1. Layers
 
@@ -602,72 +602,39 @@ changed later.
   and started; the acceptance list in `CORE.md` is checked where it can be
   automated.
 
-## 15. Decisions for Corey
+## 15. Decisions and their records
 
-Each has a recommendation in plain language. If you agree with all the
-recommendations, say "go with the recommendations" and we proceed.
+Corey does not choose languages or structures; he judges whether the finished
+application gives the household the experience he wants. So technical
+decisions are made by the assistant and **every one is written down** in
+`docs/decisions/` with the same shape: what we chose and why, what else we
+considered, the honest downsides, how hard it is to undo, and the observable
+sign that it was the wrong call. Any decision can then be judged good or bad
+later and reversed, with the reversal recorded as a new decision that
+supersedes the old one.
 
-### 15.1 What do we build the program in (the web side)?
+Rule for the build: **no real technical decision is merged without a record**,
+and the pull request checklist asks for one. A record is not a defence of the
+choice; its "costs" and "revisit if" sections must be honest.
 
-- **A. Python with a small web framework and pages built on the server, plus a
-  light sprinkling of browser scripting (Recommended).** Fewest moving parts,
-  nothing to compile, easy for a newcomer, easy to bundle, and it matches the
-  Python modules.
-- B. A full browser app (a "single-page app") with a separate build step.
-  Slicker, but needs a JavaScript toolchain forever, which is a maintenance
-  burden and cuts against "outlives its maintainer".
-- C. Python standard library only, no framework. Smallest, but we would be
-  rewriting things a well-trodden framework already does safely (security
-  headers, forms, routing).
+| Topic | Choice | Record |
+|---|---|---|
+| Web side | Python, server-built pages, light browser scripting | 0002 |
+| Bundling | Official embeddable Python in a plain folder | 0003 |
+| Charts | Apache ECharts, bundled locally | 0004 |
+| Statistics | Standard library only for v1 | 0005 |
+| Backups | A second copy on the computer itself | 0006 |
+| Modules from others | Two trust levels, honest warning, no fake sandbox | 0007 |
+| Local network | Exact addresses only, typed by the person | 0008 |
+| Database on USB | SQLite delete-journal, full sync, no WAL | 0009 |
+| Table shape | One real table per declared table | 0010 |
+| Access | This computer only | 0011 |
+| Migrations | One track per module | 0012 |
+| Agent-friendly files | INDEX.md in every folder, CI-checked | 0013 |
+| Licence | MIT | 0014 |
 
-### 15.2 How do we bundle for "click and run"?
-
-- **A. Python's official "embeddable" package plus our libraries copied in
-  (Recommended).** It is a plain folder, easy to inspect, no unpacking at
-  start-up, and no antivirus trouble from a self-extracting program.
-- B. PyInstaller "one-folder" build. Produces a single `.exe`, which feels
-  friendlier, but is more often flagged by antivirus and harder for outsiders
-  to debug.
-- We keep the folder layout identical so we can switch later.
-
-### 15.3 Which chart library?
-
-- **A. Apache ECharts (Recommended).** Handles time series, annotations
-  (marking an event on a line), large data and light/dark themes. Bundled
-  as one file, so charts work offline.
-- B. Chart.js. Smaller and simpler, but weaker for annotated time series
-  without extra add-ons.
-- C. Plotly. Very capable but large.
-
-### 15.4 Statistics: standard library only, or one small dependency?
-
-- **A. Standard library only (Recommended for v1).** Pearson, Spearman, lag,
-  RMSE, averages and the false-discovery correction are short, well-known
-  formulas, and tests check them against hand-computed values. Keeps the
-  folder small. The p-values for correlation can be computed with a
-  permutation test, which needs no library.
-- B. Add one pinned library (for example a small numerical package) for speed
-  and a wider choice of methods. Heavier download.
-
-### 15.5 Where do automatic backups on the computer go?
-
-- **A. A folder under the person's local application data, shown in Settings
-  (Recommended).** Survives the USB stick being lost.
-- B. Only beside the data folder. Simpler, but loses the point of a second copy.
-
-### 15.6 How should we handle modules written by other people?
-
-- **A. Declarative modules install by copying a folder in; code modules show a
-  clear warning and need an extra confirmation to switch on (Recommended).**
-  No attempt to pretend a sandbox exists.
-- B. Only allow declarative modules for now. Safest, but blocks sources and
-  insights for community modules.
-
-### 15.7 Do we allow Python to read the allow-listed local network (smart-home hub)?
-
-- **A. Yes, but only for exact addresses the person types in, with an
-  explanation (Recommended).** Needed for the smart-home example.
-- B. No private addresses at all in v1.
+The process itself is decision 0001. The questions Corey stays involved in are
+about the product: screens, wording, what the household sees and does.
 
 ## 16. Build order (after this document is approved)
 
@@ -716,7 +683,8 @@ Nobody should have to read thousands of lines to learn where things are.
    the checker confirms they match.
 5. **`AGENTS.md` at the repository root** (about 20 lines) tells any agent how
    to work here: read `INDEX.md` first, follow the indexes downward, the hard
-   rules from section 2 (no personal data), how to run the tests, and where
+   rules from section 2 (no personal data), that every technical decision needs
+   a record in `docs/decisions/`, how to run the tests, and where
    `PROJECT_MAP.md` and `docs/` are. A one-line `CLAUDE.md` points to it so
    tools that look for either name find it.
 6. **`PROJECT_MAP.md`** remains the single page listing every part of the
