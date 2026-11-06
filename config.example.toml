@@ -1,0 +1,30 @@
+# Example settings. The real file is called config.toml, lives in the data
+# folder (never in this code folder) and is written by the first-run wizard.
+# Do not put real names, keys or paths in this example file.
+
+[paths]
+# Where your data lives. Relative paths are measured from the program folder.
+data_dir = "../data"
+# A second automatic backup on the computer itself. Empty means the default
+# per-user application data folder.
+extra_backup_dir = ""
+
+[server]
+# The program listens on this computer only. Other values are refused.
+host = "127.0.0.1"
+# 0 means "pick a free port each time".
+port = 0
+
+[household]
+timezone = "UTC"
+
+[backups]
+keep_days = 30
+
+[modules]
+# Modules switched on. The wizard fills this in.
+enabled = ["people", "stock", "pets"]
+
+[sources]
+# Outside sources are off until you add a host here and switch the source on.
+allowed_hosts = []

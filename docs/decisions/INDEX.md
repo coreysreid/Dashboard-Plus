@@ -23,3 +23,7 @@ marked Superseded. Each lists downsides, cost to undo, and the sign it was wrong
 | [0017](0017-only-ask-plausible-questions.md) | Only ask plausible questions | Accepted |
 | [0018](0018-outcomes-wins-and-monthly-screen.md) | Outcomes, confirmed wins and a monthly screen | Accepted |
 | [0019](0019-vegetable-garden-as-the-worked-example.md) | Vegetable garden as the worked example module | Accepted |
+| [0020](0020-tests-and-tools-use-only-the-standard-library.md) | Tests and repository tools use only the standard library | Accepted |
+| [0021](0021-ci-on-windows-and-linux-with-lf-line-endings.md) | CI runs on Windows and Linux, files use LF line endings | Accepted |
+| [0022](0022-index-file-format-and-rules.md) | INDEX.md format and the rules the checker enforces | Accepted |
+| [TEMPLATE](TEMPLATE.md) | Blank record to copy for a new decision | recording a decision |

@@ -789,7 +789,7 @@ about the product: screens, wording, what the household sees and does.
 
 ## 16. Build order (after this document is approved)
 
-1. Repository skeleton: layout, `config.example.toml`, `.gitignore`, privacy
+1. (Done) Repository skeleton: layout, `config.example.toml`, `.gitignore`, privacy
    check in CI, the `INDEX.md` convention and its checker (section 17), `AGENTS.md`, empty test run, `PROJECT_MAP.md`.
 2. Core: database layer with the safe SQLite settings, migrations (core track),
    module loader and the `tables.toml` validator.
