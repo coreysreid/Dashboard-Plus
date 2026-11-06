@@ -61,11 +61,15 @@ marked Superseded. Each lists downsides, cost to undo, and the sign it was wrong
 | [0021](0021-ci-on-windows-and-linux-with-lf-line-endings.md) | CI runs on Windows and Linux, files use LF line endings | Accepted |
 | [0022](0022-index-file-format-and-rules.md) | INDEX.md format and the rules the checker enforces | Accepted |
 | [0023](0023-credit-the-ideas-we-build-on.md) | Credit the ideas we build on, in our own words | Accepted |
+| [0024](0024-prompt-engine-in-core-content-in-modules.md) | Prompt engine in the core, content in modules | Accepted |
+| [0025](0025-country-packs-are-sourced-dated-and-link-first.md) | Country packs: sourced, dated, and link-first | Accepted |
+| [0026](0026-medical-and-readiness-modules-in-v1.md) | Medical and Readiness modules in v1 | Accepted |
 | [TEMPLATE](TEMPLATE.md) | Blank record to copy for a new decision | recording a decision |
 
 ## modules/  (summary: optional features; each folder is one module)
 No modules are built yet. Each module will be a folder with its own INDEX.md.
-Planned for v1: people, stock, pets, garden, wine, graphing, analysis, api_connector.
+Planned for v1: people, stock, medical, readiness, pets, garden, wine, graphing,
+analysis, api_connector.
 See docs/DESIGN.md section 6 for the module contract.
 
 | Entry | What it is | Open it when |

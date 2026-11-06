@@ -41,6 +41,9 @@ exported, and survives updates, crashes and unplugged USB sticks.**
 14. **Outcomes.** Metrics that compare this period with the last, wins that a
     person confirms (money saved, waste avoided, something caught early), and a
     monthly "difference this made" screen. Every figure shows its basis.
+15. **Prompts.** "Have you thought about…?" questions chosen from a household
+    profile, answered and dated, with a coverage view. They ask and point to
+    sources; they never claim a household is safe.
 
 ## How we check we kept the promise (the acceptance list)
 
@@ -78,6 +81,15 @@ with no Python installed:
       after a person confirms it, with the records it rests on.
 - [ ] The wizard creates the household in the People module, and a one-page
       emergency sheet prints with no internet.
+- [ ] A prompt appears only if it fits the household's profile (a flat is not
+      asked about a second storey; a home without pets gets no pet questions),
+      and is not asked if the answer is already recorded.
+- [ ] Prompts can be answered Yes, Not relevant, Not yet or Tell me more; the
+      answer is dated, and it returns for review on its schedule.
+- [ ] The coverage view says how many questions were looked at and never says a
+      household is safe or prepared.
+- [ ] Any country note shows its source, the date it was gathered, and a line
+      telling the household to check with their local authority.
 - [ ] Sensitive details (such as allergies) are hidden from helpers unless the
       helper was explicitly given access.
 - [ ] Pulling the USB stick out after *Close Dashboard safely* loses nothing.

@@ -285,6 +285,28 @@ number and the core can load both for a transition period.
     "who lives here" into this module. Pets link their owner and vet to people,
     through `requires = ["people"]`. This is a notebook with a print button, not
     a medical record (see the non-goals).
+- **Medical** (declarative; requires People and Household stock). Tables:
+  - *kits*: a first aid kit (name, where it is kept, when it was last checked,
+    how often to check it).
+  - *kit contents* are ordinary Household stock items in the first-aid
+    category, each with a minimum and an expiry date, so the shared "running
+    low" and "expiring soon" views cover the kit with no extra code.
+  - *training*: a person, a course (first aid, CPR, other), the provider, the
+    date completed and when it needs renewing; renewals appear in the same
+    expiry view.
+  - Medical contacts (doctor, pharmacist, nearest hospital) are People roles.
+    Allergies, conditions and medications stay in People's sensitive details.
+  - Behaviour: *kit check due*, *training due*, and prompts such as "Is there a
+    first aid kit?" and "Does anyone here know how to use it?". The module does
+    not give medical instruction or diagnose; it records what the household has
+    and links to guidance from recognised first aid and health bodies.
+- **Readiness** (declarative; the home of the prompts in section 10.5).
+  Tables: plans (a situation the household has thought through: what we would
+  do, who does what, the answer to "could we get down from upstairs?"), drills
+  (date, who took part, what we learned), and the household's answers to
+  prompts. It ships household-wide prompts for every pillar plus optional
+  **country packs** (below). Behaviour: the "Have you thought about…?" panel,
+  the coverage view, and review reminders.
 - **Household stock** (declarative; the resilience heart of v1). Tables:
   items (name, category such as pantry, water, medical, tool, hardware, fuel;
   unit; location), stock (current quantity, minimum, target, expiry date, where
@@ -640,6 +662,77 @@ names, no content) that a household may choose to send to the maintainers. There
 is no automatic reporting of any kind (see the non-goals). Over time this is how
 we find out whether the product delivers the experience intended.
 
+### 10.5 Prompts: helping a household think
+
+The question loop (10.2) explains a change in the numbers. **Prompts** surface
+blind spots before anything has changed. They are a small core feature (an
+engine that reads prompt files, matches them to the household, records answers,
+and schedules reviews). The content lives in modules, so the core still knows
+nothing about fire, floods or first aid.
+
+**A prompt** is a declared question in a module's `prompts.toml`:
+
+```toml
+[[prompt]]                      # illustrative example
+id = "escape-upper-floor"
+pillar = "shelter-and-escape"
+ask = "If you were on an upper floor and the stairs were blocked, could you get down?"
+applies_when = { storeys_min = 2 }
+when_missing = { table = "readiness__plans", where = { situation = "upper-floor-escape" } }
+why = "People plan for the front door and forget the second way out."
+how_to_check = "Walk it through in daylight and write down what you found."
+record_in = "readiness__plans"
+review_every_days = 365
+sources = [ { title = "<public safety body>", url = "<link>", retrieved = "<date>" } ]
+```
+
+- **`applies_when`** matches the household profile (storeys, pets, region,
+  hazards, mobility needs). A prompt that does not apply is never shown. This is
+  the same plausibility principle as 10.2: ask sensibly.
+- **`when_missing`** stops a prompt appearing when the answer is already in the
+  data (for example a first aid kit item already exists in stock).
+- **Answers:** *Yes, sorted* (records the date and an optional note, and can
+  create a plan), *Not relevant to us* (stops it, and the reason is kept),
+  *Not yet, remind me* (snoozes), *Tell me more* (shows why, how to check and
+  sources). Answers are dated and return after `review_every_days`.
+- **Pillars:** people, medical, water, food, shelter and escape, power and light,
+  communication, documents and money, pets, home and tools. The **coverage
+  view** shows, for each pillar, how many applicable prompts have been looked at.
+  The words are always "looked at", never "safe" or "prepared".
+- **Budget and calm:** a small number of prompts at a time, most important
+  first, never alarming in tone. They are questions, not warnings.
+- Wording rule: prompts ask and point; they never instruct on emergency or
+  medical action. Where action matters, they link to the official source.
+
+**Country packs.** A pack is data under `modules/readiness/packs/<country>/`:
+`pack.toml` (country, authorities and their links, emergency numbers, the
+hazards those authorities list, licence of any text reused, date gathered, a
+`review_by` date) and a `prompts.toml` for that country. Rules:
+
+1. Every fact has a **cited, dated source** from an official or recognised
+   body, written as "According to <source>, <year>, …", never as our own claim.
+2. Only text whose licence allows reuse is reproduced. Otherwise we link and
+   describe in our own words.
+3. **No unsourced statistics.** A line such as "the most common causes of home
+   incidents are…" appears only if a citable source says so, with its year;
+   otherwise the pack links to where the household can find it. No such
+   statistic is included yet.
+4. Every pack ends with a prompt to check the household's own local authority,
+   council or emergency service, because risk varies by address.
+5. Packs are built from research with citations and reviewed by someone who
+   lives there where possible. Start with countries that publish official,
+   openly usable guidance (recommended first: Australia and the United States).
+6. The weekly health-check Action (section 14) checks that every pack link still
+   works and flags packs past their `review_by` date.
+
+**For countries without a pack,** a generic *Find your local guidance* set of
+prompts helps people do their own research: which hazards affect my address,
+what do the council's maps show, where is the evacuation route, who is my local
+emergency service, what do the national emergency management pages say.
+
+**Profile and privacy.** The profile stays on the computer. The country is used
+only to choose which pack applies; nothing is looked up online.
+
 ## 11. Audit, backup, export
 
 - **Audit.** `core__audit(id, at, actor, action, table, record_id, before,
@@ -708,8 +801,11 @@ we find out whether the product delivers the experience intended.
   and stops writing.
 - **Update:** replace `app/`, keep `data/`. On first start the program notes the
   new version, backs up, migrates.
-- **First-run wizard** in the browser: who lives here (people, pets), which
-  modules to switch on, backup location, time zone. It writes
+- **First-run wizard** in the browser: who lives here (people, pets), a short
+  **household profile** (country and region, type of home, number of storeys,
+  whether anyone has mobility or care needs, vehicles, garden, hazards the
+  household already knows about), which modules to switch on, backup location,
+  time zone. It writes
   `data/config.toml`; the person never edits it by hand.
 - **Plain-language errors** throughout, with *Save a report*.
 - **Windows "unknown publisher" warning.** Without paid code signing, Windows
@@ -748,7 +844,8 @@ changed later.
 - **Weekly health check (scheduled GitHub Action).** Runs each source's live
   test against its real host and opens (or updates) an issue when one stops
   parsing, naming the module and showing the failing field. This is how
-  outside changes get noticed without anyone watching.
+  outside changes get noticed without anyone watching. It also checks that every
+  country-pack link still works and flags packs past their `review_by` date.
 - **Portable build test.** The built zip is unpacked in a clean runner
   and started; the acceptance list in `CORE.md` is checked where it can be
   automated.
@@ -805,8 +902,10 @@ about the product: screens, wording, what the household sees and does.
 11. Module: Household stock (files only), with the watch views (section 5.1)
     and receipt entry; then Wine (files only, small). If anything needed a core
     change, fix the core here, then re-check Pets.
-12. Module: Garden (files only; also written up as the "build your first
-    module" guide). Then Graphing.
+12. The prompt engine (a small core addition, section 10.5), then Medical and
+    Readiness (files only) with the generic prompts and the first country packs.
+    Then Garden (files only; also written up as the "build your first module"
+    guide). Then Graphing.
 13. Module: Analysis and the question loop (with the plausibility gate), one
     correlation view, then metrics, wins and the monthly screen (section 10.4).
 14. Module: API connector, with fixtures and the weekly health check.
@@ -854,6 +953,8 @@ Open a module's own INDEX.md before its files.
 | Entry | What it is | Open it when |
 |---|---|---|
 | pets/ | Pets, weight, food, medication, vet visits (files only) | changing pet tables or forms |
+| medical/ | First aid kit checks, training, medical readiness (files only) | changing kit, training or medical prompts |
+| readiness/ | Prompts, plans, drills, coverage, country packs (files only) | adding a prompt or a country pack |
 | people/ | Contacts, roles, important details, emergency sheet (files only) | changing who-to-call, emergency sheet or sensitive fields |
 | garden/ | Vegetable garden; the worked example module (files only) | learning to build a module |
 | stock/ | Pantry, emergency water, tools and hardware, receipts (files only) | changing stock, reorder or supply-cover behaviour |

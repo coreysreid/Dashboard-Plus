@@ -42,6 +42,11 @@ Concretely, a household can:
   doctor, the vet, the plumber. Keep that on file with the important details
   attached, and print a one-page emergency sheet that works with the power and
   internet off.
+- **Know the medical basics.** Is there a first aid kit, where is it, is
+  anything in it out of date, and does anyone in the house know how to use it?
+  When did each adult last do a first aid or CPR course? Who has an allergy or a
+  condition others should know about, and where is the nearest hospital? Medical
+  readiness is a pillar of its own, alongside people, water and food.
 - **Spot trouble early.** A water bottle past its date, a medication running
   out, a pet's food intake changing: the same watching-and-asking loop below
   applies to all of it.
@@ -114,6 +119,41 @@ until there is enough history to compare with, and the program says so. Over
 time the household also tells us whether each insight was useful, which is how
 we learn whether the product is doing its job.
 
+## Helping a household think
+
+The most valuable thing a good guide does is point at the places you had not
+looked. *Should we check inside that dark cave? Have you thought about crossing
+the river? What is up north?* Dashboard Plus does the same for a household with
+**"Have you thought about…?" prompts**.
+
+- A prompt is a plain question about something a household may not have
+  considered: "If you were stuck on an upper floor, could you get down?" "Does
+  anyone here know how to use the first aid kit?" "Do you know which hazards
+  your area is most exposed to, such as bushfire, cyclone, flood or
+  earthquake?"
+- Prompts are chosen for *this* home. A flat does not get asked about a second
+  storey, a home without pets does not get pet first aid, and a question about
+  something already recorded is not asked again.
+- Whatever hazards matter where you live are what the prompts cover: fires,
+  storms, floods, break-ins, power cuts, medical emergencies. We write our own
+  questions and point to the public safety bodies for the answers.
+- The household answers *Yes, sorted*, *Not relevant to us*, *Not yet, remind
+  me* or *Tell me more*. Answers are saved, dated, and come back for review on
+  a schedule.
+- A coverage view shows how many applicable questions have been looked at in
+  each area (people, medical, water, food, getting out, power, communication,
+  documents). It says "looked at", never "safe" or "prepared".
+- **Local guidance comes first.** For some countries we ship carefully sourced,
+  dated starter notes that name the national authorities and the hazards they
+  list. For everywhere else, prompts help people do their own research about
+  their own address. Either way the program asks you to check with your local
+  authority, because hazards differ street by street.
+
+This is the same spirit as the question loop: the program asks, the person
+decides, and it never claims to know best. The difference is that the question
+loop explains changes in your numbers, while prompts reveal blind spots before
+anything has changed.
+
 ## Who it is for
 
 - A household member who is not technical and will never edit a config file.
@@ -151,27 +191,34 @@ before it happens both come from other people's work. We credit them in
    household what it has, what is running low and what is about to expire, with
    no internet and no account. That habit of stewardship is what builds
    resilience.
-10. **Prove it's useful.** Results are shown as plain numbers that come from the
+10. **Help people think.** The program points at what a household may not have
+    considered, with questions suited to their home, and leaves the decision and
+    the research to them.
+11. **Prove it's useful.** Results are shown as plain numbers that come from the
     household's own records or from something a person confirmed, never from
     guesswork, and the household can say whether each one helped.
-11. **Every technical decision has a written reason.** Choices are recorded
+12. **Every technical decision has a written reason.** Choices are recorded
    in `docs/decisions/` with their downsides and the sign that they were
    wrong, so any of them can be judged and reversed later.
 
 ## What ships first
 
-A core plus eight modules:
+A core plus ten modules:
 
 - **People** (contacts with the important details attached, and the emergency
   sheet). On by default, because people are a pillar of resilience.
 - **Household stock** (pantry, emergency water, tools and hardware, shopping
   receipts).
+- **Medical** (first aid kit contents and checks, first aid and CPR training,
+  medical contacts).
+- **Readiness** (the "Have you thought about…?" prompts, plans and drills, the
+  coverage view, and starter notes for some countries).
 - **Pets**.
 - **Vegetable garden**, the worked example that shows how to build a module.
 - **Wine collection** (a compact module).
 - **Graphing**, **Analysis** and an **API connector**.
 
-People, Household stock, Pets, Garden and Wine are deliberately made from files
+People, Household stock, Medical, Readiness, Pets, Garden and Wine are deliberately made from files
 alone, to prove the core can build real features from a description. If it
 cannot, the design is wrong and we change the core. The core also provides the
 monthly "difference this made" screen.
@@ -186,6 +233,9 @@ These are choices, not omissions. Requests for them will be politely declined.
   only.
 - **Real-time sync across devices.** One data folder, one computer at a time.
   Moving it means copying the folder.
+- **Being an authority on safety or medicine.** The program asks questions and
+  points to official guidance. It does not give emergency or medical
+  instruction, diagnose, or tell anyone they are safe.
 - **Replacing a bank's or doctor's system.** It is a notebook with charts, not
   a medical record or accounting system of record.
 - **Automatic usage tracking.** The program never reports on its users. A

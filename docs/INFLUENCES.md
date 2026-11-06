@@ -28,15 +28,18 @@ an idea valuable, please buy and read the original.
 
 - **Source:** *Prepared: A Manual for Surviving Worst-Case Scenarios* by Mike
   Glover (Portfolio/Penguin, 2023, ISBN 9780593538142).
-- **The idea, in our words:** preparedness starts in the mind. Work through a
-  situation before it happens, while you are calm, so you are not meeting it
-  for the first time in a crisis.
-- **Where it shows up here:** the habit of asking "what if?" about your own
-  home. Do I know the way out of each room? If I am stuck upstairs, can I get
-  down? Do I know where the water is, and how long it lasts? Stock, People and
-  the emergency sheet exist so those answers are written down and found fast.
-  A "What if?" rehearsal feature (scenario checklists you answer and revisit
-  on a schedule) is a likely future module; see `docs/VISION.md`.
+- **The idea, in our words:** preparedness starts in the mind. Think about the
+  situations that are realistic where you live before they happen, while you
+  are calm, so you are not meeting one for the first time in a crisis.
+- **What we credit, and what we do not claim:** we credit this general idea of
+  thinking situations through ahead of time. We do not claim the book contains
+  any particular example used in this project, and we do not reproduce its
+  structure, case studies or wording.
+- **Where it shows up here:** the "Have you thought about…?" prompts and the
+  Readiness and Medical modules. The scenarios themselves (house fires, storms,
+  floods, break-ins, power cuts, medical emergencies, getting out from an upper
+  floor) are ordinary safety topics that public safety bodies publish guidance
+  on. We write our own questions and cite those bodies.
 
 ## How we credit ideas (for contributors)
 
@@ -51,3 +54,6 @@ an idea valuable, please buy and read the original.
 5. Add the entry here, with where the idea appears in the product, and record
    any change of direction it causes in `docs/decisions/`.
 6. If an author or publisher asks for a change, make it promptly.
+7. Common safety scenarios are not anyone's property, but a book's selection,
+   order and wording of them is. Write your own prompts, cite public safety
+   bodies for the facts, and do not follow a book's structure.
