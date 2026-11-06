@@ -1,0 +1,11 @@
+[project]
+name = "dashboard-plus"
+version = "0.0.0"
+description = "A local-first, portable dashboard that helps a household look after what it has."
+readme = "README.md"
+requires-python = ">=3.11"
+license = { text = "MIT" }
+authors = [{ name = "Corey Reid" }]
+# No runtime dependencies yet. Every one we add is pinned to an exact version
+# and needs a decision record in docs/decisions/.
+dependencies = []

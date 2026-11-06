@@ -1,0 +1,32 @@
+name: CI
+
+on:
+  push:
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  checks:
+    name: Checks on ${{ matrix.os }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Privacy check (nothing personal may be committed)
+        run: python tools/check_privacy.py
+      - name: Index check (every folder has a current INDEX.md)
+        run: python tools/check_indexes.py
+      - name: Project map is up to date
+        run: python tools/make_project_map.py --check
+      - name: Tests
+        env:
+          PYTHONPATH: src
+        run: python -m unittest discover -s tests -v
