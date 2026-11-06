@@ -1,5 +1,8 @@
 # Vision
 
+**Look after what your household has.**  
+Know what you have, where it is, and when it's running out.
+
 ## The idea in one paragraph
 
 Most households already track things in notebooks, spreadsheets, phone photos
@@ -13,11 +16,12 @@ and storage (a small warehouse system), things that could go wrong (risk),
 jobs in progress (projects), a pile of unsorted photos, notes and receipts
 (inbox), and later, money (finance). You decide which of these you use.
 
-## The heart of it: a resilient home
+## The heart of it: looking after what you have
 
-The reason this exists is **resilience**: knowing what your household has,
-where it is, and whether it is enough, *before* you need it. Not in a crisis,
-when it is too late to count.
+The reason this exists is **stewardship**: looking after what your household
+has by knowing what it is, where it is, and whether it is enough, *before* you
+need it. The result is **resilience**: when something goes wrong, you are
+already covered, instead of counting shelves in a crisis.
 
 Concretely, a household can:
 
@@ -87,9 +91,10 @@ review queue until a person approves it.
 7. **Safe by default.** Listens on this computer only. Declarative modules
    cannot run code. Code modules say clearly that they can.
 8. **Nothing personal in the public repository.** Ever.
-9. **Resilience first.** The product earns its place by telling a household
-   what it has, what is running low and what is about to expire, with no
-   internet and no account.
+9. **Look after what you have.** The product earns its place by telling a
+   household what it has, what is running low and what is about to expire, with
+   no internet and no account. That habit of stewardship is what builds
+   resilience.
 10. **Every technical decision has a written reason.** Choices are recorded
    in `docs/decisions/` with their downsides and the sign that they were
    wrong, so any of them can be judged and reversed later.

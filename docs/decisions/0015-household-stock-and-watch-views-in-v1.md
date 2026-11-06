@@ -5,7 +5,8 @@
 - **Decided by:** Claude (scope change requested by Corey; technical shape chosen by Claude)
 
 ## In plain words
-The first version centres on a resilient home: pantry stock with reorder
+The product's headline is "Look after what your household has" (stewardship
+without the word; resilience is the result). The first version centres on it: pantry stock with reorder
 levels, shopping receipts, emergency water, and tools and hardware. Wine is
 only a small example.
 

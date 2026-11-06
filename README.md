@@ -1,10 +1,13 @@
 # Dashboard Plus
 
-A free, portable, local-first "CRM for a home", built around resilience: know
-what your household has, what is running low and what is about to expire
-(pantry, emergency water, tools and hardware), alongside pets and anything else
-you choose to track. See it in charts, and get gentle questions that help you
-understand *why* numbers change.
+**Look after what your household has.**
+Know what you have, where it is, and when it's running out.
+
+A free, portable, local-first "CRM for a home". Track the pantry and when to
+reorder, the weekly shopping, emergency water, the tools and screws you have
+stacked away, your pets, and anything else you choose. See it in charts, and
+get gentle questions that help you understand *why* numbers change. The habit
+of looking after what you have is what makes a home resilient.
 
 **Status: planning.** No application code exists yet. Start with the documents
 in `docs/`:
