@@ -122,6 +122,12 @@ we learn whether the product is doing its job.
 - A hobbyist who wants to add a new topic (say, a vegetable garden) by writing
   a short text file, or by asking an AI assistant to write it from a sentence.
 
+## Ideas we build on
+
+The habit of small, repeated actions and the habit of thinking a crisis through
+before it happens both come from other people's work. We credit them in
+[`INFLUENCES.md`](INFLUENCES.md).
+
 ## Principles
 
 1. **Local first.** Your data lives in a folder you own. No account, no cloud.

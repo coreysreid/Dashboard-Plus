@@ -16,6 +16,7 @@ open yet. Start with the documents in `docs/`:
 - [`docs/VISION.md`](docs/VISION.md): what this is, who it is for, what it will never be
 - [`docs/CORE.md`](docs/CORE.md): the one-page v1 promise
 - [`docs/DESIGN.md`](docs/DESIGN.md): how it will be built
+- [`docs/INFLUENCES.md`](docs/INFLUENCES.md): the ideas we build on, and their authors
 
 Everything stays on your own computer. Nothing is sent anywhere unless you
 switch on an optional outside source.

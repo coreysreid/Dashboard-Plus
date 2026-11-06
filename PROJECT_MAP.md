@@ -29,6 +29,7 @@ Follow the INDEX.md in a folder before opening its files. Hidden files are not l
 | VISION.md | Big picture, principles, non-goals | judging if it fits the product |
 | CORE.md | The one-page v1 promise and acceptance list | testing any feature against it |
 | DESIGN.md | Object model, modules, API, security, packaging, build order | planning or building |
+| INFLUENCES.md | Books and ideas we build on, credited, and how we credit | adding or checking a credit |
 | decisions/ | One record per technical choice, with downsides | questioning or reversing a choice |
 
 ## docs/decisions/  (summary: why each technical choice was made)
@@ -59,6 +60,7 @@ marked Superseded. Each lists downsides, cost to undo, and the sign it was wrong
 | [0020](0020-tests-and-tools-use-only-the-standard-library.md) | Tests and repository tools use only the standard library | Accepted |
 | [0021](0021-ci-on-windows-and-linux-with-lf-line-endings.md) | CI runs on Windows and Linux, files use LF line endings | Accepted |
 | [0022](0022-index-file-format-and-rules.md) | INDEX.md format and the rules the checker enforces | Accepted |
+| [0023](0023-credit-the-ideas-we-build-on.md) | Credit the ideas we build on, in our own words | Accepted |
 | [TEMPLATE](TEMPLATE.md) | Blank record to copy for a new decision | recording a decision |
 
 ## modules/  (summary: optional features; each folder is one module)
