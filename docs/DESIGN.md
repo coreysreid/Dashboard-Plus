@@ -1,0 +1,694 @@
+# Design
+
+This document says how Dashboard Plus will be built. It is written so a
+newcomer can follow it. Section 15 lists the decisions that Corey needs to
+confirm before code is written; each has a recommendation in plain language.
+
+Contents: 1 Layers · 2 Folders · 3 Object model · 4 Links · 5 Time ·
+6 Modules · 7 Migrations · 8 Review and inbox · 9 Agent API ·
+10 Annotations and the question loop · 11 Audit, backup, export ·
+12 Security and privacy · 13 Packaging · 14 Testing and CI ·
+15 Decisions for Corey · 16 Build order
+
+## 1. Layers
+
+```text
+Browser (on this computer)
+   |  http://127.0.0.1:<port>
+Web layer         pages, forms, grid, review screen, JSON API
+   |
+Core services     records, links, time, review, audit, annotations,
+                  question loop, backups, module loader, migrations
+   |
+SQLite file       data/dashboard.db  (stable, single file)
+   ^
+Modules           files that describe tables/labels/insights,
+                  optionally Python that fetches or proposes data
+```
+
+Rule: modules talk to core services, never to SQLite directly. Core services
+never mention any particular topic.
+
+## 2. Folders
+
+The program and the data are separate. Updating means replacing the program
+folder and keeping `data/`.
+
+```text
+Dashboard/                      <- the portable folder (or the git clone)
+  Open Dashboard.bat            starts the program and opens the browser
+  Close Dashboard safely.bat    stops it cleanly
+  app/                          program code (replaced on update)
+    core/  web/  modules/  python/  (bundled interpreter + libraries)
+  data/                         YOUR data (kept on update, never committed)
+    dashboard.db
+    config.toml                 real settings, written by the wizard
+    secrets/                    API keys and agent token hashes
+    backups/  exports/  attachments/  reports/
+```
+
+In the git repository only `config.example.toml` exists. `data/` is in
+`.gitignore`, and CI fails if a database, a `config.toml`, a token-looking
+string or a personal path is committed (section 14).
+
+A second automatic backup is also written to a folder on the computer itself
+(for example under the user's local app data), because a USB stick can be lost
+or corrupted. The location is a setting.
+
+## 3. Object model
+
+Everything a person tracks is a **record** in a **table**. Tables are declared
+by modules (section 6); the core turns them into real SQLite tables.
+
+Every table automatically gets these system columns, so features like review,
+audit and undo work for every module without module code:
+
+| Column | Meaning |
+|---|---|
+| `id` | Integer primary key |
+| `created_at`, `updated_at` | Timestamps (UTC, ISO 8601 text) |
+| `review_status` | `confirmed`, `needs_review` or `rejected` |
+| `source` | `person`, `agent:<name>`, `import:<source>` or `module:<name>` |
+| `batch_id` | The batch that created it, if any (for undo) |
+| `edited_by_person` | 1 once a person has edited it (locks out agents) |
+| `deleted_at` | Soft delete; undo and history rely on this |
+
+### Field types
+
+`text`, `longtext`, `integer`, `decimal`, `boolean`, `date`, `datetime`,
+`choice` (one value from a dropdown), `link` (one record in another table),
+`links` (many records, section 4), `money` (integer minor units plus a currency
+code), `measure` (a number with a unit, used by analysis), `file` (path inside
+`data/attachments/`).
+
+Each column may declare: `required`, `default`, `min`, `max`, `unit`,
+`choices` (the dropdown values, each with a stable key and a friendly label),
+and `help` text.
+
+Dropdown values are stored by stable key (`dry_food`), shown by label
+("Dry food"). Renaming a label never changes stored data.
+
+### Declared, not hard-coded
+
+The same declaration drives the entry grid, the forms, the review screen, the
+API's live column list, validation and the export. There is exactly one place
+to change a field.
+
+### Real tables, not a single generic table
+
+Each declared table becomes a real SQLite table named `<module>__<table>`
+(for example `pets__weights`). This keeps queries fast and the file readable
+by any SQLite tool, which supports the no-lock-in promise. Generated column
+types and constraints come from the declaration; the core adds indexes on link
+columns and date columns automatically.
+
+## 4. Links between records
+
+Links exist from day one. Three kinds:
+
+1. **Belongs to (many-to-one).** A column of type `link` pointing at another
+   table. A vet visit belongs to a pet. Stored as a foreign key. The
+   declaration says what happens when the parent is removed: `restrict`
+   (default; refuse and explain), `cascade` (soft-delete the children too) or
+   `clear` (set the link empty).
+2. **Many-to-many.** A column of type `links`. The core creates a small join
+   table. A project can involve many people; a person can be on many projects.
+3. **About (generic).** A core table `core__about` ties a *note, annotation,
+   event, attachment or inbox item* to any record in any table
+   (`target_table`, `target_id`). This is how a note "about the cat" or a photo
+   "about the leaking tap" works without every table needing a notes column.
+
+Cross-module links are allowed only through an explicit `requires` entry in
+`module.toml`, so removing a module cannot silently orphan another module's
+data. The loader refuses to switch off a module that another enabled module
+depends on, and says which one.
+
+## 5. Time
+
+Time is first-class because the question loop depends on it.
+
+- **Dates and times.** Stored as ISO 8601 text. A household has one configured
+  time zone; "a day" always means a local calendar day.
+- **Events.** A core `core__events` table: a title, a start date (and optional
+  end date), an optional recurrence, an optional "about" link, and a kind
+  (`note`, `milestone`, `appointment`, `annotation`, `external`). Events are
+  what analysis searches when it looks for explanations.
+- **Recurrence.** A small, closed set: daily, weekly (chosen weekdays),
+  monthly (day of month or "last Friday"), yearly; an interval; and an end date
+  or count. Occurrences are calculated on demand for a date range and not
+  stored in bulk. No free-form calendar rules.
+- **Daily facts.** Each module may expose a *daily facts* view: one row per
+  local day with the numbers that matter (for Pets: grams eaten, weight,
+  medication given). Charts and analysis read these views only, so the idea of
+  "the number for a day" is defined in one place per module. Where the person's
+  sheet disagrees on detail but agrees on the day's total, the total wins
+  (section 6, Pets).
+
+## 6. Modules
+
+A module is a folder:
+
+```text
+modules/<name>/
+  module.toml       name, version, description, core_api needed,
+                    requires, outbound hosts
+  tables.toml       tables, columns, types, dropdown values, links
+  labels.toml       friendly names and form layout
+  migrations/       numbered migration files for this module's own track
+  sources.py        optional: pulls data in
+  insights.toml     optional: what the question loop should watch
+```
+
+### Tier 1: declarative modules (files only)
+
+Only `.toml` files. No code runs. The core builds everything. Safe by
+construction. Anyone can write one, and an AI assistant can write one from a
+sentence. The loader validates every file against a schema and gives errors in
+plain language ("In `tables.toml`, table `weights`, column `kg`: unknown type
+`numbr`. Did you mean `number`? Allowed: ...").
+
+`module.toml`:
+
+```toml
+name = "pets"
+title = "Pets"
+version = "1.0.0"
+description = "Track pets, their weight, food, medication and vet visits."
+core_api = "1"                 # the contract version this module was written for
+requires = []                  # other modules this one links into
+outbound_hosts = []            # empty for modules that never contact anything
+kind = "declarative"           # or "code"
+```
+
+`tables.toml` (shortened):
+
+```toml
+[tables.pets]
+title = "Pets"
+columns.name     = { type = "text", required = true }
+columns.species  = { type = "choice", choices = ["cat", "dog", "rabbit", "other"] }
+columns.born     = { type = "date" }
+
+[tables.weights]
+title = "Weigh-ins"
+columns.pet      = { type = "link", to = "pets", required = true, on_delete = "restrict" }
+columns.weighed  = { type = "date", required = true }
+columns.weight   = { type = "measure", unit = "kg", min = 0 }
+daily_fact = { date = "weighed", subject = "pet", measures = ["weight"] }
+```
+
+`labels.toml` supplies friendly names, help text, column order and which
+columns appear on the quick-entry form.
+
+### Tier 2: code modules
+
+Add `sources.py` (and may add custom checks). Code modules run with the user's
+own permissions, exactly like any program the user installs. The interface
+says so plainly before a code module is switched on ("This module includes
+program code that can read and change files on this computer. Only turn it on
+if you trust where it came from"), and the README repeats it. The core does not
+try to sandbox Python; it limits the damage a *buggy* module can do (section
+below) but does not claim to stop a *malicious* one.
+
+A code module imports only the **toolkit**, a small stable surface:
+
+```python
+from dashboard_toolkit import fetch, propose, alert, log, secret
+
+def pull(ctx):
+    data = fetch.json(ctx.source.url)          # honours the host allow-list
+    propose(table="weather__readings",
+            entries=[{"day": ..., "max_temp": ...}],
+            why="Daily weather from <source>")  # lands as needs_review or
+                                                # confirmed, per module setting
+```
+
+- `fetch.json / fetch.text` enforce the allow-list, timeout, retries and rate
+  limit, and record every attempt.
+- `propose` writes through the same path as the Agent API (batch, audit,
+  review flag).
+- `alert` raises a visible notice. `log` writes to the module's log.
+- `secret(name)` reads from `data/secrets/`; modules never see other modules'
+  secrets.
+
+### Failure isolation
+
+The loader runs each module's startup, each source and each insight inside its
+own guarded call. An exception or timeout marks that module "unavailable",
+shows a plain message and a *Save a report* button, and everything else keeps
+running. A module that fails to load never prevents the app starting.
+
+### Version contract
+
+`core_api = "1"` means "written for contract version 1". The core supports
+contract version 1 for the whole 1.x life of the program. A module asking for a
+newer contract is refused politely. Contract-breaking changes require a new
+number and the core can load both for a transition period.
+
+### v1 modules
+
+- **Pets** (declarative). Tables: pets, weights, meals (item, amount, time),
+  daily food totals, medications and doses given, vet visits, litter or walk
+  logs. Not tied to one animal: species is a choice, and every record links to
+  a pet. Supports entering data off paper (below).
+- **Wine collection** (declarative). Tables: wines (name, producer, vintage,
+  region, grape), bottles or stock (quantity, location, bought, price), tasting
+  notes. About one page of files; its purpose is to prove how easy a module is.
+- **Graphing** (module). Charts over any table or measure or daily-fact view,
+  using one well-trodden JavaScript charting library (see section 15). Chart
+  configurations are saved as records. Annotations and events are drawn on
+  charts.
+- **Analysis** (module, section 10.3).
+- **API connector** (module, section 6.1).
+
+#### Entering data off paper (Pets)
+
+The module's quick-entry and agent guidance follow the lessons from the
+original project:
+
+- File in two passes: first the items (bowls, doses, meals), then the checks
+  and totals. Link related rows by id.
+- Verify with a dry run on a copy of the database before committing.
+- A day's total is what the person cares about most. Where two sheets
+  disagree on the detail but agree on the total, keep one version and add a
+  note with the other.
+- When a written total disagrees with the parts, file the calculated figure
+  and add a note mentioning the written figure.
+- The aim is "a quick picture", not exact grams.
+
+#### 6.1 API connector module
+
+One generic connector that can be aimed at any API.
+
+- A **source** record has: name, URL, optional key (stored in
+  `data/secrets/`), schedule (every N hours or daily at a time), target table
+  and a **mapping** from JSON paths in the response to columns.
+- **Raw responses are kept** (`data/raw/<source>/<timestamp>.json`, with
+  retention so it does not grow forever) so rows can be rebuilt when the
+  mapping changes.
+- **Attempts are recorded** for every fetch: when, HTTP status or error, rows
+  added, duration. A failing source shows "unavailable" with the last good
+  time; it never crashes the app.
+- Built-in timeouts (default 15 s), retries with backoff (default 3), rate
+  limit per host, and a response size cap.
+- **Safety.** Only hosts the user has added to the allow-list are contacted.
+  URLs are never taken from stored data (no user-supplied URLs inside rows),
+  so a stolen or imported row cannot redirect traffic. Requests include no
+  personal data. Redirects to a host not on the list are refused. Private and
+  loopback addresses (for a smart-home hub) are allowed only if the user has
+  added that exact address, with an explanation of what it means.
+- **Documented examples:** weather alerts, exchange rates, a smart-home hub's
+  local API. Home Assistant integration is a future idea.
+- Mapping parsers are tested with **fixtures**: saved real responses with
+  anything personal removed.
+
+## 7. Migrations
+
+- Numbered, linear, forward-only: `0001`, `0002`, ... Each is a SQL file (or a
+  small TOML description the core turns into SQL) plus a checksum.
+- **One track per module.** The core has its own track (`core`). A module's
+  track starts at `0001` when it is first switched on. Adding, removing or
+  re-ordering modules cannot disturb any other track's numbering.
+- A table `core__migrations(track, number, name, checksum, applied_at)` records
+  what has run. A checksum mismatch (a migration edited after release) stops
+  startup for that track with a clear message.
+- The database also stores its overall version in `PRAGMA user_version` and the
+  list of enabled modules with their versions, so a file can be inspected
+  without the program.
+- **Generated migrations.** For declarative modules, a developer command
+  compares `tables.toml` with the last recorded schema and writes the next
+  migration (add table, add column, add index). Destructive or ambiguous
+  changes (rename, drop, change type) need a hand-written migration. Generated
+  migrations are committed; the program never changes the database from a
+  `tables.toml` edit alone.
+- **Order on start:** back up automatically if any migration is pending → run
+  core track → run each enabled module's track in dependency order → record the
+  result. If any migration fails, the transaction rolls back, the pre-update
+  backup is offered for restore, and a plain message appears.
+- **Switching a module off** hides it and keeps its data. **Removing its data**
+  is a separate, confirmed, backed-up action.
+- Storage changes are made only through migrations, never by ad-hoc code.
+
+## 8. Review and inbox
+
+### Review queue
+
+Rows with `review_status = needs_review` appear on the **Review** screen,
+grouped by batch, each showing who or what proposed it and why. The person can
+approve, edit-then-approve, or reject. Approving or editing marks
+`edited_by_person` where applicable. Rejected rows stay in history (hidden by
+default).
+
+### Inbox
+
+The **Inbox** holds unsorted items: a photo, a pasted note, a forwarded email's
+text. Each item has a type, a file or text, and a received time. The core asks
+the sorting logic for a **proposed destination** (a table and pre-filled values,
+or "just a note about <record>"), shown as a suggestion the person accepts,
+changes or discards. In v1, proposals come from simple rules in modules
+(for example, a filename pattern or keyword) and from agents using the Agent
+API; the core does not call an AI service by itself.
+
+## 9. Agent API
+
+Assistants, whether AI or human helpers, enter data through the API and never
+touch the database. The API listens on `127.0.0.1` only, the same as the rest
+of the program.
+
+### Authentication
+
+`Authorization: Bearer <token>`. Tokens are 32 random bytes, shown once when
+issued, and stored only as a SHA-256 hash (adequate for high-entropy random
+tokens). A command-line tool issues, lists and revokes them:
+
+```text
+dashboard agent add "<name>" --tables pets__weights,pets__meals
+dashboard agent revoke "<name>"
+```
+
+Each agent has a name and a list of tables it may touch. Anything else is
+refused.
+
+### Routes
+
+| Route | Purpose |
+|---|---|
+| `POST /api/propose` | Propose rows (below) |
+| `GET /api/tables` | Live column spec: field names, types and dropdown keys. The source of truth; agents must read it rather than guess |
+| `GET /api/rows` | Read rows (only tables the agent is allowed) |
+| `POST /api/amend` | Change one of the agent's own *unreviewed* rows |
+| `POST /api/undo` | Withdraw the agent's own *unreviewed* rows (a row, or a whole batch) |
+| `GET /api/batches` | List the agent's batches and their state |
+
+`POST /api/propose` body:
+
+```json
+{
+  "request_key": "2026-06-03-sheet-14",
+  "why": "Transcribed from the paper feeding sheet for 3 June",
+  "entries": [
+    { "table": "pets__meals", "values": { "pet": 1, "...": "..." } }
+  ]
+}
+```
+
+### Rules
+
+- `request_key` is **required**. Repeating a call with the same key from the
+  same agent returns the original result and writes nothing new (idempotent
+  retries). Keys are remembered for 30 days.
+- At most **50 entries per call** and **200 rows per agent per day**.
+- Rows land with `review_status = needs_review`, `source = agent:<name>` and a
+  `batch_id`. Every call is one batch, so it can be undone together.
+- Once the **person edits** a row, `edited_by_person` is set and the agent can no
+  longer amend or undo it.
+- An agent can fix or withdraw **only its own unreviewed rows**.
+- Validation uses the same declaration as the forms. Errors name the table,
+  the field and the allowed values, in plain language, so an AI helper can
+  correct itself.
+- Rows written outside the API have no batch and cannot be undone together,
+  so the core provides no other write path for agents.
+
+## 10. Annotations and the question loop
+
+### 10.1 Annotations
+
+An **annotation** is a confirmed statement of the form "something happened here
+that may matter": a date or date range, a short text, an optional "about" link,
+and an optional **effect**: `exclude` (leave these days out of averages),
+`explain` (this is a known reason), or `note` (display only). Annotations are
+drawn on charts and used by analysis. Annotations are only ever created by a
+person, either directly or by answering a question.
+
+### 10.2 The loop
+
+```text
+ detect  ->  gather candidates  ->  ask  ->  remember
+```
+
+1. **Detect.** `insights.toml` declares what to watch. A detector runs over a
+   daily-facts measure and flags a **change**: for example, a shift in the mean
+   between two periods found by change-point detection that passes the
+   guardrails in 10.3.
+2. **Gather candidates.** Around the change date (a window of about ±14 days by
+   default) the core collects events, notes, annotations, and notable changes in
+   other watched measures. Candidates are ranked by closeness in time and by
+   text match with what was changed.
+3. **Ask.** A **Question** is created and shown in a *Questions* panel:
+   > "Food eaten went up about 30% from 3 June (based on 41 days). Your notes
+   > say a new job started on 3 June. Is that related?"  
+   > **Yes / No / Not sure**
+4. **Remember.**
+   - **Yes** creates an annotation (`explain`, linked to the event and the
+     measure) shown on the chart. The person may also choose whether later
+     averages should treat the new period separately.
+   - **No** records that this pairing was rejected, and it is not asked again.
+   - **Not sure** snoozes it; it may return once more when there is more data.
+   - Unanswered questions expire quietly after a configurable time.
+
+Questions are always phrased with "may", "could" and "is this related", never
+"because". A question states how many days it is based on. The number of open
+questions shown at once is capped so the panel is helpful and not nagging.
+
+`insights.toml` (example):
+
+```toml
+[[watch]]
+measure = "pets__daily_food.grams_eaten"
+subject = "pet"                       # compute separately for each pet
+detect = "change_point"               # change_point | trend | threshold
+min_points = 20
+look_in = ["core__events", "core__notes"]
+window_days = 14
+phrase = "{measure_label} {direction} about {percent}% from {date}"
+```
+
+### 10.3 The Analysis module
+
+Basic, honest statistics running locally. Standard library by default, with at
+most one small, pinned dependency if it is clearly worth it (decision 15.4).
+
+- **Correlation:** Pearson, and Spearman for skewed data.
+- **Lagged correlation:** "hotter yesterday" (shift one series by N days).
+- **Forecast error:** RMSE and mean error between a forecast and actual values.
+- **Change-point detection:** "something shifted in June."
+- **Day-of-week and month averages.**
+
+**Guardrails are mandatory and live in one place, not scattered:**
+
+1. A **minimum number of paired points** (about 20) before anything is shown;
+   below that, the page says how many more days are needed.
+2. Every result states **how many days** it is based on.
+3. **Multiple-comparison correction.** When many pairs are tested at once
+   (for example every measure against every other), significance thresholds
+   are corrected (Benjamini–Hochberg false-discovery control; Holm–Bonferroni
+   for small families). The number of comparisons made is displayed.
+4. Language: "associated with", never "caused by". Correlation results show the
+   direction, strength in words, and a small plot.
+5. Findings flow into the question loop as questions, not as conclusions.
+6. Annotations with effect `exclude` are honoured; excluded days are listed.
+
+v1 includes **one correlation view**: pick two measures, see the scatter or
+paired lines, the correlation, the lag that fits best, the number of days and
+the correction note. Example questions the person cares about: do days with
+less eating tend to be hotter? Do takeaway purchases line up with recurring
+meetings?
+
+## 11. Audit, backup, export
+
+- **Audit.** `core__audit(id, at, actor, action, table, record_id, before,
+  after, batch_id)`. The actor is `person`, `agent:<name>`, `module:<name>` or
+  `system`. Every write goes through core services, so every write is audited.
+  A history panel on each record shows what changed.
+- **Undo.** Undo reverses a person's last change, or an agent's batch,
+  using the audit before/after. Undo is itself audited.
+- **Backups.** A consistent copy using SQLite's online backup, daily and before
+  any migration, plus a copy on the computer's own disk. Kept for a configured
+  number of days; the latest of each kind is never deleted automatically.
+  Backups are verified by opening them and running `PRAGMA integrity_check`.
+- **Restore.** One click on the Backups screen. Restoring first backs up the
+  current state, so a restore can be undone too.
+- **Export everything.** One click writes a folder: one CSV per table (with
+  dropdown labels and keys, link columns resolved to readable names), the
+  attachments, the notes and annotations as plain text/Markdown, and a
+  `README.txt` explaining each file. Nothing in it requires this program.
+
+## 12. Security and privacy
+
+- **Local only.** The web server binds to `127.0.0.1`, never `0.0.0.0`.
+- **Browser protections.** A random per-start session secret is placed in the
+  launch URL and stored in a cookie. The server checks the `Host` header
+  (defends against DNS-rebinding), uses `SameSite` cookies and checks the
+  `Origin` header on writes (defends against other web pages talking to the
+  local server).
+- **The Agent API** uses bearer tokens as described. It is on the same local
+  port; there is no remote option.
+- **Outside contact is opt-in and listed.** Each module's `module.toml` lists
+  the hosts it may contact. The Settings screen shows them all in one place.
+  Nothing contacts anywhere until the person switches a source on.
+- **Secrets** (API keys, token hashes) live in `data/secrets/`, never in the
+  repository, never in exports, and never in backups of the config unless the
+  person chooses.
+- **Code modules** run with the user's permissions and are labelled as such
+  (section 6).
+- **Dependencies** are few, pinned to exact versions, and bundled.
+- **Privacy in the repository.** No real names, personal data, tokens, `.db`
+  files or personal paths. Tests and demos use synthetic data. CI enforces this
+  (section 14).
+- **Errors.** The user sees plain language. Stack traces go to a log file; a
+  *Save a report* button writes a zip with the log and non-personal diagnostics
+  for the person to share if they choose.
+
+## 13. Packaging
+
+### Portable Windows folder
+
+- Bundles Python and all libraries inside `app/python`. Does not touch the
+  registry, PATH or any system Python, and needs no admin rights.
+- `Open Dashboard.bat` runs the bundled Python, starts the server on a free
+  local port, opens the default browser, and waits.
+- **Close Dashboard safely** is a button in the app (and a second shortcut). It
+  stops accepting writes, finishes the current one, checkpoints and closes
+  SQLite, writes a backup, and only then says "You can unplug the drive now."
+- **SQLite settings for removable drives:** `journal_mode=DELETE` (not WAL: WAL
+  keeps extra files and is unsafe on some removable and network filesystems),
+  `synchronous=FULL`, `foreign_keys=ON`, short transactions, and a busy
+  timeout. If the app detects the data folder vanished, it shows a calm message
+  and stops writing.
+- **Update:** replace `app/`, keep `data/`. On first start the program notes the
+  new version, backs up, migrates.
+- **First-run wizard** in the browser: who lives here (people, pets), which
+  modules to switch on, backup location, time zone. It writes
+  `data/config.toml`; the person never edits it by hand.
+- **Plain-language errors** throughout, with *Save a report*.
+- **Windows "unknown publisher" warning.** Without paid code signing, Windows
+  SmartScreen will warn when the folder is first run. The README explains, with
+  screenshots, to choose *More info → Run anyway*. Signing is a possible later
+  improvement.
+- **Release build.** A GitHub Actions workflow builds the portable zip on each
+  release tag, runs the test suite on the built folder, computes a checksum, and
+  attaches both to the release.
+
+### Choosing the bundling method
+
+See decision 15.2. Both options keep the same folder layout so the choice can be
+changed later.
+
+## 14. Testing and CI
+
+- **Unit tests** for each core service and for the module loader (valid and
+  invalid module files, with plain-language error messages checked).
+- **Migration tests:** build a database from empty by running every track;
+  upgrade a saved older-version fixture database; ensure a failed migration
+  rolls back.
+- **Agent API tests:** idempotency, limits, allow-lists, lock-out after edit,
+  undo of batches.
+- **Analysis tests** against hand-computed values and with data below the
+  minimum, to prove the guardrails refuse to speak.
+- **Source tests** use **fixtures**: saved real responses with personal data
+  removed. A parser change must keep the fixtures passing.
+- **Synthetic data only.** A seed script generates a fake household for tests
+  and screenshots.
+- **Privacy check (CI, required).** Fails the build if a `.db`/`.sqlite` file,
+  a `config.toml`, a token-looking string (for example long hex/base64
+  strings and known key prefixes), or a personal path (a Windows user-profile folder,
+  a Linux or Mac home folder) is committed. It scans the diff and the whole
+  tree.
+- **Weekly health check (scheduled GitHub Action).** Runs each source's live
+  test against its real host and opens (or updates) an issue when one stops
+  parsing, naming the module and showing the failing field. This is how
+  outside changes get noticed without anyone watching.
+- **Portable build test.** The built zip is unpacked in a clean runner
+  and started; the acceptance list in `CORE.md` is checked where it can be
+  automated.
+
+## 15. Decisions for Corey
+
+Each has a recommendation in plain language. If you agree with all the
+recommendations, say "go with the recommendations" and we proceed.
+
+### 15.1 What do we build the program in (the web side)?
+
+- **A. Python with a small web framework and pages built on the server, plus a
+  light sprinkling of browser scripting (Recommended).** Fewest moving parts,
+  nothing to compile, easy for a newcomer, easy to bundle, and it matches the
+  Python modules.
+- B. A full browser app (a "single-page app") with a separate build step.
+  Slicker, but needs a JavaScript toolchain forever, which is a maintenance
+  burden and cuts against "outlives its maintainer".
+- C. Python standard library only, no framework. Smallest, but we would be
+  rewriting things a well-trodden framework already does safely (security
+  headers, forms, routing).
+
+### 15.2 How do we bundle for "click and run"?
+
+- **A. Python's official "embeddable" package plus our libraries copied in
+  (Recommended).** It is a plain folder, easy to inspect, no unpacking at
+  start-up, and no antivirus trouble from a self-extracting program.
+- B. PyInstaller "one-folder" build. Produces a single `.exe`, which feels
+  friendlier, but is more often flagged by antivirus and harder for outsiders
+  to debug.
+- We keep the folder layout identical so we can switch later.
+
+### 15.3 Which chart library?
+
+- **A. Apache ECharts (Recommended).** Handles time series, annotations
+  (marking an event on a line), large data and light/dark themes. Bundled
+  as one file, so charts work offline.
+- B. Chart.js. Smaller and simpler, but weaker for annotated time series
+  without extra add-ons.
+- C. Plotly. Very capable but large.
+
+### 15.4 Statistics: standard library only, or one small dependency?
+
+- **A. Standard library only (Recommended for v1).** Pearson, Spearman, lag,
+  RMSE, averages and the false-discovery correction are short, well-known
+  formulas, and tests check them against hand-computed values. Keeps the
+  folder small. The p-values for correlation can be computed with a
+  permutation test, which needs no library.
+- B. Add one pinned library (for example a small numerical package) for speed
+  and a wider choice of methods. Heavier download.
+
+### 15.5 Where do automatic backups on the computer go?
+
+- **A. A folder under the person's local application data, shown in Settings
+  (Recommended).** Survives the USB stick being lost.
+- B. Only beside the data folder. Simpler, but loses the point of a second copy.
+
+### 15.6 How should we handle modules written by other people?
+
+- **A. Declarative modules install by copying a folder in; code modules show a
+  clear warning and need an extra confirmation to switch on (Recommended).**
+  No attempt to pretend a sandbox exists.
+- B. Only allow declarative modules for now. Safest, but blocks sources and
+  insights for community modules.
+
+### 15.7 Do we allow Python to read the allow-listed local network (smart-home hub)?
+
+- **A. Yes, but only for exact addresses the person types in, with an
+  explanation (Recommended).** Needed for the smart-home example.
+- B. No private addresses at all in v1.
+
+## 16. Build order (after this document is approved)
+
+1. Repository skeleton: layout, `config.example.toml`, `.gitignore`, privacy
+   check in CI, empty test run, `PROJECT_MAP.md`.
+2. Core: database layer with the safe SQLite settings, migrations (core track),
+   module loader and the `tables.toml` validator.
+3. Core: record services (create/update/soft-delete, links, audit, undo).
+4. Core: web layer, entry grid with lazy paging, forms from declarations.
+5. Core: review queue and inbox.
+6. Core: Agent API and token CLI.
+7. Core: time (events, recurrence, daily facts), annotations.
+8. Core: backups, restore, export, safe close.
+9. Core: first-run wizard and settings.
+10. Module: Pets (files only), with the off-paper entry guidance.
+11. Module: Wine (files only). If anything needed a core change, fix the core
+    here, then re-check Pets.
+12. Module: Graphing.
+13. Module: Analysis and the question loop, one correlation view.
+14. Module: API connector, with fixtures and the weekly health check.
+15. Portable build, release workflow, README with the unknown-publisher
+    guidance, final `PROJECT_MAP.md`.
+
+Each step is a small branch, tests first, and a pull request for review.
