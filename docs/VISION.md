@@ -44,8 +44,21 @@ Concretely, a household can:
   exportable in plain files, and work with no internet. A tracker that is down
   when you need it is not resilient.
 
-Wine, hobbies and collections are welcome too. They are small examples of how
-easily a household adds its own topic, not the point of the product.
+## Built for what people care about
+
+Stock and supplies are where the product starts, but the tool is built to
+adapt. One household tracks an art project, another an electronics hobby, a
+third the Lego sets they buy and resell, a fourth a wine collection, a fifth
+the medication log for an ageing cat. Each of those matters a great deal to
+someone, and none of them matters to everyone. That is exactly why the product
+is modular: nobody has to carry modules they don't use, and nobody's interest
+is treated as a side-show.
+
+Every module we ship is built seriously, with real fields, real checks and the
+same question loop. Some are broad (Household stock, Pets) and some are
+compact (Wine), and the compact ones show how little it takes to add a topic
+of your own.
+
 
 ## What makes it different
 
@@ -102,8 +115,8 @@ review queue until a person approves it.
 ## What ships first
 
 A core plus six modules: **Household stock** (pantry, emergency water, tools
-and hardware, shopping receipts), **Pets**, **Wine collection** (a small
-example), Graphing, Analysis and an API connector. Household stock, Pets and
+and hardware, shopping receipts), **Pets**, **Wine collection** (a compact
+module), Graphing, Analysis and an API connector. Household stock, Pets and
 Wine are deliberately made from files alone, to prove the core can build real
 features from a description. If it cannot, the design
 is wrong and we change the core.

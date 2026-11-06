@@ -286,7 +286,7 @@ number and the core can load both for a transition period.
     stock levels. Nothing changes stock until a person approves.
   - Tools and hardware work the same way as pantry items (a quantity, a
     minimum, a place), so "which screws do I have, which do I need" is a list.
-- **Wine collection** (declarative, a small example of how easy a module is). Tables: wines (name, producer, vintage,
+- **Wine collection** (declarative; a serious module for collectors, kept compact on purpose so it also shows how little a new module takes). Tables: wines (name, producer, vintage,
   region, grape), bottles or stock (quantity, location, bought, price), tasting
   notes. About one page of files; its purpose is to prove how easy a module is.
 - **Graphing** (module). Charts over any table or measure or daily-fact view,
@@ -736,7 +736,7 @@ Open a module's own INDEX.md before its files.
 |---|---|---|
 | pets/ | Pets, weight, food, medication, vet visits (files only) | changing pet tables or forms |
 | stock/ | Pantry, emergency water, tools and hardware, receipts (files only) | changing stock, reorder or supply-cover behaviour |
-| wine/ | Small example: a wine cellar (files only) | changing wine tables |
+| wine/ | Wine collection (files only; compact module) | changing wine tables |
 | graphing/ | Charts over any table | changing chart behaviour |
 | analysis/ | Statistics and the question loop | changing how findings are made |
 | api_connector/ | Pulls data from outside APIs | adding or fixing a source |

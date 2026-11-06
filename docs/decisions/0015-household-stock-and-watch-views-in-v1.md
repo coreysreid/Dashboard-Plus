@@ -7,13 +7,15 @@
 ## In plain words
 The product's headline is "Look after what your household has" (stewardship
 without the word; resilience is the result). The first version centres on it: pantry stock with reorder
-levels, shopping receipts, emergency water, and tools and hardware. Wine is
-only a small example.
+levels, shopping receipts, emergency water, and tools and hardware. Wine and
+other interests remain proper modules; they are simply not where the product
+starts.
 
 ## What we chose
 Add a files-only **Household stock** module to v1, and add a small, generic
 "watch views" feature to the core (running low, expiring soon, days of
-supply). Wine stays, but is described as a minor example.
+supply). Wine stays as a serious but compact module, and the vision says that every
+module matters to someone.
 
 ## Why we chose it
 - It is what Corey set out to build and what makes the product worth using.
