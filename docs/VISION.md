@@ -52,7 +52,8 @@ review queue until a person approves it.
    speak with too little data, and correct for looking at many things at once.
 6. **Outlives its maintainer.** Few dependencies, a stable file format
    (SQLite), failure-tolerant outside sources, and documents written for a
-   newcomer. If the original author disappears, someone else can pick it up.
+   newcomer, and a short `INDEX.md` in every folder so a person or an AI
+   assistant can skim the project and only go deeper where needed. If the original author disappears, someone else can pick it up.
 7. **Safe by default.** Listens on this computer only. Declarative modules
    cannot run code. Code modules say clearly that they can.
 8. **Nothing personal in the public repository.** Ever.

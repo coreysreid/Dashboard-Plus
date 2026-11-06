@@ -8,7 +8,7 @@ Contents: 1 Layers · 2 Folders · 3 Object model · 4 Links · 5 Time ·
 6 Modules · 7 Migrations · 8 Review and inbox · 9 Agent API ·
 10 Annotations and the question loop · 11 Audit, backup, export ·
 12 Security and privacy · 13 Packaging · 14 Testing and CI ·
-15 Decisions for Corey · 16 Build order
+15 Decisions for Corey · 16 Build order · 17 Agent-friendly layout
 
 ## 1. Layers
 
@@ -672,7 +672,7 @@ recommendations, say "go with the recommendations" and we proceed.
 ## 16. Build order (after this document is approved)
 
 1. Repository skeleton: layout, `config.example.toml`, `.gitignore`, privacy
-   check in CI, empty test run, `PROJECT_MAP.md`.
+   check in CI, the `INDEX.md` convention and its checker (section 17), `AGENTS.md`, empty test run, `PROJECT_MAP.md`.
 2. Core: database layer with the safe SQLite settings, migrations (core track),
    module loader and the `tables.toml` validator.
 3. Core: record services (create/update/soft-delete, links, audit, undo).
@@ -692,3 +692,77 @@ recommendations, say "go with the recommendations" and we proceed.
     guidance, final `PROJECT_MAP.md`.
 
 Each step is a small branch, tests first, and a pull request for review.
+
+## 17. Agent-friendly layout (progressive disclosure)
+
+Goal: an AI agent (or a new human) can understand the whole project by reading
+a few short pages, and only opens deeper files when an index tells it to.
+Nobody should have to read thousands of lines to learn where things are.
+
+### The convention
+
+1. **Every folder has an `INDEX.md`.** It is a compressed summary of that
+   folder: what it is for, then one line per entry (file or subfolder) saying
+   what it holds and *when you would need to open it*. Target: **25 lines or
+   fewer**, plain language, no code.
+2. **Indexes nest.** The root index lists the top-level folders; each of those
+   indexes lists its children; and so on. An agent reads the root, picks the
+   branch it needs, reads that index, and stops as soon as it has enough.
+3. **Each module has an `INDEX.md` too**, so the question "what does module
+   alpha cover?" is answered in one short read. The root `modules/INDEX.md`
+   lists every module in one line each.
+4. **Every code file starts with a one-line summary** (a module docstring
+   whose first line says what the file is for). Indexes quote these lines, and
+   the checker confirms they match.
+5. **`AGENTS.md` at the repository root** (about 20 lines) tells any agent how
+   to work here: read `INDEX.md` first, follow the indexes downward, the hard
+   rules from section 2 (no personal data), how to run the tests, and where
+   `PROJECT_MAP.md` and `docs/` are. A one-line `CLAUDE.md` points to it so
+   tools that look for either name find it.
+6. **`PROJECT_MAP.md`** remains the single page listing every part of the
+   project. It is generated from the indexes, so it cannot disagree with them.
+
+### Shape of an index
+
+```markdown
+# modules/  (summary: optional features; each folder is one module)
+Open a module's own INDEX.md before its files.
+
+| Entry | What it is | Open it when |
+|---|---|---|
+| pets/ | Pets, weight, food, medication, vet visits (files only) | changing pet tables or forms |
+| wine/ | Wine cellar (files only) | changing wine tables |
+| graphing/ | Charts over any table | changing chart behaviour |
+| analysis/ | Statistics and the question loop | changing how findings are made |
+| api_connector/ | Pulls data from outside APIs | adding or fixing a source |
+```
+
+### Keeping it true (enforced, not hoped for)
+
+A small script, `tools/check_indexes.py`, runs in CI and as a local command:
+
+- fails if a folder has no `INDEX.md`;
+- fails if an index is over the line limit;
+- fails if an index omits a file or subfolder that exists, or lists one that
+  does not (stale entries);
+- fails if a code file's first-line summary is missing, or differs from the
+  line quoted in the index;
+- can regenerate the skeleton (the list of entries) so a contributor only
+  writes the one-line descriptions.
+
+Descriptions are written by a person or an assistant; the script guarantees
+completeness and freshness, not wording. Generated or vendored folders (bundled
+Python, libraries, build output) are listed in the checker's ignore list and
+get a single index line each.
+
+### Why `INDEX.md` and not `README.md`
+
+`README.md` is for people arriving on GitHub and can be long and friendly.
+`INDEX.md` is deliberately short and structured for skimming, so the two do not
+fight over what they are for. The root `README.md` links to the root index.
+
+### Also helps people
+
+A non-technical reader, or a module author, gets the same benefit: open one
+short page, learn what is below, and go deeper only if needed. This is also how
+the project stays small enough for a new maintainer to adopt.

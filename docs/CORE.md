@@ -62,6 +62,8 @@ with no Python installed:
 - [ ] The program listens on 127.0.0.1 only.
 - [ ] No error screen ever shows a stack trace; *Save a report* writes a file.
 - [ ] The repository contains no personal data (checked automatically).
+- [ ] Every folder has a current, short `INDEX.md` (checked automatically), so
+      the project can be skimmed top-down without reading everything.
 
 ## What the core refuses to do
 
