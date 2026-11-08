@@ -10,11 +10,14 @@ hobby, Lego sets you flip, a wine collection. See it in charts, and
 get gentle questions that help you understand *why* numbers change. The habit
 of looking after what you have is what makes a home resilient.
 
-**Status: planning, with the repository skeleton in place.** There is nothing to
-open yet. Start with the documents in `docs/`:
+**Status: building the first release (M1).** There is nothing to open yet. See
+[`docs/ROADMAP.md`](docs/ROADMAP.md) for what M1 includes. Start with the
+documents in `docs/`:
 
 - [`docs/VISION.md`](docs/VISION.md): what this is, who it is for, what it will never be
 - [`docs/CORE.md`](docs/CORE.md): the one-page v1 promise
+- [`docs/ROADMAP.md`](docs/ROADMAP.md): the milestones and what comes first
+- [`docs/JOURNEYS.md`](docs/JOURNEYS.md): short stories of real use
 - [`docs/DESIGN.md`](docs/DESIGN.md): how it will be built
 - [`docs/INFLUENCES.md`](docs/INFLUENCES.md): the ideas we build on, and their authors
 

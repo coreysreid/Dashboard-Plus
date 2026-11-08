@@ -884,35 +884,43 @@ choice; its "costs" and "revisit if" sections must be honest.
 The process itself is decision 0001. The questions Corey stays involved in are
 about the product: screens, wording, what the household sees and does.
 
-## 16. Build order (after this document is approved)
+## 16. Build order
 
-1. (Done) Repository skeleton: layout, `config.example.toml`, `.gitignore`, privacy
-   check in CI, the `INDEX.md` convention and its checker (section 17), `AGENTS.md`, empty test run, `PROJECT_MAP.md`.
-2. Core: database layer with the safe SQLite settings, migrations (core track),
-   module loader and the `tables.toml` validator.
-3. Core: record services (create/update/soft-delete, links, audit, undo).
-4. Core: web layer, entry grid with lazy paging, forms from declarations.
-5. Core: review queue and inbox.
-6. Core: Agent API and token CLI.
-7. Core: time (events, recurrence, daily facts), annotations.
-8. Core: backups, restore, export, safe close.
-9. Core: first-run wizard and settings.
-10. Module: People (files only), with the emergency sheet and wizard link. Then
-    Pets (files only), with the off-paper entry guidance.
-11. Module: Household stock (files only), with the watch views (section 5.1)
-    and receipt entry; then Wine (files only, small). If anything needed a core
-    change, fix the core here, then re-check Pets.
-12. The prompt engine (a small core addition, section 10.5), then Medical and
-    Readiness (files only) with the generic prompts and the first country packs.
-    Then Garden (files only; also written up as the "build your first module"
-    guide). Then Graphing.
-13. Module: Analysis and the question loop (with the plausibility gate), one
-    correlation view, then metrics, wins and the monthly screen (section 10.4).
-14. Module: API connector, with fixtures and the weekly health check.
-15. Portable build, release workflow, README with the unknown-publisher
-    guidance, final `PROJECT_MAP.md`.
+Work follows the milestones in [`ROADMAP.md`](ROADMAP.md). Each step is a small
+branch with tests first and a pull request that includes screenshots, so the
+experience can be reviewed without reading code.
 
-Each step is a small branch, tests first, and a pull request for review.
+**Done:** repository skeleton (layout, `config.example.toml`, `.gitignore`,
+privacy check, the `INDEX.md` convention and checker, `AGENTS.md`, CI).
+
+**M1**
+1. Portable spike: the embeddable-Python folder, *Open Dashboard* and *Close
+   Dashboard safely* on Windows, built by CI, opening a placeholder page. First,
+   because it is the riskiest promise.
+2. Core: database layer with the USB-safe settings, migrations (core and module
+   tracks), module loader and the validator for `module.toml`, `tables.toml`
+   and `labels.toml`.
+3. Core: record services (create, edit, soft-delete, links, audit history).
+4. Core: web layer, local-only protections, forms and the paged grid built
+   from declarations, plain errors with *Save a report*.
+5. Core: watch views (running low, expiring soon, days of cover), automatic
+   daily backup and backup on safe close.
+6. Core: first-run wizard and a minimal settings page.
+7. Module: People (files only) with *Who do I call?*, the emergency sheet and
+   the gaps check.
+8. Module: Household stock (files only) with stock in and out, places and days
+   of water. Fix the core here if files alone are not enough.
+9. M1 release: README with the unknown-publisher guidance, final checks
+   against the M1 list in `ROADMAP.md`.
+
+**M2:** restore and export screens, review queue, inbox, Agent API and token
+command, receipt entry, the chosen import route.
+**M3:** prompt engine (10.5), Medical, Readiness, first country pack, optional
+passphrase for the data folder.
+**M4:** Graphing, Analysis with the question loop (10.2, 10.3), outcomes (10.4),
+time features (events, recurrence, annotations).
+**M5:** Pets, Garden (and the "build your first module" guide), Wine, API
+connector with the weekly health check.
 
 ## 17. Agent-friendly layout (progressive disclosure)
 

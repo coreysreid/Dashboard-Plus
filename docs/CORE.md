@@ -47,6 +47,9 @@ exported, and survives updates, crashes and unplugged USB sticks.**
 
 ## How we check we kept the promise (the acceptance list)
 
+This is the list for v1.0 as a whole. Each milestone has its own, smaller list
+in [`ROADMAP.md`](ROADMAP.md).
+
 A release is not done until every line is true, on a clean Windows machine
 with no Python installed:
 

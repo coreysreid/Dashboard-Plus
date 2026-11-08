@@ -29,6 +29,8 @@ Follow the INDEX.md in a folder before opening its files. Hidden files are not l
 | VISION.md | Big picture, principles, non-goals | judging if it fits the product |
 | CORE.md | The one-page v1 promise and acceptance list | testing any feature against it |
 | DESIGN.md | Object model, modules, API, security, packaging, build order | planning or building |
+| ROADMAP.md | Milestones M1 to M5, what M1 includes, success measures, open questions | deciding what comes next |
+| JOURNEYS.md | Short stories of real use, each an acceptance test | reviewing the experience |
 | INFLUENCES.md | Books and ideas we build on, credited, and how we credit | adding or checking a credit |
 | decisions/ | One record per technical choice, with downsides | questioning or reversing a choice |
 
@@ -64,6 +66,7 @@ marked Superseded. Each lists downsides, cost to undo, and the sign it was wrong
 | [0024](0024-prompt-engine-in-core-content-in-modules.md) | Prompt engine in the core, content in modules | Accepted |
 | [0025](0025-country-packs-are-sourced-dated-and-link-first.md) | Country packs: sourced, dated, and link-first | Accepted |
 | [0026](0026-medical-and-readiness-modules-in-v1.md) | Medical and Readiness modules in v1 | Accepted |
+| [0027](0027-release-in-milestones-starting-with-m1.md) | Release in milestones, starting with M1 | Accepted |
 | [TEMPLATE](TEMPLATE.md) | Blank record to copy for a new decision | recording a decision |
 
 ## modules/  (summary: optional features; each folder is one module)
