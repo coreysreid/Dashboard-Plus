@@ -151,9 +151,12 @@ def make_zip(folder: Path, zip_path: Path) -> None:
 
 
 def build(out: Path, python_zip: Path | None = None, skip_libraries: bool = False,
-          require_pinned: bool = False) -> Path:
-    """Build the folder and the zip in `out`; return the zip's path."""
-    config = load_config()
+          require_pinned: bool = False, config: dict | None = None) -> Path:
+    """Build the folder and the zip in `out`; return the zip's path.
+
+    `config` replaces tools/portable.toml; tests use it to pin a stand-in download.
+    """
+    config = config if config is not None else load_config()
     out = Path(out)
     folder = out / FOLDER_NAME
     if folder.exists():

@@ -22,7 +22,10 @@ class BuildPortableTests(unittest.TestCase):
     def test_build_layout(self):
         with tempfile.TemporaryDirectory() as tmp:
             tmp = Path(tmp)
-            zip_path = build_portable.build(tmp / "out", fake_embeddable_zip(tmp), skip_libraries=True)
+            fake = fake_embeddable_zip(tmp)
+            config = dict(build_portable.load_config(), sha256=build_portable.sha256_of(fake))
+            zip_path = build_portable.build(tmp / "out", fake, skip_libraries=True,
+                                            require_pinned=True, config=config)
             folder = tmp / "out" / build_portable.FOLDER_NAME
             for name in ("Open Dashboard.bat", "Close Dashboard safely.bat", "READ ME FIRST.txt", "LICENSE.txt"):
                 self.assertTrue((folder / name).exists(), name)
@@ -54,10 +57,17 @@ class BuildPortableTests(unittest.TestCase):
             actual = build_portable.verify(path, "", require_pinned=False)
             self.assertEqual(build_portable.verify(path, actual, require_pinned=True), actual)
 
-    def test_config_pins_an_exact_python_version(self):
+    def test_config_pins_an_exact_python_version_and_checksum(self):
         config = build_portable.load_config()
         self.assertRegex(config["version"], r"^\d+\.\d+\.\d+$")
         self.assertIn(config["version"], config["url"])
+        self.assertRegex(config["sha256"], r"^[0-9a-f]{64}$")
+
+    def test_pinned_build_rejects_a_different_download(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            tmp = Path(tmp)
+            with self.assertRaises(build_portable.BuildError):
+                build_portable.build(tmp / "out", fake_embeddable_zip(tmp), skip_libraries=True)
 
 
 if __name__ == "__main__":
