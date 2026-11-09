@@ -14,4 +14,4 @@ the "Requests" table of docs/WORKSTREAMS.md.
 
 ## Messages to Lane A
 
-- The country-pack notes are source research, not pack content. US emergency number and water amount, NEMA and Ready.gov guidance, and several state licences remain unverified because the official destinations denied access or were outside the current network policy. Review the explicit gaps before using this material.
+- The country-pack notes are source research, not pack content. The US emergency number, weather hazards and CDC water amount are now cited. NEMA and Ready.gov guidance and several state licences remain unverified because the official destinations denied access or returned an error. Review the explicit gaps before using this material.

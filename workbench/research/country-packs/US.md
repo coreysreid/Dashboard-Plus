@@ -5,8 +5,10 @@ Checked **2026-11-09**. These are source notes, not emergency instructions or pr
 ## National body and preparedness
 
 - [USAGov's FEMA agency page](https://www.usa.gov/agencies/federal-emergency-management-agency) identifies the **Federal Emergency Management Agency (FEMA)** and says it helps the nation prepare for and respond to disasters. Checked 2026-11-09. The direct FEMA site returned an access-denied page in this environment, so its own current wording was not verified.
-- [USAGov's disasters and emergencies page](https://www.usa.gov/disasters-and-emergencies) directs households to [Ready.gov](https://www.ready.gov/) for what to do before and after a natural disaster or emergency and to [the state-agency directory](https://www.usa.gov/state-emergency-management). Checked 2026-11-09. Ready.gov also returned access denied here. The checked USAGov page does **not** give a hazard-by-hazard household list or a water amount per person per day, so neither is asserted from it.
-- **Emergency phone number:** the checked USAGov pages above do not state one. A direct official phone-number source still needs verification before a number is put into a pack.
+- [USAGov's disasters and emergencies page](https://www.usa.gov/disasters-and-emergencies) directs households to [Ready.gov](https://www.ready.gov/) for what to do before and after a natural disaster or emergency and to [the state-agency directory](https://www.usa.gov/state-emergency-management). Checked 2026-11-09. Ready.gov returned access denied here, and the checked USAGov page gives no water amount or hazard-by-hazard list of its own.
+- **Emergency phone number:** the official [National 911 Program](https://www.911.gov/), checked 2026-11-09, says to dial **911** immediately if emergency assistance is needed. Its website does not itself provide emergency assistance.
+- **Hazards:** the [National Weather Service safety page](https://www.weather.gov/safety/), checked 2026-11-09, links household safety information for floods, heat, hurricanes, lightning, tornadoes, tsunamis, wildfire and winter weather. This is a national weather-hazard menu; local relevance must come from the household's state and local authority.
+- **Water:** the [CDC emergency water-supply page](https://www.cdc.gov/water-emergency/about/how-to-create-and-store-an-emergency-water-supply.html), checked 2026-11-09, advises a **three-day supply** with **at least one US gallon of water per person per day**. It says needs can vary and discusses bottled-water storage. This is a CDC starting point, not a claim that every household has enough water.
 
 ## State and district emergency management bodies
 
@@ -70,6 +72,6 @@ The directory also links territories; those are outside this state list. State-s
 
 ## Source reuse and gaps
 
-- **USAGov pages:** [17 U.S.C. §105](https://www.copyright.gov/title17/92chap1.html), checked 2026-11-09, says copyright protection under that title is unavailable for a work of the United States government. The checked USAGov pages did not state a separate licence. This note uses paraphrases and links only; any third-party content needs its own terms checked.
+- **Federal pages (USAGov, National 911 Program, National Weather Service and CDC):** [17 U.S.C. §105](https://www.copyright.gov/title17/92chap1.html), checked 2026-11-09, says copyright protection under that title is unavailable for a work of the United States government. The checked pages did not state a separate reuse licence. This note uses paraphrases and links only; any third-party content needs its own terms checked.
 - **State agency destinations:** licences were **not checked** because the destination pages were not opened. Link only; do not copy their text into a pack without checking each source's terms.
-- **Unverified:** an official emergency phone-number page, a national hazard list, a stated water amount per person per day, and state-by-state hazards and guidance. Do not infer these from memory. Ready.gov and FEMA access must be restored or another official source used.
+- **Unverified:** state-by-state hazards, guidance and licences, plus Ready.gov's and FEMA's own current wording. The direct Ready.gov and FEMA pages returned access denied; do not infer their contents from memory.

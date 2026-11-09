@@ -14,12 +14,12 @@ These are official state or territory pages checked 2026-11-09. They are startin
 |---|---|
 | Australian Capital Territory | [ACT Government emergency and safety page](https://www.act.gov.au/emergency-and-safety) links the **ACT Emergency Services Agency** and the State Emergency Service. |
 | New South Wales | [NSW emergency portal](https://www.emergency.nsw.gov.au/) redirected to a blocked host during this check; lead body not verified. |
-| Northern Territory | [NT Government emergency page](https://nt.gov.au/emergency) is the official entry point; lead body not verified from the pages checked. |
+| Northern Territory | The [NT Government emergency-services page](https://nt.gov.au/emergency/emergencies/about-emergency-services) names the **NT Emergency Service** alongside ambulance, fire and police services. |
 | Queensland | [Queensland Government emergency services page](https://www.qld.gov.au/emergency/emergencies-services) names police, ambulance, fire and SES services. |
 | South Australia | [SA Government emergency services page](https://www.sa.gov.au/topics/emergencies-and-safety/emergency-services) names the SA Ambulance Service, Country Fire Service, Metropolitan Fire Service, Police and State Emergency Service; it says Police coordinate emergencies in the state. |
-| Tasmania | [Tasmanian Government portal](https://www.tas.gov.au/) was reachable; no lead emergency body was verified from it. |
+| Tasmania | The [Tasmanian Government portal](https://www.tas.gov.au/) links **TASALERT** as the state's official emergency information source; no lead response body was verified from it. |
 | Victoria | [VicEmergency](https://www.emergency.vic.gov.au/) was reachable; no lead body name was verified from its page in this check. |
-| Western Australia | [WA Government emergency services page](https://www.wa.gov.au/service/community-services/emergency-services) is the official entry point; no lead body name was verified from it. |
+| Western Australia | The [WA Government emergency-services page](https://www.wa.gov.au/service/community-services/emergency-services) names the **Department of Fire and Emergency Services** in its service descriptions. |
 
 ## Phone numbers, hazards and household guidance
 
@@ -32,4 +32,4 @@ These are official state or territory pages checked 2026-11-09. They are startin
 - The [Home Affairs copyright page](https://www.homeaffairs.gov.au/access-and-accountability/using-our-website/copyright-and-disclaimer), checked 2026-11-09, says material it produces is offered under **Creative Commons Attribution 3.0 Australia**, subject to stated exceptions and third-party rights. This is the reuse statement for the Home Affairs page; do not assume it covers every link on Disaster Assist.
 - The [Queensland Government copyright page](https://www.qld.gov.au/legal/copyright), checked 2026-11-09, says its site material is generally under **Creative Commons Attribution 4.0 International**, with exceptions and third-party limits.
 - The [SA Government emergency page](https://www.sa.gov.au/topics/emergencies-and-safety), checked 2026-11-09, states **Creative Commons Attribution 4.0** in its footer.
-- Licences for the ACT, NSW, NT, Tasmanian, Victorian and WA destinations above were **not verified**. They are links only; no text from them is reused here. State-specific guidance, the lead body in some jurisdictions, NEMA's own guidance and any stated water amount still need source checks before a country pack can ship.
+- Licences for the ACT, NSW, NT, Tasmanian, Victorian and WA destinations above were **not verified**. They are links only; no text from them is reused here. State-specific guidance, the lead body in some jurisdictions, NEMA's own guidance and any stated Australian water amount still need source checks before a country pack can ship. NEMA's site returned a server error on this check.
