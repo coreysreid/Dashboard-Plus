@@ -4,3 +4,4 @@ expected, actual, severity (blocker, important, minor), suggested change.
 
 | Entry | What it is | Open it when |
 |---|---|---|
+| 2026-11-09-module-wording.md | Exact wording and form suggestions for People and Stock. | refining the shipped modules |
