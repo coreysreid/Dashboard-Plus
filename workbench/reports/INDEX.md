@@ -4,3 +4,4 @@ expected, actual, severity (blocker, important, minor), suggested change.
 
 | Entry | What it is | Open it when |
 |---|---|---|
+| 2026-11-09-m1-check.md | Linux household journey check, with findings and limits. | planning M1 fixes |
