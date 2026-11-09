@@ -1,0 +1,11 @@
+[tables.places]
+form = ["name", "notes"]
+list = ["name", "notes"]
+
+[tables.items]
+form = ["name", "category", "quantity", "unit", "minimum", "place", "expires", "notes"]
+list = ["name", "category", "quantity", "unit", "minimum", "place", "expires"]
+columns.quantity = { label = "How many", help = "For water, record litres, so days of water can be worked out." }
+columns.unit = { label = "Unit", help = "For example tins, kg, litres, packs." }
+columns.minimum = { label = "Keep at least", help = "You'll see it under Needs attention when it drops below this." }
+columns.expires = { label = "Use by" }

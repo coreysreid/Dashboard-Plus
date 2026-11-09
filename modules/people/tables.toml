@@ -1,0 +1,48 @@
+[tables.people]
+title = "People"
+description = "Everyone in or around the household: who lives here, family, neighbours, the doctor, the vet."
+columns.name = { type = "text", required = true }
+columns.lives_here = { type = "boolean", default = false }
+columns.relationship = { type = "choice", choices = ["family", "partner", "child", "parent", "friend", "neighbour", "carer", "professional", "other"] }
+columns.phone = { type = "text" }
+columns.other_phone = { type = "text" }
+columns.email = { type = "text" }
+columns.address = { type = "longtext" }
+columns.birthday = { type = "date" }
+columns.notes = { type = "longtext" }
+
+[tables.roles]
+title = "Who to call"
+description = "The part someone plays for the household, in the order to call them."
+columns.person = { type = "link", to = "people", on_delete = "cascade", required = true }
+columns.role = { type = "choice", required = true, choices = [
+  { key = "emergency_contact", label = "Emergency contact" },
+  "family",
+  "neighbour",
+  "doctor",
+  "dentist",
+  "vet",
+  "pharmacist",
+  "tradesperson",
+  "school",
+  "workplace",
+  { key = "key_holder", label = "Key holder" },
+  "other",
+] }
+columns.priority = { type = "integer", min = 1, max = 99 }
+columns.notes = { type = "text" }
+
+[tables.important_info]
+title = "Important details"
+description = "Allergies, conditions, medications, care needs and access instructions."
+columns.person = { type = "link", to = "people", on_delete = "cascade", required = true }
+columns.kind = { type = "choice", required = true, choices = [
+  "allergy",
+  "condition",
+  "medication",
+  { key = "care_need", label = "Care or mobility need" },
+  "dietary",
+  { key = "access", label = "Access instructions" },
+  "other",
+] }
+columns.detail = { type = "text", required = true, sensitive = true }

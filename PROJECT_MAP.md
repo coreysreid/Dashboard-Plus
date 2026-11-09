@@ -81,16 +81,50 @@ marked Superseded. Each lists downsides, cost to undo, and the sign it was wrong
 | [0036](0036-automatic-backups-in-two-places.md) | Automatic backups: daily and on close, in two places | Accepted |
 | [0037](0037-first-run-wizard-and-settings.md) | One first-run wizard that doubles as the settings page | Accepted |
 | [0038](0038-printable-sheets-from-module-files.md) | Printable sheets are declared by modules and printed by the browser | Accepted |
+| [0039](0039-people-module-shape.md) | What the People module records, and its two emergency sheets | Accepted |
+| [0040](0040-household-stock-module-shape.md) | What the Household stock module records, and how water is counted | Accepted |
 | [TEMPLATE](TEMPLATE.md) | Blank record to copy for a new decision | recording a decision |
 
-## modules/  (summary: optional features; each folder is one module)
-No modules are built yet. Each module will be a folder with its own INDEX.md.
-Planned for v1: people, stock, medical, readiness, pets, garden, wine, graphing,
-analysis, api_connector.
-See docs/DESIGN.md section 6 for the module contract.
+## modules/  (summary: optional features; each folder is one module, made of files only)
+Each module has module.toml, tables.toml, labels.toml, optional sheets.toml, and
+numbered migrations. See docs/DESIGN.md section 6 for the module contract.
 
 | Entry | What it is | Open it when |
 |---|---|---|
+| people/ | Who lives here, who to call, important details, emergency sheets | changing people, contacts or the emergency sheet |
+| stock/ | Pantry, water, first aid, tools and hardware, with places, minimums and use-by dates | changing stock, running low or days of water |
+
+## modules/people/  (summary: the People module, files only)
+| Entry | What it is | Open it when |
+|---|---|---|
+| module.toml | Name, version, description | changing the module's details |
+| tables.toml | People, who to call (roles) and important details (private) | adding a field or a choice |
+| labels.toml | Friendly labels, help text, form and list order | changing wording or order |
+| sheets.toml | Emergency sheet, and a version with medical details | changing what prints |
+| migrations/ | Numbered database changes | after changing tables.toml |
+
+## modules/people/migrations/  (summary: this module's numbered database changes; never edit a released one)
+Generate the next one with: python tools/make_migration.py people --name <what_changed>
+
+| Entry | What it is | Open it when |
+|---|---|---|
+| 0001_first_tables.sql | The module's first tables, generated from tables.toml | checking how the tables are stored |
+
+## modules/stock/  (summary: the Household stock module, files only)
+| Entry | What it is | Open it when |
+|---|---|---|
+| module.toml | Name, version, description | changing the module's details |
+| tables.toml | Places and stock items, plus running low, use-by and days of water | adding a field, category or watch rule |
+| labels.toml | Friendly labels, help text, form and list order | changing wording or order |
+| sheets.toml | Emergency supplies checklist | changing what prints |
+| migrations/ | Numbered database changes | after changing tables.toml |
+
+## modules/stock/migrations/  (summary: this module's numbered database changes; never edit a released one)
+Generate the next one with: python tools/make_migration.py stock --name <what_changed>
+
+| Entry | What it is | Open it when |
+|---|---|---|
+| 0001_first_tables.sql | The module's first tables, generated from tables.toml | checking how the tables are stored |
 
 ## src/  (summary: the program's Python code)
 | Entry | What it is | Open it when |
@@ -177,6 +211,7 @@ How to run them is in AGENTS.md.
 | test_backups.py | Tests for automatic backups: daily, on close, in two places, and keeping only recent ones. | changing backups |
 | test_setup.py | Tests for the first-run wizard and the settings page. | changing setup or settings |
 | test_sheets.py | Tests for printable sheets: checking sheets.toml and printing the emergency sheet. | changing sheets |
+| test_module_*.py | Tests that run a real module end to end, one file per module | changing a module |
 | test_web.py | Tests for the screens: sign-in by launch link, grid paging, forms, history and reports. | changing a screen |
 | test_main.py | Tests for the command-line entry point and its plain-language messages. | changing the command line |
 | test_build_portable.py | Tests for the portable Windows build, using a stand-in for the Python download. | changing the build |

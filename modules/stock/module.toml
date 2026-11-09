@@ -1,0 +1,8 @@
+name = "stock"
+title = "Household stock"
+version = "1.0.0"
+description = "Pantry, emergency water, first aid, tools and hardware: what you have, where it is, and when it runs out."
+core_api = "1"
+kind = "declarative"
+requires = []
+outbound_hosts = []

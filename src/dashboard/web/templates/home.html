@@ -6,9 +6,9 @@
 <div class="tables">
   {% for s in attention.supplies %}
   <div class="card">
-    <div class="muted">{{ s.title }}</div>
+    <div class="muted">Days of {{ s.label }}</div>
     {% if s.days is not none %}
-    <h2 style="margin-top:.2rem">About {{ "%.1f" | format(s.days) | replace(".0", "") }} day{{ "" if s.days|round(1) == 1 else "s" }} of {{ s.unit or "supply" }}</h2>
+    <h2 style="margin-top:.2rem">About {{ "%.1f" | format(s.days) | replace(".0", "") }} day{{ "" if s.days|round(1) == 1 else "s" }} of {{ s.label }}</h2>
     <p class="muted">Aim: {{ s.target_days | int if s.target_days == s.target_days|int else s.target_days }} days.{% if s.shortfall > 0 %} About {{ "%.0f" | format(s.shortfall) }} {{ s.unit }} short.{% endif %}</p>
     {% else %}
     <p>{{ s.working }}</p>

@@ -1,0 +1,41 @@
+[[sheet]]
+name = "emergency"
+title = "Emergency sheet"
+intro = "Keep a printed copy on the fridge. In an emergency, call your local emergency number first."
+
+[[sheet.section]]
+title = "Who lives here"
+table = "people"
+where = { lives_here = true }
+columns = ["name", "phone", "other_phone"]
+order_by = "name"
+
+[[sheet.section]]
+title = "Who to call"
+table = "roles"
+columns = ["priority", "role", "person", "person.phone"]
+order_by = "priority"
+
+[[sheet]]
+name = "emergency_medical"
+title = "Emergency sheet with medical details"
+intro = "For emergency responders and carers. This copy includes private details: keep it somewhere sensible."
+
+[[sheet.section]]
+title = "Who lives here"
+table = "people"
+where = { lives_here = true }
+columns = ["name", "phone", "other_phone"]
+order_by = "name"
+
+[[sheet.section]]
+title = "Who to call"
+table = "roles"
+columns = ["priority", "role", "person", "person.phone"]
+order_by = "priority"
+
+[[sheet.section]]
+title = "Important details"
+table = "important_info"
+columns = ["person", "kind", "detail"]
+order_by = "person"

@@ -6,10 +6,14 @@ is how the agents coordinate; read it before starting any work.
 
 ## Lanes
 
-| Lane | Agent | Owns (may edit) | Delivers in M1 |
+| Lane | Agent | Owns (may edit) | Delivers |
 |---|---|---|---|
-| **A: core** | the first agent | `src/`, `tools/`, `.github/workflows/`, `docs/DESIGN.md`, `docs/ROADMAP.md`, this file | step 5 watch views, days of cover and automatic backups; step 6 first-run wizard and settings; printable sheets (DESIGN 5.2); M1 release checks |
-| **B: modules and project** | the second agent | `modules/`, `docs/MODULES.md`, `SECURITY.md`, `CONTRIBUTING.md`, `.github/ISSUE_TEMPLATE/`, `tests/test_module_*.py` | step 7 People module; step 8 Household stock module; module authoring guide; public-project basics |
+| **A: core and M1 modules** | the first agent | `src/`, `tools/`, `.github/workflows/`, `modules/`, `docs/DESIGN.md`, `docs/ROADMAP.md`, this file | M1: core features, the People and Household stock modules, release checks |
+| **B: examples, guides, research and project files** | the second agent | `examples/`, `docs/MODULES.md`, `docs/research/`, `SECURITY.md`, `CONTRIBUTING.md`, `.github/ISSUE_TEMPLATE/`, `tests/test_example_*.py` | the module authoring guide with the vegetable garden as a worked example; public-project files; researched notes for the first country packs (M3) |
+
+People and Household stock moved from Lane B to Lane A on 9 November 2026,
+because the second agent had not started yet. Lane B now has work that does not
+touch the program or the M1 modules.
 
 Shared files that both lanes may touch, **adding rows only**: `README.md`,
 `INDEX.md` files, `docs/decisions/INDEX.md`, `tests/INDEX.md`. `PROJECT_MAP.md`
@@ -65,12 +69,12 @@ section that uses `running_low`, `expiring` and a water `supply`.
 
 | Item | Lane | State |
 |---|---|---|
-| Step 5: watch views, days of cover, backups | A | merged |
-| Step 6: wizard and settings | A | merged |
-| Printable sheets | A | in review |
-| Step 7: People module | B | ready to start |
-| Step 8: Household stock module | B | after People; uses the watch contract |
-| Module authoring guide, SECURITY, CONTRIBUTING, issue templates | B | any time |
+| Steps 5 and 6, printable sheets | A | merged |
+| People and Household stock modules | A | in review |
+| M1 release checks, README, stock in and out | A | next |
+| Module guide and garden example | B | ready to start |
+| SECURITY, CONTRIBUTING, issue templates | B | ready to start |
+| Country pack research (Australia, United States) | B | ready to start |
 
 ## Requests between lanes
 
@@ -81,23 +85,35 @@ section that uses `running_low`, `expiring` and a water `supply`.
 ## Starting brief for Lane B
 
 > You are the second agent on Dashboard Plus (repository
-> coreysreid/Dashboard-Plus). Read `AGENTS.md`, then `docs/WORKSTREAMS.md`,
-> then `docs/DESIGN.md` sections 3, 5.1, 5.2 and 6 (the People and Household
-> stock modules), `docs/ROADMAP.md` (M1) and `docs/JOURNEYS.md`. You own Lane B.
-> Work on your own branch from `main`.
-> 1. Build the **People** module as files only in `modules/people/`:
->    `module.toml`, `tables.toml`, `labels.toml`, then generate its migration
->    with `python tools/make_migration.py people --name first_tables`. Meet the
->    People contract in `docs/WORKSTREAMS.md`. Add `sheets.toml` for the
->    emergency sheet using the contract in DESIGN 5.2 (it renders once Lane A
->    ships sheets). Add `tests/test_module_people.py` that loads the module,
->    applies its migration to a temporary database and saves synthetic records
->    through `dashboard.core.records.Records`. Open a pull request.
-> 2. Then build **Household stock** in `modules/stock/` the same way, using the
->    `watch` contract (running low, expiring soon, water supply).
-> 3. Any time: `docs/MODULES.md` (how to write a module, plain language, using
->    the vegetable garden as the worked example), `SECURITY.md`,
->    `CONTRIBUTING.md`, `.github/ISSUE_TEMPLATE/` (bug, module idea, country pack).
+> coreysreid/Dashboard-Plus). Read `AGENTS.md`, then `docs/WORKSTREAMS.md`
+> (you own Lane B and may only edit the files it lists), then `docs/VISION.md`,
+> `docs/DESIGN.md` sections 5, 6 and 10.5, and `docs/INFLUENCES.md`. Look at
+> `modules/people/` and `modules/stock/` as finished examples of modules.
+> Work on your own branch from `main`; open one pull request per task below.
+> 1. **Module guide and worked example.** Write `docs/MODULES.md`: how a
+>    household or helper writes their own module, in plain language, step by
+>    step. Build the vegetable garden (beds, crops, plantings, harvests, garden
+>    jobs) as files only in `examples/garden/` (module.toml, tables.toml,
+>    labels.toml, sheets.toml, migrations generated with
+>    `python tools/make_migration.py garden --modules-dir examples`). Keep it in
+>    `examples/`, not `modules/`, so it is not switched on for everyone. Add
+>    `tests/test_example_garden.py` that loads it with
+>    `dashboard.core.modules.load_module`, applies its migration to a temporary
+>    database (see `tests/test_module_stock.py`) and saves synthetic records.
+> 2. **Public-project files.** `SECURITY.md` (how to report a problem privately;
+>    what counts, such as anything that could expose a household's data),
+>    `CONTRIBUTING.md` (the rules in `AGENTS.md`, decision records, synthetic data
+>    only, how to run the checks), and `.github/ISSUE_TEMPLATE/` with a bug
+>    report, a module idea and a country pack suggestion.
+> 3. **Country pack research.** For Australia and the United States, write
+>    `docs/research/country-packs/AU.md` and `US.md`: the national and state
+>    emergency management bodies, the emergency phone numbers, the hazards those
+>    bodies list for households, their household preparedness guidance
+>    (including any stated water amount per person per day), and the licence of
+>    each source. Every fact needs a link to an official source and the date you
+>    checked it. Write nothing you cannot cite; if a source says nothing on a
+>    point, say so. Follow the rules in `docs/decisions/0025-*.md` and
+>    `docs/INFLUENCES.md`. This is research notes only, not program code.
 > Use decision numbers 0060 to 0079. Run every check in `AGENTS.md` before
-> pushing. Explain your pull requests in plain language for Corey, who judges
-> the product, not the code.
+> pushing. Explain each pull request in plain language for Corey, who judges the
+> product, not the code.

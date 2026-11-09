@@ -159,7 +159,7 @@ running_low = { quantity = "quantity", minimum = "minimum" }
 expiring = { date = "expires", warn_days = 30 }
 # Days of cover for the household, for rows matching `where`.
 supply = { quantity = "quantity", per_person_per_day = 3, per_pet_per_day = 0,
-           target_days = 3, unit = "litres", where = { category = "water" } }
+           target_days = 3, unit = "litres", label = "water", where = { category = "water" } }
 ```
 
 - `running_low` and `expiring` name columns of the same table; `quantity` and

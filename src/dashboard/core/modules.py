@@ -263,7 +263,7 @@ def _check_watch(file: str, table: str, raw, columns: dict[str, Column], problem
 
     supply = raw.get("supply")
     if supply is not None:
-        keys = ("quantity", "per_person_per_day", "per_pet_per_day", "target_days", "unit", "where")
+        keys = ("quantity", "per_person_per_day", "per_pet_per_day", "target_days", "unit", "label", "where")
         if not isinstance(supply, dict):
             problems.append(f"{where}, supply: write it as settings, like {{ quantity = \"quantity\", ... }}.")
         else:
@@ -295,7 +295,8 @@ def _check_watch(file: str, table: str, raw, columns: dict[str, Column], problem
                                    "per_person_per_day": supply["per_person_per_day"],
                                    "per_pet_per_day": supply.get("per_pet_per_day", 0),
                                    "target_days": supply["target_days"],
-                                   "unit": str(supply.get("unit", "")), "where": dict(filters)}
+                                   "unit": str(supply.get("unit", "")),
+                                   "label": str(supply.get("label", "supplies")), "where": dict(filters)}
     return watch
 
 

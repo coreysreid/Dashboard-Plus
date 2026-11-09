@@ -9,7 +9,7 @@
 <h2>Days of cover</h2>
 {% for s in supplies %}
 <div class="card">
-  <strong>{{ s.title }}</strong>
+  <strong>Days of {{ s.label }}</strong>
   <p>{{ s.working }}</p>
   {% if s.shortfall > 0 %}<p>To reach {{ s.target_days | int if s.target_days == s.target_days|int else s.target_days }} days you need about {{ "%.0f" | format(s.shortfall) }} {{ s.unit }} more.</p>{% endif %}
   {% for note in s.notes %}<p class="muted">{{ note }}</p>{% endfor %}

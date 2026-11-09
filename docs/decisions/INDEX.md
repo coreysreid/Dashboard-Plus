@@ -42,4 +42,6 @@ marked Superseded. Each lists downsides, cost to undo, and the sign it was wrong
 | [0036](0036-automatic-backups-in-two-places.md) | Automatic backups: daily and on close, in two places | Accepted |
 | [0037](0037-first-run-wizard-and-settings.md) | One first-run wizard that doubles as the settings page | Accepted |
 | [0038](0038-printable-sheets-from-module-files.md) | Printable sheets are declared by modules and printed by the browser | Accepted |
+| [0039](0039-people-module-shape.md) | What the People module records, and its two emergency sheets | Accepted |
+| [0040](0040-household-stock-module-shape.md) | What the Household stock module records, and how water is counted | Accepted |
 | [TEMPLATE](TEMPLATE.md) | Blank record to copy for a new decision | recording a decision |

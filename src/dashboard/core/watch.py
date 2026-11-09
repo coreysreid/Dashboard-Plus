@@ -41,6 +41,7 @@ class Supply:
     shortfall: float
     working: str
     needs_household: bool = False
+    label: str = "supplies"
     rows: int = 0
     notes: list[str] = field(default_factory=list)
 
@@ -145,7 +146,7 @@ def supplies(conn: sqlite3.Connection, registry: dict[str, TableInfo]) -> list[S
         if home.people is None:
             results.append(Supply(info.name, title, unit, total, 0, None, rule["target_days"], 0,
                                   "Tell the program how many people live here to work out days of cover.",
-                                  needs_household=True, rows=count))
+                                  needs_household=True, rows=count, label=rule["label"]))
             continue
         need = home.people * rule["per_person_per_day"] + home.pets * rule["per_pet_per_day"]
         target = rule["target_days"]
@@ -155,7 +156,8 @@ def supplies(conn: sqlite3.Connection, registry: dict[str, TableInfo]) -> list[S
             who += f" and {home.pets} pet{'s' if home.pets != 1 else ''}"
         if need <= 0:
             results.append(Supply(info.name, title, unit, total, 0, None, target, 0,
-                                  "The daily need works out as zero, so days of cover cannot be calculated.", rows=count))
+                                  "The daily need works out as zero, so days of cover cannot be calculated.", rows=count,
+                                  label=rule["label"]))
             continue
         days = total / need
         shortfall = max(0.0, target * need - total)
@@ -163,5 +165,5 @@ def supplies(conn: sqlite3.Connection, registry: dict[str, TableInfo]) -> list[S
                    f"= about {_number(round(days, 1))} days (aim: {_number(target)} days).")
         notes = ["The daily figures are a starting point. Your local authority's advice comes first."]
         results.append(Supply(info.name, title, unit, total, need, days, target, shortfall, working,
-                              rows=count, notes=notes))
+                              rows=count, notes=notes, label=rule["label"]))
     return results

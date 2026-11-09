@@ -1,0 +1,17 @@
+[tables.people]
+form = ["name", "lives_here", "relationship", "phone", "other_phone", "email", "address", "birthday", "notes"]
+list = ["name", "lives_here", "relationship", "phone", "email"]
+columns.lives_here = { label = "Lives here" }
+columns.other_phone = { label = "Other phone" }
+columns.phone = { help = "The number to call first." }
+
+[tables.roles]
+form = ["role", "person", "priority", "notes"]
+list = ["priority", "role", "person", "notes"]
+columns.priority = { label = "Call order", help = "1 is called first." }
+
+[tables.important_info]
+form = ["person", "kind", "detail"]
+list = ["person", "kind", "detail"]
+columns.kind = { label = "What kind" }
+columns.detail = { help = "For example: \"Allergic to penicillin\" or \"Spare key with the neighbour\". Hidden in lists until you choose to show it." }
