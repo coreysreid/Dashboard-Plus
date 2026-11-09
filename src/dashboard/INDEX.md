@@ -3,6 +3,7 @@
 |---|---|---|
 | __init__.py | Dashboard Plus: a local-first home dashboard (package root). | checking the version |
 | __main__.py | Command-line entry point: open the dashboard, or close a running one safely. | changing how it starts |
+| errors.py | Errors whose message is written for the person using the program, not a programmer. | adding an error people will see |
 | server.py | Start and stop the local web server, and remember how to reach it. | changing startup, closing or ports |
 | core/ | Core services: records, links, review, audit, backups | changing anything topic-neutral |
 | web/ | Web layer: pages, forms, Agent API | changing screens or the API |

@@ -5,6 +5,22 @@
 <div class="card">
   <p><strong>It works.</strong> This is an early test version ({{ version }}). There is nothing to record yet;
   the people and stock screens arrive in the first release.</p>
+  {% if report %}
+  <p>Your data file is ready{% if report.version %} (version {{ report.version }}){% endif %}.
+  {% if report.modules %}Modules in use: {{ report.modules | join(", ") }}.{% else %}No modules are installed yet.{% endif %}</p>
+  {% endif %}
 </div>
+{% if report and report.module_problems %}
+<div class="card">
+  <p><strong>Some modules were left out because their files need fixing.</strong> Everything else works.</p>
+  <ul>
+  {% for name, problems in report.module_problems.items() %}
+    <li><strong>{{ name }}</strong>
+      <ul>{% for problem in problems %}<li>{{ problem }}</li>{% endfor %}</ul>
+    </li>
+  {% endfor %}
+  </ul>
+</div>
+{% endif %}
 <p><a class="button" href="/close">Close Dashboard safely</a></p>
 {% endblock %}

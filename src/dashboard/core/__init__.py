@@ -1,1 +1,1 @@
-"""Core services: records, links, time, review, audit and backups (not built yet)."""
+"""Core services: database, migrations and modules now; records, review and backups next."""

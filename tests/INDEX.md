@@ -4,6 +4,12 @@ PYTHONPATH=src python -m unittest discover -s tests
 
 | Entry | What it is | Open it when |
 |---|---|---|
+| support.py | Shared helpers for tests: temporary folders and made-up (synthetic) modules. | writing a new test |
+| test_db.py | Tests for opening the database safely, transactions, statement splitting and backups. | changing the database layer |
+| test_migrations.py | Tests for numbered migrations: tracks, checksums, newer databases, rollback and backups. | changing migrations |
+| test_modules.py | Tests for loading module folders and the plain-language problems they report. | changing module rules |
+| test_schema.py | Tests for turning declared tables into SQL and generating the next migration. | changing table building |
+| test_startup.py | Tests for preparing the database at start-up with the modules found. | changing start-up |
 | test_check_privacy.py | Tests for the privacy check. | changing privacy rules |
 | test_check_indexes.py | Tests for the index check. | changing index rules |
 | test_project_map.py | Tests for the project map generator. | changing the map |

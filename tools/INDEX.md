@@ -8,4 +8,5 @@
 | build_portable.py | Build the portable Windows folder and zip: bundled Python, libraries and launchers. | changing what ships in the folder |
 | portable.toml | Pinned Python version, download address and checksum for the build | updating the bundled Python |
 | smoke_test_portable.py | Start the built portable folder, check it answers, and close it safely. | the Windows build check fails |
+| make_migration.py | Write a module's next numbered migration from its tables.toml. | a module's tables changed |
 | make_project_map.py | Build PROJECT_MAP.md from every INDEX.md in the repository. | changing the map format |
