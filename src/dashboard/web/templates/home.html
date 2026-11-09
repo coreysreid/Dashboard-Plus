@@ -2,6 +2,27 @@
 {% block body %}
 <h1>Look after what your household has</h1>
 <p class="lead">Know what you have, where it is, and when it's running out.</p>
+{% if attention and (attention.low or attention.expiring or attention.supplies) %}
+<div class="tables">
+  {% for s in attention.supplies %}
+  <div class="card">
+    <div class="muted">{{ s.title }}</div>
+    {% if s.days is not none %}
+    <h2 style="margin-top:.2rem">About {{ "%.1f" | format(s.days) | replace(".0", "") }} day{{ "" if s.days|round(1) == 1 else "s" }} of {{ s.unit or "supply" }}</h2>
+    <p class="muted">Aim: {{ s.target_days | int if s.target_days == s.target_days|int else s.target_days }} days.{% if s.shortfall > 0 %} About {{ "%.0f" | format(s.shortfall) }} {{ s.unit }} short.{% endif %}</p>
+    {% else %}
+    <p>{{ s.working }}</p>
+    {% endif %}
+    <a href="/attention">See how this is worked out</a>
+  </div>
+  {% endfor %}
+  <div class="card">
+    <div class="muted">Needs attention</div>
+    <h2 style="margin-top:.2rem"><a href="/attention">{{ attention.low | length }} running low · {{ attention.expiring | length }} expiring</a></h2>
+    {% for item in (attention.low + attention.expiring)[:4] %}<p class="muted" style="margin:.2rem 0">{{ item.name }}: {{ item.detail }}</p>{% endfor %}
+  </div>
+</div>
+{% endif %}
 {% if tables %}
 <div class="tables">
   {% for t in tables %}
@@ -18,6 +39,7 @@
   <p><strong>Nothing to record yet.</strong> People and household stock arrive in the next steps of the first release.</p>
 </div>
 {% endif %}
+{% if last_backup %}<p class="muted">Last backup: {{ last_backup[1].strftime("%d %b %Y %H:%M") }}.</p>{% endif %}
 {% if report %}
 <p class="muted">Your data file is ready{% if report.version %} (version {{ report.version }}){% endif %}.
 {% if report.modules %}Modules in use: {{ report.modules | join(", ") }}.{% else %}No modules are installed yet.{% endif %}</p>

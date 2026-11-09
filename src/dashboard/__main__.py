@@ -30,6 +30,8 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--no-browser", action="store_true", help="do not open a browser window")
     parser.add_argument("--close", action="store_true", help="close a running dashboard safely")
     parser.add_argument("--modules", help="the modules folder (default: the one shipped with the program)")
+    parser.add_argument("--no-extra-backup", action="store_true",
+                        help="keep backups in the data folder only, not also on this computer")
     parser.add_argument("--version", action="store_true", help="print the version and stop")
     args = parser.parse_args(argv)
 
@@ -48,7 +50,10 @@ def main(argv: list[str] | None = None) -> int:
                 print("Dashboard is not running, so there is nothing to close.")
             return 0
         modules_dir = Path(args.modules).resolve() if args.modules else None
-        server.serve(data_dir, open_browser=not args.no_browser, modules_dir=modules_dir)
+        from dashboard.core.backups import default_extra_dir
+
+        extra = None if args.no_extra_backup else default_extra_dir()
+        server.serve(data_dir, open_browser=not args.no_browser, modules_dir=modules_dir, extra_backup_dir=extra)
         return 0
     except KeyboardInterrupt:
         return 0

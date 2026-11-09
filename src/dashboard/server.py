@@ -14,7 +14,7 @@ from pathlib import Path
 
 from waitress import create_server
 
-from dashboard.core import startup
+from dashboard.core import backups, startup
 from dashboard.web.app import create_app
 
 HOST = "127.0.0.1"
@@ -86,19 +86,33 @@ def release_logging(handler: logging.Handler) -> None:
 
 
 def serve(data_dir: Path, open_browser: bool = True, ready: threading.Event | None = None,
-          modules_dir: Path | None = None) -> None:
-    """Run the dashboard until a safe close is requested. Blocks until then."""
+          modules_dir: Path | None = None, extra_backup_dir: Path | None = None) -> None:
+    """Run the dashboard until a safe close is requested. Blocks until then.
+
+    `extra_backup_dir` is the second backup folder on the computer (decision 0006);
+    None means backups are kept in the data folder only.
+    """
     data_dir = Path(data_dir)
     data_dir.mkdir(parents=True, exist_ok=True)
     handler = setup_logging(data_dir)
     try:
-        _serve(data_dir, open_browser, ready, modules_dir)
+        _serve(data_dir, open_browser, ready, modules_dir, extra_backup_dir)
     finally:
         release_logging(handler)
 
 
+def _daily_backups(data_dir: Path, extra_dir: Path | None, stopping: threading.Event) -> None:
+    """Make today's backup now, then check again every hour until the program closes."""
+    while not stopping.is_set():
+        try:
+            backups.daily(data_dir, extra_dir)
+        except Exception:  # noqa: BLE001 - a failed backup is logged and retried, never fatal
+            log.exception("The daily backup could not be made")
+        stopping.wait(3600)
+
+
 def _serve(data_dir: Path, open_browser: bool, ready: threading.Event | None,
-           modules_dir: Path | None) -> None:
+           modules_dir: Path | None, extra_backup_dir: Path | None) -> None:
     existing = read_state(data_dir)
     if existing and is_responding(existing):
         print("Dashboard is already open. Opening it in your browser.")
@@ -137,6 +151,8 @@ def _serve(data_dir: Path, open_browser: bool, ready: threading.Event | None,
     print("Keep this window open. To stop, use 'Close Dashboard safely'.")
     if open_browser:
         webbrowser.open(state.launch_url)
+    backups.daily(data_dir, extra_backup_dir)
+    threading.Thread(target=_daily_backups, args=(data_dir, extra_backup_dir, stopping), daemon=True).start()
     if ready:
         ready.set()
     try:
@@ -151,6 +167,12 @@ def _serve(data_dir: Path, open_browser: bool, ready: threading.Event | None,
         except OSError:
             pass
         log.info("Dashboard stopped")
+    stopping.set()
+    try:
+        backups.on_close(data_dir, extra_backup_dir)
+    except Exception:  # noqa: BLE001 - say so, but still finish closing
+        log.exception("The backup on close could not be made")
+        print("Note: the backup on close could not be made. Your data is still saved.")
     print("Dashboard closed safely. You can unplug the drive now.")
 
 

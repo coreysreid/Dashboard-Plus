@@ -2,7 +2,8 @@
 | Entry | What it is | Open it when |
 |---|---|---|
 | base.html | Shared layout, colours (light and dark), header and footer | changing the overall look |
-| home.html | Home page: tables with counts, data file status, module problems | changing the home screen |
+| home.html | Home page: days of cover, needs attention, tables with counts, backup and data file status | changing the home screen |
+| attention.html | Running low, expiring soon and days of cover, with the working shown | changing the attention page |
 | grid.html | A table's records, a page at a time, sortable | changing the list of records |
 | rows.html | One page of grid rows (also loaded as you scroll) | changing a row |
 | form.html | Add and edit forms, delete and restore, and history | changing the form |
