@@ -67,6 +67,17 @@ class ServerTests(unittest.TestCase):
         self.assertFalse(self.thread.is_alive())
         self.assertFalse(server.state_file(self.data).exists())
 
+    def test_safe_close_releases_the_log_file(self):
+        # An open file blocks unplugging (and deleting on Windows), so closing
+        # must let go of the log file.
+        import logging
+        server.close_running(self.data)
+        self.thread.join(10)
+        log_path = (self.data / "logs" / "dashboard.log").resolve()
+        still_open = [h for h in logging.getLogger().handlers
+                      if isinstance(h, logging.FileHandler) and Path(h.baseFilename) == log_path]
+        self.assertEqual(still_open, [])
+
     def test_unknown_page_is_friendly(self):
         status, body = request(self.state.port, path="/nope")
         self.assertEqual(status, 404)

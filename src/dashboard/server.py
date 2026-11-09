@@ -55,26 +55,40 @@ def is_responding(state: RunState, timeout: float = 1.0) -> bool:
         return False
 
 
-def setup_logging(data_dir: Path) -> Path:
-    """Send technical details to a log file in the data folder, never to the screen."""
+def setup_logging(data_dir: Path) -> logging.Handler:
+    """Send technical details to a log file in the data folder, never to the screen.
+
+    The caller must pass the returned handler to `release_logging` when it stops,
+    so the file is closed and the drive can be unplugged (or the folder deleted).
+    """
     logs = Path(data_dir) / "logs"
     logs.mkdir(parents=True, exist_ok=True)
-    path = logs / "dashboard.log"
-    handler = logging.FileHandler(path, encoding="utf-8")
+    handler = logging.FileHandler(logs / "dashboard.log", encoding="utf-8")
     handler.setFormatter(logging.Formatter("%(asctime)s %(levelname)s %(name)s: %(message)s"))
     root = logging.getLogger()
-    if not any(isinstance(h, logging.FileHandler) and Path(h.baseFilename) == path.resolve() for h in root.handlers):
-        root.addHandler(handler)
+    root.addHandler(handler)
     root.setLevel(logging.INFO)
-    return path
+    return handler
+
+
+def release_logging(handler: logging.Handler) -> None:
+    """Stop writing to the log file and close it."""
+    logging.getLogger().removeHandler(handler)
+    handler.close()
 
 
 def serve(data_dir: Path, open_browser: bool = True, ready: threading.Event | None = None) -> None:
     """Run the dashboard until a safe close is requested. Blocks until then."""
     data_dir = Path(data_dir)
     data_dir.mkdir(parents=True, exist_ok=True)
-    setup_logging(data_dir)
+    handler = setup_logging(data_dir)
+    try:
+        _serve(data_dir, open_browser, ready)
+    finally:
+        release_logging(handler)
 
+
+def _serve(data_dir: Path, open_browser: bool, ready: threading.Event | None) -> None:
     existing = read_state(data_dir)
     if existing and is_responding(existing):
         print("Dashboard is already open. Opening it in your browser.")
