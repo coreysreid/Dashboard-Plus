@@ -1,5 +1,5 @@
 [tables.people]
-form = ["name", "lives_here", "relationship", "phone", "other_phone", "email", "address", "birthday", "notes"]
+form = ["name", "phone", "other_phone", "lives_here", "relationship", "email", "address", "birthday", "notes"]
 list = ["name", "lives_here", "relationship", "phone", "email"]
 columns.lives_here = { label = "Lives here" }
 columns.other_phone = { label = "Other phone" }
@@ -8,7 +8,7 @@ columns.phone = { help = "The number to call first." }
 [tables.roles]
 form = ["role", "person", "priority", "notes"]
 list = ["priority", "role", "person", "notes"]
-columns.priority = { label = "Call order", help = "1 is called first." }
+columns.priority = { label = "Call order", help = "Enter 1 for the first person to call, 2 for the next, and so on." }
 
 [tables.important_info]
 form = ["person", "kind", "detail"]

@@ -21,6 +21,11 @@ def table_title(info: TableInfo) -> str:
     return _labels(info).get("title") or info.table.title
 
 
+def empty_hint(info: TableInfo) -> str | None:
+    """What to do first when this table has no records yet, from labels.toml."""
+    return _labels(info).get("empty")
+
+
 def column_label(info: TableInfo, column: Column) -> str:
     """The friendly name of a column."""
     label = _labels(info).get("columns", {}).get(column.name, {}).get("label")

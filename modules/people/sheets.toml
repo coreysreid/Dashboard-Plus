@@ -1,6 +1,6 @@
 [[sheet]]
 name = "emergency"
-title = "Emergency sheet"
+title = "Emergency sheet (fridge copy)"
 intro = "Keep a printed copy on the fridge. In an emergency, call your local emergency number first."
 
 [[sheet.section]]
@@ -18,8 +18,8 @@ order_by = "priority"
 
 [[sheet]]
 name = "emergency_medical"
-title = "Emergency sheet with medical details"
-intro = "For emergency responders and carers. This copy includes private details: keep it somewhere sensible."
+title = "Emergency sheet with private medical details"
+intro = "Contains private health and care details. Print only when needed and keep it out of public view. For emergency responders and carers."
 
 [[sheet.section]]
 title = "Who lives here"

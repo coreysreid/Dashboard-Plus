@@ -85,6 +85,34 @@ class ServerTests(unittest.TestCase):
         self.assertFalse(self.thread.is_alive())
         self.assertFalse(server.state_file(self.data).exists())
 
+    def test_close_safely_move_the_folder_and_nothing_is_lost(self):
+        # M1: close safely, unplug, plug in again (here: copy the folder elsewhere and start from the copy).
+        import shutil
+        from dashboard.core import db, modules, records, settings
+        found, _ = modules.discover(Path(__file__).resolve().parents[1] / "modules")
+        conn = db.connect(self.data / "dashboard.db")
+        records.Records(conn, records.build_registry(found)).create("stock__places", {"name": "Under the stairs"})
+        settings.put(conn, "setup.done", True)
+        conn.close()
+        self.assertTrue(server.close_running(self.data))
+        self.thread.join(10)
+        left_behind = [p.name for p in self.data.iterdir() if p.name.endswith(("-journal", "-wal", "-shm"))]
+        self.assertEqual(left_behind, [])
+        moved = Path(self.tmp.name) / "plugged-in-again"
+        shutil.copytree(self.data, moved)
+        ready = threading.Event()
+        thread = threading.Thread(target=server.serve, args=(moved, False, ready), daemon=True)
+        thread.start()
+        self.assertTrue(ready.wait(10), "server did not start from the moved folder")
+        try:
+            state = server.read_state(moved)
+            status, body = request(state.port, path="/t/stock__places", cookie=sign_in(state))
+            self.assertEqual(status, 200)
+            self.assertIn("Under the stairs", body)
+        finally:
+            server.close_running(moved)
+            thread.join(10)
+
     def test_safe_close_releases_the_log_file(self):
         # An open file blocks unplugging (and deleting on Windows), so closing
         # must let go of the log file.

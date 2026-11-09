@@ -3,10 +3,11 @@ form = ["name", "notes"]
 list = ["name", "notes"]
 
 [tables.items]
+empty = "Add a few things from the pantry."
 form = ["name", "category", "quantity", "unit", "minimum", "place", "expires", "notes"]
 list = ["name", "category", "quantity", "unit", "minimum", "place", "expires"]
-columns.quantity = { label = "How many", help = "For water, record litres, so days of water can be worked out." }
-columns.unit = { label = "Unit", help = "For example tins, kg, litres, packs." }
+columns.quantity = { label = "Amount on hand", help = "For water, enter the total number of litres, not the number of bottles." }
+columns.unit = { label = "Unit", help = "Use litres for water; for other things, a unit such as tins, kg or packs." }
 columns.minimum = { label = "Keep at least", help = "You'll see it under Needs attention when it drops below this." }
 columns.expires = { label = "Use by" }
 

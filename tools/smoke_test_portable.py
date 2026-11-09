@@ -57,8 +57,8 @@ def run(folder: Path) -> list[str]:
             if status != 403 or "open Dashboard Plus from its shortcut" not in body:
                 failures.append(f"a browser without the launch link was not turned away (got {status})")
             status, body = fetch(f"{base}?key={state['session']}")
-            if status != 200 or "Look after what your household has" not in body:
-                failures.append(f"home page answered {status}")
+            if status != 200 or "Welcome to Dashboard Plus" not in body:
+                failures.append(f"the first-run wizard did not appear (got {status})")
             status, _ = fetch(base, host="evil.example")
             if status != 403:
                 failures.append(f"a request naming another host was not refused (got {status})")
@@ -94,7 +94,7 @@ def main(argv: list[str] | None = None) -> int:
         for failure in failures:
             print(f"  - {failure}")
         return 1
-    print("Portable smoke test passed: it started, answered the launch link, turned away a browser "
+    print("Portable smoke test passed: it started, showed the first-run wizard, turned away a browser "
           "without it, refused a forged host and closed safely.")
     return 0
 

@@ -316,7 +316,11 @@ daily_fact = { date = "weighed", subject = "pet", measures = ["weight"] }
 ```
 
 `labels.toml` supplies friendly names, help text, column order and which
-columns appear on the quick-entry form.
+columns appear on the quick-entry form. A table may also give `empty`, a short
+first step such as `empty = "Add a few things from the pantry."`: while that
+table has no records, the home page shows it under *Start here* with a button to
+add one (the first such table wins, so the home page never shows a list of
+chores).
 
 ### Tier 2: code modules
 

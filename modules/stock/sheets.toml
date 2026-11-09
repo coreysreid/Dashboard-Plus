@@ -1,7 +1,7 @@
 [[sheet]]
 name = "supplies"
-title = "Emergency supplies checklist"
-intro = "What the household has put aside, and where it is. Check use-by dates when you print a new copy."
+title = "Emergency supplies"
+intro = "Water, first aid, power and pantry food recorded here, and where they are kept. Other kinds of stock are not shown. Check use-by dates and amounts when you print a new copy."
 
 [[sheet.section]]
 title = "Water (litres)"
