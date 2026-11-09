@@ -1,0 +1,37 @@
+[tables.places]
+title = "Places"
+description = "Where things are kept: a cupboard, a shelf, a box in the garage."
+columns.name = { type = "text", required = true }
+columns.notes = { type = "text" }
+
+[tables.items]
+title = "Stock items"
+description = "Everything worth keeping track of, with how many you have and how many to keep."
+columns.name = { type = "text", required = true }
+columns.category = { type = "choice", required = true, default = "pantry", choices = [
+  "pantry",
+  "water",
+  { key = "first_aid", label = "First aid and medical" },
+  "toiletries",
+  "cleaning",
+  { key = "power", label = "Batteries, torches and power" },
+  "fuel",
+  "tools",
+  { key = "hardware", label = "Screws, fixings and hardware" },
+  { key = "pet", label = "Pet supplies" },
+  "garden",
+  "other",
+] }
+columns.quantity = { type = "decimal", min = 0 }
+columns.unit = { type = "text" }
+columns.minimum = { type = "decimal", min = 0 }
+columns.place = { type = "link", to = "places", on_delete = "restrict" }
+columns.expires = { type = "date" }
+columns.notes = { type = "longtext" }
+
+[tables.items.watch]
+running_low = { quantity = "quantity", minimum = "minimum" }
+expiring = { date = "expires", warn_days = 30 }
+# Water: a commonly used starting figure is about 3 litres per person per day.
+# The page always says local advice comes first.
+supply = { quantity = "quantity", per_person_per_day = 3, per_pet_per_day = 1, target_days = 3, unit = "litres", label = "water", where = { category = "water" } }

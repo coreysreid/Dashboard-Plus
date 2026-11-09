@@ -1,0 +1,32 @@
+[[sheet]]
+name = "supplies"
+title = "Emergency supplies checklist"
+intro = "What the household has put aside, and where it is. Check use-by dates when you print a new copy."
+
+[[sheet.section]]
+title = "Water (litres)"
+table = "items"
+where = { category = "water" }
+columns = ["name", "quantity", "place", "expires"]
+order_by = "expires"
+
+[[sheet.section]]
+title = "First aid and medical"
+table = "items"
+where = { category = "first_aid" }
+columns = ["name", "quantity", "unit", "place", "expires"]
+order_by = "name"
+
+[[sheet.section]]
+title = "Batteries, torches and power"
+table = "items"
+where = { category = "power" }
+columns = ["name", "quantity", "unit", "place"]
+order_by = "name"
+
+[[sheet.section]]
+title = "Food"
+table = "items"
+where = { category = "pantry" }
+columns = ["name", "quantity", "unit", "place", "expires"]
+order_by = "name"

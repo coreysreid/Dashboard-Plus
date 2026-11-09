@@ -1,6 +1,6 @@
 # 0034. Two agents work in separate lanes with fixed contracts
 
-- **Status:** Accepted
+- **Status:** Accepted (refined by decision 0042)
 - **Date:** 2026-11-09
 - **Decided by:** Claude (direction from Corey to use a second agent)
 

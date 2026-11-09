@@ -2,6 +2,7 @@
 | Entry | What it is | Open it when |
 |---|---|---|
 | repofiles.py | Shared helper that lists the files belonging to the repository. | a tool needs the file list |
+| check_all.py | Run every check a change must pass before it is pushed, with one command. | before every push |
 | check_privacy.py | Fail the build if anything private or machine-specific is committed. | tuning what counts as private |
 | check_indexes.py | Check that every folder has a short, complete and current INDEX.md. | changing the index rules |
 | lock_requirements.py | Write requirements.lock: every pinned library with the checksums PyPI publishes. | updating a library |

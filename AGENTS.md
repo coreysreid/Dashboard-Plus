@@ -18,6 +18,7 @@ and the files you may edit before changing anything.
 - Explain choices in plain language. Corey judges the product, not the code.
 
 ## Before you finish any change
+One command runs every check: `python tools/check_all.py`. The individual steps are:
 ```bash
 python tools/check_privacy.py
 python tools/check_indexes.py          # add --skeleton to see missing rows

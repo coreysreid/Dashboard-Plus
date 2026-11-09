@@ -17,4 +17,5 @@ Follow the INDEX.md in a folder before opening its files. Hidden files are not l
 | modules/ | Optional features, one folder each | adding or changing a topic |
 | src/ | The program itself | changing how the app works |
 | tests/ | Automatic tests | adding or fixing a test |
+| workbench/ | The second agent's own space: drafts, reports, research (not part of the program) | reviewing Lane B's work |
 | tools/ | Repository checks and generators | changing CI checks |

@@ -1,0 +1,8 @@
+name = "people"
+title = "People"
+version = "1.0.0"
+description = "Who lives here, who to call, and the important details to keep on hand."
+core_api = "1"
+kind = "declarative"
+requires = []
+outbound_hosts = []
