@@ -4,6 +4,9 @@ Dashboard Plus is a public, local-first "CRM for a home". Start with
 [INDEX.md](INDEX.md) and follow the `INDEX.md` in each folder downward; open
 a file only when its index row says you need it. Do not read the whole tree.
 
+Two agents work in parallel: read [docs/WORKSTREAMS.md](docs/WORKSTREAMS.md) for your lane
+and the files you may edit before changing anything.
+
 ## Rules that never bend
 - The repository is public. Never commit real names, personal data, tokens,
   database files, a real `config.toml`, or personal paths. Use synthetic data.

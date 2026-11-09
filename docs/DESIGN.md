@@ -147,19 +147,61 @@ Time is first-class because the question loop depends on it.
 
 ### 5.1 Watch views (resilience in the core)
 
-Two column flags let any module take part in resilience without code:
+A table opts in with a `watch` section in `tables.toml`. The core then shows the
+results across all modules on the home page and on shared pages. They are views,
+not alarms: nothing is sent anywhere.
 
-- `minimum` on a quantity column: rows where the quantity is below the minimum
-  appear in a shared **Running low** view, newest shortage first.
-- `expires` on a date column: rows expiring within a configurable window (default
-  30 days) appear in a shared **Expiring soon** view; past-date rows show as
-  expired.
+```toml
+[tables.items.watch]
+# Running low: rows where quantity < minimum (both columns of this table).
+running_low = { quantity = "quantity", minimum = "minimum" }
+# Expiring soon: rows whose date falls within warn_days (default 30); past dates show as expired.
+expiring = { date = "expires", warn_days = 30 }
+# Days of cover for the household, for rows matching `where`.
+supply = { quantity = "quantity", per_person_per_day = 3, per_pet_per_day = 0,
+           target_days = 3, unit = "litres", where = { category = "water" } }
+```
 
-A third declaration, `supply` (per-person and per-pet daily need plus a target
-number of days), lets a table report **days of cover** for the household. All
-three are plain facts from the declarations, shown with how they were worked
-out. They are views, not alarms: the program does not send messages outside the
-computer.
+- `running_low` and `expiring` name columns of the same table; `quantity` and
+  `minimum` must be number columns, `date` a date column. Checked when the
+  module loads, with plain-language errors like everything else.
+- `supply` adds up `quantity` for matching rows and divides by the household's
+  daily need. **Household size** comes from the People module (rows of
+  `people__people` with `lives_here` set) when it is installed, otherwise from
+  the `household.people` setting the wizard writes. Pets count from the
+  `household.pets` setting in M1. The page shows the working ("2 × 10 litres
+  for 3 people at 3 litres a day = about 2 days") and says the daily figures
+  are a starting point, local advice comes first.
+- Watch results always leave out deleted rows.
+
+### 5.2 Printable sheets
+
+A module may declare one-page printable sheets in `sheets.toml`, rendered by the
+core at `/sheet/<module>/<name>` with print-friendly styling and no internet
+needed. The People module uses this for the emergency sheet.
+
+```toml
+[[sheet]]
+name = "emergency"
+title = "Emergency sheet"
+intro = "Keep a printed copy on the fridge."
+
+[[sheet.section]]
+title = "Who lives here"
+table = "people"                      # a table of this module
+where = { lives_here = true }         # equality filters only
+columns = ["name", "phone"]
+order_by = "name"
+
+[[sheet.section]]
+title = "Who to call"
+table = "roles"
+columns = ["role", "person", "priority"]
+order_by = "priority"
+```
+
+Sensitive columns are printed only if a section lists them explicitly, and the
+page says they are included.
 
 ## 6. Modules
 

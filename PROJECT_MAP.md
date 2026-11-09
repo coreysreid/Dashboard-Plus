@@ -32,6 +32,7 @@ Follow the INDEX.md in a folder before opening its files. Hidden files are not l
 | CORE.md | The one-page v1 promise and acceptance list | testing any feature against it |
 | DESIGN.md | Object model, modules, API, security, packaging, build order | planning or building |
 | ROADMAP.md | Milestones M1 to M5, what M1 includes, success measures, open questions | deciding what comes next |
+| WORKSTREAMS.md | How two agents split the work: lanes, owned files, contracts, status | before starting any work |
 | JOURNEYS.md | Short stories of real use, each an acceptance test | reviewing the experience |
 | INFLUENCES.md | Books and ideas we build on, credited, and how we credit | adding or checking a credit |
 | decisions/ | One record per technical choice, with downsides | questioning or reversing a choice |
@@ -75,6 +76,7 @@ marked Superseded. Each lists downsides, cost to undo, and the sign it was wrong
 | [0031](0031-module-files-are-checked-and-migrations-generated.md) | Module files are checked strictly, and their migrations are generated | Accepted |
 | [0032](0032-one-checked-path-for-every-record-change.md) | One checked path for every record change, with soft deletes and history | Accepted |
 | [0033](0033-screens-generated-from-declarations.md) | Screens generated from declarations, with a launch-link sign-in | Accepted |
+| [0034](0034-two-agents-work-in-separate-lanes.md) | Two agents work in separate lanes with fixed contracts | Accepted |
 | [TEMPLATE](TEMPLATE.md) | Blank record to copy for a new decision | recording a decision |
 
 ## modules/  (summary: optional features; each folder is one module)
