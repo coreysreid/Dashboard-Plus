@@ -11,11 +11,11 @@ PAGE_SIZE = 50
 
 
 def _store() -> records.Records:
-    return records.Records(current_app.config["CONNECT"](), current_app.config["REGISTRY"])
+    return records.Records(current_app.config["CONNECT"](), current_app.config["REGISTRY_FOR_REQUEST"]())
 
 
 def _info(table: str) -> records.TableInfo:
-    registry = current_app.config["REGISTRY"]
+    registry = current_app.config["REGISTRY_FOR_REQUEST"]()
     if table not in registry:
         abort(404)
     return registry[table]

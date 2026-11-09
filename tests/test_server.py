@@ -54,7 +54,10 @@ class ServerTests(unittest.TestCase):
         self.assertEqual(status, 302, "a browser without the launch link is sent to the explanation page")
         status, body = request(self.state.port, path="/?key=wrong")
         self.assertEqual(status, 302)
-        status, body = request(self.state.port, cookie=sign_in(self.state))
+        cookie = sign_in(self.state)
+        status, _ = request(self.state.port, cookie=cookie)
+        self.assertEqual(status, 302, "a new household is taken to the first-run questions")
+        status, body = request(self.state.port, path="/setup", cookie=cookie)
         self.assertEqual(status, 200)
         self.assertIn("Look after what your household has", body)
         self.assertTrue(server.is_responding(self.state))
@@ -95,8 +98,8 @@ class ServerTests(unittest.TestCase):
 
     def test_start_prepares_the_database(self):
         self.assertTrue((self.data / "dashboard.db").exists())
-        status, body = request(self.state.port, cookie=sign_in(self.state))
-        self.assertIn("Your data file is ready", body)
+        status, body = request(self.state.port, path="/setup", cookie=sign_in(self.state))
+        self.assertIn("Welcome to Dashboard Plus", body)
 
     def test_unknown_page_is_friendly(self):
         status, body = request(self.state.port, path="/nope", cookie=sign_in(self.state))

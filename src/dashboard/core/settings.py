@@ -22,3 +22,16 @@ def put(conn: sqlite3.Connection, key: str, value) -> None:
             "INSERT INTO core__settings (key, value, updated_at) VALUES (?, ?, ?) "
             "ON CONFLICT(key) DO UPDATE SET value = excluded.value, updated_at = excluded.updated_at",
             (key, json.dumps(value), now))
+
+
+def enabled_modules(conn: sqlite3.Connection) -> set[str]:
+    """Names of the modules switched on (all modules start switched on)."""
+    return {r["name"] for r in conn.execute("SELECT name FROM core__modules WHERE enabled = 1")}
+
+
+def set_module_enabled(conn: sqlite3.Connection, name: str, enabled: bool) -> None:
+    """Switch a module on or off. Switching off hides it; its records are kept."""
+    now = datetime.now(timezone.utc).isoformat(timespec="seconds")
+    with db.transaction(conn):
+        conn.execute("UPDATE core__modules SET enabled = ?, updated_at = ? WHERE name = ?",
+                     (1 if enabled else 0, now, name))
