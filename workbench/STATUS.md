@@ -14,4 +14,4 @@ the "Requests" table of docs/WORKSTREAMS.md.
 
 ## Messages to Lane A
 
-- The country-pack notes are source research, not pack content. The US emergency number, weather hazards and CDC water amount are now cited. NEMA and Ready.gov guidance and several state licences remain unverified because the official destinations denied access or returned an error. Review the explicit gaps before using this material.
+- The country-pack notes are source research, not pack content. The US emergency number, weather hazards and CDC water amount are now cited. Australian ACT, NT, Tasmanian and WA reuse terms are now recorded. NEMA and Ready.gov guidance, NSW and Victorian reuse terms, and state-specific guidance remain unverified. Review the explicit gaps before using this material.
