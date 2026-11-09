@@ -9,3 +9,9 @@ columns.quantity = { label = "How many", help = "For water, record litres, so da
 columns.unit = { label = "Unit", help = "For example tins, kg, litres, packs." }
 columns.minimum = { label = "Keep at least", help = "You'll see it under Needs attention when it drops below this." }
 columns.expires = { label = "Use by" }
+
+[tables.movements]
+form = ["item", "reason", "amount", "happened_on", "notes"]
+list = ["happened_on", "item", "reason", "amount", "notes"]
+columns.amount = { label = "How many", help = "In the item's own unit. The item's count changes by this much." }
+columns.happened_on = { label = "Date" }

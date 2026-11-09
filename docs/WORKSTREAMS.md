@@ -58,6 +58,9 @@ every draft automatically. You do not write tests in `tests/`.
 **Watch views:** the `watch` section in `tables.toml`, exactly as in
 `docs/DESIGN.md` section 5.1 (including the optional `label` for a supply).
 
+**Records that change a count:** the `adjusts` section, as in `docs/DESIGN.md`
+section 5.3, for drafts that track amounts going in and out (for example pet food).
+
 **Printable sheets:** `sheets.toml`, exactly as in `docs/DESIGN.md` section 5.2,
 including `link.column` columns such as `person.phone`.
 
@@ -84,7 +87,8 @@ Draft modules may link to these with `requires = ["people"]` and
 |---|---|---|
 | Core M1 steps 1 to 6, printable sheets | A | merged |
 | People and Household stock modules | A | in review |
-| Stock in and out, gaps check, M1 release checks | A | next |
+| Stock in and out | A | in review |
+| Gaps check, M1 release checks | A | next |
 | Module guide and garden example | B | branch `lane-b/module-guide`, needs a pull request |
 | SECURITY, CONTRIBUTING, issue templates | B | branch `lane-b/project-files`, needs a pull request |
 | Batch 2 (below) | B | ready to start |

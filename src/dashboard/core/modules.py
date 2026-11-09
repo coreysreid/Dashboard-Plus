@@ -25,7 +25,8 @@ SYSTEM_COLUMNS = ("id", "created_at", "updated_at", "review_status", "source", "
 
 MODULE_KEYS = ("name", "title", "version", "description", "core_api", "kind", "requires", "outbound_hosts")
 MODULE_REQUIRED = ("name", "title", "version", "description", "core_api", "kind")
-TABLE_KEYS = ("title", "description", "columns", "watch")
+TABLE_KEYS = ("title", "description", "columns", "watch", "adjusts")
+ADJUST_KEYS = ("link", "quantity", "amount", "direction", "adds")
 WATCH_KEYS = ("running_low", "expiring", "supply")
 COLUMN_KEYS = ("type", "required", "default", "min", "max", "unit", "choices", "help", "sensitive", "to", "on_delete")
 LABEL_TABLE_KEYS = ("title", "columns", "form", "list")
@@ -70,6 +71,7 @@ class Table:
     description: str | None
     columns: dict[str, Column]
     watch: dict = field(default_factory=dict)  # checked `watch` section (DESIGN.md 5.1)
+    adjusts: dict = field(default_factory=dict)  # checked `adjusts` section (DESIGN.md 5.3)
 
 
 @dataclass
@@ -300,6 +302,50 @@ def _check_watch(file: str, table: str, raw, columns: dict[str, Column], problem
     return watch
 
 
+def _check_adjusts(file: str, table: Table, tables: dict[str, Table], problems: list[str]) -> dict:
+    """Check an `adjusts` section: each record here adds to or takes from a quantity on a linked record."""
+    raw = table.adjusts
+    where = f"In {file}, table '{table.name}', adjusts"
+    if not isinstance(raw, dict):
+        problems.append(f"{where}: describe it as settings (link, quantity, amount, direction, adds).")
+        return {}
+    problems.extend(_unknown_keys(where, raw, ADJUST_KEYS))
+    for key in ADJUST_KEYS:
+        if key not in raw:
+            problems.append(f"{where}: '{key}' is missing.")
+    if any(key not in raw for key in ADJUST_KEYS):
+        return {}
+    columns = table.columns
+    numbers = ("integer", "decimal", "measure")
+    link = columns.get(raw["link"])
+    if link is None or link.type != "link" or "." in (link.to or "") or link.to not in tables:
+        problems.append(f"{where}: 'link' must name a link column to another table of this module.")
+        return {}
+    target = tables[link.to]
+    quantity = target.columns.get(raw["quantity"])
+    if quantity is None or quantity.type not in numbers:
+        problems.append(f"{where}: 'quantity' must name a number column of '{link.to}'."
+                        f"{_suggest(raw['quantity'], list(target.columns))}")
+        return {}
+    amount = columns.get(raw["amount"])
+    if amount is None or amount.type not in numbers:
+        problems.append(f"{where}: 'amount' must name a number column of this table.{_suggest(raw['amount'], list(columns))}")
+        return {}
+    direction = columns.get(raw["direction"])
+    if direction is None or direction.type != "choice":
+        problems.append(f"{where}: 'direction' must name a choice column of this table.")
+        return {}
+    keys = [c.key for c in direction.choices]
+    adds = raw["adds"] if isinstance(raw["adds"], list) else []
+    unknown = [a for a in adds if a not in keys]
+    if not isinstance(raw["adds"], list) or unknown:
+        problems.append(f"{where}: 'adds' must list choices of '{raw['direction']}' that add to the quantity; "
+                        f"not choices: {', '.join(map(str, unknown)) or raw['adds']}. Allowed: {', '.join(keys)}.")
+        return {}
+    return {"link": raw["link"], "target": link.to, "quantity": raw["quantity"], "amount": raw["amount"],
+            "direction": raw["direction"], "adds": list(adds)}
+
+
 def _check_tables(module: str, data: dict, requires: list[str], problems: list[str]) -> dict[str, Table]:
     file = "tables.toml"
     problems.extend(_unknown_keys(f"In {file}", data, ("tables",)))
@@ -329,7 +375,11 @@ def _check_tables(module: str, data: dict, requires: list[str], problems: list[s
             if column:
                 columns[cname] = column
         watch = _check_watch(file, tname, raw.get("watch", {}), columns, problems)
-        tables[tname] = Table(tname, str(raw.get("title", tname)), raw.get("description"), columns, watch)
+        tables[tname] = Table(tname, str(raw.get("title", tname)), raw.get("description"), columns, watch,
+                              raw.get("adjusts", {}))
+    for table in tables.values():
+        if table.adjusts:
+            table.adjusts = _check_adjusts(file, table, tables, problems)
     for table in tables.values():
         for column in table.columns.values():
             if column.type in ("link", "links") and column.to:

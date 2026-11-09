@@ -205,6 +205,31 @@ of the record the link points at, within the same module. Sensitive columns are
 printed only if a section lists them explicitly, and the page says they are
 included.
 
+### 5.3 Records that change a count (stock in and out)
+
+A table may declare that each of its records adds to or takes from a number on a
+linked record. Household stock uses it so buying, using or throwing something
+away updates the item's count by itself.
+
+```toml
+[tables.movements.adjusts]
+link = "item"          # a link column of this table, to a table of this module
+quantity = "quantity"  # the number column on the linked record that changes
+amount = "amount"      # the number column of this table: how much
+direction = "reason"   # a choice column of this table
+adds = ["bought"]      # choices that add; every other choice takes away
+```
+
+- The change happens in the same step as saving the record, and appears in the
+  linked record's history.
+- Taking away more than there is is refused with a plain message; correcting the
+  count itself (a stocktake) is done by editing the linked record directly.
+- Changing a record corrects the count; deleting it undoes its effect;
+  restoring it applies it again.
+- A date column may use `default = "today"`.
+- On a record's page, every table that links to it offers an "Add to …" button
+  with the link filled in, and saving returns to that record.
+
 ## 6. Modules
 
 A module is a folder:

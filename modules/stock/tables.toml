@@ -35,3 +35,26 @@ expiring = { date = "expires", warn_days = 30 }
 # Water: a commonly used starting figure is about 3 litres per person per day.
 # The page always says local advice comes first.
 supply = { quantity = "quantity", per_person_per_day = 3, per_pet_per_day = 1, target_days = 3, unit = "litres", label = "water", where = { category = "water" } }
+
+[tables.movements]
+title = "Stock in and out"
+description = "Each time something is bought, used, expires or is thrown away. The item's count updates by itself."
+columns.item = { type = "link", to = "items", required = true, on_delete = "cascade" }
+columns.reason = { type = "choice", required = true, default = "bought", choices = [
+  { key = "bought", label = "Bought or added" },
+  "used",
+  "expired",
+  { key = "thrown_away", label = "Thrown away" },
+  { key = "given_away", label = "Given away" },
+] }
+columns.amount = { type = "decimal", required = true, min = 0 }
+columns.happened_on = { type = "date", required = true, default = "today" }
+columns.notes = { type = "text" }
+
+[tables.movements.adjusts]
+# Each movement changes the item's "How many": "bought" adds, every other reason takes away.
+link = "item"
+quantity = "quantity"
+amount = "amount"
+direction = "reason"
+adds = ["bought"]
