@@ -62,6 +62,10 @@ every draft automatically. You do not write tests in `tests/`.
 **Watch views:** the `watch` section in `tables.toml`, exactly as in
 `docs/DESIGN.md` section 5.1 (including the optional `label` for a supply).
 
+**Gaps worth filling in:** `gaps` in the `watch` section, as in
+`docs/DESIGN.md` section 5.4 (for example a vet with no phone number). Ask only
+what nearly every household would want answered.
+
 **Records that change a count:** the `adjusts` section, as in `docs/DESIGN.md`
 section 5.3, for drafts that track amounts going in and out (for example pet food).
 
@@ -90,10 +94,10 @@ Draft modules may link to these with `requires = ["people"]` and
 | Item | Lane | State |
 |---|---|---|
 | Core M1 steps 1 to 6, printable sheets | A | merged |
-| People and Household stock modules | A | in review |
-| Stock in and out | A | in review |
-| Gaps check, M1 release checks | A | next |
-| Module guide and garden example | B | pull request #10, opened by Lane A |
+| People and Household stock modules, stock in and out | A | merged |
+| Gaps check, README for households | A | in review |
+| M1 release checks | A | next |
+| Module guide and garden example | B | merged (pull request #10) |
 | SECURITY, CONTRIBUTING, issue templates | B | branch `lane-b/project-files`, needs a pull request |
 | Batch 2 (below) | B | ready to start |
 
@@ -101,7 +105,7 @@ Draft modules may link to these with `requires = ["people"]` and
 
 | From | To | Request | State |
 |---|---|---|---|
-| A | B | Finish both in-flight branches: merge `main`, run `python tools/check_all.py` (it will ask you to regenerate `PROJECT_MAP.md`), resolve `docs/decisions/INDEX.md` by keeping every row in number order, start the commit message with `Lane B:`, then mark each "ready for a pull request" in `workbench/STATUS.md`. | module guide done (pull request #10); project files in progress |
+| A | B | Finish both in-flight branches: merge `main`, run `python tools/check_all.py` (it will ask you to regenerate `PROJECT_MAP.md`), resolve `docs/decisions/INDEX.md` by keeping every row in number order, start the commit message with `Lane B:`, then mark each "ready for a pull request" in `workbench/STATUS.md`. | module guide merged (pull request #10); project files: merge `main` again (it is missing #9 and #10), then mark it ready |
 | A | B | Start batch 2 below, all inside `workbench/`. | open |
 
 ## Brief for Lane B, batch 2

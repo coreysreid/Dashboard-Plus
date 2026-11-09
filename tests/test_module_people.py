@@ -71,6 +71,36 @@ class PeopleModuleTests(TempDirTestCase):
         self.assertIn("Synthetic allergy note", medical)
         self.assertIn("includes private details", medical)
 
+    def test_gaps_are_asked_until_filled_in(self):
+        messages = lambda: [g.message for g in watch.gaps(self.conn, self.registry)]
+        self.assertEqual(len(messages()), 3)
+        self.assertTrue(messages()[0].startswith("Who lives here?"))
+        home = self.records.create("people__people", {"name": "Person A", "lives_here": True, "phone": "555 0101"})
+        neighbour = self.records.create("people__people", {"name": "Neighbour B"})
+        self.records.create("people__roles", {"person": neighbour, "role": "emergency_contact", "priority": 1})
+        self.records.create("people__roles", {"person": home, "role": "doctor"})
+        self.assertEqual(messages(), ["What is Neighbour B's phone number? They are in Who to call "
+                                      "(Emergency contact), but no number is saved."])
+        self.records.update("people__people", neighbour, {"phone": "555 0199"})
+        self.assertEqual(messages(), [])
+
+    def test_needs_attention_page_lists_gaps_with_a_link_to_fill_them_in(self):
+        settings.put(self.conn, "setup.done", True)
+        self.records.create("people__people", {"name": "Person A", "lives_here": True})
+        app = create_app("t", lambda: None, self.report, data_dir=self.data, session_key="k")
+        app.config["PORT"] = PORT
+        client = app.test_client()
+        client.get("/?key=k", base_url=BASE)
+        page = client.get("/attention", base_url=BASE).get_data(as_text=True)
+        self.assertIn("Worth filling in", page)
+        self.assertIn("Nobody is listed as an emergency contact yet.", page)
+        self.assertIn('href="/t/people__roles/new?role=emergency_contact"', page)
+        self.assertNotIn("Who lives here?", page)
+        home = client.get("/", base_url=BASE).get_data(as_text=True)
+        self.assertIn("2 to fill in", home)
+        form = client.get("/t/people__roles/new?role=emergency_contact", base_url=BASE).get_data(as_text=True)
+        self.assertRegex(form, r'value="emergency_contact"\s+selected')
+
     def test_migration_matches_its_description(self):
         from dashboard.core.schema import next_migration_sql
         self.assertIsNone(next_migration_sql(modules.load_module(ROOT / "modules" / "people")))

@@ -1,9 +1,14 @@
 {% extends "base.html" %}
-{% block title %}Needs attention · Dashboard Plus{% endblock %}
+{% block title %}Needs attention · Dashboard Plus
+<h2>Worth filling in</h2>
+{% if gaps %}
+<ul>{% for gap in gaps %}<li>{{ gap.message }} <a href="{{ gap.fix }}">Fill this in</a></li>{% endfor %}</ul>
+{% else %}<p class="muted">Nothing obvious is missing.</p>{% endif %}
+{% endblock %}
 {% block body %}
 <p class="muted"><a href="/">Home</a></p>
 <h1>Needs attention</h1>
-<p class="lead">What is running low, what expires soon, and how long your supplies would last.</p>
+<p class="lead">What is running low, what expires soon, how long your supplies would last, and details worth filling in.</p>
 
 {% if supplies %}
 <h2>Days of cover</h2>
@@ -27,4 +32,9 @@
 {% if expiring %}
 <ul>{% for item in expiring %}<li><a href="/t/{{ item.table }}/{{ item.record_id }}">{{ item.name }}</a>: {{ item.detail }}</li>{% endfor %}</ul>
 {% else %}<p class="muted">Nothing expires in the coming weeks.</p>{% endif %}
+
+<h2>Worth filling in</h2>
+{% if gaps %}
+<ul>{% for gap in gaps %}<li>{{ gap.message }} <a href="{{ gap.fix }}">Fill this in</a></li>{% endfor %}</ul>
+{% else %}<p class="muted">Nothing obvious is missing.</p>{% endif %}
 {% endblock %}

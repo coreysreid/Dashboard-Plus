@@ -1,11 +1,13 @@
-"""Work out what is running low, what expires soon, and how many days of supplies are on hand."""
+"""Work out what is running low, what expires soon, how many days of supplies are on hand, and what is worth filling in."""
 from __future__ import annotations
 
 import sqlite3
+import string
 from dataclasses import dataclass, field
 from datetime import date
+from urllib.parse import urlencode
 
-from dashboard.core import settings
+from dashboard.core import schema, settings
 from dashboard.core.records import TableInfo
 
 PEOPLE_TABLE = "people__people"
@@ -167,3 +169,87 @@ def supplies(conn: sqlite3.Connection, registry: dict[str, TableInfo]) -> list[S
         results.append(Supply(info.name, title, unit, total, need, days, target, shortfall, working,
                               rows=count, notes=notes, label=rule["label"]))
     return results
+
+
+@dataclass
+class Gap:
+    """A detail worth filling in, asked as a question, with where to fill it in."""
+    table: str
+    record_id: int | None
+    message: str
+    fix: str  # the page where the detail can be added
+
+
+def _blank(value) -> bool:
+    return value is None or (isinstance(value, str) and not value.strip())
+
+
+def _filter_value(value):
+    return int(value) if isinstance(value, bool) else value
+
+
+def _show(info: TableInfo, registry: dict[str, TableInfo], conn: sqlite3.Connection, column: str, value) -> str:
+    """A value as a person would read it inside a gap message."""
+    col = info.table.columns[column]
+    if _blank(value):
+        return "(not filled in)"
+    if col.type == "choice":
+        return next((c.label for c in col.choices if c.key == value), str(value))
+    if col.type == "boolean":
+        return "yes" if int(value) else "no"
+    if col.type == "link":
+        target = registry.get(schema.target_table(info.module.name, col))
+        row = conn.execute(f"SELECT * FROM {target.name} WHERE id = ?", (value,)).fetchone() if target else None
+        return _name(target, row) if row is not None else "(deleted)"
+    if col.type in ("integer", "decimal", "measure"):
+        return _number(value)
+    return str(value)
+
+
+def gaps(conn: sqlite3.Connection, registry: dict[str, TableInfo]) -> list[Gap]:
+    """Details worth filling in, from every table's `gaps` rules, in the order they are declared."""
+    found = []
+    for info in registry.values():
+        for rule in info.table.watch.get("gaps", []):
+            if "none" in rule:
+                filters = rule["none"]
+                clause = "".join(f" AND {name} = ?" for name in filters)
+                exists = conn.execute(f"SELECT 1 FROM {info.name} WHERE deleted_at IS NULL{clause} LIMIT 1",
+                                      [_filter_value(v) for v in filters.values()]).fetchone()
+                if not exists:
+                    prefill = urlencode({k: ("yes" if v is True else "" if v is False else v) for k, v in filters.items()})
+                    found.append(Gap(info.name, None, rule["message"], f"/t/{info.name}/new?{prefill}"))
+                continue
+            filters = rule["where"]
+            clause = "".join(f" AND {name} = ?" for name in filters)
+            rows = conn.execute(f"SELECT * FROM {info.name} WHERE deleted_at IS NULL{clause} ORDER BY id",
+                                [_filter_value(v) for v in filters.values()]).fetchall()
+            link, _, field_name = rule["missing"].rpartition(".")
+            target = None
+            if link:
+                target = registry.get(schema.target_table(info.module.name, info.table.columns[link]))
+                if target is None:
+                    continue
+            seen: set[str] = set()
+            for row in rows:
+                if target is None:
+                    if _blank(row[field_name]):
+                        found.append(Gap(info.name, row["id"], _message(info, registry, conn, rule, row),
+                                         f"/t/{info.name}/{row['id']}"))
+                    continue
+                if row[link] is None:
+                    continue
+                linked = conn.execute(f"SELECT * FROM {target.name} WHERE id = ? AND deleted_at IS NULL",
+                                      (row[link],)).fetchone()
+                fix = f"/t/{target.name}/{row[link]}"
+                if linked is not None and _blank(linked[field_name]) and fix not in seen:
+                    seen.add(fix)  # one question per person, even if they have several roles
+                    found.append(Gap(info.name, row["id"], _message(info, registry, conn, rule, row),
+                                     fix))
+    return found
+
+
+def _message(info, registry, conn, rule, row) -> str:
+    names = {f for _, f, _, _ in string.Formatter().parse(rule["message"]) if f}
+    fields = {name: _show(info, registry, conn, name, row[name]) for name in names}
+    return rule["message"].format(**fields)

@@ -3,6 +3,7 @@ from __future__ import annotations
 
 import difflib
 import re
+import string
 import tomllib
 from dataclasses import dataclass, field
 from pathlib import Path
@@ -27,7 +28,8 @@ MODULE_KEYS = ("name", "title", "version", "description", "core_api", "kind", "r
 MODULE_REQUIRED = ("name", "title", "version", "description", "core_api", "kind")
 TABLE_KEYS = ("title", "description", "columns", "watch", "adjusts")
 ADJUST_KEYS = ("link", "quantity", "amount", "direction", "adds")
-WATCH_KEYS = ("running_low", "expiring", "supply")
+WATCH_KEYS = ("running_low", "expiring", "supply", "gaps")
+GAP_KEYS = ("missing", "none", "where", "message")
 COLUMN_KEYS = ("type", "required", "default", "min", "max", "unit", "choices", "help", "sensitive", "to", "on_delete")
 LABEL_TABLE_KEYS = ("title", "columns", "form", "list")
 LABEL_COLUMN_KEYS = ("label", "help")
@@ -394,7 +396,99 @@ def _check_tables(module: str, data: dict, requires: list[str], problems: list[s
                 elif column.to not in tables:
                     problems.append(f"{where}: it points at a table '{column.to}' that this module does not declare."
                                     f"{_suggest(column.to, list(tables))}")
+    for tname, raw in raw_tables.items():
+        gaps = raw.get("watch", {}).get("gaps") if isinstance(raw, dict) and isinstance(raw.get("watch"), dict) else None
+        if gaps is not None and tname in tables:
+            tables[tname].watch["gaps"] = _check_gaps(file, tables[tname], tables, gaps, problems)
     return tables
+
+
+def _check_where(where: str, filters, columns: dict[str, Column], problems: list[str]) -> bool:
+    """Check equality filters like { role = "doctor" } or { lives_here = true }."""
+    if not isinstance(filters, dict) or not filters:
+        problems.append(f"{where}: write it as settings, like {{ role = \"doctor\" }}.")
+        return False
+    ok = True
+    for name, value in filters.items():
+        column = columns.get(name)
+        if column is None:
+            problems.append(f"{where}: there is no column '{name}'.{_suggest(name, list(columns))}")
+            ok = False
+        elif column.type == "choice" and value not in [c.key for c in column.choices]:
+            problems.append(f"{where}: '{value}' is not one of the choices for '{name}'. "
+                            f"Allowed: {', '.join(c.key for c in column.choices)}.")
+            ok = False
+        elif column.type == "boolean" and not isinstance(value, bool):
+            problems.append(f"{where}: '{name}' is a yes/no column, so write true or false.")
+            ok = False
+        elif column.type in ("links", "file"):
+            problems.append(f"{where}: '{name}' cannot be used as a filter.")
+            ok = False
+    return ok
+
+
+def _linked_column(spec: str, table: Table, tables: dict[str, Table]) -> Column | None:
+    """The column a name like "phone" or "person.phone" refers to, within this module."""
+    if "." not in spec:
+        return table.columns.get(spec)
+    link, _, field_name = spec.partition(".")
+    column = table.columns.get(link)
+    if column is None or column.type != "link" or "." in (column.to or "") or column.to not in tables:
+        return None
+    return tables[column.to].columns.get(field_name)
+
+
+def _check_gaps(file: str, table: Table, tables: dict[str, Table], raw, problems: list[str]) -> list[dict]:
+    """Check `gaps`: details worth filling in, such as an emergency contact with no phone number."""
+    where = f"In {file}, table '{table.name}', watch.gaps"
+    if not isinstance(raw, list):
+        problems.append(f"{where}: write each gap as a [[tables.{table.name}.watch.gaps]] section.")
+        return []
+    gaps = []
+    for number, gap in enumerate(raw, start=1):
+        g_where = f"{where} {number}"
+        if not isinstance(gap, dict):
+            problems.append(f"{g_where}: describe it with 'missing' or 'none', and a 'message'.")
+            continue
+        problems.extend(_unknown_keys(g_where, gap, GAP_KEYS))
+        message = gap.get("message")
+        if not isinstance(message, str) or not message.strip():
+            problems.append(f"{g_where}: 'message' is missing (the question people see).")
+            continue
+        try:
+            fields = [f for _, f, _, _ in string.Formatter().parse(message) if f is not None]
+        except ValueError:
+            problems.append(f"{g_where}: 'message' has an unmatched {{ or }}.")
+            continue
+        if ("missing" in gap) == ("none" in gap):
+            problems.append(f"{g_where}: use either 'missing' (a detail left blank) or 'none' (nothing recorded yet), "
+                            f"not both or neither.")
+            continue
+        if "none" in gap:
+            if "where" in gap:
+                problems.append(f"{g_where}: 'where' goes with 'missing'; for 'none' put the filters in 'none' itself.")
+                continue
+            if fields:
+                problems.append(f"{g_where}: a 'none' message has no record to fill in, so it cannot use {{...}}.")
+                continue
+            if _check_where(f"{g_where}, none", gap["none"], table.columns, problems):
+                gaps.append({"none": dict(gap["none"]), "message": message})
+            continue
+        missing = gap["missing"]
+        if not isinstance(missing, str) or _linked_column(missing, table, tables) is None:
+            problems.append(f"{g_where}: 'missing' must name a column of this table, or a link column and a column "
+                            f"of the table it points at, like \"person.phone\".{_suggest(missing, list(table.columns))}")
+            continue
+        filters = gap.get("where", {})
+        if filters and not _check_where(f"{g_where}, where", filters, table.columns, problems):
+            continue
+        bad = [f for f in fields if f == "" or f not in table.columns]
+        if bad:
+            problems.append(f"{g_where}: 'message' can only fill in columns of this table, like {{name}}; "
+                            f"not {', '.join('{' + b + '}' for b in bad)}.{_suggest(bad[0], list(table.columns))}")
+            continue
+        gaps.append({"missing": missing, "where": dict(filters), "message": message})
+    return gaps
 
 
 def _check_labels(data: dict, tables: dict[str, Table], problems: list[str]) -> dict:

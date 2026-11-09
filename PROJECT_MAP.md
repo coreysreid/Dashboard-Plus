@@ -89,6 +89,7 @@ marked Superseded. Each lists downsides, cost to undo, and the sign it was wrong
 | [0041](0041-tests-index-may-be-longer.md) | The tests folder index may be longer than 25 lines | Accepted |
 | [0042](0042-a-workbench-for-the-second-agent.md) | The second agent works only in a workbench folder, as checker and drafter | Accepted |
 | [0043](0043-records-that-change-a-count.md) | Stock in and out updates the item's count automatically | Accepted |
+| [0044](0044-gaps-are-asked-not-asserted.md) | Gaps are declared in module files and asked as questions | Accepted |
 | [0060](0060-garden-example-outside-installed-modules.md) | Keep the worked garden outside installed modules | Accepted |
 | [TEMPLATE](TEMPLATE.md) | Blank record to copy for a new decision | recording a decision |
 
@@ -124,7 +125,7 @@ numbered migrations. See docs/DESIGN.md section 6 for the module contract.
 | Entry | What it is | Open it when |
 |---|---|---|
 | module.toml | Name, version, description | changing the module's details |
-| tables.toml | People, who to call (roles) and important details (private) | adding a field or a choice |
+| tables.toml | People, who to call (roles), important details (private), and gaps worth filling in | adding a field, a choice or a gap question |
 | labels.toml | Friendly labels, help text, form and list order | changing wording or order |
 | sheets.toml | Emergency sheet, and a version with medical details | changing what prints |
 | migrations/ | Numbered database changes | after changing tables.toml |
@@ -180,7 +181,7 @@ Generate the next one with: python tools/make_migration.py stock --name <what_ch
 | records.py | Create, change, delete and read records, checking every value and keeping a history. | changing how records are saved or checked |
 | settings.py | Read and write household settings kept in the database (core__settings). | storing a new setting |
 | schema.py | Turn a module's declared tables into SQL, and work out its next migration. | changing how tables are built |
-| watch.py | Work out what is running low, what expires soon, and how many days of supplies are on hand. | changing running low, expiring or days of cover |
+| watch.py | Work out what is running low, what expires soon, how many days of supplies are on hand, and what is worth filling in. | changing running low, expiring, days of cover or gaps |
 | startup.py | Prepare the database at start-up: load modules, back up if needed, and migrate. | changing what happens at start-up |
 
 ## src/dashboard/core/migrations/  (summary: the core's numbered database changes; never edit a released one)
@@ -207,7 +208,7 @@ Add a new file with the next number instead of changing an old one.
 |---|---|---|
 | base.html | Shared layout, colours (light and dark), header and footer | changing the overall look |
 | home.html | Home page: days of cover, needs attention, tables with counts, backup and data file status | changing the home screen |
-| attention.html | Running low, expiring soon and days of cover, with the working shown | changing the attention page |
+| attention.html | Running low, expiring soon, days of cover with the working shown, and gaps worth filling in | changing the attention page |
 | grid.html | A table's records, a page at a time, sortable | changing the list of records |
 | rows.html | One page of grid rows (also loaded as you scroll) | changing a row |
 | form.html | Add and edit forms, delete and restore, and history | changing the form |
@@ -236,6 +237,7 @@ How to run them is in AGENTS.md.
 | test_project_map.py | Tests for the project map generator. | changing the map |
 | test_server.py | Tests for starting, protecting and safely closing the local web server. | changing startup or closing |
 | test_watch.py | Tests for running low, expiring soon and days of cover, and for checking `watch` sections. | changing watch rules |
+| test_gaps.py | Tests for gaps: details worth filling in, declared in a table's `watch.gaps` and asked as questions. | changing gaps |
 | test_adjusts.py | Tests for records that change a linked quantity (stock in and out), and the checks on `adjusts`. | changing stock in and out |
 | test_backups.py | Tests for automatic backups: daily, on close, in two places, and keeping only recent ones. | changing backups |
 | test_setup.py | Tests for the first-run wizard and the settings page. | changing setup or settings |

@@ -46,3 +46,22 @@ columns.kind = { type = "choice", required = true, choices = [
   "other",
 ] }
 columns.detail = { type = "text", required = true, sensitive = true }
+
+# Gaps: details worth filling in, shown under "Worth filling in" on the
+# Needs attention page. Each is asked as a question (docs/DESIGN.md 5.4).
+
+[[tables.people.watch.gaps]]
+none = { lives_here = true }
+message = "Who lives here? Nobody is marked as living here yet."
+
+[[tables.roles.watch.gaps]]
+none = { role = "emergency_contact" }
+message = "Who would you call first in an emergency? Nobody is listed as an emergency contact yet."
+
+[[tables.roles.watch.gaps]]
+none = { role = "doctor" }
+message = "Is there a doctor or medical centre you would call? None is listed in Who to call yet."
+
+[[tables.roles.watch.gaps]]
+missing = "person.phone"
+message = "What is {person}'s phone number? They are in Who to call ({role}), but no number is saved."
