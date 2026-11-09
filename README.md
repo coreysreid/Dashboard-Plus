@@ -40,6 +40,7 @@ python tools/make_project_map.py     # regenerate PROJECT_MAP.md
 pip install --require-hashes -r requirements.lock
 PYTHONPATH=src python -m unittest discover -s tests
 PYTHONPATH=src python -m dashboard   # opens the dashboard in your browser
+python tools/make_migration.py <module> --name <what_changed>   # after editing a module's tables.toml
 ```
 
 GitHub runs the same checks on Windows and Linux for every change. Start at

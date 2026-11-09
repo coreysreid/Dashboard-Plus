@@ -29,6 +29,7 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--data", default="data", help="the data folder (default: ./data)")
     parser.add_argument("--no-browser", action="store_true", help="do not open a browser window")
     parser.add_argument("--close", action="store_true", help="close a running dashboard safely")
+    parser.add_argument("--modules", help="the modules folder (default: the one shipped with the program)")
     parser.add_argument("--version", action="store_true", help="print the version and stop")
     args = parser.parse_args(argv)
 
@@ -46,13 +47,18 @@ def main(argv: list[str] | None = None) -> int:
             else:
                 print("Dashboard is not running, so there is nothing to close.")
             return 0
-        server.serve(data_dir, open_browser=not args.no_browser)
+        modules_dir = Path(args.modules).resolve() if args.modules else None
+        server.serve(data_dir, open_browser=not args.no_browser, modules_dir=modules_dir)
         return 0
     except KeyboardInterrupt:
         return 0
     except Exception as error:  # noqa: BLE001 - every failure gets a plain message
+        from dashboard.errors import PlainError
+
         report = write_report(data_dir, error)
         print("Sorry, Dashboard Plus could not start or stop properly.")
+        if isinstance(error, PlainError):
+            print(str(error))
         print("Your data has not been changed.")
         if report:
             print(f"A report with the details was saved to: {report}")

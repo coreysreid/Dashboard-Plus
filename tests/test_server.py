@@ -78,6 +78,11 @@ class ServerTests(unittest.TestCase):
                       if isinstance(h, logging.FileHandler) and Path(h.baseFilename) == log_path]
         self.assertEqual(still_open, [])
 
+    def test_start_prepares_the_database(self):
+        self.assertTrue((self.data / "dashboard.db").exists())
+        status, body = request(self.state.port)
+        self.assertIn("Your data file is ready", body)
+
     def test_unknown_page_is_friendly(self):
         status, body = request(self.state.port, path="/nope")
         self.assertEqual(status, 404)

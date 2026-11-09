@@ -14,6 +14,7 @@ from pathlib import Path
 
 from waitress import create_server
 
+from dashboard.core import startup
 from dashboard.web.app import create_app
 
 HOST = "127.0.0.1"
@@ -77,18 +78,20 @@ def release_logging(handler: logging.Handler) -> None:
     handler.close()
 
 
-def serve(data_dir: Path, open_browser: bool = True, ready: threading.Event | None = None) -> None:
+def serve(data_dir: Path, open_browser: bool = True, ready: threading.Event | None = None,
+          modules_dir: Path | None = None) -> None:
     """Run the dashboard until a safe close is requested. Blocks until then."""
     data_dir = Path(data_dir)
     data_dir.mkdir(parents=True, exist_ok=True)
     handler = setup_logging(data_dir)
     try:
-        _serve(data_dir, open_browser, ready)
+        _serve(data_dir, open_browser, ready, modules_dir)
     finally:
         release_logging(handler)
 
 
-def _serve(data_dir: Path, open_browser: bool, ready: threading.Event | None) -> None:
+def _serve(data_dir: Path, open_browser: bool, ready: threading.Event | None,
+           modules_dir: Path | None) -> None:
     existing = read_state(data_dir)
     if existing and is_responding(existing):
         print("Dashboard is already open. Opening it in your browser.")
@@ -98,6 +101,7 @@ def _serve(data_dir: Path, open_browser: bool, ready: threading.Event | None) ->
             ready.set()
         return
 
+    report = startup.prepare(data_dir, modules_dir)
     token = secrets.token_urlsafe(32)
     stopping = threading.Event()
     holder: dict[str, object] = {}
@@ -107,7 +111,7 @@ def _serve(data_dir: Path, open_browser: bool, ready: threading.Event | None) ->
         # Close from another thread so the current reply can finish first.
         threading.Timer(0.3, lambda: holder["server"].close()).start()
 
-    app = create_app(token, request_shutdown)
+    app = create_app(token, request_shutdown, report)
     server = create_server(app, host=HOST, port=0, threads=4)
     holder["server"] = server
     port = int(server.effective_port)

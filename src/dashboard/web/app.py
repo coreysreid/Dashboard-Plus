@@ -12,8 +12,11 @@ from dashboard import __version__
 log = logging.getLogger("dashboard.web")
 
 
-def create_app(shutdown_token: str, on_shutdown: Callable[[], None]) -> Flask:
-    """Return the web app. `on_shutdown` is called when a safe close is requested."""
+def create_app(shutdown_token: str, on_shutdown: Callable[[], None], report=None) -> Flask:
+    """Return the web app. `on_shutdown` is called when a safe close is requested.
+
+    `report` is the start-up report (database version, modules, module problems).
+    """
     app = Flask(__name__)
     app.config["PORT"] = None  # set by the server once it knows its port
 
@@ -35,7 +38,7 @@ def create_app(shutdown_token: str, on_shutdown: Callable[[], None]) -> Flask:
 
     @app.get("/")
     def home():
-        return render_template("home.html", version=__version__)
+        return render_template("home.html", version=__version__, report=report)
 
     @app.get("/close")
     def close_page():
