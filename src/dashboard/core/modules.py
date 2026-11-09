@@ -25,7 +25,8 @@ SYSTEM_COLUMNS = ("id", "created_at", "updated_at", "review_status", "source", "
 
 MODULE_KEYS = ("name", "title", "version", "description", "core_api", "kind", "requires", "outbound_hosts")
 MODULE_REQUIRED = ("name", "title", "version", "description", "core_api", "kind")
-TABLE_KEYS = ("title", "description", "columns")
+TABLE_KEYS = ("title", "description", "columns", "watch")
+WATCH_KEYS = ("running_low", "expiring", "supply")
 COLUMN_KEYS = ("type", "required", "default", "min", "max", "unit", "choices", "help", "sensitive", "to", "on_delete")
 LABEL_TABLE_KEYS = ("title", "columns", "form", "list")
 LABEL_COLUMN_KEYS = ("label", "help")
@@ -68,6 +69,7 @@ class Table:
     title: str
     description: str | None
     columns: dict[str, Column]
+    watch: dict = field(default_factory=dict)  # checked `watch` section (DESIGN.md 5.1)
 
 
 @dataclass
@@ -209,6 +211,93 @@ def _parse_column(file: str, table: str, name: str, raw, problems: list[str]) ->
     return column
 
 
+def _number(value) -> bool:
+    return isinstance(value, (int, float)) and not isinstance(value, bool)
+
+
+def _check_watch(file: str, table: str, raw, columns: dict[str, Column], problems: list[str]) -> dict:
+    """Check a table's `watch` section (running low, expiring soon, days of cover)."""
+    where = f"In {file}, table '{table}', watch"
+    if not raw:
+        return {}
+    if not isinstance(raw, dict):
+        problems.append(f"{where}: describe it as settings, like running_low = {{ ... }}.")
+        return {}
+    problems.extend(_unknown_keys(where, raw, WATCH_KEYS))
+    numbers = ("integer", "decimal", "measure", "money")
+    watch: dict = {}
+
+    def column(part: str, key: str, value, kinds) -> bool:
+        if value not in columns:
+            problems.append(f"{where}, {part}: '{key}' names a column '{value}' that does not exist."
+                            f"{_suggest(value, list(columns))}")
+            return False
+        if columns[value].type not in kinds:
+            problems.append(f"{where}, {part}: '{key}' must be a {' or '.join(kinds)} column, "
+                            f"but '{value}' is {columns[value].type}.")
+            return False
+        return True
+
+    low = raw.get("running_low")
+    if low is not None:
+        if not isinstance(low, dict):
+            problems.append(f"{where}, running_low: write it like {{ quantity = \"quantity\", minimum = \"minimum\" }}.")
+        else:
+            problems.extend(_unknown_keys(f"{where}, running_low", low, ("quantity", "minimum")))
+            ok = all(column("running_low", k, low.get(k), numbers) for k in ("quantity", "minimum"))
+            if ok:
+                watch["running_low"] = {"quantity": low["quantity"], "minimum": low["minimum"]}
+
+    expiring = raw.get("expiring")
+    if expiring is not None:
+        if not isinstance(expiring, dict):
+            problems.append(f"{where}, expiring: write it like {{ date = \"expires\", warn_days = 30 }}.")
+        else:
+            problems.extend(_unknown_keys(f"{where}, expiring", expiring, ("date", "warn_days")))
+            days = expiring.get("warn_days", 30)
+            if not isinstance(days, int) or isinstance(days, bool) or days < 1:
+                problems.append(f"{where}, expiring: warn_days must be a whole number of days, 1 or more.")
+            elif column("expiring", "date", expiring.get("date"), ("date",)):
+                watch["expiring"] = {"date": expiring["date"], "warn_days": days}
+
+    supply = raw.get("supply")
+    if supply is not None:
+        keys = ("quantity", "per_person_per_day", "per_pet_per_day", "target_days", "unit", "where")
+        if not isinstance(supply, dict):
+            problems.append(f"{where}, supply: write it as settings, like {{ quantity = \"quantity\", ... }}.")
+        else:
+            problems.extend(_unknown_keys(f"{where}, supply", supply, keys))
+            ok = column("supply", "quantity", supply.get("quantity"), numbers)
+            for key, required in (("per_person_per_day", True), ("per_pet_per_day", False), ("target_days", True)):
+                value = supply.get(key)
+                if value is None and not required:
+                    continue
+                if not _number(value) or value < 0 or (key == "target_days" and value <= 0):
+                    problems.append(f"{where}, supply: '{key}' must be a number"
+                                    f"{' above 0' if key == 'target_days' else ', 0 or more'}.")
+                    ok = False
+            filters = supply.get("where", {})
+            if not isinstance(filters, dict):
+                problems.append(f"{where}, supply: 'where' must be settings like {{ category = \"water\" }}.")
+                ok = False
+            else:
+                for name, value in filters.items():
+                    if name not in columns:
+                        problems.append(f"{where}, supply: 'where' names a column '{name}' that does not exist."
+                                        f"{_suggest(name, list(columns))}")
+                        ok = False
+                    elif columns[name].type == "choice" and value not in [c.key for c in columns[name].choices]:
+                        problems.append(f"{where}, supply: '{value}' is not one of the choices for '{name}'.")
+                        ok = False
+            if ok:
+                watch["supply"] = {"quantity": supply["quantity"],
+                                   "per_person_per_day": supply["per_person_per_day"],
+                                   "per_pet_per_day": supply.get("per_pet_per_day", 0),
+                                   "target_days": supply["target_days"],
+                                   "unit": str(supply.get("unit", "")), "where": dict(filters)}
+    return watch
+
+
 def _check_tables(module: str, data: dict, requires: list[str], problems: list[str]) -> dict[str, Table]:
     file = "tables.toml"
     problems.extend(_unknown_keys(f"In {file}", data, ("tables",)))
@@ -237,7 +326,8 @@ def _check_tables(module: str, data: dict, requires: list[str], problems: list[s
             column = _parse_column(file, tname, cname, craw, problems)
             if column:
                 columns[cname] = column
-        tables[tname] = Table(tname, str(raw.get("title", tname)), raw.get("description"), columns)
+        watch = _check_watch(file, tname, raw.get("watch", {}), columns, problems)
+        tables[tname] = Table(tname, str(raw.get("title", tname)), raw.get("description"), columns, watch)
     for table in tables.values():
         for column in table.columns.values():
             if column.type in ("link", "links") and column.to:

@@ -12,7 +12,7 @@ from typing import Callable
 from flask import Flask, abort, g, jsonify, redirect, render_template, request
 
 from dashboard import __version__
-from dashboard.core import db, records
+from dashboard.core import backups, db, records, watch
 from dashboard.core.startup import database_path
 
 log = logging.getLogger("dashboard.web")
@@ -97,14 +97,27 @@ def create_app(shutdown_token: str, on_shutdown: Callable[[], None], report=None
 
     @app.get("/")
     def home():
-        tables = []
+        tables, attention, last_backup = [], None, None
+        if app.config["DATA_DIR"] is not None:
+            last_backup = backups.latest(app.config["DATA_DIR"])
         if app.config["DATA_DIR"] is not None and app.config["REGISTRY"]:
             from dashboard.web.display import table_title
-            store = records.Records(connection(), app.config["REGISTRY"])
-            for name, info in app.config["REGISTRY"].items():
+            conn, registry = connection(), app.config["REGISTRY"]
+            store = records.Records(conn, registry)
+            for name, info in registry.items():
                 tables.append({"name": name, "title": table_title(info), "module": info.module.title,
                                "count": store.count(name)})
-        return render_template("home.html", report=report, tables=tables)
+            attention = {"low": watch.running_low(conn, registry), "expiring": watch.expiring(conn, registry),
+                         "supplies": watch.supplies(conn, registry)}
+        return render_template("home.html", report=report, tables=tables, attention=attention,
+                               last_backup=last_backup)
+
+    @app.get("/attention")
+    def attention_page():
+        conn, registry = connection(), app.config["REGISTRY"]
+        return render_template("attention.html", low=watch.running_low(conn, registry),
+                               expiring=watch.expiring(conn, registry), supplies=watch.supplies(conn, registry),
+                               household=watch.household(conn, registry))
 
     @app.get("/close")
     def close_page():

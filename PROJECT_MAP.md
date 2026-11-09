@@ -32,6 +32,7 @@ Follow the INDEX.md in a folder before opening its files. Hidden files are not l
 | CORE.md | The one-page v1 promise and acceptance list | testing any feature against it |
 | DESIGN.md | Object model, modules, API, security, packaging, build order | planning or building |
 | ROADMAP.md | Milestones M1 to M5, what M1 includes, success measures, open questions | deciding what comes next |
+| WORKSTREAMS.md | How two agents split the work: lanes, owned files, contracts, status | before starting any work |
 | JOURNEYS.md | Short stories of real use, each an acceptance test | reviewing the experience |
 | INFLUENCES.md | Books and ideas we build on, credited, and how we credit | adding or checking a credit |
 | decisions/ | One record per technical choice, with downsides | questioning or reversing a choice |
@@ -75,6 +76,9 @@ marked Superseded. Each lists downsides, cost to undo, and the sign it was wrong
 | [0031](0031-module-files-are-checked-and-migrations-generated.md) | Module files are checked strictly, and their migrations are generated | Accepted |
 | [0032](0032-one-checked-path-for-every-record-change.md) | One checked path for every record change, with soft deletes and history | Accepted |
 | [0033](0033-screens-generated-from-declarations.md) | Screens generated from declarations, with a launch-link sign-in | Accepted |
+| [0034](0034-two-agents-work-in-separate-lanes.md) | Two agents work in separate lanes with fixed contracts | Accepted |
+| [0035](0035-watch-views-and-days-of-cover.md) | How running low, expiring soon and days of cover are worked out | Accepted |
+| [0036](0036-automatic-backups-in-two-places.md) | Automatic backups: daily and on close, in two places | Accepted |
 | [TEMPLATE](TEMPLATE.md) | Blank record to copy for a new decision | recording a decision |
 
 ## modules/  (summary: optional features; each folder is one module)
@@ -105,12 +109,15 @@ See docs/DESIGN.md section 6 for the module contract.
 | Entry | What it is | Open it when |
 |---|---|---|
 | __init__.py | Core services: database, migrations, modules and records; review and backups come next. | adding a core service |
+| backups.py | Automatic backups: one a day, one at every safe close, kept in two places. | changing when or where backups are made |
 | db.py | Open the SQLite database with settings that are safe on USB drives. | changing how the data file is opened or backed up |
 | migrations.py | Apply numbered migrations, one track for the core and one per module. | changing how database changes are applied |
 | migrations/ | The core's own numbered database changes | adding a core table |
 | modules.py | Find module folders, check their files, and explain any mistakes in plain words. | changing what module files may say |
 | records.py | Create, change, delete and read records, checking every value and keeping a history. | changing how records are saved or checked |
+| settings.py | Read and write household settings kept in the database (core__settings). | storing a new setting |
 | schema.py | Turn a module's declared tables into SQL, and work out its next migration. | changing how tables are built |
+| watch.py | Work out what is running low, what expires soon, and how many days of supplies are on hand. | changing running low, expiring or days of cover |
 | startup.py | Prepare the database at start-up: load modules, back up if needed, and migrate. | changing what happens at start-up |
 
 ## src/dashboard/core/migrations/  (summary: the core's numbered database changes; never edit a released one)
@@ -134,7 +141,8 @@ Add a new file with the next number instead of changing an old one.
 | Entry | What it is | Open it when |
 |---|---|---|
 | base.html | Shared layout, colours (light and dark), header and footer | changing the overall look |
-| home.html | Home page: tables with counts, data file status, module problems | changing the home screen |
+| home.html | Home page: days of cover, needs attention, tables with counts, backup and data file status | changing the home screen |
+| attention.html | Running low, expiring soon and days of cover, with the working shown | changing the attention page |
 | grid.html | A table's records, a page at a time, sortable | changing the list of records |
 | rows.html | One page of grid rows (also loaded as you scroll) | changing a row |
 | form.html | Add and edit forms, delete and restore, and history | changing the form |
@@ -161,6 +169,8 @@ PYTHONPATH=src python -m unittest discover -s tests
 | test_check_indexes.py | Tests for the index check. | changing index rules |
 | test_project_map.py | Tests for the project map generator. | changing the map |
 | test_server.py | Tests for starting, protecting and safely closing the local web server. | changing startup or closing |
+| test_watch.py | Tests for running low, expiring soon and days of cover, and for checking `watch` sections. | changing watch rules |
+| test_backups.py | Tests for automatic backups: daily, on close, in two places, and keeping only recent ones. | changing backups |
 | test_web.py | Tests for the screens: sign-in by launch link, grid paging, forms, history and reports. | changing a screen |
 | test_main.py | Tests for the command-line entry point and its plain-language messages. | changing the command line |
 | test_build_portable.py | Tests for the portable Windows build, using a stand-in for the Python download. | changing the build |

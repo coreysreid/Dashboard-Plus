@@ -19,6 +19,10 @@ columns.quantity = { type = "measure", unit = "each", min = 0 }
 columns.price = { type = "money" }
 columns.checked = { type = "boolean" }
 columns.secret = { type = "text", sensitive = true }
+columns.minimum = { type = "measure", min = 0 }
+
+[tables.items.watch]
+running_low = { quantity = "quantity", minimum = "minimum" }
 '''
 LABELS = '''[tables.items]
 title = "Stock items"
@@ -132,6 +136,14 @@ class WebTests(TempDirTestCase):
         self.assertEqual(more.count('<a href="/t/demo__places/'), 10)
         self.assertNotIn("data-next", more)
         self.assertIn("Shelf 59", more)
+
+    def test_home_and_attention_page_show_what_is_running_low(self):
+        self.sign_in()
+        self.post("/t/demo__items/new", {"name": "Batteries", "quantity": "1", "minimum": "4", "then": "done"})
+        home = self.get("/").get_data(as_text=True)
+        self.assertIn("1 running low", home)
+        page = self.get("/attention").get_data(as_text=True)
+        self.assertIn("Batteries</a>: 1 left, keep at least 4 each", page)
 
     def test_unknown_table_and_record_are_friendly(self):
         self.sign_in()

@@ -1,0 +1,30 @@
+{% extends "base.html" %}
+{% block title %}Needs attention · Dashboard Plus{% endblock %}
+{% block body %}
+<p class="muted"><a href="/">Home</a></p>
+<h1>Needs attention</h1>
+<p class="lead">What is running low, what expires soon, and how long your supplies would last.</p>
+
+{% if supplies %}
+<h2>Days of cover</h2>
+{% for s in supplies %}
+<div class="card">
+  <strong>{{ s.title }}</strong>
+  <p>{{ s.working }}</p>
+  {% if s.shortfall > 0 %}<p>To reach {{ s.target_days | int if s.target_days == s.target_days|int else s.target_days }} days you need about {{ "%.0f" | format(s.shortfall) }} {{ s.unit }} more.</p>{% endif %}
+  {% for note in s.notes %}<p class="muted">{{ note }}</p>{% endfor %}
+</div>
+{% endfor %}
+<p class="muted">Household: {% if household.people %}{{ household.people }} {{ "person" if household.people == 1 else "people" }} ({{ household.source }}){% else %}not set yet{% endif %}{% if household.pets %}, {{ household.pets }} pet{{ "" if household.pets == 1 else "s" }}{% endif %}.</p>
+{% endif %}
+
+<h2>Running low</h2>
+{% if low %}
+<ul>{% for item in low %}<li><a href="/t/{{ item.table }}/{{ item.record_id }}">{{ item.name }}</a>: {{ item.detail }}</li>{% endfor %}</ul>
+{% else %}<p class="muted">Nothing is below its minimum.</p>{% endif %}
+
+<h2>Expiring soon</h2>
+{% if expiring %}
+<ul>{% for item in expiring %}<li><a href="/t/{{ item.table }}/{{ item.record_id }}">{{ item.name }}</a>: {{ item.detail }}</li>{% endfor %}</ul>
+{% else %}<p class="muted">Nothing expires in the coming weeks.</p>{% endif %}
+{% endblock %}
