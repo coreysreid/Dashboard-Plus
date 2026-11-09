@@ -25,8 +25,9 @@ file is checked against a known checksum.
 - In M1 the launcher shows a small console window that explains the program is
   running. Hiding it is a later polish once closing from the page is proven.
 - Release builds (`--release`) refuse to run without a pinned checksum. The
-  Python checksum is pinned from the first CI download, because python.org is
-  not reachable from the development environment.
+  Python checksum was pinned from the first CI downloads (two independent
+  Windows builds produced the same value), because python.org is not reachable
+  from the development environment. Every build now verifies it.
 
 ## Why we chose it
 - Building and testing on Windows in every change finds packaging problems in
@@ -44,8 +45,6 @@ file is checked against a known checksum.
 - The console window looks less polished than a desktop app.
 - Python 3.12 receives security fixes only as source after 3.12.10; moving to a
   newer Python needs a new pinned version and checksum.
-- Until the checksum is pinned, test builds warn rather than verify the Python
-  download.
 
 ## How hard it is to undo
 Low. The build is one script and one CI job.
