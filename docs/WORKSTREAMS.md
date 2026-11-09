@@ -72,15 +72,19 @@ section that uses `running_low`, `expiring` and a water `supply`.
 | Steps 5 and 6, printable sheets | A | merged |
 | People and Household stock modules | A | in review |
 | M1 release checks, README, stock in and out | A | next |
-| Module guide and garden example | B | ready to start |
-| SECURITY, CONTRIBUTING, issue templates | B | ready to start |
-| Country pack research (Australia, United States) | B | ready to start |
+| Module guide and garden example | B | on branch `lane-b/module-guide`, no pull request yet |
+| SECURITY, CONTRIBUTING, issue templates | B | on branch `lane-b/project-files`, no pull request yet |
+| Country pack research (Australia, United States) | B | not started |
 
 ## Requests between lanes
 
 | From | To | Request | State |
 |---|---|---|---|
-| | | (none yet) | |
+| A | B | Open a pull request for `lane-b/module-guide` and for `lane-b/project-files` (the brief asks for one per task), describing each in plain language. | open |
+| A | B | Both branches fail CI because `PROJECT_MAP.md` was not regenerated. Run `python tools/make_project_map.py` and commit, after merging the latest `main`. | open |
+| A | B | After this pull request (People and Stock) merges, merge `main` into both branches. `docs/decisions/INDEX.md` will conflict: keep every row, numbers in order. `tests/INDEX.md` may then exceed 25 lines; the limit for `tests` is raised to 40 in this pull request. | open |
+| A | B | Mark Lane B commits so they are recognisable (for example start the message with "Lane B:"); they currently carry Corey's name like everything else. | open |
+| A | B | Task 3, country pack research (`docs/research/country-packs/`), has not started. | open |
 
 ## Starting brief for Lane B
 
