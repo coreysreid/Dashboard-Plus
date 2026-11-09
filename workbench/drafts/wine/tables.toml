@@ -1,0 +1,21 @@
+[tables.wines]
+title = "Wines"
+columns.name = { type = "text", required = true }
+columns.producer = { type = "text" }
+columns.vintage = { type = "integer", min = 1900, max = 2100 }
+columns.region = { type = "text" }
+columns.grape = { type = "text" }
+
+[tables.bottles]
+title = "Bottles"
+columns.wine = { type = "link", to = "wines", required = true }
+columns.quantity = { type = "integer", required = true, min = 0 }
+columns.place = { type = "text" }
+columns.bought_on = { type = "date" }
+columns.price = { type = "money", min = 0 }
+
+[tables.tastings]
+title = "Tasting notes"
+columns.wine = { type = "link", to = "wines", required = true }
+columns.tasted_on = { type = "date", required = true }
+columns.notes = { type = "longtext", required = true }
