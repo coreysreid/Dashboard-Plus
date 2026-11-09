@@ -76,6 +76,32 @@ class StockModuleTests(TempDirTestCase):
         self.assertIn("Garage shelf", page)
         self.assertIn("Antiseptic cream", page)
 
+    def test_stock_in_and_out_from_the_item_page(self):
+        settings.put(self.conn, "setup.done", True)
+        rice = self.item(name="Rice", quantity=1, minimum=2, unit="kg")
+        self.assertEqual([i.name for i in watch.running_low(self.conn, self.registry)], ["Rice"])
+        app = create_app("t", lambda: None, self.report, data_dir=self.data, session_key="k")
+        app.config["PORT"] = PORT
+        client = app.test_client()
+        client.get("/?key=k", base_url=BASE)
+        item_page = client.get(f"/t/stock__items/{rice}", base_url=BASE).get_data(as_text=True)
+        self.assertIn(f'href="/t/stock__movements/new?item={rice}"', item_page)
+        form = client.get(f"/t/stock__movements/new?item={rice}", base_url=BASE).get_data(as_text=True)
+        self.assertRegex(form, rf'<option value="{rice}"\s+selected>Rice</option>')
+        self.assertRegex(form, r'<option value="bought"\s+selected>Bought or added</option>')
+        self.assertIn(f'value="{date.today().isoformat()}"', form)
+        response = client.post("/t/stock__movements/new", base_url=BASE, data={
+            "_csrf": app.config["CSRF_TOKEN"], "item": str(rice), "reason": "bought", "amount": "3",
+            "happened_on": "2026-11-09", "then": "back", "back": f"/t/stock__items/{rice}"})
+        self.assertEqual(response.headers["Location"], f"/t/stock__items/{rice}")
+        self.assertEqual(self.records.get("stock__items", rice)["quantity"], 4)
+        self.assertEqual(watch.running_low(self.conn, self.registry), [])
+        refused = client.post("/t/stock__movements/new", base_url=BASE, data={
+            "_csrf": app.config["CSRF_TOKEN"], "item": str(rice), "reason": "used", "amount": "9",
+            "happened_on": "2026-11-09", "then": "back", "back": f"/t/stock__items/{rice}"})
+        self.assertEqual(refused.status_code, 422)
+        self.assertIn("only 4 left", refused.get_data(as_text=True))
+
     def test_migration_matches_its_description(self):
         from dashboard.core.schema import next_migration_sql
         self.assertIsNone(next_migration_sql(modules.load_module(ROOT / "modules" / "stock")))

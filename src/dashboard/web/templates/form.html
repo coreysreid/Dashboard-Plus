@@ -58,12 +58,20 @@
     {% if record %}
       <button type="submit">Save changes</button>
     {% else %}
+      {% if back %}<input type="hidden" name="back" value="{{ back }}">
+      <button type="submit" name="then" value="back">Save</button>
+      <button type="submit" class="quiet" name="then" value="another">Save and add another</button>
+      {% else %}
       <button type="submit" name="then" value="another">Save and add another</button>
       <button type="submit" class="quiet" name="then" value="done">Save</button>
+      {% endif %}
     {% endif %}
     <a href="/t/{{ info.name }}">Cancel</a>
   </div>
 </form>
+{% if related %}
+<div class="actions">{% for r in related %}<a class="button quiet" href="{{ r.href }}">Add to {{ r.label | lower }}</a>{% endfor %}</div>
+{% endif %}
 {% if record %}
 <form method="post" action="/t/{{ info.name }}/{{ record.id }}/delete" onsubmit="return confirm('Delete this record? It can be restored later.');">
   <input type="hidden" name="_csrf" value="{{ csrf_token }}">

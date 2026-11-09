@@ -3,7 +3,7 @@ from __future__ import annotations
 
 from flask import Blueprint, abort, current_app, redirect, render_template, request, url_for
 
-from dashboard.core import records
+from dashboard.core import records, schema
 from dashboard.web import display
 
 pages = Blueprint("pages", __name__)
@@ -60,7 +60,7 @@ def more_rows(table):
     return render_template("rows.html", info=info, rows=rows, next_offset=next_offset)
 
 
-def _render_form(info, store, values, errors, from_form, record=None, status=200, saved=None):
+def _render_form(info, store, values, errors, from_form, record=None, status=200, saved=None, back=None):
     fields = display.build_fields(store, info, values, errors, from_form)
     history = []
     if record:
@@ -78,8 +78,20 @@ def _render_form(info, store, values, errors, from_form, record=None, status=200
             history.append({"at": entry["at"].replace("T", " ")[:16], "who": display.actor_text(entry["actor"]),
                             "action": display.ACTION_TEXT.get(entry["action"], entry["action"]), "changes": changes})
     record_name = display.display_name(info, record) if record else None
+    related = []
+    if record and not record.get("deleted_at"):
+        for other, column in store._dependents(info):
+            related.append({"href": f"/t/{other.name}/new?{column.name}={record['id']}",
+                            "label": display.table_title(other)})
     return render_template("form.html", info=info, title=display.table_title(info), fields=fields, record=record,
-                           record_name=record_name, errors=errors, history=history, saved=saved), status
+                           record_name=record_name, errors=errors, history=history, saved=saved,
+                           related=related, back=back), status
+
+
+def _default_text(column) -> str:
+    """A default as it should appear in an empty form."""
+    value = records.resolve_default(column)
+    return "" if value is None else str(value)
 
 
 def _raw_form(info):
@@ -95,8 +107,19 @@ def _raw_form(info):
 
 @pages.get("/t/<table>/new")
 def new_record(table):
+    """An empty form; values in the address (for example ?item=3) are filled in."""
     info, store = _info(table), _store()
-    return _render_form(info, store, {}, {}, False, saved=request.args.get("saved"))
+    prefill = {c.name: _default_text(c) for c in info.table.columns.values()
+               if c.default is not None and c.type != "boolean"}
+    prefill.update({c.name: "yes" for c in info.table.columns.values() if c.type == "boolean" and c.default})
+    from_address = {k: v for k, v in request.args.items() if k in info.table.columns and k != "saved"}
+    prefill.update(from_address)
+    back = None
+    for name, value in from_address.items():
+        column = info.table.columns[name]
+        if column.type == "link" and value.isdigit():
+            back = f"/t/{schema.target_table(info.module.name, column)}/{value}"
+    return _render_form(info, store, prefill, {}, True, saved=request.args.get("saved"), back=back)
 
 
 @pages.post("/t/<table>/new")
@@ -106,10 +129,13 @@ def create_record(table):
     try:
         record_id = store.create(table, values)
     except records.ValidationError as error:
-        return _render_form(info, store, _raw_form(info), error.problems, True, status=422)
+        back = request.form.get("back") if request.form.get("back", "").startswith("/t/") else None
+        return _render_form(info, store, _raw_form(info), error.problems, True, status=422, back=back)
     if request.form.get("then") == "another":
         return redirect(url_for("pages.new_record", table=table, saved=display.display_name(
             info, store.get(table, record_id))))
+    if request.form.get("then") == "back" and request.form.get("back", "").startswith("/t/"):
+        return redirect(request.form["back"])
     return redirect(url_for("pages.grid", table=table))
 
 
