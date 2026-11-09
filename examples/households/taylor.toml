@@ -1,0 +1,219 @@
+# A made-up household for demos, screenshots and testing. Every name, number
+# and address here is invented. Phone numbers use ranges set aside for drama in
+# the United Kingdom (07700 900xxx, 020 7946 0xxx, 0161 496 0xxx); emails use
+# example.com.
+#
+# How to read this file: see examples/households/INDEX.md.
+
+title = "Sam Taylor"
+summary = "One person in a second-floor flat in England, just getting started. A few things recorded, and a couple of useful gaps still to fill in."
+
+[setup]
+people = ["Sam Taylor"]
+pets = 0
+country = "United Kingdom"
+region = "North West England"
+home_type = "apartment"
+storeys = 1
+mobility_needs = false
+hazards = ["flood", "snow", "storm"]
+modules = ["people", "stock"]
+
+# ---- People -----------------------------------------------------------------
+
+[[people.people]]
+name = "Sam Taylor"
+phone = "07700 900123"
+relationship = "other"
+email = "sam.taylor@example.com"
+birthday = "1993-07-25"
+notes = "Works at Initech. In the office on Tuesdays and Thursdays, at home otherwise."
+
+[[people.people]]
+name = "Chris Taylor"
+relationship = "family"
+address = "Leeds"
+notes = "Sam's brother. Number still to add."
+
+[[people.people]]
+name = "Priya Shah"
+phone = "07700 900456"
+relationship = "friend"
+email = "priya.shah@example.com"
+notes = "Lives two streets away. Has a spare key."
+
+[[people.people]]
+name = "Mr Okafor"
+phone = "020 7946 0123"
+relationship = "neighbour"
+address = "Flat 4, downstairs"
+
+[[people.people]]
+name = "Northgate Lettings"
+phone = "0161 496 0000"
+relationship = "professional"
+notes = "Landlord's agent. Emergency repairs line, day or night."
+
+[[people.people]]
+name = "Initech"
+phone = "0161 496 0500"
+relationship = "professional"
+notes = "Sam's work."
+
+[[people.roles]]
+person = "Chris Taylor"
+role = "emergency_contact"
+priority = 1
+
+[[people.roles]]
+person = "Priya Shah"
+role = "key_holder"
+priority = 2
+
+[[people.roles]]
+person = "Mr Okafor"
+role = "neighbour"
+priority = 3
+
+[[people.roles]]
+person = "Northgate Lettings"
+role = "other"
+priority = 4
+notes = "Landlord: leaks, heating, broken locks."
+
+[[people.roles]]
+person = "Initech"
+role = "workplace"
+priority = 5
+
+[[people.important_info]]
+person = "Sam Taylor"
+kind = "dietary"
+detail = "Coeliac disease: strictly gluten free."
+
+# ---- Household stock ----------------------------------------------------------
+
+[[stock.places]]
+name = "Kitchen cupboard"
+
+[[stock.places]]
+name = "Under the sink"
+
+[[stock.places]]
+name = "Hall cupboard"
+notes = "Next to the boiler."
+
+[[stock.places]]
+name = "Bike shed"
+
+# Amounts are what is on hand today, after the stock in and out below.
+[[stock.items]]
+name = "Bottled water (6 x 2 L)"
+category = "water"
+quantity = 12
+unit = "litres"
+minimum = 9
+place = "Hall cupboard"
+expires = "today+240"
+
+[[stock.items]]
+name = "Gluten-free pasta"
+category = "pantry"
+quantity = 2
+unit = "packs"
+minimum = 2
+place = "Kitchen cupboard"
+expires = "today+180"
+
+[[stock.items]]
+name = "Tinned soup"
+category = "pantry"
+quantity = 3
+unit = "tins"
+minimum = 4
+place = "Kitchen cupboard"
+expires = "today+320"
+
+[[stock.items]]
+name = "Oat milk"
+category = "pantry"
+quantity = 2
+unit = "cartons"
+minimum = 1
+place = "Kitchen cupboard"
+expires = "today+6"
+
+[[stock.items]]
+name = "Paracetamol"
+category = "first_aid"
+quantity = 1
+unit = "packs"
+minimum = 1
+place = "Kitchen cupboard"
+expires = "today+150"
+
+[[stock.items]]
+name = "Plasters"
+category = "first_aid"
+quantity = 20
+unit = "plasters"
+place = "Kitchen cupboard"
+
+[[stock.items]]
+name = "Torch"
+category = "power"
+quantity = 1
+unit = "torches"
+minimum = 1
+place = "Hall cupboard"
+
+[[stock.items]]
+name = "AA batteries"
+category = "power"
+quantity = 2
+unit = "batteries"
+minimum = 4
+place = "Hall cupboard"
+
+[[stock.items]]
+name = "Washing-up liquid"
+category = "cleaning"
+quantity = 1
+unit = "bottles"
+minimum = 1
+place = "Under the sink"
+
+[[stock.items]]
+name = "Bike inner tube"
+category = "other"
+quantity = 1
+unit = "tubes"
+minimum = 1
+place = "Bike shed"
+
+[[stock.items]]
+name = "Picture hooks"
+category = "hardware"
+quantity = 1
+unit = "packs"
+place = "Hall cupboard"
+
+# Stock in and out: the history behind today's amounts, oldest first.
+[[stock.movements]]
+item = "Bottled water (6 x 2 L)"
+reason = "bought"
+amount = 12
+happened_on = "today-8"
+notes = "After the storm warning on the news."
+
+[[stock.movements]]
+item = "Tinned soup"
+reason = "used"
+amount = 1
+happened_on = "today-3"
+
+[[stock.movements]]
+item = "Oat milk"
+reason = "bought"
+amount = 2
+happened_on = "today-1"

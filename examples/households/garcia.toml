@@ -1,0 +1,464 @@
+# A made-up household for demos, screenshots and testing. Every name, number
+# and address here is invented. Phone numbers use the 555-01xx range set aside
+# for fiction in the United States; emails use example.com and example.org.
+#
+# How to read this file: see examples/households/INDEX.md.
+
+title = "The Garcia household"
+summary = "Three generations and a cat in a third-floor apartment in California, getting ready for earthquakes. Grandmother Rosa has care needs and daily medication."
+
+[setup]
+people = ["Maria Garcia", "Carlos Garcia", "Sofia Garcia", "Rosa Garcia"]
+pets = 1
+country = "United States"
+region = "California"
+home_type = "apartment"
+storeys = 1
+mobility_needs = true
+hazards = ["earthquake", "heat", "power"]
+modules = ["people", "stock"]
+
+# ---- People -----------------------------------------------------------------
+
+[[people.people]]
+name = "Maria Garcia"
+phone = "(415) 555-0101"
+relationship = "partner"
+email = "maria.garcia@example.com"
+birthday = "1979-05-30"
+notes = "Teacher at Lincoln High School. Rosa's main carer."
+
+[[people.people]]
+name = "Carlos Garcia"
+phone = "(415) 555-0102"
+other_phone = "(415) 555-0161"
+relationship = "partner"
+email = "carlos.garcia@example.com"
+birthday = "1977-01-18"
+notes = "Engineer at Globex Corporation, about an hour away by train. The other phone is his desk."
+
+[[people.people]]
+name = "Sofia Garcia"
+phone = "(415) 555-0103"
+relationship = "child"
+birthday = "2010-08-09"
+notes = "Grade 10 at Lincoln High School."
+
+[[people.people]]
+name = "Rosa Garcia"
+phone = "(415) 555-0104"
+relationship = "parent"
+birthday = "1948-12-03"
+notes = "Maria's mother. Home most days."
+
+[[people.people]]
+name = "Luis Garcia"
+phone = "(510) 555-0110"
+relationship = "family"
+email = "luis.garcia@example.org"
+address = "310 Example Avenue, Oakland"
+notes = "Carlos's brother. Out-of-area contact if local phone lines are busy."
+
+[[people.people]]
+name = "Mei Chen"
+phone = "(415) 555-0120"
+relationship = "neighbour"
+address = "Apartment 3B, across the hall"
+notes = "Retired nurse. Has a spare key and checks on Rosa."
+
+[[people.people]]
+name = "Dr Priya Patel"
+phone = "(415) 555-0130"
+relationship = "professional"
+address = "Bayview Family Clinic, 200 Bay Street"
+notes = "Rosa's and the family's doctor."
+
+[[people.people]]
+name = "Bayview Pharmacy"
+phone = "(415) 555-0140"
+relationship = "professional"
+notes = "Rosa's prescriptions are on auto-refill."
+
+[[people.people]]
+name = "Dr Kevin Kim"
+relationship = "professional"
+notes = "Dentist. Sofia's braces check every six weeks."
+
+[[people.people]]
+name = "Whisker Wellness Vet"
+phone = "(415) 555-0150"
+relationship = "professional"
+notes = "Luna's vet."
+
+[[people.people]]
+name = "Globex Corporation"
+phone = "(415) 555-0160"
+relationship = "professional"
+notes = "Carlos's work, main reception."
+
+[[people.people]]
+name = "Lincoln High School"
+phone = "(415) 555-0170"
+relationship = "professional"
+
+[[people.people]]
+name = "Building manager"
+phone = "(415) 555-0180"
+relationship = "professional"
+notes = "Gas and water shut-off for the building. Elevator problems."
+
+[[people.roles]]
+person = "Luis Garcia"
+role = "emergency_contact"
+priority = 1
+notes = "Out of area: easier to reach after an earthquake."
+
+[[people.roles]]
+person = "Mei Chen"
+role = "emergency_contact"
+priority = 2
+
+[[people.roles]]
+person = "Mei Chen"
+role = "key_holder"
+priority = 3
+
+[[people.roles]]
+person = "Dr Priya Patel"
+role = "doctor"
+priority = 4
+
+[[people.roles]]
+person = "Bayview Pharmacy"
+role = "pharmacist"
+priority = 5
+
+[[people.roles]]
+person = "Building manager"
+role = "other"
+priority = 6
+notes = "Building manager"
+
+[[people.roles]]
+person = "Whisker Wellness Vet"
+role = "vet"
+priority = 7
+
+[[people.roles]]
+person = "Lincoln High School"
+role = "school"
+priority = 8
+
+[[people.roles]]
+person = "Globex Corporation"
+role = "workplace"
+priority = 9
+
+[[people.roles]]
+person = "Dr Kevin Kim"
+role = "dentist"
+priority = 10
+
+[[people.important_info]]
+person = "Rosa Garcia"
+kind = "care_need"
+detail = "Uses a walker and cannot manage the stairs quickly. Needs someone with her to leave the building; the elevator stops in a power cut."
+
+[[people.important_info]]
+person = "Rosa Garcia"
+kind = "condition"
+detail = "Type 2 diabetes. High blood pressure."
+
+[[people.important_info]]
+person = "Rosa Garcia"
+kind = "medication"
+detail = "Metformin 500 mg twice a day with meals; lisinopril 10 mg each morning. Pill organiser on the kitchen counter."
+
+[[people.important_info]]
+person = "Sofia Garcia"
+kind = "allergy"
+detail = "Penicillin: rash and swelling."
+
+[[people.important_info]]
+person = "Carlos Garcia"
+kind = "dietary"
+detail = "Vegetarian."
+
+[[people.important_info]]
+person = "Mei Chen"
+kind = "access"
+detail = "Spare apartment key. The building's front door code is with the building manager."
+
+# ---- Household stock ----------------------------------------------------------
+
+[[stock.places]]
+name = "Kitchen cabinets"
+
+[[stock.places]]
+name = "Hall closet"
+notes = "Earthquake go-bags live here, by the front door."
+
+[[stock.places]]
+name = "Under the bed"
+notes = "Shoes and a flashlight under every bed."
+
+[[stock.places]]
+name = "Bathroom"
+
+[[stock.places]]
+name = "Car trunk"
+
+[[stock.places]]
+name = "Storage locker"
+notes = "Basement locker 12."
+
+# Amounts are what is on hand today, after the stock in and out below.
+[[stock.items]]
+name = "Water jugs (1 gallon)"
+category = "water"
+quantity = 22.7
+unit = "litres"
+minimum = 30
+place = "Storage locker"
+expires = "today+120"
+notes = "Six jugs. A gallon is about 3.8 litres."
+
+[[stock.items]]
+name = "Emergency water pouches"
+category = "water"
+quantity = 2
+unit = "litres"
+place = "Hall closet"
+expires = "today+900"
+notes = "In the go-bags."
+
+[[stock.items]]
+name = "Earthquake go-bag"
+category = "other"
+quantity = 2
+unit = "bags"
+minimum = 2
+place = "Hall closet"
+notes = "Check twice a year: flashlight, radio, whistle, masks, cash, copies of IDs."
+
+[[stock.items]]
+name = "Black beans"
+category = "pantry"
+quantity = 8
+unit = "cans"
+minimum = 6
+place = "Kitchen cabinets"
+expires = "today+540"
+
+[[stock.items]]
+name = "Rice"
+category = "pantry"
+quantity = 5
+unit = "lb"
+minimum = 2
+place = "Kitchen cabinets"
+expires = "today+365"
+
+[[stock.items]]
+name = "Canned soup"
+category = "pantry"
+quantity = 2
+unit = "cans"
+minimum = 6
+place = "Kitchen cabinets"
+expires = "today+400"
+
+[[stock.items]]
+name = "Tortillas"
+category = "pantry"
+quantity = 1
+unit = "packs"
+minimum = 1
+place = "Kitchen cabinets"
+expires = "today+4"
+
+[[stock.items]]
+name = "Peanut butter"
+category = "pantry"
+quantity = 2
+unit = "jars"
+minimum = 1
+place = "Kitchen cabinets"
+expires = "today+200"
+
+[[stock.items]]
+name = "Metformin 500 mg (Rosa)"
+category = "first_aid"
+quantity = 20
+unit = "tablets"
+minimum = 30
+place = "Kitchen cabinets"
+expires = "today+300"
+notes = "Two a day. Refill at 30 so a week's outage never runs it out."
+
+[[stock.items]]
+name = "Lisinopril 10 mg (Rosa)"
+category = "first_aid"
+quantity = 25
+unit = "tablets"
+minimum = 14
+place = "Kitchen cabinets"
+expires = "today+280"
+
+[[stock.items]]
+name = "Blood glucose test strips"
+category = "first_aid"
+quantity = 40
+unit = "strips"
+minimum = 50
+place = "Bathroom"
+expires = "today+18"
+
+[[stock.items]]
+name = "First aid kit"
+category = "first_aid"
+quantity = 1
+unit = "kits"
+minimum = 1
+place = "Hall closet"
+expires = "today+410"
+
+[[stock.items]]
+name = "N95 masks"
+category = "first_aid"
+quantity = 10
+unit = "masks"
+minimum = 8
+place = "Hall closet"
+
+[[stock.items]]
+name = "Hand sanitizer"
+category = "toiletries"
+quantity = 1
+unit = "bottles"
+place = "Bathroom"
+expires = "today-10"
+
+[[stock.items]]
+name = "Toilet paper"
+category = "toiletries"
+quantity = 24
+unit = "rolls"
+minimum = 12
+place = "Storage locker"
+
+[[stock.items]]
+name = "Flashlights"
+category = "power"
+quantity = 4
+unit = "flashlights"
+minimum = 4
+place = "Under the bed"
+
+[[stock.items]]
+name = "D batteries"
+category = "power"
+quantity = 2
+unit = "batteries"
+minimum = 6
+place = "Hall closet"
+
+[[stock.items]]
+name = "Portable power station"
+category = "power"
+quantity = 1
+unit = "units"
+minimum = 1
+place = "Hall closet"
+notes = "Keeps Rosa's phone and a fan going. Charge monthly."
+
+[[stock.items]]
+name = "Hand-crank radio"
+category = "power"
+quantity = 1
+unit = "radios"
+minimum = 1
+place = "Hall closet"
+
+[[stock.items]]
+name = "Cat food (Luna)"
+category = "pet"
+quantity = 4
+unit = "cans"
+minimum = 12
+place = "Kitchen cabinets"
+expires = "today+300"
+
+[[stock.items]]
+name = "Cat litter"
+category = "pet"
+quantity = 10
+unit = "lb"
+minimum = 5
+place = "Storage locker"
+
+[[stock.items]]
+name = "Furniture straps"
+category = "hardware"
+quantity = 2
+unit = "packs"
+place = "Storage locker"
+notes = "For the bookcase and the TV. Fit before the next quake season."
+
+[[stock.items]]
+name = "Adjustable wrench"
+category = "tools"
+quantity = 1
+unit = "wrenches"
+minimum = 1
+place = "Hall closet"
+notes = "For the gas shut-off. Kept with the go-bags."
+
+[[stock.items]]
+name = "Bleach"
+category = "cleaning"
+quantity = 1
+unit = "bottles"
+minimum = 1
+place = "Bathroom"
+
+# Stock in and out: the history behind today's amounts, oldest first.
+[[stock.movements]]
+item = "Water jugs (1 gallon)"
+reason = "bought"
+amount = 7.6
+happened_on = "today-20"
+notes = "Two more jugs."
+
+[[stock.movements]]
+item = "Metformin 500 mg (Rosa)"
+reason = "bought"
+amount = 60
+happened_on = "today-25"
+notes = "Monthly refill from Bayview Pharmacy."
+
+[[stock.movements]]
+item = "Metformin 500 mg (Rosa)"
+reason = "used"
+amount = 40
+happened_on = "today-5"
+notes = "Topped up the pill organiser."
+
+[[stock.movements]]
+item = "Canned soup"
+reason = "used"
+amount = 4
+happened_on = "today-3"
+
+[[stock.movements]]
+item = "Cat food (Luna)"
+reason = "used"
+amount = 8
+happened_on = "today-2"
+
+[[stock.movements]]
+item = "Tortillas"
+reason = "bought"
+amount = 1
+happened_on = "today-1"
+notes = "Weekly shop."

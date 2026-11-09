@@ -9,4 +9,7 @@
 | JOURNEYS.md | Short stories of real use, each an acceptance test | reviewing the experience |
 | INFLUENCES.md | Books and ideas we build on, credited, and how we credit | adding or checking a credit |
 | MODULES.md | Plain-language guide to writing a module with a garden example | making a module |
+| EXAMPLES.md | Three made-up households shown at every stage, welcome to closing (generated) | showing what it looks like |
+| screenshots/ | The gallery's images, one folder per household (generated) | using a screenshot elsewhere |
+| releases/ | Release checks: what was verified for each milestone, and how | preparing or judging a release |
 | decisions/ | One record per technical choice, with downsides | questioning or reversing a choice |
