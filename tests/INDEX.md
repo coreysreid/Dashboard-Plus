@@ -25,4 +25,5 @@ How to run them is in AGENTS.md.
 | test_main.py | Tests for the command-line entry point and its plain-language messages. | changing the command line |
 | test_build_portable.py | Tests for the portable Windows build, using a stand-in for the Python download. | changing the build |
 | test_lock_requirements.py | Tests for the requirements lock generator. | changing how libraries are locked |
+| test_repofiles.py | Tests for the shared list of repository files, including during a merge with conflicts. | a tool counts a file twice |
 | test_repository.py | Tests that this repository passes its own checks. | CI fails on the repo itself |

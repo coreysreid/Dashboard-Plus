@@ -22,7 +22,9 @@ def repo_files(root: Path) -> list[str]:
                 capture_output=True,
                 check=True,
             )
-            names = [n for n in result.stdout.decode("utf-8").split("\0") if n]
+            names = {n for n in result.stdout.decode("utf-8").split("\0") if n}
+            # A set: during a merge with conflicts git lists a conflicted file once per
+            # version, which would otherwise make tools count it two or three times.
             return sorted(n for n in names if (root / n).is_file())
         except (OSError, subprocess.CalledProcessError):
             pass
