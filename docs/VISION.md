@@ -1,0 +1,250 @@
+# Vision
+
+**Look after what your household has.**  
+Know what you have, where it is, and when it's running out.
+
+## The idea in one paragraph
+
+Most households already track things in notebooks, spreadsheets, phone photos
+and memory, and most of it is out of date when it is needed. Dashboard Plus is
+a single place on your own computer where you define what you want to track,
+enter it (or let a helper enter it for you), see it in charts, and get gentle
+questions that help you understand *why* numbers change.
+
+Think of it as Salesforce for a home: people and pets (CRM), household stock
+and storage (a small warehouse system), things that could go wrong (risk),
+jobs in progress (projects), a pile of unsorted photos, notes and receipts
+(inbox), and later, money (finance). You decide which of these you use.
+
+## The heart of it: looking after what you have
+
+The reason this exists is **stewardship**: looking after what your household
+has by knowing what it is, where it is, and whether it is enough, *before* you
+need it. The result is **resilience**: when something goes wrong, you are
+already covered, instead of counting shelves in a crisis.
+
+Concretely, a household can:
+
+- **Keep the pantry stocked.** Track staples, set a minimum for each, and see
+  at a glance what is running low so reordering is a habit, not a surprise.
+  Record the weekly shopping receipt (type it, or drop in a photo and approve
+  what was read) so stock goes up when shopping comes home.
+- **Know the emergency water supply.** Many countries now advise households to
+  hold at least three days of water and basics. Say how many people and pets
+  live here, and see in plain words: "You have about 2 days of water. You need
+  roughly 12 more litres for 3 days." Stored water and food show their expiry
+  dates so they get rotated.
+- **Know the tools and hardware.** Which screws, fixings and fuses you have and
+  do not have, before the shop is shut. Where the ladder, the generator or the
+  spare torch batteries are stacked away.
+- **Know the people.** People are the first pillar of resilience: who to call,
+  who has a key, who has an allergy or a care need, who is the neighbour, the
+  doctor, the vet, the plumber. Keep that on file with the important details
+  attached, and print a one-page emergency sheet that works with the power and
+  internet off.
+- **Know the medical basics.** Is there a first aid kit, where is it, is
+  anything in it out of date, and does anyone in the house know how to use it?
+  When did each adult last do a first aid or CPR course? Who has an allergy or a
+  condition others should know about, and where is the nearest hospital? Medical
+  readiness is a pillar of its own, alongside people, water and food.
+- **Spot trouble early.** A water bottle past its date, a medication running
+  out, a pet's food intake changing: the same watching-and-asking loop below
+  applies to all of it.
+- **Survive its own failures.** The records are yours, backed up automatically,
+  exportable in plain files, and work with no internet. A tracker that is down
+  when you need it is not resilient.
+
+## Built for what people care about
+
+Stock and supplies are where the product starts, but the tool is built to
+adapt. One household tracks an art project, another an electronics hobby, a
+third the Lego sets they buy and resell, a fourth a wine collection, a fifth
+the medication log for an ageing cat, a sixth the vegetable garden: what was
+sown where, when it was harvested, what it saved at the shops. Each of those matters a great deal to
+someone, and none of them matters to everyone. That is exactly why the product
+is modular: nobody has to carry modules they don't use, and nobody's interest
+is treated as a side-show.
+
+Every module we ship is built seriously, with real fields, real checks and the
+same question loop. Some are broad (Household stock, Pets) and some are
+compact (Wine), and the compact ones show how little it takes to add a topic
+of your own.
+
+
+## What makes it different
+
+Storing data and drawing charts are solved problems. The value here is a loop
+that connects numbers to meaning, which we call the **question loop**:
+
+1. **Notice.** A number changed. "Food eaten went up 30% from June."
+2. **Look.** Search your own notes, events and other modules near that date for
+   anything that might explain it.
+3. **Ask.** "Your notes say a new job started on 3 June. Is that related?"
+   with *Yes / No / Not sure*.
+4. **Remember.** Your answer is saved as a note attached to the date. Charts
+   show it, and later averages can take it into account.
+
+The computer proposes. The person confirms. The software never claims to know
+a cause; it only ever asks. The same principle governs data that arrives from
+outside: anything entered by an assistant or imported from a file waits in a
+review queue until a person approves it.
+
+**Ask sensible questions.** Asking beats asserting, but a dumb question is
+worse than none. Tyre wear on the car is not going to be related to how much
+water the garden hose uses, and the program should never wonder aloud about it.
+Questions are only asked about things a module has said could plausibly be
+connected (food and weather, a new routine and appetite), and a household can
+tell the program "that doesn't make sense", which stops that kind of question
+for good. Fewer, better questions are the goal.
+
+## Useful, and able to show it
+
+A tracker that only stores things is a chore. This one has to earn the time
+people put into it by showing a difference. You put in time and information;
+it should give back results that matter, in plain numbers:
+
+- "Food waste is down 25% from last month since you started using the reorder
+  list."
+- "The soup kits replaced four takeaway nights in the last fortnight."
+- "The vet caught this early because three months of food records showed it."
+- "You went through the whole month without running out of anything on the
+  essentials list."
+
+Records exist to find trends and insights and to make better decisions later.
+The rules for this are strict, because impressive-sounding numbers that are
+wrong would be worse than none: a result is only claimed when it is computed
+from the household's own records with the basis shown, or when a person has
+confirmed it ("Did the soup kits replace takeaway? Yes"). Nothing is counted
+until there is enough history to compare with, and the program says so. Over
+time the household also tells us whether each insight was useful, which is how
+we learn whether the product is doing its job.
+
+## Helping a household think
+
+The most valuable thing a good guide does is point at the places you had not
+looked. *Should we check inside that dark cave? Have you thought about crossing
+the river? What is up north?* Dashboard Plus does the same for a household with
+**"Have you thought about…?" prompts**.
+
+- A prompt is a plain question about something a household may not have
+  considered: "If you were stuck on an upper floor, could you get down?" "Does
+  anyone here know how to use the first aid kit?" "Do you know which hazards
+  your area is most exposed to, such as bushfire, cyclone, flood or
+  earthquake?"
+- Prompts are chosen for *this* home. A flat does not get asked about a second
+  storey, a home without pets does not get pet first aid, and a question about
+  something already recorded is not asked again.
+- Whatever hazards matter where you live are what the prompts cover: fires,
+  storms, floods, break-ins, power cuts, medical emergencies. We write our own
+  questions and point to the public safety bodies for the answers.
+- The household answers *Yes, sorted*, *Not relevant to us*, *Not yet, remind
+  me* or *Tell me more*. Answers are saved, dated, and come back for review on
+  a schedule.
+- A coverage view shows how many applicable questions have been looked at in
+  each area (people, medical, water, food, getting out, power, communication,
+  documents). It says "looked at", never "safe" or "prepared".
+- **Local guidance comes first.** For some countries we ship carefully sourced,
+  dated starter notes that name the national authorities and the hazards they
+  list. For everywhere else, prompts help people do their own research about
+  their own address. Either way the program asks you to check with your local
+  authority, because hazards differ street by street.
+
+This is the same spirit as the question loop: the program asks, the person
+decides, and it never claims to know best. The difference is that the question
+loop explains changes in your numbers, while prompts reveal blind spots before
+anything has changed.
+
+## Who it is for
+
+- A household member who is not technical and will never edit a config file.
+- Someone who wants to keep their data private and on their own machine.
+- Someone who may hand the whole thing to a family member on a USB stick.
+- A hobbyist who wants to add a new topic (say, a vegetable garden) by writing
+  a short text file, or by asking an AI assistant to write it from a sentence.
+
+## Ideas we build on
+
+The habit of small, repeated actions and the habit of thinking a crisis through
+before it happens both come from other people's work. We credit them in
+[`INFLUENCES.md`](INFLUENCES.md).
+
+## Principles
+
+1. **Local first.** Your data lives in a folder you own. No account, no cloud.
+2. **Ask, don't assert, and ask sensibly.** Every automated finding is a
+   question or a suggestion. Words like "associated with" are allowed;
+   "caused by" is not. Only plausible connections are ever raised.
+3. **A small, finished core and many modules.** The core is meant to become
+   stable and stop changing. New topics are modules.
+4. **No lock-in.** One click exports everything as CSV and plain files.
+5. **Honest numbers.** Statistics show how many days they rest on, refuse to
+   speak with too little data, and correct for looking at many things at once.
+6. **Outlives its maintainer.** Few dependencies, a stable file format
+   (SQLite), failure-tolerant outside sources, and documents written for a
+   newcomer, and a short `INDEX.md` in every folder so a person or an AI
+   assistant can skim the project and only go deeper where needed. If the
+   original author disappears, someone else can pick it up.
+7. **Safe by default.** Listens on this computer only. Declarative modules
+   cannot run code. Code modules say clearly that they can.
+8. **Nothing personal in the public repository.** Ever.
+9. **Look after what you have.** The product earns its place by telling a
+   household what it has, what is running low and what is about to expire, with
+   no internet and no account. That habit of stewardship is what builds
+   resilience.
+10. **Help people think.** The program points at what a household may not have
+    considered, with questions suited to their home, and leaves the decision and
+    the research to them.
+11. **Prove it's useful.** Results are shown as plain numbers that come from the
+    household's own records or from something a person confirmed, never from
+    guesswork, and the household can say whether each one helped.
+12. **Every technical decision has a written reason.** Choices are recorded
+   in `docs/decisions/` with their downsides and the sign that they were
+   wrong, so any of them can be judged and reversed later.
+
+## What ships first
+
+A core plus ten modules:
+
+- **People** (contacts with the important details attached, and the emergency
+  sheet). On by default, because people are a pillar of resilience.
+- **Household stock** (pantry, emergency water, tools and hardware, shopping
+  receipts).
+- **Medical** (first aid kit contents and checks, first aid and CPR training,
+  medical contacts).
+- **Readiness** (the "Have you thought about…?" prompts, plans and drills, the
+  coverage view, and starter notes for some countries).
+- **Pets**.
+- **Vegetable garden**, the worked example that shows how to build a module.
+- **Wine collection** (a compact module).
+- **Graphing**, **Analysis** and an **API connector**.
+
+People, Household stock, Medical, Readiness, Pets, Garden and Wine are deliberately made from files
+alone, to prove the core can build real features from a description. If it
+cannot, the design is wrong and we change the core. The core also provides the
+monthly "difference this made" screen.
+
+## Non-goals
+
+These are choices, not omissions. Requests for them will be politely declined.
+
+- **Multi-user cloud hosting.** There is no server to sign in to.
+- **Mobile apps.** The program runs on a computer. A phone browser on the same
+  home network is not supported either, because it listens on this computer
+  only.
+- **Real-time sync across devices.** One data folder, one computer at a time.
+  Moving it means copying the folder.
+- **Being an authority on safety or medicine.** The program asks questions and
+  points to official guidance. It does not give emergency or medical
+  instruction, diagnose, or tell anyone they are safe.
+- **Replacing a bank's or doctor's system.** It is a notebook with charts, not
+  a medical record or accounting system of record.
+- **Automatic usage tracking.** The program never reports on its users. A
+  household may choose to save and send a counts-only usefulness report.
+- **Anything that needs your data to leave your computer.** Optional outside
+  sources may fetch public information (weather, exchange rates). They do not
+  upload your records.
+
+## Later (not v1)
+
+An optional passphrase for the whole data folder, rules and workflows ("if weight drops 10% in a month, flag it"), a finance
+model, project management, forecasting, and Home Assistant integration.
