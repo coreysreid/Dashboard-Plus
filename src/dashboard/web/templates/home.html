@@ -23,6 +23,9 @@
   </div>
 </div>
 {% endif %}
+{% if sheets %}
+<div class="actions">{% for s in sheets %}<a class="button quiet" href="/sheet/{{ s.module }}/{{ s.name }}">Print: {{ s.title }}</a>{% endfor %}</div>
+{% endif %}
 {% if tables %}
 <div class="tables">
   {% for t in tables %}

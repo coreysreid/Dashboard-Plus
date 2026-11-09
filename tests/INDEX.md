@@ -1,7 +1,5 @@
 # tests/  (summary: automatic tests; synthetic data only)
-Run: pip install --require-hashes -r requirements.lock, then
-PYTHONPATH=src python -m unittest discover -s tests
-
+How to run them is in AGENTS.md.
 | Entry | What it is | Open it when |
 |---|---|---|
 | support.py | Shared helpers for tests: temporary folders and made-up (synthetic) modules. | writing a new test |
@@ -18,6 +16,7 @@ PYTHONPATH=src python -m unittest discover -s tests
 | test_watch.py | Tests for running low, expiring soon and days of cover, and for checking `watch` sections. | changing watch rules |
 | test_backups.py | Tests for automatic backups: daily, on close, in two places, and keeping only recent ones. | changing backups |
 | test_setup.py | Tests for the first-run wizard and the settings page. | changing setup or settings |
+| test_sheets.py | Tests for printable sheets: checking sheets.toml and printing the emergency sheet. | changing sheets |
 | test_web.py | Tests for the screens: sign-in by launch link, grid paging, forms, history and reports. | changing a screen |
 | test_main.py | Tests for the command-line entry point and its plain-language messages. | changing the command line |
 | test_build_portable.py | Tests for the portable Windows build, using a stand-in for the Python download. | changing the build |

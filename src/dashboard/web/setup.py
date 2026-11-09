@@ -82,7 +82,8 @@ def _save(form, mode: str):
     people = None
     if not use_people_table or not names:
         people = _whole(form.get("people"), 1, 30, "Number of people", errors, "people",
-                        allow_blank=bool(names) or (_people_table_ready() and _existing_people(conn) > 0))
+                        allow_blank=mode == "settings" or bool(names) or
+                        (_people_table_ready() and _existing_people(conn) > 0))
     home_type = form.get("home_type", "")
     if home_type and home_type not in dict(HOME_TYPES):
         errors["home_type"] = "Choose one of the listed kinds of home."

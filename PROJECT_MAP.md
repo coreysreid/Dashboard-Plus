@@ -80,6 +80,7 @@ marked Superseded. Each lists downsides, cost to undo, and the sign it was wrong
 | [0035](0035-watch-views-and-days-of-cover.md) | How running low, expiring soon and days of cover are worked out | Accepted |
 | [0036](0036-automatic-backups-in-two-places.md) | Automatic backups: daily and on close, in two places | Accepted |
 | [0037](0037-first-run-wizard-and-settings.md) | One first-run wizard that doubles as the settings page | Accepted |
+| [0038](0038-printable-sheets-from-module-files.md) | Printable sheets are declared by modules and printed by the browser | Accepted |
 | [TEMPLATE](TEMPLATE.md) | Blank record to copy for a new decision | recording a decision |
 
 ## modules/  (summary: optional features; each folder is one module)
@@ -136,6 +137,7 @@ Add a new file with the next number instead of changing an old one.
 | app.py | Build the Flask web application and its local-only protections. | changing sign-in, protections or reports |
 | pages.py | Pages built from module declarations: the record grid, add and edit forms, and history. | changing the grid or forms |
 | setup.py | The first-run wizard and the settings page: who lives here, the home, modules and backups. | changing setup questions or settings |
+| sheets.py | One-page printable sheets declared by modules, such as the emergency sheet. | changing printable sheets |
 | display.py | Turn declared tables and stored values into friendly labels, form fields and text. | changing how values look |
 | templates/ | The HTML pages | changing what a page looks like |
 
@@ -149,6 +151,7 @@ Add a new file with the next number instead of changing an old one.
 | rows.html | One page of grid rows (also loaded as you scroll) | changing a row |
 | form.html | Add and edit forms, delete and restore, and history | changing the form |
 | setup.html | First-run wizard and Settings (one form, two modes) | changing setup questions |
+| sheet.html | A printable sheet, styled to fit one page | changing how sheets print |
 | start.html | Shown to a browser that was not opened by the shortcut | changing that message |
 | report.html | Shown after saving a report | changing that message |
 | close.html | The "Close Dashboard safely" page | changing how closing works |
@@ -156,9 +159,7 @@ Add a new file with the next number instead of changing an old one.
 | error.html | Plain-language error page with "Save a report" | changing error wording |
 
 ## tests/  (summary: automatic tests; synthetic data only)
-Run: pip install --require-hashes -r requirements.lock, then
-PYTHONPATH=src python -m unittest discover -s tests
-
+How to run them is in AGENTS.md.
 | Entry | What it is | Open it when |
 |---|---|---|
 | support.py | Shared helpers for tests: temporary folders and made-up (synthetic) modules. | writing a new test |
@@ -175,6 +176,7 @@ PYTHONPATH=src python -m unittest discover -s tests
 | test_watch.py | Tests for running low, expiring soon and days of cover, and for checking `watch` sections. | changing watch rules |
 | test_backups.py | Tests for automatic backups: daily, on close, in two places, and keeping only recent ones. | changing backups |
 | test_setup.py | Tests for the first-run wizard and the settings page. | changing setup or settings |
+| test_sheets.py | Tests for printable sheets: checking sheets.toml and printing the emergency sheet. | changing sheets |
 | test_web.py | Tests for the screens: sign-in by launch link, grid paging, forms, history and reports. | changing a screen |
 | test_main.py | Tests for the command-line entry point and its plain-language messages. | changing the command line |
 | test_build_portable.py | Tests for the portable Windows build, using a stand-in for the Python download. | changing the build |
