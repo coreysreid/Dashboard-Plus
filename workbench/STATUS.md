@@ -5,9 +5,10 @@ the "Requests" table of docs/WORKSTREAMS.md.
 
 | Task | State | Pull request | Notes |
 |---|---|---|---|
-| Module guide and garden example | ready for review on `lane-b/module-guide` | pending | Garden example loads and saves synthetic records; checks passed. |
-| SECURITY, CONTRIBUTING, issue templates | on branch `lane-b/project-files` | none yet | |
+| Module guide and garden example | merged | PR #10 | Garden example loads and saves synthetic records. |
+| SECURITY, CONTRIBUTING, issue templates | in review | PR #11 | Public reporting and contribution guidance. |
+| Pets, Medical and Wine drafts | ready for a pull request: `lane-b/draft-modules` | pending | Three files-only drafts load; open questions in each NOTES.md. |
 
 ## Messages to Lane A
 
-(none yet)
+- Please review the draft modules and their NOTES.md files before promoting them.

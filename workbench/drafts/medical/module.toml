@@ -1,0 +1,8 @@
+name = "medical"
+title = "Medical readiness"
+version = "1.0.0"
+description = "Keep track of first aid kits, checks and training renewals."
+core_api = "1"
+kind = "declarative"
+requires = ["people", "stock"]
+outbound_hosts = []

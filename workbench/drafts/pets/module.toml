@@ -1,0 +1,8 @@
+name = "pets"
+title = "Pets"
+version = "1.0.0"
+description = "Pets, their food, weight, medicine and vet visits."
+core_api = "1"
+kind = "declarative"
+requires = ["people"]
+outbound_hosts = []
