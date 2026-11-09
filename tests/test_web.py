@@ -2,7 +2,7 @@
 import re
 
 from support import TempDirTestCase
-from dashboard.core import startup
+from dashboard.core import db, settings, startup
 from dashboard.web.app import create_app
 import make_migration
 
@@ -39,6 +39,9 @@ class WebTests(TempDirTestCase):
         make_migration.make(self.make_module(tables=TABLES, labels=LABELS), "first_tables")
         data = self.tmp / "data"
         report = startup.prepare(data, self.tmp / "modules")
+        conn = db.connect(data / "dashboard.db")
+        settings.put(conn, "setup.done", True)
+        conn.close()
         self.app = create_app("shutdown-token", lambda: None, report, data_dir=data, session_key="session-key")
         self.app.config["PORT"] = PORT
         self.client = self.app.test_client()

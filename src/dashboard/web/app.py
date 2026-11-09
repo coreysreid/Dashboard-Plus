@@ -38,7 +38,7 @@ def create_app(shutdown_token: str, on_shutdown: Callable[[], None], report=None
     app.config["CSRF_TOKEN"] = secrets.token_urlsafe(32)
     app.config["DATA_DIR"] = Path(data_dir) if data_dir else None
     app.config["REPORT"] = report
-    app.config["REGISTRY"] = records.build_registry(report.loaded if report else [])
+    app.config["LOADED"] = report.loaded if report else []
 
     def allowed_hosts() -> set[str]:
         port = app.config["PORT"]
@@ -72,6 +72,11 @@ def create_app(shutdown_token: str, on_shutdown: Callable[[], None], report=None
             supplied = request.form.get("_csrf", "")
             if not hmac.compare_digest(supplied, app.config["CSRF_TOKEN"]):
                 abort(400)
+        # Until the first-run questions are answered, the home page leads to them.
+        if request.path == "/" and app.config["DATA_DIR"] is not None:
+            from dashboard.core import settings
+            if not settings.get(connection(), "setup.done", False):
+                return redirect("/setup")
         return None
 
     @app.context_processor
@@ -84,6 +89,19 @@ def create_app(shutdown_token: str, on_shutdown: Callable[[], None], report=None
         return g.db
 
     app.config["CONNECT"] = connection
+
+    def registry():
+        """Tables of the modules that are switched on, worked out once per request."""
+        if "registry" not in g:
+            loaded = app.config["LOADED"]
+            if loaded and app.config["DATA_DIR"] is not None:
+                from dashboard.core import settings
+                on = settings.enabled_modules(connection())
+                loaded = [m for m in loaded if m.name in on]
+            g.registry = records.build_registry(loaded)
+        return g.registry
+
+    app.config["REGISTRY_FOR_REQUEST"] = registry
 
     @app.teardown_appcontext
     def close_connection(_error):
@@ -100,24 +118,24 @@ def create_app(shutdown_token: str, on_shutdown: Callable[[], None], report=None
         tables, attention, last_backup = [], None, None
         if app.config["DATA_DIR"] is not None:
             last_backup = backups.latest(app.config["DATA_DIR"])
-        if app.config["DATA_DIR"] is not None and app.config["REGISTRY"]:
+        if app.config["DATA_DIR"] is not None and registry():
             from dashboard.web.display import table_title
-            conn, registry = connection(), app.config["REGISTRY"]
-            store = records.Records(conn, registry)
-            for name, info in registry.items():
+            conn = connection()
+            store = records.Records(conn, registry())
+            for name, info in registry().items():
                 tables.append({"name": name, "title": table_title(info), "module": info.module.title,
                                "count": store.count(name)})
-            attention = {"low": watch.running_low(conn, registry), "expiring": watch.expiring(conn, registry),
-                         "supplies": watch.supplies(conn, registry)}
+            attention = {"low": watch.running_low(conn, registry()), "expiring": watch.expiring(conn, registry()),
+                         "supplies": watch.supplies(conn, registry())}
         return render_template("home.html", report=report, tables=tables, attention=attention,
                                last_backup=last_backup)
 
     @app.get("/attention")
     def attention_page():
-        conn, registry = connection(), app.config["REGISTRY"]
-        return render_template("attention.html", low=watch.running_low(conn, registry),
-                               expiring=watch.expiring(conn, registry), supplies=watch.supplies(conn, registry),
-                               household=watch.household(conn, registry))
+        conn, tables = connection(), registry()
+        return render_template("attention.html", low=watch.running_low(conn, tables),
+                               expiring=watch.expiring(conn, tables), supplies=watch.supplies(conn, tables),
+                               household=watch.household(conn, tables))
 
     @app.get("/close")
     def close_page():
@@ -143,7 +161,9 @@ def create_app(shutdown_token: str, on_shutdown: Callable[[], None], report=None
         return render_template("report.html", path=path)
 
     from dashboard.web.pages import pages
+    from dashboard.web.setup import setup_pages
     app.register_blueprint(pages)
+    app.register_blueprint(setup_pages)
 
     @app.errorhandler(400)
     def bad_request(_error):

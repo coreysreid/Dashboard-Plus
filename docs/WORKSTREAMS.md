@@ -63,8 +63,8 @@ section that uses `running_low`, `expiring` and a water `supply`.
 
 | Item | Lane | State |
 |---|---|---|
-| Step 5: watch views, days of cover, backups | A | in progress |
-| Step 6: wizard and settings | A | next |
+| Step 5: watch views, days of cover, backups | A | merged |
+| Step 6: wizard and settings | A | in review |
 | Printable sheets | A | after step 6 |
 | Step 7: People module | B | ready to start |
 | Step 8: Household stock module | B | after People; uses the watch contract |

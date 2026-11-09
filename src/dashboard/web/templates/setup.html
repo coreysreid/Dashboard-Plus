@@ -1,0 +1,99 @@
+{% extends "base.html" %}
+{% block title %}{% if mode == "setup" %}Welcome{% else %}Settings{% endif %} · Dashboard Plus{% endblock %}
+{% block body %}
+{% if mode == "setup" %}
+<h1>Welcome to Dashboard Plus</h1>
+<p class="lead">Look after what your household has. A few questions first; you can change any answer later in Settings.</p>
+<div class="card">
+  <p><strong>Your records stay on this computer.</strong> Nothing is sent anywhere. They are kept in the
+  <code>data</code> folder next to the program, and copied automatically every day as a backup.</p>
+  <p class="muted">The data folder is not encrypted. If it is on a USB stick, keep the stick somewhere safe.</p>
+</div>
+{% else %}
+<p class="muted"><a href="/">Home</a></p>
+<h1>Settings</h1>
+{% if saved %}<p class="notice" role="status">Saved.</p>{% endif %}
+{% endif %}
+{% if errors %}<p class="problem" role="alert">Please check the highlighted answers. Nothing was saved yet.</p>{% endif %}
+
+<form class="record" method="post">
+  <input type="hidden" name="_csrf" value="{{ csrf_token }}">
+  <input type="hidden" name="timezone" id="timezone" value="">
+
+  <h2>1. Who lives here</h2>
+  {% if mode == "setup" and people_table and not people_count %}
+    <p class="help" style="margin-top:0">Add a name for each person. You can add phone numbers and other details later.</p>
+    {% for i in range(1, name_slots + 1) %}
+    {% set typed = (values.names or [])[i-1] if values.names else '' %}
+    <div class="person-slot" {% if i > 3 and not typed %}hidden{% endif %}><label for="name_{{ i }}">Person {{ i }}</label>
+      <input type="text" id="name_{{ i }}" name="name_{{ i }}" value="{{ typed }}" {% if i == 1 %}autofocus{% endif %}></div>
+    {% endfor %}
+    <div><button type="button" class="quiet" id="add-person">Add another person</button></div>
+  {% elif people_table and people_count %}
+    <p style="margin-top:0">{{ people_count }} {{ "person lives" if people_count == 1 else "people live" }} here. <a href="/t/people__people">Change who lives here</a>.</p>
+  {% else %}
+  <div class="{% if errors.people %}has-error{% endif %}">
+    <label for="people">How many people live here?</label>
+    <input type="text" inputmode="numeric" id="people" name="people" value="{{ values.people or '' }}" autofocus>
+    {% if errors.people %}<p class="error">{{ errors.people }}</p>{% endif %}
+  </div>
+  {% endif %}
+  <div class="{% if errors.pets %}has-error{% endif %}">
+    <label for="pets">How many pets?</label>
+    <input type="text" inputmode="numeric" id="pets" name="pets" value="{{ values.pets if values.pets is not none else '' }}">
+    {% if errors.pets %}<p class="error">{{ errors.pets }}</p>{% endif %}
+    <p class="help">Used to work out how long water and supplies would last.</p>
+  </div>
+  <div><label><input type="checkbox" name="mobility_needs" value="yes" {% if values.mobility_needs %}checked{% endif %}> Someone here has mobility or care needs</label>
+    <p class="help">Helps later questions about getting out safely fit your home.</p></div>
+
+  <h2>2. Your home</h2>
+  <div><label for="country">Country</label>
+    <input type="text" id="country" name="country" list="countries" value="{{ values.country or '' }}">
+    <datalist id="countries">{% for c in countries %}<option value="{{ c }}">{% endfor %}</datalist></div>
+  <div><label for="region">Region or state (optional)</label>
+    <input type="text" id="region" name="region" value="{{ values.region or '' }}"></div>
+  <div class="{% if errors.home_type %}has-error{% endif %}"><label for="home_type">Kind of home</label>
+    <select id="home_type" name="home_type"><option value="">(choose)</option>
+      {% for key, label in home_types %}<option value="{{ key }}" {% if values.home_type == key %}selected{% endif %}>{{ label }}</option>{% endfor %}
+    </select>
+    {% if errors.home_type %}<p class="error">{{ errors.home_type }}</p>{% endif %}</div>
+  <div class="{% if errors.storeys %}has-error{% endif %}"><label for="storeys">How many storeys?</label>
+    <input type="text" inputmode="numeric" id="storeys" name="storeys" value="{{ values.storeys or '' }}">
+    {% if errors.storeys %}<p class="error">{{ errors.storeys }}</p>{% endif %}</div>
+  <div><span style="font-weight:600">Things that can happen where you live (optional)</span>
+    <div class="choices">{% for key, label in hazards %}<label style="font-weight:400"><input type="checkbox" name="hazards" value="{{ key }}" {% if key in (values.hazards or []) %}checked{% endif %}> {{ label }}</label>{% endfor %}</div>
+    <p class="help">Only used on this computer, to choose which "have you thought about…?" questions make sense for you.</p></div>
+
+  <h2>3. What to track</h2>
+  {% if modules %}
+  <div class="choices">{% for m in modules %}
+    <label style="font-weight:400"><input type="checkbox" name="modules" value="{{ m.name }}" {% if m.on %}checked{% endif %}> <strong>{{ m.title }}</strong>: {{ m.description }}</label>
+  {% endfor %}</div>
+  <p class="help">Switching something off hides it. Nothing you recorded is deleted.</p>
+  {% else %}<p class="muted">No modules are installed yet.</p>{% endif %}
+
+  <h2>4. Backups</h2>
+  <p style="margin-top:0">A backup is made every day and each time you close the dashboard safely, in
+  <code>{{ data_backups }}</code>.</p>
+  <div><label><input type="checkbox" name="second_copy" value="yes" {% if values.second_copy %}checked{% endif %}> Also keep a copy on this computer</label>
+    <p class="help">In <code>{{ extra_backups }}</code>, so a lost USB stick does not lose everything. This means your records are also stored on this computer.</p></div>
+
+  <div class="actions">
+    <button type="submit">{% if mode == "setup" %}Finish setup{% else %}Save settings{% endif %}</button>
+    {% if mode == "settings" %}<a href="/">Cancel</a>{% endif %}
+  </div>
+</form>
+<script>
+  (function () {
+    var button = document.getElementById("add-person");
+    if (!button) return;
+    button.addEventListener("click", function () {
+      var next = document.querySelector(".person-slot[hidden]");
+      if (next) { next.hidden = false; next.querySelector("input").focus(); }
+      if (!document.querySelector(".person-slot[hidden]")) button.hidden = true;
+    });
+  })();
+  try { document.getElementById("timezone").value = Intl.DateTimeFormat().resolvedOptions().timeZone || ""; } catch (e) {}
+</script>
+{% endblock %}

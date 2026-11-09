@@ -28,10 +28,17 @@ def backup_dirs(data_dir: Path, extra_dir: Path | None) -> list[Path]:
 
 
 def _write(data_dir: Path, extra_dir: Path | None, filename: str) -> list[Path]:
-    """Copy the database into every backup folder; a failing second copy is logged, not fatal."""
+    """Copy the database into every backup folder; a failing second copy is logged, not fatal.
+
+    The household can switch the second copy off in Settings (`backups.second_copy`).
+    """
+    from dashboard.core import settings
+
     written = []
     conn = db.connect(Path(data_dir) / "dashboard.db")
     try:
+        if not settings.get(conn, "backups.second_copy", True):
+            extra_dir = None
         for i, folder in enumerate(backup_dirs(data_dir, extra_dir)):
             try:
                 written.append(db.backup_to(conn, folder / filename))
