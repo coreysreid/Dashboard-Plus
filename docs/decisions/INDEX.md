@@ -48,4 +48,5 @@ marked Superseded. Each lists downsides, cost to undo, and the sign it was wrong
 | [0042](0042-a-workbench-for-the-second-agent.md) | The second agent works only in a workbench folder, as checker and drafter | Accepted |
 | [0043](0043-records-that-change-a-count.md) | Stock in and out updates the item's count automatically | Accepted |
 | [0060](0060-garden-example-outside-installed-modules.md) | Keep the worked garden outside installed modules | Accepted |
+| [0061](0061-public-reporting-and-contribution-rules.md) | Public contribution and private security reporting routes | Accepted |
 | [TEMPLATE](TEMPLATE.md) | Blank record to copy for a new decision | recording a decision |

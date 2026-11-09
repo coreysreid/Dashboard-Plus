@@ -11,6 +11,8 @@ Follow the INDEX.md in a folder before opening its files. Hidden files are not l
 |---|---|---|
 | README.md | Friendly introduction, status and how to run the checks | first meeting the project |
 | AGENTS.md | How an AI agent should work here | before changing anything |
+| CONTRIBUTING.md | Public contribution rules and checks | before contributing |
+| SECURITY.md | How to report a problem that could expose household data | reporting security concerns |
 | CLAUDE.md | One line pointing to AGENTS.md | never; tools read it for you |
 | LICENSE | MIT licence, Copyright (c) 2026 Corey Reid | checking reuse terms |
 | PROJECT_MAP.md | Generated one-page map of every INDEX.md | you want the whole picture |
@@ -90,6 +92,7 @@ marked Superseded. Each lists downsides, cost to undo, and the sign it was wrong
 | [0042](0042-a-workbench-for-the-second-agent.md) | The second agent works only in a workbench folder, as checker and drafter | Accepted |
 | [0043](0043-records-that-change-a-count.md) | Stock in and out updates the item's count automatically | Accepted |
 | [0060](0060-garden-example-outside-installed-modules.md) | Keep the worked garden outside installed modules | Accepted |
+| [0061](0061-public-reporting-and-contribution-rules.md) | Public contribution and private security reporting routes | Accepted |
 | [TEMPLATE](TEMPLATE.md) | Blank record to copy for a new decision | recording a decision |
 
 ## examples/  (summary: optional worked examples, not installed modules)
