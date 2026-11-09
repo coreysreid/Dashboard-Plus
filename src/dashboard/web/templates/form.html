@@ -1,0 +1,84 @@
+{% extends "base.html" %}
+{% block title %}{{ title }} · Dashboard Plus{% endblock %}
+{% block body %}
+<p class="muted"><a href="/">Home</a> · <a href="/t/{{ info.name }}">{{ title }}</a></p>
+{% if record %}
+<h1>{{ record_name }}{% if record.deleted_at %} <span class="muted">(deleted)</span>{% endif %}</h1>
+{% else %}
+<h1>Add to {{ title | lower }}</h1>
+{% endif %}
+{% if saved %}<p class="notice" role="status">{% if record %}Saved.{% else %}Saved "{{ saved }}". Add the next one.{% endif %}</p>{% endif %}
+{% if errors %}<p class="problem" role="alert">{% if errors._form %}{{ errors._form }}{% else %}Please check the highlighted fields. Nothing was saved yet.{% endif %}</p>{% endif %}
+
+{% if record and record.deleted_at %}
+<form method="post" action="/t/{{ info.name }}/{{ record.id }}/restore">
+  <input type="hidden" name="_csrf" value="{{ csrf_token }}">
+  <p>This record was deleted. It is kept so it can be brought back.</p>
+  <button type="submit">Restore it</button>
+</form>
+{% else %}
+<form class="record" method="post" action="{% if record %}/t/{{ info.name }}/{{ record.id }}{% else %}/t/{{ info.name }}/new{% endif %}">
+  <input type="hidden" name="_csrf" value="{{ csrf_token }}">
+  {% for f in fields %}
+  <div class="{% if f.error %}has-error{% endif %}">
+    {% set fid = "f-" ~ f.name %}
+    {% if f.kind == "boolean" %}
+      <label><input type="checkbox" id="{{ fid }}" name="{{ f.name }}" value="yes" {% if f.value in (1, "1", "yes", True) %}checked{% endif %}> {{ f.label }}</label>
+    {% else %}
+      <label for="{{ fid }}">{{ f.label }}{% if f.column.required %} <span class="required" title="required">*</span>{% endif %}{% if f.column.unit %} <span class="muted">({{ f.column.unit }})</span>{% endif %}</label>
+      {% if f.kind == "longtext" %}
+        <textarea id="{{ fid }}" name="{{ f.name }}">{{ f.value or "" }}</textarea>
+      {% elif f.kind in ("choice", "link") %}
+        <select id="{{ fid }}" name="{{ f.name }}">
+          <option value="">{% if f.column.required %}Choose…{% else %}(none){% endif %}</option>
+          {% for value, label in f.options %}<option value="{{ value }}" {% if value == (f.value | string) %}selected{% endif %}>{{ label }}</option>{% endfor %}
+        </select>
+        {% if f.kind == "link" and not f.options %}<p class="help">There is nothing to choose yet.</p>{% endif %}
+      {% elif f.kind == "links" %}
+        <div class="choices" id="{{ fid }}">
+          {% for value, label in f.options %}<label style="font-weight:400"><input type="checkbox" name="{{ f.name }}" value="{{ value }}" {% if value in (f.value or []) %}checked{% endif %}> {{ label }}</label>{% endfor %}
+          {% if not f.options %}<p class="help">There is nothing to choose yet.</p>{% endif %}
+        </div>
+      {% elif f.kind == "date" %}
+        <input type="date" id="{{ fid }}" name="{{ f.name }}" value="{{ f.value or '' }}">
+      {% elif f.kind == "datetime" %}
+        <input type="datetime-local" id="{{ fid }}" name="{{ f.name }}" value="{{ f.value or '' }}">
+      {% elif f.kind in ("integer", "decimal", "measure", "money") %}
+        <input type="text" inputmode="decimal" id="{{ fid }}" name="{{ f.name }}" value="{{ f.value if f.value is not none else '' }}">
+      {% else %}
+        <input type="text" id="{{ fid }}" name="{{ f.name }}" value="{{ f.value or '' }}" {% if loop.first %}autofocus{% endif %}>
+      {% endif %}
+    {% endif %}
+    {% if f.error %}<p class="error">{{ f.label }} {{ f.error }}</p>{% endif %}
+    {% if f.help %}<p class="help">{{ f.help }}</p>{% endif %}
+    {% if f.column.sensitive %}<p class="help">Private: hidden in lists until you choose to show it.</p>{% endif %}
+  </div>
+  {% endfor %}
+  <div class="actions">
+    {% if record %}
+      <button type="submit">Save changes</button>
+    {% else %}
+      <button type="submit" name="then" value="another">Save and add another</button>
+      <button type="submit" class="quiet" name="then" value="done">Save</button>
+    {% endif %}
+    <a href="/t/{{ info.name }}">Cancel</a>
+  </div>
+</form>
+{% if record %}
+<form method="post" action="/t/{{ info.name }}/{{ record.id }}/delete" onsubmit="return confirm('Delete this record? It can be restored later.');">
+  <input type="hidden" name="_csrf" value="{{ csrf_token }}">
+  <button type="submit" class="danger">Delete</button>
+</form>
+{% endif %}
+{% endif %}
+
+{% if history %}
+<h2>History</h2>
+<ul class="history">
+  {% for h in history %}
+  <li><span class="muted">{{ h.at }}</span> · {{ h.who }} {{ h.action }}{% if h.changes %}:
+    {% for c in h.changes %}{{ c.label }} {% if c.sensitive %}(private){% else %}from "{{ c.before }}" to "{{ c.after }}"{% endif %}{% if not loop.last %}; {% endif %}{% endfor %}{% endif %}</li>
+  {% endfor %}
+</ul>
+{% endif %}
+{% endblock %}

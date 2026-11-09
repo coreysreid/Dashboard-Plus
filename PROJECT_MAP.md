@@ -74,6 +74,7 @@ marked Superseded. Each lists downsides, cost to undo, and the sign it was wrong
 | [0030](0030-plain-sqlite-with-numbered-sql-migrations.md) | Plain SQLite access and numbered SQL migrations | Accepted |
 | [0031](0031-module-files-are-checked-and-migrations-generated.md) | Module files are checked strictly, and their migrations are generated | Accepted |
 | [0032](0032-one-checked-path-for-every-record-change.md) | One checked path for every record change, with soft deletes and history | Accepted |
+| [0033](0033-screens-generated-from-declarations.md) | Screens generated from declarations, with a launch-link sign-in | Accepted |
 | [TEMPLATE](TEMPLATE.md) | Blank record to copy for a new decision | recording a decision |
 
 ## modules/  (summary: optional features; each folder is one module)
@@ -120,21 +121,28 @@ Add a new file with the next number instead of changing an old one.
 | 0001_core_tables.sql | Settings and the list of modules in use | checking the core tables |
 | 0002_audit_history.sql | The history of every change to every record | checking how history is stored |
 
-## src/dashboard/web/  (summary: pages, forms and the Agent API)
+## src/dashboard/web/  (summary: the screens: pages, forms and their protections)
 | Entry | What it is | Open it when |
 |---|---|---|
 | __init__.py | Web layer: pages, forms and the Agent API (not built yet). | adding a screen or route |
-| app.py | Build the Flask web application and its local-only protections. | adding a page or changing protections |
+| app.py | Build the Flask web application and its local-only protections. | changing sign-in, protections or reports |
+| pages.py | Pages built from module declarations: the record grid, add and edit forms, and history. | changing the grid or forms |
+| display.py | Turn declared tables and stored values into friendly labels, form fields and text. | changing how values look |
 | templates/ | The HTML pages | changing what a page looks like |
 
 ## src/dashboard/web/templates/  (summary: HTML pages; base.html holds the shared look)
 | Entry | What it is | Open it when |
 |---|---|---|
-| base.html | Shared layout, colours (light and dark) and footer | changing the overall look |
-| home.html | Home page | changing the home screen |
+| base.html | Shared layout, colours (light and dark), header and footer | changing the overall look |
+| home.html | Home page: tables with counts, data file status, module problems | changing the home screen |
+| grid.html | A table's records, a page at a time, sortable | changing the list of records |
+| rows.html | One page of grid rows (also loaded as you scroll) | changing a row |
+| form.html | Add and edit forms, delete and restore, and history | changing the form |
+| start.html | Shown to a browser that was not opened by the shortcut | changing that message |
+| report.html | Shown after saving a report | changing that message |
 | close.html | The "Close Dashboard safely" page | changing how closing works |
 | closed.html | Shown after a safe close | changing that message |
-| error.html | Plain-language error page (no technical details) | changing error wording |
+| error.html | Plain-language error page with "Save a report" | changing error wording |
 
 ## tests/  (summary: automatic tests; synthetic data only)
 Run: pip install --require-hashes -r requirements.lock, then
@@ -153,6 +161,7 @@ PYTHONPATH=src python -m unittest discover -s tests
 | test_check_indexes.py | Tests for the index check. | changing index rules |
 | test_project_map.py | Tests for the project map generator. | changing the map |
 | test_server.py | Tests for starting, protecting and safely closing the local web server. | changing startup or closing |
+| test_web.py | Tests for the screens: sign-in by launch link, grid paging, forms, history and reports. | changing a screen |
 | test_main.py | Tests for the command-line entry point and its plain-language messages. | changing the command line |
 | test_build_portable.py | Tests for the portable Windows build, using a stand-in for the Python download. | changing the build |
 | test_lock_requirements.py | Tests for the requirements lock generator. | changing how libraries are locked |

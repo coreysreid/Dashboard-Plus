@@ -1,0 +1,9 @@
+{% for r in rows %}
+<tr>
+  {% for cell in r.cells %}
+  <td>{% if cell.sensitive and cell.text %}<details class="secret"><summary>Show</summary>{{ cell.text }}</details>{% else %}{{ cell.text }}{% endif %}</td>
+  {% endfor %}
+  <td><a href="/t/{{ info.name }}/{{ r.id }}">Open</a>{% if r.review == "needs_review" %} <span class="muted">(needs review)</span>{% endif %}</td>
+</tr>
+{% endfor %}
+{% if next_offset is not none %}<tr data-next="{{ next_offset }}" hidden></tr>{% endif %}

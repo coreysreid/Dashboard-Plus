@@ -11,16 +11,26 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
 from dashboard import server  # noqa: E402
 
 
-def request(port, method="GET", path="/", host=None, headers=None):
+def request(port, method="GET", path="/", host=None, headers=None, cookie=None):
     conn = http.client.HTTPConnection("127.0.0.1", port, timeout=5)
     all_headers = dict(headers or {})
     if host:
         all_headers["Host"] = host
+    if cookie:
+        all_headers["Cookie"] = cookie
     conn.request(method, path, headers=all_headers)
     response = conn.getresponse()
     body = response.read().decode("utf-8", "replace")
+    set_cookie = response.getheader("Set-Cookie")
     conn.close()
-    return response.status, body
+    return response.status, body if set_cookie is None else (body, set_cookie)
+
+
+def sign_in(state):
+    """Follow the launch link like a browser and return the session cookie."""
+    status, (_, set_cookie) = request(state.port, path=f"/?key={state.session}")
+    assert status == 302, status
+    return set_cookie.split(";", 1)[0]
 
 
 class ServerTests(unittest.TestCase):
@@ -39,11 +49,16 @@ class ServerTests(unittest.TestCase):
             self.thread.join(10)
         self.tmp.cleanup()
 
-    def test_home_page_and_ping(self):
-        status, body = request(self.state.port)
+    def test_home_page_needs_the_launch_link(self):
+        status, _ = request(self.state.port)
+        self.assertEqual(status, 302, "a browser without the launch link is sent to the explanation page")
+        status, body = request(self.state.port, path="/?key=wrong")
+        self.assertEqual(status, 302)
+        status, body = request(self.state.port, cookie=sign_in(self.state))
         self.assertEqual(status, 200)
-        self.assertIn("It works", body)
+        self.assertIn("Look after what your household has", body)
         self.assertTrue(server.is_responding(self.state))
+        self.assertIn("?key=", self.state.launch_url)
 
     def test_listens_on_this_computer_only(self):
         self.assertEqual(server.HOST, "127.0.0.1")
@@ -80,11 +95,11 @@ class ServerTests(unittest.TestCase):
 
     def test_start_prepares_the_database(self):
         self.assertTrue((self.data / "dashboard.db").exists())
-        status, body = request(self.state.port)
+        status, body = request(self.state.port, cookie=sign_in(self.state))
         self.assertIn("Your data file is ready", body)
 
     def test_unknown_page_is_friendly(self):
-        status, body = request(self.state.port, path="/nope")
+        status, body = request(self.state.port, path="/nope", cookie=sign_in(self.state))
         self.assertEqual(status, 404)
         self.assertIn("does not exist", body)
         self.assertNotIn("Traceback", body)

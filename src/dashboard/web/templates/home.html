@@ -1,15 +1,27 @@
 {% extends "base.html" %}
 {% block body %}
-<h1>Dashboard Plus</h1>
-<p class="lead">Look after what your household has.</p>
-<div class="card">
-  <p><strong>It works.</strong> This is an early test version ({{ version }}). There is nothing to record yet;
-  the people and stock screens arrive in the first release.</p>
-  {% if report %}
-  <p>Your data file is ready{% if report.version %} (version {{ report.version }}){% endif %}.
-  {% if report.modules %}Modules in use: {{ report.modules | join(", ") }}.{% else %}No modules are installed yet.{% endif %}</p>
-  {% endif %}
+<h1>Look after what your household has</h1>
+<p class="lead">Know what you have, where it is, and when it's running out.</p>
+{% if tables %}
+<div class="tables">
+  {% for t in tables %}
+  <div class="card">
+    <div class="muted">{{ t.module }}</div>
+    <h2 style="margin-top:.2rem"><a href="/t/{{ t.name }}">{{ t.title }}</a></h2>
+    <p class="muted">{{ t.count }} record{{ "" if t.count == 1 else "s" }}</p>
+    <a class="button quiet" href="/t/{{ t.name }}/new">Add</a>
+  </div>
+  {% endfor %}
 </div>
+{% else %}
+<div class="card">
+  <p><strong>Nothing to record yet.</strong> People and household stock arrive in the next steps of the first release.</p>
+</div>
+{% endif %}
+{% if report %}
+<p class="muted">Your data file is ready{% if report.version %} (version {{ report.version }}){% endif %}.
+{% if report.modules %}Modules in use: {{ report.modules | join(", ") }}.{% else %}No modules are installed yet.{% endif %}</p>
+{% endif %}
 {% if report and report.module_problems %}
 <div class="card">
   <p><strong>Some modules were left out because their files need fixing.</strong> Everything else works.</p>
@@ -22,5 +34,4 @@
   </ul>
 </div>
 {% endif %}
-<p><a class="button" href="/close">Close Dashboard safely</a></p>
 {% endblock %}
