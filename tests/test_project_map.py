@@ -22,6 +22,14 @@ class ProjectMapTests(unittest.TestCase):
         self.assertLess(text.index("## ./"), text.index("## sub/"))
         self.assertIn("| a.txt |", text)
 
+    def test_workbench_is_left_out_of_the_map(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root = self.make_root(tmp)
+            (root / "workbench").mkdir()
+            (root / "workbench" / "INDEX.md").write_text("# workbench/  (summary: drafts)\n", encoding="utf-8")
+            text = make_project_map.build(root)
+        self.assertNotIn("workbench/  (summary", text)
+
     def test_check_detects_stale_and_fresh_map(self):
         with tempfile.TemporaryDirectory() as tmp:
             root = self.make_root(tmp)

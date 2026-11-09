@@ -23,6 +23,7 @@ Follow the INDEX.md in a folder before opening its files. Hidden files are not l
 | modules/ | Optional features, one folder each | adding or changing a topic |
 | src/ | The program itself | changing how the app works |
 | tests/ | Automatic tests | adding or fixing a test |
+| workbench/ | The second agent's own space: drafts, reports, research (not part of the program) | reviewing Lane B's work |
 | tools/ | Repository checks and generators | changing CI checks |
 
 ## docs/  (summary: the plan and the reasons behind it)
@@ -84,6 +85,7 @@ marked Superseded. Each lists downsides, cost to undo, and the sign it was wrong
 | [0039](0039-people-module-shape.md) | What the People module records, and its two emergency sheets | Accepted |
 | [0040](0040-household-stock-module-shape.md) | What the Household stock module records, and how water is counted | Accepted |
 | [0041](0041-tests-index-may-be-longer.md) | The tests folder index may be longer than 25 lines | Accepted |
+| [0042](0042-a-workbench-for-the-second-agent.md) | The second agent works only in a workbench folder, as checker and drafter | Accepted |
 | [TEMPLATE](TEMPLATE.md) | Blank record to copy for a new decision | recording a decision |
 
 ## modules/  (summary: optional features; each folder is one module, made of files only)
@@ -213,6 +215,7 @@ How to run them is in AGENTS.md.
 | test_setup.py | Tests for the first-run wizard and the settings page. | changing setup or settings |
 | test_sheets.py | Tests for printable sheets: checking sheets.toml and printing the emergency sheet. | changing sheets |
 | test_module_*.py | Tests that run a real module end to end, one file per module | changing a module |
+| test_workbench_drafts.py | Check every draft module in workbench/drafts: it loads, its migrations match, and it starts cleanly. | a draft module fails |
 | test_web.py | Tests for the screens: sign-in by launch link, grid paging, forms, history and reports. | changing a screen |
 | test_main.py | Tests for the command-line entry point and its plain-language messages. | changing the command line |
 | test_build_portable.py | Tests for the portable Windows build, using a stand-in for the Python download. | changing the build |
@@ -223,6 +226,7 @@ How to run them is in AGENTS.md.
 | Entry | What it is | Open it when |
 |---|---|---|
 | repofiles.py | Shared helper that lists the files belonging to the repository. | a tool needs the file list |
+| check_all.py | Run every check a change must pass before it is pushed, with one command. | before every push |
 | check_privacy.py | Fail the build if anything private or machine-specific is committed. | tuning what counts as private |
 | check_indexes.py | Check that every folder has a short, complete and current INDEX.md. | changing the index rules |
 | lock_requirements.py | Write requirements.lock: every pinned library with the checksums PyPI publishes. | updating a library |

@@ -18,6 +18,7 @@ How to run them is in AGENTS.md.
 | test_setup.py | Tests for the first-run wizard and the settings page. | changing setup or settings |
 | test_sheets.py | Tests for printable sheets: checking sheets.toml and printing the emergency sheet. | changing sheets |
 | test_module_*.py | Tests that run a real module end to end, one file per module | changing a module |
+| test_workbench_drafts.py | Check every draft module in workbench/drafts: it loads, its migrations match, and it starts cleanly. | a draft module fails |
 | test_web.py | Tests for the screens: sign-in by launch link, grid paging, forms, history and reports. | changing a screen |
 | test_main.py | Tests for the command-line entry point and its plain-language messages. | changing the command line |
 | test_build_portable.py | Tests for the portable Windows build, using a stand-in for the Python download. | changing the build |

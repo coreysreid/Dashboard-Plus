@@ -8,6 +8,10 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from repofiles import read_text, repo_files  # noqa: E402
 
+# The second agent's workbench changes often and is not part of the program, so it is
+# left out of the map; this keeps its work from conflicting with everyone else's.
+EXCLUDED = ("workbench/",)
+
 HEADER = """# Project map
 
 Every part of the project in one page. Generated from the `INDEX.md` in each
@@ -20,7 +24,8 @@ def build(root: Path) -> str:
     """Return the full text of the project map."""
     root = Path(root)
     indexes = [f for f in repo_files(root) if f.split("/")[-1] == "INDEX.md"
-               and not any(p.startswith(".") for p in f.split("/"))]
+               and not any(p.startswith(".") for p in f.split("/"))
+               and not f.startswith(EXCLUDED)]
     indexes.sort(key=lambda f: ("/".join(f.split("/")[:-1])))
     parts = [HEADER.rstrip("\n")]
     for rel in indexes:
