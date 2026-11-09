@@ -8,4 +8,5 @@
 | WORKSTREAMS.md | How two agents split the work: lanes, owned files, contracts, status | before starting any work |
 | JOURNEYS.md | Short stories of real use, each an acceptance test | reviewing the experience |
 | INFLUENCES.md | Books and ideas we build on, credited, and how we credit | adding or checking a credit |
+| MODULES.md | Plain-language guide to writing a module with a garden example | making a module |
 | decisions/ | One record per technical choice, with downsides | questioning or reversing a choice |

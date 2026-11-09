@@ -1,0 +1,23 @@
+[[sheet]]
+name = "plan"
+title = "Garden plan"
+intro = "A snapshot of beds, plantings and jobs. Print a new copy when the plan changes."
+
+[[sheet.section]]
+title = "Beds"
+table = "beds"
+columns = ["name", "location", "notes"]
+order_by = "name"
+
+[[sheet.section]]
+title = "Plantings"
+table = "plantings"
+columns = ["bed", "crop", "planted_on", "quantity"]
+order_by = "planted_on"
+
+[[sheet.section]]
+title = "Jobs"
+table = "jobs"
+where = { done = false }
+columns = ["title", "bed", "due_on"]
+order_by = "due_on"

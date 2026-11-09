@@ -1,0 +1,35 @@
+[tables.beds]
+title = "Garden beds"
+columns.name = { type = "text", required = true }
+columns.location = { type = "text" }
+columns.notes = { type = "longtext" }
+
+[tables.crops]
+title = "Crops"
+columns.name = { type = "text", required = true }
+columns.variety = { type = "text" }
+columns.notes = { type = "longtext" }
+
+[tables.plantings]
+title = "Plantings"
+columns.bed = { type = "link", to = "beds", required = true }
+columns.crop = { type = "link", to = "crops", required = true }
+columns.planted_on = { type = "date", required = true }
+columns.quantity = { type = "integer", min = 1 }
+columns.notes = { type = "longtext" }
+
+[tables.harvests]
+title = "Harvests"
+columns.planting = { type = "link", to = "plantings", required = true }
+columns.harvested_on = { type = "date", required = true }
+columns.amount = { type = "decimal", min = 0 }
+columns.unit = { type = "choice", choices = ["kg", "items", "bunches"] }
+columns.notes = { type = "longtext" }
+
+[tables.jobs]
+title = "Garden jobs"
+columns.title = { type = "text", required = true }
+columns.bed = { type = "link", to = "beds" }
+columns.due_on = { type = "date" }
+columns.done = { type = "boolean", default = false }
+columns.notes = { type = "longtext" }

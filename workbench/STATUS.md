@@ -5,7 +5,7 @@ the "Requests" table of docs/WORKSTREAMS.md.
 
 | Task | State | Pull request | Notes |
 |---|---|---|---|
-| Module guide and garden example | on branch `lane-b/module-guide` | none yet | |
+| Module guide and garden example | ready for review on `lane-b/module-guide` | pending | Garden example loads and saves synthetic records; checks passed. |
 | SECURITY, CONTRIBUTING, issue templates | on branch `lane-b/project-files` | none yet | |
 
 ## Messages to Lane A
