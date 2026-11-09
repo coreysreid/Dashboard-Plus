@@ -1,0 +1,85 @@
+"""Tests for starting, protecting and safely closing the local web server."""
+import http.client
+import sys
+import tempfile
+import threading
+import time
+import unittest
+from pathlib import Path
+
+sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
+from dashboard import server  # noqa: E402
+
+
+def request(port, method="GET", path="/", host=None, headers=None):
+    conn = http.client.HTTPConnection("127.0.0.1", port, timeout=5)
+    all_headers = dict(headers or {})
+    if host:
+        all_headers["Host"] = host
+    conn.request(method, path, headers=all_headers)
+    response = conn.getresponse()
+    body = response.read().decode("utf-8", "replace")
+    conn.close()
+    return response.status, body
+
+
+class ServerTests(unittest.TestCase):
+    def setUp(self):
+        self.tmp = tempfile.TemporaryDirectory()
+        self.data = Path(self.tmp.name) / "data"
+        ready = threading.Event()
+        self.thread = threading.Thread(target=server.serve, args=(self.data, False, ready), daemon=True)
+        self.thread.start()
+        self.assertTrue(ready.wait(10), "server did not start")
+        self.state = server.read_state(self.data)
+
+    def tearDown(self):
+        if self.thread.is_alive():
+            server.close_running(self.data)
+            self.thread.join(10)
+        self.tmp.cleanup()
+
+    def test_home_page_and_ping(self):
+        status, body = request(self.state.port)
+        self.assertEqual(status, 200)
+        self.assertIn("It works", body)
+        self.assertTrue(server.is_responding(self.state))
+
+    def test_listens_on_this_computer_only(self):
+        self.assertEqual(server.HOST, "127.0.0.1")
+        status, _ = request(self.state.port, host="evil.example")
+        self.assertEqual(status, 403)
+
+    def test_post_from_another_website_is_refused(self):
+        status, _ = request(self.state.port, "POST", "/api/shutdown",
+                            headers={"Origin": "http://evil.example", "X-Shutdown-Token": self.state.token})
+        self.assertEqual(status, 403)
+        self.assertTrue(self.thread.is_alive())
+
+    def test_shutdown_needs_the_token(self):
+        status, _ = request(self.state.port, "POST", "/api/shutdown", headers={"X-Shutdown-Token": "wrong"})
+        self.assertEqual(status, 403)
+        self.assertTrue(self.thread.is_alive())
+
+    def test_safe_close_stops_and_cleans_up(self):
+        self.assertTrue(server.close_running(self.data))
+        self.thread.join(10)
+        self.assertFalse(self.thread.is_alive())
+        self.assertFalse(server.state_file(self.data).exists())
+
+    def test_unknown_page_is_friendly(self):
+        status, body = request(self.state.port, path="/nope")
+        self.assertEqual(status, 404)
+        self.assertIn("does not exist", body)
+        self.assertNotIn("Traceback", body)
+
+    def test_second_start_reuses_the_running_one(self):
+        ready = threading.Event()
+        start = time.monotonic()
+        server.serve(self.data, False, ready)  # returns at once because one is running
+        self.assertLess(time.monotonic() - start, 5)
+        self.assertEqual(server.read_state(self.data).port, self.state.port)
+
+
+if __name__ == "__main__":
+    unittest.main()

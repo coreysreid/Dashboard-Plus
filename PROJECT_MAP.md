@@ -15,7 +15,9 @@ Follow the INDEX.md in a folder before opening its files. Hidden files are not l
 | LICENSE | MIT licence, Copyright (c) 2026 Corey Reid | checking reuse terms |
 | PROJECT_MAP.md | Generated one-page map of every INDEX.md | you want the whole picture |
 | config.example.toml | Example settings (the real file lives in the data folder) | adding a setting |
-| pyproject.toml | Python version and (no) dependencies | changing dependencies |
+| pyproject.toml | Project name, version and Python version | changing project metadata |
+| requirements.txt | The few runtime libraries, pinned to exact versions | adding or updating a library |
+| requirements.lock | Generated: those libraries with checksums | never by hand; regenerate it |
 | .github/ | CI workflow and pull request checklist | changing the automatic checks |
 | docs/ | Vision, core promise, design, decision records | understanding why or how |
 | modules/ | Optional features, one folder each | adding or changing a topic |
@@ -67,6 +69,8 @@ marked Superseded. Each lists downsides, cost to undo, and the sign it was wrong
 | [0025](0025-country-packs-are-sourced-dated-and-link-first.md) | Country packs: sourced, dated, and link-first | Accepted |
 | [0026](0026-medical-and-readiness-modules-in-v1.md) | Medical and Readiness modules in v1 | Accepted |
 | [0027](0027-release-in-milestones-starting-with-m1.md) | Release in milestones, starting with M1 | Accepted |
+| [0028](0028-flask-and-waitress-for-the-web-layer.md) | Flask and Waitress for the web layer | Accepted |
+| [0029](0029-portable-windows-build-pipeline.md) | How the portable Windows folder is built | Accepted |
 | [TEMPLATE](TEMPLATE.md) | Blank record to copy for a new decision | recording a decision |
 
 ## modules/  (summary: optional features; each folder is one module)
@@ -87,7 +91,8 @@ See docs/DESIGN.md section 6 for the module contract.
 | Entry | What it is | Open it when |
 |---|---|---|
 | __init__.py | Dashboard Plus: a local-first home dashboard (package root). | checking the version |
-| __main__.py | Command-line entry point: prints the version while the program is still being built. | changing how it starts |
+| __main__.py | Command-line entry point: open the dashboard, or close a running one safely. | changing how it starts |
+| server.py | Start and stop the local web server, and remember how to reach it. | changing startup, closing or ports |
 | core/ | Core services: records, links, review, audit, backups | changing anything topic-neutral |
 | web/ | Web layer: pages, forms, Agent API | changing screens or the API |
 
@@ -100,21 +105,41 @@ See docs/DESIGN.md section 6 for the module contract.
 | Entry | What it is | Open it when |
 |---|---|---|
 | __init__.py | Web layer: pages, forms and the Agent API (not built yet). | adding a screen or route |
+| app.py | Build the Flask web application and its local-only protections. | adding a page or changing protections |
+| templates/ | The HTML pages | changing what a page looks like |
+
+## src/dashboard/web/templates/  (summary: HTML pages; base.html holds the shared look)
+| Entry | What it is | Open it when |
+|---|---|---|
+| base.html | Shared layout, colours (light and dark) and footer | changing the overall look |
+| home.html | Home page | changing the home screen |
+| close.html | The "Close Dashboard safely" page | changing how closing works |
+| closed.html | Shown after a safe close | changing that message |
+| error.html | Plain-language error page (no technical details) | changing error wording |
 
 ## tests/  (summary: automatic tests; synthetic data only)
-Run: PYTHONPATH=src python -m unittest discover -s tests
+Run: pip install --require-hashes -r requirements.lock, then
+PYTHONPATH=src python -m unittest discover -s tests
 
 | Entry | What it is | Open it when |
 |---|---|---|
 | test_check_privacy.py | Tests for the privacy check. | changing privacy rules |
 | test_check_indexes.py | Tests for the index check. | changing index rules |
 | test_project_map.py | Tests for the project map generator. | changing the map |
+| test_server.py | Tests for starting, protecting and safely closing the local web server. | changing startup or closing |
+| test_main.py | Tests for the command-line entry point and its plain-language messages. | changing the command line |
+| test_build_portable.py | Tests for the portable Windows build, using a stand-in for the Python download. | changing the build |
+| test_lock_requirements.py | Tests for the requirements lock generator. | changing how libraries are locked |
 | test_repository.py | Tests that this repository passes its own checks. | CI fails on the repo itself |
 
-## tools/  (summary: scripts that keep the repository safe and tidy; run by CI)
+## tools/  (summary: scripts that check, lock and build the project; run by CI)
 | Entry | What it is | Open it when |
 |---|---|---|
 | repofiles.py | Shared helper that lists the files belonging to the repository. | a tool needs the file list |
 | check_privacy.py | Fail the build if anything private or machine-specific is committed. | tuning what counts as private |
 | check_indexes.py | Check that every folder has a short, complete and current INDEX.md. | changing the index rules |
+| lock_requirements.py | Write requirements.lock: every pinned library with the checksums PyPI publishes. | updating a library |
+| build_portable.py | Build the portable Windows folder and zip: bundled Python, libraries and launchers. | changing what ships in the folder |
+| portable.toml | Pinned Python version, download address and checksum for the build | updating the bundled Python |
+| smoke_test_portable.py | Start the built portable folder, check it answers, and close it safely. | the Windows build check fails |
 | make_project_map.py | Build PROJECT_MAP.md from every INDEX.md in the repository. | changing the map format |

@@ -1,0 +1,11 @@
+{% extends "base.html" %}
+{% block title %}Close Dashboard safely{% endblock %}
+{% block body %}
+<h1>Close Dashboard safely</h1>
+<p class="lead">Do this before you unplug a USB drive. It finishes saving and then stops the program.</p>
+<form method="post" action="/api/shutdown">
+  <input type="hidden" name="token" value="{{ token }}">
+  <button type="submit">Close now</button>
+</form>
+<p><a href="/">Go back</a></p>
+{% endblock %}

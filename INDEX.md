@@ -9,7 +9,9 @@ Follow the INDEX.md in a folder before opening its files. Hidden files are not l
 | LICENSE | MIT licence, Copyright (c) 2026 Corey Reid | checking reuse terms |
 | PROJECT_MAP.md | Generated one-page map of every INDEX.md | you want the whole picture |
 | config.example.toml | Example settings (the real file lives in the data folder) | adding a setting |
-| pyproject.toml | Python version and (no) dependencies | changing dependencies |
+| pyproject.toml | Project name, version and Python version | changing project metadata |
+| requirements.txt | The few runtime libraries, pinned to exact versions | adding or updating a library |
+| requirements.lock | Generated: those libraries with checksums | never by hand; regenerate it |
 | .github/ | CI workflow and pull request checklist | changing the automatic checks |
 | docs/ | Vision, core promise, design, decision records | understanding why or how |
 | modules/ | Optional features, one folder each | adding or changing a topic |

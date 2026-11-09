@@ -30,14 +30,16 @@ MIT. Copyright (c) 2026 Corey Reid. See [`LICENSE`](LICENSE).
 
 ## For contributors
 
-Everything needed to check a change is the Python standard library, so there is
-nothing to install. From the project folder:
+The checks need only Python. The program and its tests need a few pinned
+libraries, installed with their checksums verified. From the project folder:
 
 ```bash
 python tools/check_privacy.py        # nothing personal may be committed
 python tools/check_indexes.py        # every folder has a current INDEX.md
 python tools/make_project_map.py     # regenerate PROJECT_MAP.md
+pip install --require-hashes -r requirements.lock
 PYTHONPATH=src python -m unittest discover -s tests
+PYTHONPATH=src python -m dashboard   # opens the dashboard in your browser
 ```
 
 GitHub runs the same checks on Windows and Linux for every change. Start at

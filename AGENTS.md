@@ -19,6 +19,7 @@ a file only when its index row says you need it. Do not read the whole tree.
 python tools/check_privacy.py
 python tools/check_indexes.py          # add --skeleton to see missing rows
 python tools/make_project_map.py       # regenerates PROJECT_MAP.md
+pip install --require-hashes -r requirements.lock
 PYTHONPATH=src python -m unittest discover -s tests
 ```
 Keep `README.md` and `PROJECT_MAP.md` current. Small commits, tests first.

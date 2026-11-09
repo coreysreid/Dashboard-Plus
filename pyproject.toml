@@ -6,6 +6,6 @@ readme = "README.md"
 requires-python = ">=3.11"
 license = { text = "MIT" }
 authors = [{ name = "Corey Reid" }]
-# No runtime dependencies yet. Every one we add is pinned to an exact version
-# and needs a decision record in docs/decisions/.
+# Runtime libraries are listed, pinned, in requirements.txt and locked with
+# checksums in requirements.lock. Each one needs a decision record.
 dependencies = []

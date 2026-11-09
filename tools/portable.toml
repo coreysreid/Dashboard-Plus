@@ -1,0 +1,7 @@
+# Settings for tools/build_portable.py. The Python version is pinned exactly.
+# sha256 is the checksum of the official download; the build refuses a file
+# that does not match. Release builds also refuse an empty value.
+[python]
+version = "3.12.10"
+url = "https://www.python.org/ftp/python/3.12.10/python-3.12.10-embed-amd64.zip"
+sha256 = ""
