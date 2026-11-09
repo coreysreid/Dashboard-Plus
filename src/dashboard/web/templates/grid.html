@@ -1,0 +1,64 @@
+{% extends "base.html" %}
+{% block title %}{{ title }} · Dashboard Plus{% endblock %}
+{% block body %}
+<p class="muted"><a href="/">Home</a> · {{ info.module.title }}</p>
+<h1>{{ title }}</h1>
+<div class="actions">
+  <a class="button" href="/t/{{ info.name }}/new">Add</a>
+  <span class="muted">{{ total }} record{{ "" if total == 1 else "s" }}</span>
+</div>
+{% if total %}
+<div class="scroll">
+<table class="grid">
+  <thead><tr>
+    {% for c in columns %}
+    <th><a href="?sort={{ c.name }}{% if sort == c.name and not desc %}&desc=1{% endif %}">{{ c.label }}{% if sort == c.name %} {{ "↓" if desc else "↑" }}{% endif %}</a></th>
+    {% endfor %}
+    <th></th>
+  </tr></thead>
+  <tbody id="rows">{% include "rows.html" %}</tbody>
+</table>
+</div>
+<p id="more-wrap" class="actions" {% if next_offset is none %}hidden{% endif %}>
+  <button class="quiet" id="more" type="button" data-offset="{{ next_offset or '' }}">Show more</button>
+</p>
+<script>
+  // Load the next page of rows as the person scrolls near the end, or when they press "Show more".
+  (function () {
+    var button = document.getElementById("more");
+    var wrap = document.getElementById("more-wrap");
+    var body = document.getElementById("rows");
+    var busy = false;
+    function load() {
+      var offset = button.dataset.offset;
+      if (busy || !offset) return;
+      busy = true;
+      var params = new URLSearchParams(window.location.search);
+      params.set("offset", offset);
+      fetch("/t/{{ info.name }}/rows?" + params.toString(), { credentials: "same-origin" })
+        .then(function (r) { return r.text(); })
+        .then(function (html) {
+          var holder = document.createElement("tbody");
+          holder.innerHTML = html;
+          var marker = holder.querySelector("[data-next]");
+          var next = marker ? marker.dataset.next : "";
+          if (marker) marker.remove();
+          while (holder.firstChild) body.appendChild(holder.firstChild);
+          button.dataset.offset = next;
+          if (!next) wrap.hidden = true;
+          busy = false;
+        })
+        .catch(function () { busy = false; });
+    }
+    button.addEventListener("click", load);
+    if ("IntersectionObserver" in window) {
+      new IntersectionObserver(function (entries) {
+        if (entries[0].isIntersecting) load();
+      }, { rootMargin: "400px" }).observe(wrap);
+    }
+  })();
+</script>
+{% else %}
+<div class="card"><p>Nothing here yet. <a href="/t/{{ info.name }}/new">Add the first one</a>.</p></div>
+{% endif %}
+{% endblock %}

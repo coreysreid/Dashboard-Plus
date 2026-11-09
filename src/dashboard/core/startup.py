@@ -21,6 +21,7 @@ class StartupReport:
     applied: list[str] = field(default_factory=list)
     modules: list[str] = field(default_factory=list)
     module_problems: dict[str, list[str]] = field(default_factory=dict)
+    loaded: list = field(default_factory=list, repr=False)  # the Module objects in use
 
 
 def database_path(data_dir: Path) -> Path:
@@ -59,4 +60,4 @@ def prepare(data_dir: Path, modules_dir: Path | None = None) -> StartupReport:
     for item in applied:
         log.info("Applied database change %s", item.label)
     return StartupReport(database=path, version=version, applied=[m.label for m in applied],
-                         modules=[m.name for m in found], module_problems=failures)
+                         modules=[m.name for m in found], module_problems=failures, loaded=found)

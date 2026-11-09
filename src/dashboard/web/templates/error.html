@@ -3,5 +3,10 @@
 {% block body %}
 <h1>Sorry, that did not work</h1>
 <p class="lead">{{ message }}</p>
-<p><a class="button" href="/">Go to the home page</a></p>
+<div class="actions">
+  <a class="button" href="/">Go to the home page</a>
+  {% if can_report %}
+  <form method="post" action="/report"><input type="hidden" name="_csrf" value="{{ csrf_token }}"><button class="quiet" type="submit">Save a report</button></form>
+  {% endif %}
+</div>
 {% endblock %}

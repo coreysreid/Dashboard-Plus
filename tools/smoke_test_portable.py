@@ -1,6 +1,7 @@
 """Start the built portable folder, check it answers, and close it safely."""
 from __future__ import annotations
 
+import http.cookiejar
 import json
 import subprocess
 import sys
@@ -21,14 +22,21 @@ def wait_for(condition, seconds: float, step: float = 0.25) -> bool:
     return False
 
 
+OPENER = urllib.request.build_opener(urllib.request.HTTPCookieProcessor(http.cookiejar.CookieJar()))
+
+
 def fetch(url: str, host: str | None = None) -> tuple[int, str]:
-    """Return (status, body) for a GET request, optionally with a forged Host header."""
+    """Return (status, body) for a GET request, keeping cookies like a browser.
+
+    `host` forges the Host header, to check that such requests are refused.
+    """
     request = urllib.request.Request(url, headers={"Host": host} if host else {})
     try:
-        with urllib.request.urlopen(request, timeout=5) as response:
+        with OPENER.open(request, timeout=5) as response:
             return response.status, response.read().decode("utf-8", "replace")
     except urllib.error.HTTPError as error:
-        return error.code, ""
+        # Refusals (such as 403) still carry a page worth checking.
+        return error.code, error.read().decode("utf-8", "replace")
 
 
 def run(folder: Path) -> list[str]:
@@ -43,10 +51,13 @@ def run(folder: Path) -> list[str]:
         try:
             if not wait_for(state_path.exists, 30):
                 return ["the program did not start within 30 seconds"]
-            port = json.loads(state_path.read_text(encoding="utf-8"))["port"]
-            base = f"http://127.0.0.1:{port}/"
+            state = json.loads(state_path.read_text(encoding="utf-8"))
+            base = f"http://127.0.0.1:{state['port']}/"
             status, body = fetch(base)
-            if status != 200 or "It works" not in body:
+            if status != 403 or "open Dashboard Plus from its shortcut" not in body:
+                failures.append(f"a browser without the launch link was not turned away (got {status})")
+            status, body = fetch(f"{base}?key={state['session']}")
+            if status != 200 or "Look after what your household has" not in body:
                 failures.append(f"home page answered {status}")
             status, _ = fetch(base, host="evil.example")
             if status != 403:
@@ -83,7 +94,8 @@ def main(argv: list[str] | None = None) -> int:
         for failure in failures:
             print(f"  - {failure}")
         return 1
-    print("Portable smoke test passed: it started, answered, refused a forged host and closed safely.")
+    print("Portable smoke test passed: it started, answered the launch link, turned away a browser "
+          "without it, refused a forged host and closed safely.")
     return 0
 
 

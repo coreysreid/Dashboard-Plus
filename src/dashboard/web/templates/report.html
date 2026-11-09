@@ -1,0 +1,13 @@
+{% extends "base.html" %}
+{% block title %}Report saved{% endblock %}
+{% block body %}
+<h1>Report saved</h1>
+{% if path %}
+<p class="lead">A report was saved to:</p>
+<p><code>{{ path }}</code></p>
+<p>It contains the program's version, your computer's system name and the end of the program's log. It does not contain what you have recorded. Share it only if you choose to.</p>
+{% else %}
+<p class="lead">The report could not be saved.</p>
+{% endif %}
+<p><a class="button" href="/">Go to the home page</a></p>
+{% endblock %}

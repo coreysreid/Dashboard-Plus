@@ -27,10 +27,16 @@ class RunState:
     port: int
     token: str
     pid: int
+    session: str = ""
 
     @property
     def url(self) -> str:
         return f"http://{HOST}:{self.port}/"
+
+    @property
+    def launch_url(self) -> str:
+        """The address to open in the browser: it carries the session key once."""
+        return f"{self.url}?key={self.session}"
 
 
 def state_file(data_dir: Path) -> Path:
@@ -42,7 +48,8 @@ def read_state(data_dir: Path) -> RunState | None:
     """Return the recorded run state, or None if there is none or it is unreadable."""
     try:
         raw = json.loads(state_file(data_dir).read_text(encoding="utf-8"))
-        return RunState(port=int(raw["port"]), token=str(raw["token"]), pid=int(raw["pid"]))
+        return RunState(port=int(raw["port"]), token=str(raw["token"]), pid=int(raw["pid"]),
+                        session=str(raw.get("session", "")))
     except (OSError, ValueError, KeyError, TypeError):
         return None
 
@@ -96,13 +103,14 @@ def _serve(data_dir: Path, open_browser: bool, ready: threading.Event | None,
     if existing and is_responding(existing):
         print("Dashboard is already open. Opening it in your browser.")
         if open_browser:
-            webbrowser.open(existing.url)
+            webbrowser.open(existing.launch_url)
         if ready:
             ready.set()
         return
 
     report = startup.prepare(data_dir, modules_dir)
     token = secrets.token_urlsafe(32)
+    session = secrets.token_urlsafe(32)
     stopping = threading.Event()
     holder: dict[str, object] = {}
 
@@ -111,23 +119,24 @@ def _serve(data_dir: Path, open_browser: bool, ready: threading.Event | None,
         # Close from another thread so the current reply can finish first.
         threading.Timer(0.3, lambda: holder["server"].close()).start()
 
-    app = create_app(token, request_shutdown, report)
+    app = create_app(token, request_shutdown, report, data_dir=data_dir, session_key=session)
     server = create_server(app, host=HOST, port=0, threads=4)
     holder["server"] = server
     port = int(server.effective_port)
     app.config["PORT"] = port
-    state = RunState(port=port, token=token, pid=os.getpid())
+    state = RunState(port=port, token=token, pid=os.getpid(), session=session)
 
     path = state_file(data_dir)
     path.parent.mkdir(parents=True, exist_ok=True)
-    path.write_text(json.dumps({"port": port, "token": token, "pid": state.pid}), encoding="utf-8")
+    path.write_text(json.dumps({"port": port, "token": token, "pid": state.pid, "session": session}),
+                    encoding="utf-8")
     log.info("Dashboard started on %s", state.url)
 
     print("Dashboard Plus is running.")
     print(f"It is open in your browser at {state.url}")
     print("Keep this window open. To stop, use 'Close Dashboard safely'.")
     if open_browser:
-        webbrowser.open(state.url)
+        webbrowser.open(state.launch_url)
     if ready:
         ready.set()
     try:
