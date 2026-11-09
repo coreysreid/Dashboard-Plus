@@ -2,7 +2,7 @@
 {% block body %}
 <h1>Look after what your household has</h1>
 <p class="lead">Know what you have, where it is, and when it's running out.</p>
-{% if attention and (attention.low or attention.expiring or attention.supplies) %}
+{% if attention and (attention.low or attention.expiring or attention.supplies or attention.gaps) %}
 <div class="tables">
   {% for s in attention.supplies %}
   <div class="card">
@@ -18,8 +18,10 @@
   {% endfor %}
   <div class="card">
     <div class="muted">Needs attention</div>
-    <h2 style="margin-top:.2rem"><a href="/attention">{{ attention.low | length }} running low · {{ attention.expiring | length }} expiring</a></h2>
+    <h2 style="margin-top:.2rem"><a href="/attention">{{ attention.low | length }} running low · {{ attention.expiring | length }} expiring{% if attention.gaps %} · {{ attention.gaps | length }} to fill in{% endif %}</a></h2>
     {% for item in (attention.low + attention.expiring)[:4] %}<p class="muted" style="margin:.2rem 0">{{ item.name }}: {{ item.detail }}</p>{% endfor %}
+    {% set room = 4 - (attention.low + attention.expiring) | length %}
+    {% if room > 0 %}{% for gap in attention.gaps[:room] %}<p class="muted" style="margin:.2rem 0">{{ gap.message }}</p>{% endfor %}{% endif %}
   </div>
 </div>
 {% endif %}

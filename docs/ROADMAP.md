@@ -43,9 +43,9 @@ sheet of who to call.
 - A plain warning that the data folder is not encrypted, so the USB stick should
   be kept safe.
 
-**Still to do for M1 (as of 9 November 2026):** the People "gaps" check, README
-with the Windows warning, and the final checks below. (Stock in and out with a
-reason is in review.)
+**Still to do for M1 (as of 9 November 2026):** the final checks below, on a
+clean Windows computer. (The gaps check and the README for households are in
+review.)
 
 **Not in M1:** helpers and the Agent API, the review queue and inbox, charts,
 analysis, the question loop, prompts, outcomes, other modules, outside sources.

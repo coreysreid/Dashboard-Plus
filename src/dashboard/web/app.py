@@ -126,7 +126,8 @@ def create_app(shutdown_token: str, on_shutdown: Callable[[], None], report=None
                 tables.append({"name": name, "title": table_title(info), "module": info.module.title,
                                "count": store.count(name)})
             attention = {"low": watch.running_low(conn, registry()), "expiring": watch.expiring(conn, registry()),
-                         "supplies": watch.supplies(conn, registry())}
+                         "supplies": watch.supplies(conn, registry()),
+                         "gaps": watch.gaps(conn, registry())}
             from dashboard.web.sheets import available_sheets
             sheets = available_sheets(registry())
         return render_template("home.html", report=report, tables=tables, attention=attention,
@@ -137,7 +138,7 @@ def create_app(shutdown_token: str, on_shutdown: Callable[[], None], report=None
         conn, tables = connection(), registry()
         return render_template("attention.html", low=watch.running_low(conn, tables),
                                expiring=watch.expiring(conn, tables), supplies=watch.supplies(conn, tables),
-                               household=watch.household(conn, tables))
+                               gaps=watch.gaps(conn, tables), household=watch.household(conn, tables))
 
     @app.get("/close")
     def close_page():

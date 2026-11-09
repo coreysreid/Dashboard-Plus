@@ -230,6 +230,38 @@ adds = ["bought"]      # choices that add; every other choice takes away
 - On a record's page, every table that links to it offers an "Add to …" button
   with the link filled in, and saving returns to that record.
 
+### 5.4 Gaps: details worth filling in
+
+A table may list `gaps` in its `watch` section: details a household would want
+written down before they are needed. The core asks each one as a question under
+*Worth filling in* on the Needs attention page, with a link to the place to
+fill it in, and counts them on the home page. Nothing is sent anywhere.
+
+```toml
+[[tables.roles.watch.gaps]]
+none = { role = "emergency_contact" }     # asked when no row matches
+message = "Who would you call first in an emergency? Nobody is listed as an emergency contact yet."
+
+[[tables.roles.watch.gaps]]
+missing = "person.phone"                  # asked for each row where this is blank
+where = { role = "doctor" }               # optional equality filters
+message = "What is {person}'s phone number?"
+```
+
+- Each gap uses either `none` (equality filters; asked when no row matches,
+  linking to a new-record form with the filters filled in) or `missing` (a
+  column of this table, or `link.column` within the module; asked per row where
+  it is blank, linking to the record that holds the blank). `missing` asks once
+  per linked record, even when several rows point at it.
+- `{column}` in a `missing` message is filled in from the row as a person reads
+  it (a link shows the record's name, a choice its label). A `none` message has
+  no row, so it cannot use `{...}`.
+- Messages ask; they do not assert or judge. Ask only what nearly every
+  household would want answered; anything that depends on the household's
+  situation belongs in prompts (section 10.5), which can be answered "not
+  relevant". Gaps have no "not relevant" answer in M1: they stop when filled in.
+- Deleted rows are left out.
+
 ## 6. Modules
 
 A module is a folder:
