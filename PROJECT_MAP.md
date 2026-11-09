@@ -73,6 +73,7 @@ marked Superseded. Each lists downsides, cost to undo, and the sign it was wrong
 | [0029](0029-portable-windows-build-pipeline.md) | How the portable Windows folder is built | Accepted |
 | [0030](0030-plain-sqlite-with-numbered-sql-migrations.md) | Plain SQLite access and numbered SQL migrations | Accepted |
 | [0031](0031-module-files-are-checked-and-migrations-generated.md) | Module files are checked strictly, and their migrations are generated | Accepted |
+| [0032](0032-one-checked-path-for-every-record-change.md) | One checked path for every record change, with soft deletes and history | Accepted |
 | [TEMPLATE](TEMPLATE.md) | Blank record to copy for a new decision | recording a decision |
 
 ## modules/  (summary: optional features; each folder is one module)
@@ -102,11 +103,12 @@ See docs/DESIGN.md section 6 for the module contract.
 ## src/dashboard/core/  (summary: core services, nothing topic-specific)
 | Entry | What it is | Open it when |
 |---|---|---|
-| __init__.py | Core services: database, migrations and modules now; records, review and backups next. | adding a core service |
+| __init__.py | Core services: database, migrations, modules and records; review and backups come next. | adding a core service |
 | db.py | Open the SQLite database with settings that are safe on USB drives. | changing how the data file is opened or backed up |
 | migrations.py | Apply numbered migrations, one track for the core and one per module. | changing how database changes are applied |
 | migrations/ | The core's own numbered database changes | adding a core table |
 | modules.py | Find module folders, check their files, and explain any mistakes in plain words. | changing what module files may say |
+| records.py | Create, change, delete and read records, checking every value and keeping a history. | changing how records are saved or checked |
 | schema.py | Turn a module's declared tables into SQL, and work out its next migration. | changing how tables are built |
 | startup.py | Prepare the database at start-up: load modules, back up if needed, and migrate. | changing what happens at start-up |
 
@@ -116,6 +118,7 @@ Add a new file with the next number instead of changing an old one.
 | Entry | What it is | Open it when |
 |---|---|---|
 | 0001_core_tables.sql | Settings and the list of modules in use | checking the core tables |
+| 0002_audit_history.sql | The history of every change to every record | checking how history is stored |
 
 ## src/dashboard/web/  (summary: pages, forms and the Agent API)
 | Entry | What it is | Open it when |
@@ -143,6 +146,7 @@ PYTHONPATH=src python -m unittest discover -s tests
 | test_db.py | Tests for opening the database safely, transactions, statement splitting and backups. | changing the database layer |
 | test_migrations.py | Tests for numbered migrations: tracks, checksums, newer databases, rollback and backups. | changing migrations |
 | test_modules.py | Tests for loading module folders and the plain-language problems they report. | changing module rules |
+| test_records.py | Tests for saving, checking, linking, deleting and restoring records, and their history. | changing how records are saved |
 | test_schema.py | Tests for turning declared tables into SQL and generating the next migration. | changing table building |
 | test_startup.py | Tests for preparing the database at start-up with the modules found. | changing start-up |
 | test_check_privacy.py | Tests for the privacy check. | changing privacy rules |

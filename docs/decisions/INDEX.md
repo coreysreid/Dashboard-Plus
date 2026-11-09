@@ -35,4 +35,5 @@ marked Superseded. Each lists downsides, cost to undo, and the sign it was wrong
 | [0029](0029-portable-windows-build-pipeline.md) | How the portable Windows folder is built | Accepted |
 | [0030](0030-plain-sqlite-with-numbered-sql-migrations.md) | Plain SQLite access and numbered SQL migrations | Accepted |
 | [0031](0031-module-files-are-checked-and-migrations-generated.md) | Module files are checked strictly, and their migrations are generated | Accepted |
+| [0032](0032-one-checked-path-for-every-record-change.md) | One checked path for every record change, with soft deletes and history | Accepted |
 | [TEMPLATE](TEMPLATE.md) | Blank record to copy for a new decision | recording a decision |
