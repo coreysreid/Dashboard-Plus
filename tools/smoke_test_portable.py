@@ -35,7 +35,8 @@ def fetch(url: str, host: str | None = None) -> tuple[int, str]:
         with OPENER.open(request, timeout=5) as response:
             return response.status, response.read().decode("utf-8", "replace")
     except urllib.error.HTTPError as error:
-        return error.code, ""
+        # Refusals (such as 403) still carry a page worth checking.
+        return error.code, error.read().decode("utf-8", "replace")
 
 
 def run(folder: Path) -> list[str]:
@@ -53,7 +54,7 @@ def run(folder: Path) -> list[str]:
             state = json.loads(state_path.read_text(encoding="utf-8"))
             base = f"http://127.0.0.1:{state['port']}/"
             status, body = fetch(base)
-            if "open Dashboard Plus from its shortcut" not in body:
+            if status != 403 or "open Dashboard Plus from its shortcut" not in body:
                 failures.append(f"a browser without the launch link was not turned away (got {status})")
             status, body = fetch(f"{base}?key={state['session']}")
             if status != 200 or "Look after what your household has" not in body:
