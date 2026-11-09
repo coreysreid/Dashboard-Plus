@@ -5,5 +5,6 @@
 | app.py | Build the Flask web application and its local-only protections. | changing sign-in, protections or reports |
 | pages.py | Pages built from module declarations: the record grid, add and edit forms, and history. | changing the grid or forms |
 | setup.py | The first-run wizard and the settings page: who lives here, the home, modules and backups. | changing setup questions or settings |
+| sheets.py | One-page printable sheets declared by modules, such as the emergency sheet. | changing printable sheets |
 | display.py | Turn declared tables and stored values into friendly labels, form fields and text. | changing how values look |
 | templates/ | The HTML pages | changing what a page looks like |

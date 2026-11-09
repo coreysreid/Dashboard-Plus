@@ -115,7 +115,7 @@ def create_app(shutdown_token: str, on_shutdown: Callable[[], None], report=None
 
     @app.get("/")
     def home():
-        tables, attention, last_backup = [], None, None
+        tables, attention, last_backup, sheets = [], None, None, []
         if app.config["DATA_DIR"] is not None:
             last_backup = backups.latest(app.config["DATA_DIR"])
         if app.config["DATA_DIR"] is not None and registry():
@@ -127,8 +127,10 @@ def create_app(shutdown_token: str, on_shutdown: Callable[[], None], report=None
                                "count": store.count(name)})
             attention = {"low": watch.running_low(conn, registry()), "expiring": watch.expiring(conn, registry()),
                          "supplies": watch.supplies(conn, registry())}
+            from dashboard.web.sheets import available_sheets
+            sheets = available_sheets(registry())
         return render_template("home.html", report=report, tables=tables, attention=attention,
-                               last_backup=last_backup)
+                               last_backup=last_backup, sheets=sheets)
 
     @app.get("/attention")
     def attention_page():
@@ -162,7 +164,9 @@ def create_app(shutdown_token: str, on_shutdown: Callable[[], None], report=None
 
     from dashboard.web.pages import pages
     from dashboard.web.setup import setup_pages
+    from dashboard.web.sheets import sheet_pages
     app.register_blueprint(pages)
+    app.register_blueprint(sheet_pages)
     app.register_blueprint(setup_pages)
 
     @app.errorhandler(400)

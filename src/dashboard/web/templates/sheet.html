@@ -1,0 +1,40 @@
+{% extends "base.html" %}
+{% block title %}{{ sheet.title }} · Dashboard Plus{% endblock %}
+{% block body %}
+<style>
+  .sheet h1 { font-size: 1.5rem; }
+  .sheet h2 { font-size: 1.1rem; margin: 1rem 0 .3rem; }
+  .sheet table { width: 100%; border-collapse: collapse; }
+  .sheet th, .sheet td { text-align: left; padding: .3rem .5rem; border-bottom: 1px solid var(--line); vertical-align: top; }
+  .sheet .empty { color: var(--muted); }
+  @media print {
+    header, footer, .no-print { display: none !important; }
+    body { background: #fff; color: #000; font-size: 11pt; }
+    main { padding: 0; max-width: none; }
+    .sheet th, .sheet td { border-bottom: 1px solid #999; padding: 2pt 4pt; }
+    a { color: #000; text-decoration: none; }
+  }
+</style>
+<p class="muted no-print"><a href="/">Home</a></p>
+<div class="actions no-print">
+  <button type="button" onclick="window.print()">Print</button>
+  <span class="muted">Fits on one page for most households. Works without the internet.</span>
+</div>
+<div class="sheet">
+  <h1>{{ sheet.title }}</h1>
+  {% if sheet.intro %}<p>{{ sheet.intro }}</p>{% endif %}
+  <p class="muted">Printed {{ printed }}. Check it again when things change.</p>
+  {% if private %}<p><strong>This sheet includes private details.</strong> Keep printed copies somewhere sensible.</p>{% endif %}
+  {% for section in sections %}
+  <h2>{{ section.title }}</h2>
+  {% if section.rows %}
+  <table>
+    <thead><tr>{% for h in section.headings %}<th>{{ h }}</th>{% endfor %}</tr></thead>
+    <tbody>{% for row in section.rows %}<tr>{% for cell in row %}<td>{{ cell }}</td>{% endfor %}</tr>{% endfor %}</tbody>
+  </table>
+  {% else %}
+  <p class="empty">Nothing recorded yet.</p>
+  {% endif %}
+  {% endfor %}
+</div>
+{% endblock %}

@@ -112,6 +112,13 @@ class SetupTests(TempDirTestCase):
         self.post("/settings", {"modules": ["people", "demo"], "second_copy": "yes"})
         self.assertIn("Kept thing", self.get("/t/demo__things").get_data(as_text=True))
 
+    def test_settings_can_be_saved_before_anyone_is_added(self):
+        self.start()
+        self.post("/setup", {"people": "2", "modules": ["demo", "people"]})
+        response = self.post("/settings", {"modules": ["demo"], "storeys": "1"})
+        self.assertEqual(response.status_code, 302)
+        self.assertEqual(self.setting("household.storeys"), 1)
+
     def test_turning_off_the_second_backup_copy(self):
         self.start()
         self.post("/setup", {"name_1": "Person A", "modules": ["demo", "people"]})  # second_copy unticked

@@ -85,6 +85,7 @@ class Module:
     tables: dict[str, Table]
     labels: dict
     migrations: list[Migration]
+    sheets: list = field(default_factory=list)  # checked printable sheets (DESIGN.md 5.2)
 
 
 def _suggest(word: str, options) -> str:
@@ -371,6 +372,93 @@ def _check_labels(data: dict, tables: dict[str, Table], problems: list[str]) -> 
     return data
 
 
+SHEET_KEYS = ("name", "title", "intro", "section")
+SECTION_KEYS = ("title", "table", "where", "columns", "order_by")
+
+
+def _check_sheets(data: dict, tables: dict[str, Table], problems: list[str]) -> list[dict]:
+    """Check sheets.toml: one-page printable sheets built from the module's tables."""
+    file = "sheets.toml"
+    if not data:
+        return []
+    problems.extend(_unknown_keys(f"In {file}", data, ("sheet",)))
+    raw_sheets = data.get("sheet", [])
+    if not isinstance(raw_sheets, list):
+        problems.append(f"In {file}: write each sheet as a [[sheet]] section.")
+        return []
+    sheets, names = [], set()
+    for number, raw in enumerate(raw_sheets, start=1):
+        where = f"In {file}, sheet {number}"
+        if not isinstance(raw, dict):
+            continue
+        problems.extend(_unknown_keys(where, raw, SHEET_KEYS))
+        name = raw.get("name")
+        if not isinstance(name, str) or not NAME.match(name):
+            problems.append(f"{where}: 'name' must be lower-case letters, digits and underscores, like \"emergency\".")
+            continue
+        where = f"In {file}, sheet '{name}'"
+        if name in names:
+            problems.append(f"{where}: two sheets have this name.")
+        names.add(name)
+        if "title" not in raw:
+            problems.append(f"{where}: 'title' is missing.")
+        sections = []
+        raw_sections = raw.get("section", [])
+        if not isinstance(raw_sections, list) or not raw_sections:
+            problems.append(f"{where}: add at least one [[sheet.section]].")
+            raw_sections = []
+        for s_number, section in enumerate(raw_sections, start=1):
+            s_where = f"{where}, section {s_number}"
+            if not isinstance(section, dict):
+                continue
+            problems.extend(_unknown_keys(s_where, section, SECTION_KEYS))
+            table = section.get("table")
+            if table not in tables:
+                problems.append(f"{s_where}: 'table' names '{table}', which this module does not declare."
+                                f"{_suggest(table, list(tables))}")
+                continue
+            columns = tables[table].columns
+            chosen = section.get("columns", [])
+            if not isinstance(chosen, list) or not chosen:
+                problems.append(f"{s_where}: list the columns to print, like columns = [\"name\", \"phone\"].")
+                chosen = []
+            bad = []
+            for c in chosen:
+                if not isinstance(c, str):
+                    bad.append(c)
+                    continue
+                if "." in c:  # a column of the record a link points at, e.g. "person.phone"
+                    link, _, field_name = c.partition(".")
+                    target = columns.get(link)
+                    if target is None or target.type != "link" or "." in (target.to or "") or target.to not in tables:
+                        problems.append(f"{s_where}: '{c}' must start with a link column to a table of this module.")
+                        bad.append(c)
+                    elif field_name not in tables[target.to].columns:
+                        problems.append(f"{s_where}: there is no column '{field_name}' in '{target.to}'."
+                                        f"{_suggest(field_name, list(tables[target.to].columns))}")
+                        bad.append(c)
+                elif c not in columns:
+                    problems.append(f"{s_where}: there is no column '{c}' in '{table}'.{_suggest(c, list(columns))}")
+                    bad.append(c)
+            filters = section.get("where", {})
+            if not isinstance(filters, dict):
+                problems.append(f"{s_where}: 'where' must be settings like {{ lives_here = true }}.")
+                filters = {}
+            for c in filters:
+                if c not in columns:
+                    problems.append(f"{s_where}: 'where' names a column '{c}' that does not exist.{_suggest(c, list(columns))}")
+            order_by = section.get("order_by", "id")
+            if order_by != "id" and order_by not in columns:
+                problems.append(f"{s_where}: 'order_by' names a column '{order_by}' that does not exist."
+                                f"{_suggest(order_by, list(columns))}")
+            sections.append({"title": str(section.get("title", tables[table].title)), "table": table,
+                             "where": dict(filters), "columns": [c for c in chosen if c not in bad],
+                             "order_by": order_by})
+        sheets.append({"name": name, "title": str(raw.get("title", name)), "intro": raw.get("intro"),
+                       "sections": sections})
+    return sheets
+
+
 def load_module(folder: Path) -> Module:
     """Read and check one module folder. Raises ModuleError listing every problem found."""
     folder = Path(folder)
@@ -382,6 +470,7 @@ def load_module(folder: Path) -> Module:
     tables = _check_tables(folder.name, _read_toml(folder / "tables.toml", problems, required=True),
                            requires, problems)
     labels = _check_labels(_read_toml(folder / "labels.toml", problems, required=False), tables, problems)
+    sheets = _check_sheets(_read_toml(folder / "sheets.toml", problems, required=False), tables, problems)
     try:
         migrations = load_track(folder.name, folder / "migrations")
     except MigrationError as error:
@@ -392,7 +481,7 @@ def load_module(folder: Path) -> Module:
     return Module(name=meta["name"], title=meta["title"], version=meta["version"],
                   description=meta["description"], kind=meta["kind"], requires=list(requires),
                   outbound_hosts=list(meta.get("outbound_hosts", [])), folder=folder,
-                  tables=tables, labels=labels, migrations=migrations)
+                  tables=tables, labels=labels, migrations=migrations, sheets=sheets)
 
 
 def discover(modules_dir: Path) -> tuple[list[Module], dict[str, list[str]]]:

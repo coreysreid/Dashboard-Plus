@@ -8,6 +8,7 @@
 | rows.html | One page of grid rows (also loaded as you scroll) | changing a row |
 | form.html | Add and edit forms, delete and restore, and history | changing the form |
 | setup.html | First-run wizard and Settings (one form, two modes) | changing setup questions |
+| sheet.html | A printable sheet, styled to fit one page | changing how sheets print |
 | start.html | Shown to a browser that was not opened by the shortcut | changing that message |
 | report.html | Shown after saving a report | changing that message |
 | close.html | The "Close Dashboard safely" page | changing how closing works |

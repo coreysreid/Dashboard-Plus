@@ -196,12 +196,14 @@ order_by = "name"
 [[sheet.section]]
 title = "Who to call"
 table = "roles"
-columns = ["role", "person", "priority"]
+columns = ["role", "person", "person.phone"]
 order_by = "priority"
 ```
 
-Sensitive columns are printed only if a section lists them explicitly, and the
-page says they are included.
+A column written as `link.column` (for example `person.phone`) prints a column
+of the record the link points at, within the same module. Sensitive columns are
+printed only if a section lists them explicitly, and the page says they are
+included.
 
 ## 6. Modules
 
