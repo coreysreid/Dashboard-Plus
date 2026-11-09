@@ -14,6 +14,7 @@ Follow the INDEX.md in a folder before opening its files. Hidden files are not l
 | requirements.lock | Generated: those libraries with checksums | never by hand; regenerate it |
 | .github/ | CI workflow and pull request checklist | changing the automatic checks |
 | docs/ | Vision, core promise, design, decision records | understanding why or how |
+| examples/ | Optional worked module examples, not installed by default | learning to write a module |
 | modules/ | Optional features, one folder each | adding or changing a topic |
 | src/ | The program itself | changing how the app works |
 | tests/ | Automatic tests | adding or fixing a test |

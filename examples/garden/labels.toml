@@ -1,0 +1,22 @@
+[tables.beds]
+form = ["name", "location", "notes"]
+list = ["name", "location"]
+
+[tables.crops]
+form = ["name", "variety", "notes"]
+list = ["name", "variety"]
+
+[tables.plantings]
+form = ["bed", "crop", "planted_on", "quantity", "notes"]
+list = ["bed", "crop", "planted_on", "quantity"]
+columns.planted_on = { label = "Planted on" }
+
+[tables.harvests]
+form = ["planting", "harvested_on", "amount", "unit", "notes"]
+list = ["planting", "harvested_on", "amount", "unit"]
+columns.amount = { label = "How much" }
+
+[tables.jobs]
+form = ["title", "bed", "due_on", "done", "notes"]
+list = ["title", "bed", "due_on", "done"]
+columns.due_on = { label = "Due on" }

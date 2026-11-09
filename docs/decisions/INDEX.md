@@ -46,4 +46,5 @@ marked Superseded. Each lists downsides, cost to undo, and the sign it was wrong
 | [0040](0040-household-stock-module-shape.md) | What the Household stock module records, and how water is counted | Accepted |
 | [0041](0041-tests-index-may-be-longer.md) | The tests folder index may be longer than 25 lines | Accepted |
 | [0042](0042-a-workbench-for-the-second-agent.md) | The second agent works only in a workbench folder, as checker and drafter | Accepted |
+| [0060](0060-garden-example-outside-installed-modules.md) | Keep the worked garden outside installed modules | Accepted |
 | [TEMPLATE](TEMPLATE.md) | Blank record to copy for a new decision | recording a decision |

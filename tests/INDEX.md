@@ -6,6 +6,7 @@ How to run them is in AGENTS.md.
 | test_db.py | Tests for opening the database safely, transactions, statement splitting and backups. | changing the database layer |
 | test_migrations.py | Tests for numbered migrations: tracks, checksums, newer databases, rollback and backups. | changing migrations |
 | test_modules.py | Tests for loading module folders and the plain-language problems they report. | changing module rules |
+| test_example_garden.py | Exercise the garden example with a temporary database and synthetic harvest. | changing the garden example |
 | test_records.py | Tests for saving, checking, linking, deleting and restoring records, and their history. | changing how records are saved |
 | test_schema.py | Tests for turning declared tables into SQL and generating the next migration. | changing table building |
 | test_startup.py | Tests for preparing the database at start-up with the modules found. | changing start-up |
