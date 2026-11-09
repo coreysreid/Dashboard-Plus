@@ -88,6 +88,7 @@ marked Superseded. Each lists downsides, cost to undo, and the sign it was wrong
 | [0040](0040-household-stock-module-shape.md) | What the Household stock module records, and how water is counted | Accepted |
 | [0041](0041-tests-index-may-be-longer.md) | The tests folder index may be longer than 25 lines | Accepted |
 | [0042](0042-a-workbench-for-the-second-agent.md) | The second agent works only in a workbench folder, as checker and drafter | Accepted |
+| [0043](0043-records-that-change-a-count.md) | Stock in and out updates the item's count automatically | Accepted |
 | [0060](0060-garden-example-outside-installed-modules.md) | Keep the worked garden outside installed modules | Accepted |
 | [TEMPLATE](TEMPLATE.md) | Blank record to copy for a new decision | recording a decision |
 
@@ -139,7 +140,7 @@ Generate the next one with: python tools/make_migration.py people --name <what_c
 | Entry | What it is | Open it when |
 |---|---|---|
 | module.toml | Name, version, description | changing the module's details |
-| tables.toml | Places and stock items, plus running low, use-by and days of water | adding a field, category or watch rule |
+| tables.toml | Places, stock items (running low, use-by, days of water) and stock in and out | adding a field, category or rule |
 | labels.toml | Friendly labels, help text, form and list order | changing wording or order |
 | sheets.toml | Emergency supplies checklist | changing what prints |
 | migrations/ | Numbered database changes | after changing tables.toml |
@@ -150,6 +151,7 @@ Generate the next one with: python tools/make_migration.py stock --name <what_ch
 | Entry | What it is | Open it when |
 |---|---|---|
 | 0001_first_tables.sql | The module's first tables, generated from tables.toml | checking how the tables are stored |
+| 0002_stock_in_and_out.sql | The Stock in and out table | checking how movements are stored |
 
 ## src/  (summary: the program's Python code)
 | Entry | What it is | Open it when |
@@ -234,6 +236,7 @@ How to run them is in AGENTS.md.
 | test_project_map.py | Tests for the project map generator. | changing the map |
 | test_server.py | Tests for starting, protecting and safely closing the local web server. | changing startup or closing |
 | test_watch.py | Tests for running low, expiring soon and days of cover, and for checking `watch` sections. | changing watch rules |
+| test_adjusts.py | Tests for records that change a linked quantity (stock in and out), and the checks on `adjusts`. | changing stock in and out |
 | test_backups.py | Tests for automatic backups: daily, on close, in two places, and keeping only recent ones. | changing backups |
 | test_setup.py | Tests for the first-run wizard and the settings page. | changing setup or settings |
 | test_sheets.py | Tests for printable sheets: checking sheets.toml and printing the emergency sheet. | changing sheets |
@@ -243,6 +246,7 @@ How to run them is in AGENTS.md.
 | test_main.py | Tests for the command-line entry point and its plain-language messages. | changing the command line |
 | test_build_portable.py | Tests for the portable Windows build, using a stand-in for the Python download. | changing the build |
 | test_lock_requirements.py | Tests for the requirements lock generator. | changing how libraries are locked |
+| test_repofiles.py | Tests for the shared list of repository files, including during a merge with conflicts. | a tool counts a file twice |
 | test_repository.py | Tests that this repository passes its own checks. | CI fails on the repo itself |
 
 ## tools/  (summary: scripts that check, lock and build the project; run by CI)

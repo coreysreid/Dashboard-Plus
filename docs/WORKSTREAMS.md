@@ -48,7 +48,11 @@ every draft automatically. You do not write tests in `tests/`.
    pull request.
 2. Run `python tools/check_all.py`. Everything passes, nothing skipped.
 3. One pull request per task, described in plain language for Corey: what a
-   household can now do or what was found, and anything left undone.
+   household can now do or what was found, and anything left undone. GitHub
+   does not let Lane B create pull requests, so Lane B pushes its branch and
+   writes "ready for a pull request: `<branch>`" with a plain-language summary
+   in `workbench/STATUS.md`; Lane A checks the branch and opens the pull
+   request using that summary.
 4. Lane B commit messages start with `Lane B:`; Lane A messages do not.
 5. Lane B updates `workbench/STATUS.md` in the same pull request.
 6. No real names, places, numbers or data, anywhere.
@@ -57,6 +61,9 @@ every draft automatically. You do not write tests in `tests/`.
 
 **Watch views:** the `watch` section in `tables.toml`, exactly as in
 `docs/DESIGN.md` section 5.1 (including the optional `label` for a supply).
+
+**Records that change a count:** the `adjusts` section, as in `docs/DESIGN.md`
+section 5.3, for drafts that track amounts going in and out (for example pet food).
 
 **Printable sheets:** `sheets.toml`, exactly as in `docs/DESIGN.md` section 5.2,
 including `link.column` columns such as `person.phone`.
@@ -84,8 +91,9 @@ Draft modules may link to these with `requires = ["people"]` and
 |---|---|---|
 | Core M1 steps 1 to 6, printable sheets | A | merged |
 | People and Household stock modules | A | in review |
-| Stock in and out, gaps check, M1 release checks | A | next |
-| Module guide and garden example | B | branch `lane-b/module-guide`, needs a pull request |
+| Stock in and out | A | in review |
+| Gaps check, M1 release checks | A | next |
+| Module guide and garden example | B | pull request #10, opened by Lane A |
 | SECURITY, CONTRIBUTING, issue templates | B | branch `lane-b/project-files`, needs a pull request |
 | Batch 2 (below) | B | ready to start |
 
@@ -93,7 +101,7 @@ Draft modules may link to these with `requires = ["people"]` and
 
 | From | To | Request | State |
 |---|---|---|---|
-| A | B | Finish both in-flight branches: merge `main`, run `python tools/check_all.py` (it will ask you to regenerate `PROJECT_MAP.md`), resolve `docs/decisions/INDEX.md` by keeping every row in number order, start the commit message with `Lane B:`, then open one pull request each. | open |
+| A | B | Finish both in-flight branches: merge `main`, run `python tools/check_all.py` (it will ask you to regenerate `PROJECT_MAP.md`), resolve `docs/decisions/INDEX.md` by keeping every row in number order, start the commit message with `Lane B:`, then mark each "ready for a pull request" in `workbench/STATUS.md`. | module guide done (pull request #10); project files in progress |
 | A | B | Start batch 2 below, all inside `workbench/`. | open |
 
 ## Brief for Lane B, batch 2

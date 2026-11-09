@@ -4,3 +4,4 @@ Generate the next one with: python tools/make_migration.py stock --name <what_ch
 | Entry | What it is | Open it when |
 |---|---|---|
 | 0001_first_tables.sql | The module's first tables, generated from tables.toml | checking how the tables are stored |
+| 0002_stock_in_and_out.sql | The Stock in and out table | checking how movements are stored |

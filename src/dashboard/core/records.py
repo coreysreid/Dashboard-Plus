@@ -49,6 +49,21 @@ def build_registry(modules: list[Module]) -> dict[str, TableInfo]:
     return {table_name(m.name, t.name): TableInfo(m, t) for m in modules for t in m.tables.values()}
 
 
+def resolve_default(column: Column):
+    """A column's default value, with "today" and "now" turned into the actual date or time."""
+    default = column.default
+    if column.type == "date" and default == "today":
+        return date.today().isoformat()
+    if column.type == "datetime" and default == "now":
+        return datetime.now().isoformat(timespec="minutes")
+    return default
+
+
+def _plain_number(value) -> str:
+    text = f"{float(value):.2f}".rstrip("0").rstrip(".")
+    return text or "0"
+
+
 def _now() -> str:
     return datetime.now(timezone.utc).isoformat(timespec="seconds")
 
@@ -210,9 +225,10 @@ class Records:
                 problems[field] = str(error)
         if creating:
             for column in columns.values():
-                if column.name not in cleaned and column.default is not None:
+                if cleaned.get(column.name) in (None, []) and column.default is not None and column.name not in problems:
+                    default = resolve_default(column)
                     try:
-                        cleaned[column.name] = self._clean_value(info, column, column.default)
+                        cleaned[column.name] = self._clean_value(info, column, default)
                     except ValueError as error:
                         problems[column.name] = f"has a default that {error}"
         for column in columns.values():
@@ -247,6 +263,40 @@ class Records:
                 self.conn.executemany(f"INSERT INTO {join} (from_id, to_id) VALUES (?, ?)",
                                       [(record_id, to) for to in values[column.name]])
 
+    def _adjust(self, info: TableInfo, row: dict, sign: int, actor: str, skip: set | None = None) -> None:
+        """Apply (sign=+1) or undo (sign=-1) a record's effect on a linked quantity.
+
+        Used for tables with an `adjusts` section, such as stock in and out: buying
+        adds to an item's quantity, using takes from it. Refuses to go below zero.
+        """
+        rule = info.table.adjusts
+        if not rule or row.get("deleted_at") or row.get(rule["link"]) is None or row.get(rule["amount"]) is None:
+            return
+        target = self.registry[table_name(info.module.name, rule["target"])]
+        target_id = row[rule["link"]]
+        if skip and (target.name, target_id) in skip:
+            return  # the linked record is itself being deleted
+        current = self.conn.execute(f"SELECT {rule['quantity']}, deleted_at FROM {target.name} WHERE id = ?",
+                                    (target_id,)).fetchone()
+        if current is None or current["deleted_at"]:
+            return
+        before = current[rule["quantity"]] or 0
+        amount = row[rule["amount"]] if row[rule["direction"]] in rule["adds"] else -row[rule["amount"]]
+        after = before + sign * amount
+        if after < 0:
+            column = target.table.columns[rule["quantity"]]
+            raise ValidationError({rule["amount"]: f"is more than there is: only {_plain_number(before)} "
+                                   f"{'left' if sign > 0 else 'would remain'}. If the count was wrong, correct "
+                                   f"{column.name.replace('_', ' ')} on the {target.table.title.lower()} record first."})
+        if target.table.columns[rule["quantity"]].type == "integer":
+            after = int(after)
+        assignments = {rule["quantity"]: after, "updated_at": self.clock()}
+        if actor == "person":
+            assignments["edited_by_person"] = 1
+        self.conn.execute(f"UPDATE {target.name} SET {', '.join(f'{k} = ?' for k in assignments)} WHERE id = ?",
+                          list(assignments.values()) + [target_id])
+        self._audit(actor, "update", target, target_id, {rule["quantity"]: before}, {rule["quantity"]: after})
+
     def create(self, name: str, values: dict, actor: str = "person", review_status: str = "confirmed",
                batch_id: int | None = None) -> int:
         """Save a new record and return its id."""
@@ -263,6 +313,7 @@ class Records:
             record_id = cursor.lastrowid
             self._write_links(info, record_id, cleaned)
             self._audit(actor, "create", info, record_id, None, cleaned, batch_id)
+            self._adjust(info, self._row(info, record_id), +1, actor)
         return record_id
 
     def update(self, name: str, record_id: int, values: dict, actor: str = "person") -> dict:
@@ -284,6 +335,10 @@ class Records:
                 list(assignments.values()) + [record_id])
             self._write_links(info, record_id, changed)
             self._audit(actor, "update", info, record_id, {k: current.get(k) for k in changed}, changed)
+            rule = info.table.adjusts
+            if rule and any(k in changed for k in (rule["link"], rule["amount"], rule["direction"])):
+                self._adjust(info, current, -1, actor)
+                self._adjust(info, self._row(info, record_id), +1, actor)
         return {k: [current.get(k), v] for k, v in changed.items()}
 
     def _dependents(self, info: TableInfo):
@@ -308,7 +363,7 @@ class Records:
         if (info.name, record_id) in seen:
             return
         seen.add((info.name, record_id))
-        self._row(info, record_id)
+        row = self._row(info, record_id)
         blocking = []
         for other, column in self._dependents(info):
             ids = [r[0] for r in self.conn.execute(
@@ -328,6 +383,7 @@ class Records:
         if blocking:
             raise ValidationError({"delete": "cannot be done yet because " + " and ".join(blocking) +
                                    " still point at it. Change or delete those first."})
+        self._adjust(info, row, -1, actor, skip=seen)
         now = self.clock()
         self.conn.execute(f"UPDATE {info.name} SET deleted_at = ?, updated_at = ? WHERE id = ?", (now, now, record_id))
         self._audit(actor, "delete", info, record_id, None, None)
@@ -343,3 +399,4 @@ class Records:
             self.conn.execute(f"UPDATE {info.name} SET deleted_at = NULL, updated_at = ? WHERE id = ?",
                               (self.clock(), record_id))
             self._audit(actor, "restore", info, record_id, None, None)
+            self._adjust(info, self._row(info, record_id), +1, actor)
