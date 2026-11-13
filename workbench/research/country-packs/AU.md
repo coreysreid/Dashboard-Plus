@@ -1,6 +1,6 @@
 # Australia: country-pack research notes
 
-Checked **2026-11-09**. These are source notes, not emergency instructions or program content. A household must check its local authority and current conditions. Review by **2027-02-09**, or sooner if a source changes. We paraphrase and link; we do not copy guidance text.
+Checked **2026-11-09**, with the NSW source checked again **2026-11-13**. These are source notes, not emergency instructions or program content. A household must check its local authority and current conditions. Review by **2027-02-09**, or sooner if a source changes. We paraphrase and link; we do not copy guidance text.
 
 Corey's suggested creators and companies are logged as [supplementary research leads](../supplementary-preparedness-sources.md). They are not the source for the official facts below.
 
@@ -10,12 +10,12 @@ The [Department of Home Affairs emergency-management page](https://www.homeaffai
 
 ## State and territory entry points
 
-These are official state or territory pages checked 2026-11-09. They are starting points, not a verified complete inventory of every response body. Where the page did not clearly name a lead emergency-management body, the entry says so.
+These are official state or territory pages checked 2026-11-09 unless a different date appears below. They are starting points, not a verified complete inventory of every response body. Where the page did not clearly name a lead emergency-management body, the entry says so.
 
 | Jurisdiction | Verified official source and what it names |
 |---|---|
 | Australian Capital Territory | [ACT Government emergency and safety page](https://www.act.gov.au/emergency-and-safety) links the **ACT Emergency Services Agency** and the State Emergency Service. |
-| New South Wales | [NSW emergency portal](https://www.emergency.nsw.gov.au/) redirected to a blocked host during this check; lead body not verified. |
+| New South Wales | The [NSW emergency portal](https://www.emergency.nsw.gov.au/) now redirects to the [NSW Reconstruction Authority](https://www.nsw.gov.au/departments-and-agencies/nsw-reconstruction-authority), which describes its disaster-risk reduction and recovery role and links the **NSW State Emergency Service** for flood, storm and tsunami emergencies. Checked 2026-11-13. This page does not establish a single lead response body for every emergency. |
 | Northern Territory | The [NT Government emergency-services page](https://nt.gov.au/emergency/emergencies/about-emergency-services) names the **NT Emergency Service** alongside ambulance, fire and police services. |
 | Queensland | [Queensland Government emergency services page](https://www.qld.gov.au/emergency/emergencies-services) names police, ambulance, fire and SES services. |
 | South Australia | [SA Government emergency services page](https://www.sa.gov.au/topics/emergencies-and-safety/emergency-services) names the SA Ambulance Service, Country Fire Service, Metropolitan Fire Service, Police and State Emergency Service; it says Police coordinate emergencies in the state. |
@@ -35,7 +35,8 @@ These are official state or territory pages checked 2026-11-09. They are startin
 - The [Queensland Government copyright page](https://www.qld.gov.au/legal/copyright), checked 2026-11-09, says its site material is generally under **Creative Commons Attribution 4.0 International**, with exceptions and third-party limits.
 - The [SA Government emergency page](https://www.sa.gov.au/topics/emergencies-and-safety), checked 2026-11-09, states **Creative Commons Attribution 4.0** in its footer.
 - The [ACT Government copyright page](https://www.act.gov.au/copyright), checked 2026-11-09, says its own website content is generally **Creative Commons Attribution 4.0**, with listed exceptions for third-party material, symbols and content with other terms.
+- The [NSW Government copyright page](https://www.nsw.gov.au/nsw-government/about-website/copyright), checked 2026-11-13, says material on **nsw.gov.au** is **Creative Commons Attribution 4.0**, with listed exceptions. This applies to the NSW Reconstruction Authority page above, but do not assume it applies to every linked site.
 - The [NT Government copyright page](https://nt.gov.au/page/copyright-disclaimer-and-privacy), checked 2026-11-09, gives **no blanket Creative Commons licence**: reuse is subject to copyright law unless specific material states a Creative Commons licence. Link only here.
 - The [Tasmanian Government copyright page](https://www.tas.gov.au/codi), checked 2026-11-09, grants a **non-commercial download, print and reproduction licence** for site information, with acknowledgement; wider use needs permission. Link only here.
 - The [WA Government terms of use](https://www.wa.gov.au/terms-of-use#intellectual-property-rights), checked 2026-11-09, give a limited information-access licence and restrict commercial reproduction without permission. Link only here.
-- Licences for the NSW and VicEmergency destinations above were **not verified**. They are links only; no text from them is reused here. State-specific guidance, the lead body in some jurisdictions, NEMA's own guidance and any stated Australian water amount still need source checks before a country pack can ship. NEMA's site returned a server error on this check.
+- The licence for the VicEmergency destination above was **not verified**. It is a link only; no text from it is reused here. State-specific guidance, the lead body in some jurisdictions, NEMA's own guidance and any stated Australian water amount still need source checks before a country pack can ship. NEMA's site returned a server error on the 2026-11-13 recheck.
