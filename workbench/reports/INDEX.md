@@ -4,3 +4,4 @@ expected, actual, severity (blocker, important, minor), suggested change.
 
 | Entry | What it is | Open it when |
 |---|---|---|
+| 2026-11-13-product-swot.md | Evidence-based product SWOT, priorities and expansion ideas. | deciding what to improve after M1 |
