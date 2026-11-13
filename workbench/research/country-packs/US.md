@@ -1,6 +1,6 @@
 # United States: country-pack research notes
 
-Checked **2026-11-09**. These are source notes, not emergency instructions or program content. A household must check its local authority and current conditions. Review by **2027-02-09**, or sooner if a source changes. We paraphrase and link; we do not copy guidance text.
+Checked **2026-11-09**, with Florida and Texas sources checked **2026-11-13**. These are source notes, not emergency instructions or program content. A household must check its local authority and current conditions. Review by **2027-02-09**, or sooner if a source changes. We paraphrase and link; we do not copy guidance text.
 
 Corey's suggested creators and companies are logged as [supplementary research leads](../supplementary-preparedness-sources.md). They are not the source for the official facts below.
 
@@ -14,7 +14,7 @@ Corey's suggested creators and companies are logged as [supplementary research l
 
 ## State and district emergency management bodies
 
-[USAGov's official directory](https://www.usa.gov/state-emergency-management), checked 2026-11-09, labels these links as state emergency management agencies. The links below reproduce the directory's state names and destinations; the destination pages were **not** individually checked, so agency titles, hazards, phone numbers and guidance at those destinations remain to verify. Each destination is an official-source link, and the directory itself is the source for the mapping.
+[USAGov's official directory](https://www.usa.gov/state-emergency-management), checked 2026-11-09, labels these links as state emergency management agencies. The links below reproduce the directory's state names and destinations. Except for the Florida and Texas pages reviewed below, the destination pages were **not** individually checked, so their agency titles, hazards, phone numbers and guidance remain to verify. The directory is the source for the mapping.
 
 | State or district | Agency link in USAGov directory |
 |---|---|
@@ -72,8 +72,13 @@ Corey's suggested creators and companies are logged as [supplementary research l
 
 The directory also links territories; those are outside this state list. State-specific hazards and preparation advice must be researched from each agency before a pack makes local claims.
 
+### State pages checked directly
+
+- **Florida:** The [Florida Division of Emergency Management's Plan & Prepare page](https://www.floridadisaster.org/planprepare/), checked 2026-11-13, says families should have an emergency plan and a stocked supply kit and should consult their county emergency-management office for locally relevant information. It names hurricanes, tornadoes and wildfires as examples of community hazards and links more hazard topics. The checked page states **no water-per-person-per-day amount**. Its footer claims FDEM copyright but does not state a reuse licence, so link and paraphrase only.
+- **Texas:** The [Texas Division of Emergency Management preparedness page](https://tdem.texas.gov/prepare), checked 2026-11-13, links the state-run Texas Ready [plan](https://texasready.gov/make-a-plan/) and [kit](https://texasready.gov/build-a-kit/) pages. The plan page asks households to choose meeting places, contacts and communication methods. The kit's [disaster-supply checklist](https://texasready.gov/build-a-kit/disaster-supply-checklist.html), checked the same date, gives **one US gallon of water per day for each person and pet** and lists hurricanes, floods, wildfires, tornadoes, thunderstorms, winter storms and extreme heat among its natural-disaster topics. The checklist gives no separate reuse licence; its footer links the [Texas Department of State Health Services copyright policy](https://www.dshs.texas.gov/site-policies/copyright-disclaimer), which permits unchanged, non-commercial copying unless otherwise noted. The scope of that policy for the Texas Ready site was not established, so link and paraphrase only.
+
 ## Source reuse and gaps
 
 - **Federal pages (USAGov, National 911 Program, National Weather Service and CDC):** [17 U.S.C. §105](https://www.copyright.gov/title17/92chap1.html), checked 2026-11-09, says copyright protection under that title is unavailable for a work of the United States government. The checked pages did not state a separate reuse licence. This note uses paraphrases and links only; any third-party content needs its own terms checked.
-- **State agency destinations:** licences were **not checked** because the destination pages were not opened. Link only; do not copy their text into a pack without checking each source's terms.
-- **Unverified:** state-by-state hazards, guidance and licences, plus Ready.gov's and FEMA's own current wording. The direct Ready.gov and FEMA pages returned access denied; do not infer their contents from memory.
+- **State agency destinations:** Florida's and Texas's checked reuse statements are recorded above. Licences for the other destinations were **not checked**. Link only; do not copy their text into a pack without checking each source's terms.
+- **Unverified:** hazards, guidance and licences for the remaining states and district, plus Ready.gov's and FEMA's own current wording. The direct Ready.gov and FEMA pages still returned access denied on 2026-11-13; do not infer their contents from memory.
