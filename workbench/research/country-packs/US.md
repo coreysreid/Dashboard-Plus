@@ -2,6 +2,8 @@
 
 Checked **2026-11-09**. These are source notes, not emergency instructions or program content. A household must check its local authority and current conditions. Review by **2027-02-09**, or sooner if a source changes. We paraphrase and link; we do not copy guidance text.
 
+Corey's suggested creators and companies are logged as [supplementary research leads](../supplementary-preparedness-sources.md). They are not the source for the official facts below.
+
 ## National body and preparedness
 
 - [USAGov's FEMA agency page](https://www.usa.gov/agencies/federal-emergency-management-agency) identifies the **Federal Emergency Management Agency (FEMA)** and says it helps the nation prepare for and respond to disasters. Checked 2026-11-09. The direct FEMA site returned an access-denied page in this environment, so its own current wording was not verified.

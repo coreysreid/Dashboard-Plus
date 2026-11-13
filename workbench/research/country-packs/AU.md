@@ -2,6 +2,8 @@
 
 Checked **2026-11-09**. These are source notes, not emergency instructions or program content. A household must check its local authority and current conditions. Review by **2027-02-09**, or sooner if a source changes. We paraphrase and link; we do not copy guidance text.
 
+Corey's suggested creators and companies are logged as [supplementary research leads](../supplementary-preparedness-sources.md). They are not the source for the official facts below.
+
 ## National body
 
 The [Department of Home Affairs emergency-management page](https://www.homeaffairs.gov.au/about-us/our-portfolios/emergency-management), checked 2026-11-09, says it leads the Australian Government's disaster and emergency management response and names the **National Emergency Management Agency (NEMA)**. [Disaster Assist](https://www.disasterassist.gov.au/), also checked 2026-11-09, links to NEMA and to disaster information by state or territory. The NEMA destination was not reachable under the current network policy, so its own current guidance has not been verified.
