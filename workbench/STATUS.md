@@ -5,7 +5,7 @@ the "Requests" table of docs/WORKSTREAMS.md.
 
 | Task | State | Pull request | Notes |
 |---|---|---|---|
-| Product SWOT and feedback | ready for a pull request: `lane-b/swot-feedback` | — | Water and backup visibility, M1 release gates, and later expansion ideas. |
+| Product SWOT and feedback | in review | PR #18 | Water and backup visibility, M1 release gates, and later expansion ideas. |
 | Module guide and garden example | ready for review on `lane-b/module-guide` | pending | Garden example loads and saves synthetic records; checks passed. |
 | SECURITY, CONTRIBUTING, issue templates | on branch `lane-b/project-files` | none yet | |
 
