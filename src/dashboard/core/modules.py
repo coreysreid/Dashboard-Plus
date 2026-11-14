@@ -31,7 +31,7 @@ ADJUST_KEYS = ("link", "quantity", "amount", "direction", "adds")
 WATCH_KEYS = ("running_low", "expiring", "supply", "gaps")
 GAP_KEYS = ("missing", "none", "where", "message")
 COLUMN_KEYS = ("type", "required", "default", "min", "max", "unit", "choices", "help", "sensitive", "to", "on_delete")
-LABEL_TABLE_KEYS = ("title", "columns", "form", "list")
+LABEL_TABLE_KEYS = ("title", "columns", "form", "list", "empty")
 LABEL_COLUMN_KEYS = ("label", "help")
 
 
@@ -503,6 +503,8 @@ def _check_labels(data: dict, tables: dict[str, Table], problems: list[str]) -> 
             problems.append(f"{where}: describe the labels as settings.")
             continue
         problems.extend(_unknown_keys(where, raw, LABEL_TABLE_KEYS))
+        if "empty" in raw and (not isinstance(raw["empty"], str) or not raw["empty"].strip()):
+            problems.append(f"{where}: 'empty' must be a short sentence, like \"Add a few things from the pantry.\"")
         known = tables[tname].columns
         for cname, craw in raw.get("columns", {}).items():
             if cname not in known:

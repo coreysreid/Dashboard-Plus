@@ -102,6 +102,21 @@ class StockModuleTests(TempDirTestCase):
         self.assertEqual(refused.status_code, 422)
         self.assertIn("only 4 left", refused.get_data(as_text=True))
 
+    def test_home_says_where_to_start_until_something_is_added(self):
+        settings.put(self.conn, "setup.done", True)
+        app = create_app("t", lambda: None, self.report, data_dir=self.data, session_key="k")
+        app.config["PORT"] = PORT
+        client = app.test_client()
+        client.get("/?key=k", base_url=BASE)
+        home = client.get("/", base_url=BASE).get_data(as_text=True)
+        self.assertIn("Add a few things from the pantry.", home)
+        self.assertIn('href="/t/stock__items/new"', home)
+        self.assertIn("No water recorded yet", home)
+        self.item(name="Water casks", category="water", quantity=10)
+        home = client.get("/", base_url=BASE).get_data(as_text=True)
+        self.assertNotIn("Add a few things from the pantry.", home)
+        self.assertNotIn("No water recorded yet", home)
+
     def test_migration_matches_its_description(self):
         from dashboard.core.schema import next_migration_sql
         self.assertIsNone(next_migration_sql(modules.load_module(ROOT / "modules" / "stock")))

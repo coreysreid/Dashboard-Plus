@@ -13,6 +13,11 @@ of looking after what you have is what makes a home resilient.
 Everything stays on your own computer. Nothing is sent anywhere unless you
 switch on an optional outside source.
 
+**See it first:** [`docs/EXAMPLES.md`](docs/EXAMPLES.md) shows three made-up
+households (a family with pets in Australia, three generations in the United
+States, one person in the United Kingdom) at every stage, from the first start
+to closing safely.
+
 **Status: an early test version of the first release (M1).** It works, but it
 is new: keep a copy of anything important somewhere else too. See
 [`docs/ROADMAP.md`](docs/ROADMAP.md) for what comes next.

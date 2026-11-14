@@ -43,20 +43,20 @@ sheet of who to call.
 - A plain warning that the data folder is not encrypted, so the USB stick should
   be kept safe.
 
-**Still to do for M1 (as of 9 November 2026):** the final checks below, on a
-clean Windows computer. (The gaps check and the README for households are in
-review.)
+**Still to do for M1 (as of 9 November 2026):** three checks that need a person
+at a clean Windows computer (first start, timing 20 items, unplugging). Everything
+a machine can check passes; see [`releases/M1.md`](releases/M1.md).
 
 **Not in M1:** helpers and the Agent API, the review queue and inbox, charts,
 analysis, the question loop, prompts, outcomes, other modules, outside sources.
 
 **M1 is done when** (checked on a clean Windows computer with no Python):
 - [ ] Unzip, click *Open Dashboard*, and the wizard appears. No install or admin.
-- [ ] The wizard creates the household in People without editing any file.
+- [x] The wizard creates the household in People without editing any file.
 - [ ] Adding 20 stock items takes under ten minutes for someone new to it.
-- [ ] Running low, expiring soon and days of water are correct for test data.
-- [ ] The emergency sheet prints on one page with no internet.
-- [ ] People and Stock are built from module files only, with no module code.
+- [x] Running low, expiring soon and days of water are correct for test data.
+- [x] The emergency sheet prints on one page with no internet.
+- [x] People and Stock are built from module files only, with no module code.
 - [ ] *Close Dashboard safely*, unplug, plug in again: nothing is lost.
 - [ ] A backup exists after the first day and after each safe close.
 - [ ] No screen shows a stack trace; *Save a report* writes a file.

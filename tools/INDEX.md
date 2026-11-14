@@ -10,4 +10,7 @@
 | portable.toml | Pinned Python version, download address and checksum for the build | updating the bundled Python |
 | smoke_test_portable.py | Start the built portable folder, check it answers, and close it safely. | the Windows build check fails |
 | make_migration.py | Write a module's next numbered migration from its tables.toml. | a module's tables changed |
+| load_example.py | Load a made-up example household into an empty data folder, for demos, screenshots and testing. | demonstrating or testing with realistic data |
+| make_screenshots.py | Make the example screenshots: run each example household through every stage of using the dashboard. | the screens changed and the gallery needs remaking |
+| screenshots.js | Browser steps for make_screenshots.py (Node and Playwright) | changing how screenshots are taken |
 | make_project_map.py | Build PROJECT_MAP.md from every INDEX.md in the repository. | changing the map format |

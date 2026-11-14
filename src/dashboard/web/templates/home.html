@@ -2,12 +2,23 @@
 {% block body %}
 <h1>Look after what your household has</h1>
 <p class="lead">Know what you have, where it is, and when it's running out.</p>
+{% set start = tables | selectattr("empty") | selectattr("count", "equalto", 0) | first %}
+{% if start %}
+<div class="card start-here">
+  <div class="muted">Start here</div>
+  <h2 style="margin-top:.2rem">{{ start.empty }}</h2>
+  <a class="button" href="/t/{{ start.name }}/new">Add to {{ start.title }}</a>
+</div>
+{% endif %}
 {% if attention and (attention.low or attention.expiring or attention.supplies or attention.gaps) %}
 <div class="tables">
   {% for s in attention.supplies %}
   <div class="card">
     <div class="muted">Days of {{ s.label }}</div>
-    {% if s.days is not none %}
+    {% if s.rows == 0 %}
+    <h2 style="margin-top:.2rem">No {{ s.label }} recorded yet</h2>
+    <p class="muted">Add it under {{ s.title }} to see how many days it would last.</p>
+    {% elif s.days is not none %}
     <h2 style="margin-top:.2rem">About {{ "%.1f" | format(s.days) | replace(".0", "") }} day{{ "" if s.days|round(1) == 1 else "s" }} of {{ s.label }}</h2>
     <p class="muted">Aim: {{ s.target_days | int if s.target_days == s.target_days|int else s.target_days }} days.{% if s.shortfall > 0 %} About {{ "%.0f" | format(s.shortfall) }} {{ s.unit }} short.{% endif %}</p>
     {% else %}
@@ -19,9 +30,11 @@
   <div class="card">
     <div class="muted">Needs attention</div>
     <h2 style="margin-top:.2rem"><a href="/attention">{{ attention.low | length }} running low · {{ attention.expiring | length }} expiring{% if attention.gaps %} · {{ attention.gaps | length }} to fill in{% endif %}</a></h2>
-    {% for item in (attention.low + attention.expiring)[:4] %}<p class="muted" style="margin:.2rem 0">{{ item.name }}: {{ item.detail }}</p>{% endfor %}
-    {% set room = 4 - (attention.low + attention.expiring) | length %}
-    {% if room > 0 %}{% for gap in attention.gaps[:room] %}<p class="muted" style="margin:.2rem 0">{{ gap.message }}</p>{% endfor %}{% endif %}
+    {% set kinds = [attention.low, attention.expiring, attention.gaps] | select | list | length %}
+    {% set each = [1, (5 // kinds) if kinds else 0] | max %}
+    {% for item in attention.low[:each] %}<p class="muted" style="margin:.2rem 0">Running low: {{ item.name }}, {{ item.detail }}</p>{% endfor %}
+    {% for item in attention.expiring[:each] %}<p class="muted" style="margin:.2rem 0">Use by: {{ item.name }}, {{ item.detail }}</p>{% endfor %}
+    {% for gap in attention.gaps[:each] %}<p class="muted" style="margin:.2rem 0">{{ gap.message }}</p>{% endfor %}
   </div>
 </div>
 {% endif %}
@@ -41,7 +54,7 @@
 </div>
 {% else %}
 <div class="card">
-  <p><strong>Nothing to record yet.</strong> People and household stock arrive in the next steps of the first release.</p>
+  <p><strong>Nothing is switched on yet.</strong> Choose what to track in <a href="/settings">Settings</a>.</p>
 </div>
 {% endif %}
 {% if last_backup %}<p class="muted">Last backup: {{ last_backup[1].strftime("%d %b %Y %H:%M") }}.</p>{% endif %}

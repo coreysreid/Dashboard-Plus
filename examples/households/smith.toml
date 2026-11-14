@@ -1,0 +1,442 @@
+# A made-up household for demos, screenshots and testing. Every name, number
+# and address here is invented. Phone numbers use ranges set aside for fiction
+# (Australia: 0491 570 xxx and (02) 5550 xxxx); emails use example.com.
+#
+# How to read this file: see examples/households/INDEX.md.
+
+title = "The Smith family"
+summary = "Two parents, two young children, a dog and a cat in a two-storey house in Australia. Well organised, with one gap left to fill."
+
+[setup]
+people = ["John Smith", "Jane Smith", "Emily Smith", "Jack Smith"]
+pets = 2
+country = "Australia"
+region = "New South Wales"
+home_type = "house"
+storeys = 2
+mobility_needs = false
+hazards = ["bushfire", "heat", "storm"]
+modules = ["people", "stock"]
+
+# ---- People -----------------------------------------------------------------
+
+[[people.people]]
+name = "John Smith"
+phone = "0491 570 156"
+other_phone = "(02) 5550 1234"
+relationship = "partner"
+email = "john.smith@example.com"
+birthday = "1984-03-14"
+notes = "Works at Acme Corporation, Monday to Friday. The other phone is his desk at work."
+
+[[people.people]]
+name = "Jane Smith"
+phone = "0491 570 157"
+relationship = "partner"
+email = "jane.smith@example.com"
+birthday = "1986-11-02"
+notes = "Nurse at Springfield General Hospital, rotating shifts."
+
+[[people.people]]
+name = "Emily Smith"
+relationship = "child"
+birthday = "2017-06-02"
+notes = "Year 3 at Springfield Public School."
+
+[[people.people]]
+name = "Jack Smith"
+relationship = "child"
+birthday = "2020-09-21"
+notes = "Preschool on Monday, Wednesday and Friday."
+
+[[people.people]]
+name = "Mary Smith"
+phone = "0491 570 158"
+relationship = "parent"
+email = "mary.smith@example.com"
+address = "8 Banksia Court, Springfield"
+notes = "John's mother. Lives 10 minutes away and can collect the children."
+
+[[people.people]]
+name = "Bob Jones"
+phone = "0491 570 159"
+relationship = "neighbour"
+address = "14 Example Street, Springfield"
+notes = "Next door, the house with the blue fence. Has a spare key."
+
+[[people.people]]
+name = "Dr Alice Brown"
+phone = "(02) 5550 2000"
+relationship = "professional"
+address = "Springfield Medical Centre, 1 Main Road, Springfield"
+
+[[people.people]]
+name = "Riverside Vet Clinic"
+phone = "(02) 5550 3000"
+relationship = "professional"
+address = "22 River Road, Springfield"
+notes = "Rex and Whiskers are both registered here."
+
+[[people.people]]
+name = "Springfield Public School"
+phone = "(02) 5550 4000"
+relationship = "professional"
+
+[[people.people]]
+name = "Acme Corporation"
+phone = "(02) 5550 1200"
+relationship = "professional"
+notes = "John's work. Reception can reach him in a meeting."
+
+[[people.people]]
+name = "Dave Wilson"
+relationship = "professional"
+notes = "Plumber who fixed the hot water system. Number is on the invoice somewhere."
+
+[[people.roles]]
+person = "Mary Smith"
+role = "emergency_contact"
+priority = 1
+notes = "Call first if we can't be reached."
+
+[[people.roles]]
+person = "Bob Jones"
+role = "neighbour"
+priority = 2
+
+[[people.roles]]
+person = "Bob Jones"
+role = "key_holder"
+priority = 3
+
+[[people.roles]]
+person = "Dr Alice Brown"
+role = "doctor"
+priority = 4
+
+[[people.roles]]
+person = "Riverside Vet Clinic"
+role = "vet"
+priority = 5
+
+[[people.roles]]
+person = "Springfield Public School"
+role = "school"
+priority = 6
+
+[[people.roles]]
+person = "Acme Corporation"
+role = "workplace"
+priority = 7
+
+[[people.roles]]
+person = "Dave Wilson"
+role = "tradesperson"
+priority = 8
+
+[[people.important_info]]
+person = "Emily Smith"
+kind = "allergy"
+detail = "Peanut allergy. Adrenaline auto-injector in the top kitchen drawer and in her school bag."
+
+[[people.important_info]]
+person = "Jack Smith"
+kind = "condition"
+detail = "Mild asthma. Blue reliever puffer in the bathroom cabinet."
+
+[[people.important_info]]
+person = "Jane Smith"
+kind = "dietary"
+detail = "Lactose intolerant."
+
+[[people.important_info]]
+person = "Bob Jones"
+kind = "access"
+detail = "Spare front door key. The side gate code is 1-9-8-4."
+
+# ---- Household stock ----------------------------------------------------------
+
+[[stock.places]]
+name = "Pantry"
+notes = "Kitchen, left of the fridge."
+
+[[stock.places]]
+name = "Laundry cupboard"
+
+[[stock.places]]
+name = "Garage shelves"
+notes = "The grey steel shelves by the roller door."
+
+[[stock.places]]
+name = "Bathroom cabinet"
+
+[[stock.places]]
+name = "Car boot"
+notes = "The family car."
+
+[[stock.places]]
+name = "Garden shed"
+
+# Amounts are what is on hand today, after the stock in and out below.
+[[stock.items]]
+name = "Water casks (10 L)"
+category = "water"
+quantity = 20
+unit = "litres"
+minimum = 20
+place = "Garage shelves"
+expires = "today+300"
+
+[[stock.items]]
+name = "Water bottles (24 x 600 mL)"
+category = "water"
+quantity = 14.4
+unit = "litres"
+place = "Pantry"
+expires = "today+160"
+
+[[stock.items]]
+name = "Rice"
+category = "pantry"
+quantity = 3
+unit = "kg"
+minimum = 1
+place = "Pantry"
+expires = "today+400"
+
+[[stock.items]]
+name = "Pasta"
+category = "pantry"
+quantity = 4
+unit = "packs"
+minimum = 2
+place = "Pantry"
+expires = "today+250"
+
+[[stock.items]]
+name = "Tinned tomatoes"
+category = "pantry"
+quantity = 1
+unit = "tins"
+minimum = 4
+place = "Pantry"
+expires = "today+500"
+
+[[stock.items]]
+name = "Tinned tuna"
+category = "pantry"
+quantity = 6
+unit = "tins"
+minimum = 4
+place = "Pantry"
+expires = "today+600"
+
+[[stock.items]]
+name = "Baked beans"
+category = "pantry"
+quantity = 2
+unit = "tins"
+minimum = 4
+place = "Pantry"
+expires = "today+420"
+
+[[stock.items]]
+name = "Long-life milk"
+category = "pantry"
+quantity = 3
+unit = "litres"
+minimum = 2
+place = "Pantry"
+expires = "today+9"
+
+[[stock.items]]
+name = "Muesli bars"
+category = "pantry"
+quantity = 5
+unit = "bars"
+place = "Pantry"
+expires = "today-3"
+notes = "Nut free, for school lunches."
+
+[[stock.items]]
+name = "Rolled oats"
+category = "pantry"
+quantity = 1
+unit = "kg"
+minimum = 1
+place = "Pantry"
+expires = "today+150"
+
+[[stock.items]]
+name = "Adrenaline auto-injector (Emily)"
+category = "first_aid"
+quantity = 2
+unit = "pens"
+minimum = 2
+place = "Bathroom cabinet"
+expires = "today+25"
+notes = "One stays in Emily's school bag. Order the replacement before it expires."
+
+[[stock.items]]
+name = "Reliever puffer (Jack)"
+category = "first_aid"
+quantity = 1
+unit = "puffers"
+minimum = 2
+place = "Bathroom cabinet"
+expires = "today+210"
+
+[[stock.items]]
+name = "First aid kit"
+category = "first_aid"
+quantity = 1
+unit = "kits"
+minimum = 1
+place = "Car boot"
+expires = "today+380"
+
+[[stock.items]]
+name = "Paracetamol"
+category = "first_aid"
+quantity = 2
+unit = "packs"
+minimum = 1
+place = "Bathroom cabinet"
+expires = "today+200"
+
+[[stock.items]]
+name = "Sunscreen SPF 50"
+category = "toiletries"
+quantity = 1
+unit = "bottles"
+minimum = 1
+place = "Laundry cupboard"
+expires = "today+20"
+
+[[stock.items]]
+name = "Toilet paper"
+category = "toiletries"
+quantity = 18
+unit = "rolls"
+minimum = 12
+place = "Laundry cupboard"
+
+[[stock.items]]
+name = "AA batteries"
+category = "power"
+quantity = 4
+unit = "batteries"
+minimum = 8
+place = "Garage shelves"
+
+[[stock.items]]
+name = "Torches"
+category = "power"
+quantity = 2
+unit = "torches"
+minimum = 2
+place = "Laundry cupboard"
+
+[[stock.items]]
+name = "Power bank"
+category = "power"
+quantity = 1
+unit = "power banks"
+minimum = 1
+place = "Laundry cupboard"
+notes = "Charge it on the first of each month."
+
+[[stock.items]]
+name = "Dog food (Rex)"
+category = "pet"
+quantity = 3
+unit = "kg"
+minimum = 5
+place = "Laundry cupboard"
+expires = "today+90"
+
+[[stock.items]]
+name = "Cat litter"
+category = "pet"
+quantity = 1
+unit = "bags"
+minimum = 1
+place = "Laundry cupboard"
+
+[[stock.items]]
+name = "Wood screws 40 mm"
+category = "hardware"
+quantity = 1
+unit = "boxes"
+place = "Garage shelves"
+
+[[stock.items]]
+name = "Wall plugs"
+category = "hardware"
+quantity = 1
+unit = "packs"
+place = "Garage shelves"
+
+[[stock.items]]
+name = "Cordless drill"
+category = "tools"
+quantity = 1
+unit = "drills"
+place = "Garage shelves"
+
+[[stock.items]]
+name = "Petrol for the mower"
+category = "fuel"
+quantity = 5
+unit = "litres"
+place = "Garden shed"
+
+[[stock.items]]
+name = "Dishwashing liquid"
+category = "cleaning"
+quantity = 1
+unit = "bottles"
+minimum = 1
+place = "Laundry cupboard"
+
+# Stock in and out: the history behind today's amounts, oldest first.
+[[stock.movements]]
+item = "Water casks (10 L)"
+reason = "bought"
+amount = 10
+happened_on = "today-12"
+notes = "Second cask for bushfire season."
+
+[[stock.movements]]
+item = "Rice"
+reason = "bought"
+amount = 2
+happened_on = "today-6"
+notes = "Weekly shop."
+
+[[stock.movements]]
+item = "Pasta"
+reason = "bought"
+amount = 2
+happened_on = "today-6"
+notes = "Weekly shop."
+
+[[stock.movements]]
+item = "Tinned tomatoes"
+reason = "used"
+amount = 3
+happened_on = "today-4"
+notes = "Bolognese for the week."
+
+[[stock.movements]]
+item = "Long-life milk"
+reason = "thrown_away"
+amount = 1
+happened_on = "today-2"
+notes = "Opened and left out overnight."
+
+[[stock.movements]]
+item = "Dog food (Rex)"
+reason = "used"
+amount = 2
+happened_on = "today-1"

@@ -95,8 +95,8 @@ Draft modules may link to these with `requires = ["people"]` and
 |---|---|---|
 | Core M1 steps 1 to 6, printable sheets | A | merged |
 | People and Household stock modules, stock in and out | A | merged |
-| Gaps check, README for households | A | in review |
-| M1 release checks | A | next |
+| Gaps check, README for households | A | merged |
+| M1 release checks, example households and screenshots | A | in review; three checks need Corey on Windows |
 | Module guide and garden example | B | merged (pull request #10) |
 | SECURITY, CONTRIBUTING, issue templates | B | branch `lane-b/project-files`, needs a pull request |
 | Batch 2 (below) | B | ready to start |
@@ -106,7 +106,9 @@ Draft modules may link to these with `requires = ["people"]` and
 | From | To | Request | State |
 |---|---|---|---|
 | A | B | Finish both in-flight branches: merge `main`, run `python tools/check_all.py` (it will ask you to regenerate `PROJECT_MAP.md`), resolve `docs/decisions/INDEX.md` by keeping every row in number order, start the commit message with `Lane B:`, then mark each "ready for a pull request" in `workbench/STATUS.md`. | module guide merged (pull request #10); project files: merge `main` again (it is missing #9 and #10), then mark it ready |
-| A | B | Start batch 2 below, all inside `workbench/`. | open |
+| A | B | Start batch 2 below, all inside `workbench/`. | done: pull requests #12, #13, #15 |
+| B | A | M1 check findings (`workbench/reports/2026-11-09-m1-check.md`): J1 first step, J5 home summary. | fixed in the M1 release checks pull request |
+| B | A | Module wording (`workbench/reports/2026-11-09-module-wording.md`). | adopted, lightly changed: sheet titles keep "Emergency sheet" ("fridge copy" and "with private medical details"), supplies sheet is "Emergency supplies"; the rest as suggested |
 
 ## Brief for Lane B, batch 2
 

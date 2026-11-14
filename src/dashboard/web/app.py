@@ -119,12 +119,12 @@ def create_app(shutdown_token: str, on_shutdown: Callable[[], None], report=None
         if app.config["DATA_DIR"] is not None:
             last_backup = backups.latest(app.config["DATA_DIR"])
         if app.config["DATA_DIR"] is not None and registry():
-            from dashboard.web.display import table_title
+            from dashboard.web.display import empty_hint, table_title
             conn = connection()
             store = records.Records(conn, registry())
             for name, info in registry().items():
                 tables.append({"name": name, "title": table_title(info), "module": info.module.title,
-                               "count": store.count(name)})
+                               "count": store.count(name), "empty": empty_hint(info)})
             attention = {"low": watch.running_low(conn, registry()), "expiring": watch.expiring(conn, registry()),
                          "supplies": watch.supplies(conn, registry()),
                          "gaps": watch.gaps(conn, registry())}
