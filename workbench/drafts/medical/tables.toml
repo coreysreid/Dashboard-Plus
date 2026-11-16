@@ -2,12 +2,21 @@
 title = "First aid kits"
 columns.name = { type = "text", required = true }
 columns.place = { type = "link", to = "stock.places" }
+columns.last_checked = { type = "date" }
+columns.next_check = { type = "date" }
 columns.notes = { type = "longtext" }
+
+[tables.kits.watch]
+expiring = { date = "next_check", warn_days = 30, wording = "due", what = "kit check" }
+
+[[tables.kits.watch.gaps]]
+missing = "place"
+message = "Where is {name} kept?"
 
 [tables.kit_checks]
 title = "Kit checks"
 columns.kit = { type = "link", to = "kits", required = true }
-columns.checked_on = { type = "date", required = true }
+columns.checked_on = { type = "date", required = true, default = "today" }
 columns.next_check = { type = "date" }
 columns.checked_by = { type = "link", to = "people.people" }
 columns.notes = { type = "longtext" }
@@ -22,4 +31,4 @@ columns.renew_by = { type = "date" }
 columns.notes = { type = "text" }
 
 [tables.training.watch]
-expiring = { date = "renew_by", warn_days = 30 }
+expiring = { date = "renew_by", warn_days = 30, wording = "due", what = "training renewal" }

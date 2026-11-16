@@ -17,6 +17,7 @@ the "Requests" table of docs/WORKSTREAMS.md.
 | Home layout draft | ready for a pull request: `lane-b/home-layout-draft` | PR #24 | Nested places and an Our home sheet; full paths, Stock migration and cycle checks need core support. |
 
 | Stock lots design | ready for a pull request: `lane-b/stock-lots-design` | — | Screen-by-screen lot flows and exact core needs; includes a long-term phone or webcam scanning idea. |
+| Medical draft polish | ready for a pull request: `lane-b/medical-promotion` | — | First step, due watches, kit place gap and a printable sheet; an unfiltered no-kit gap needs core support. |
 
 ## Messages to Lane A
 
