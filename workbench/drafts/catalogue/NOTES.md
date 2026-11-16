@@ -1,6 +1,8 @@
-# Common goods catalogue — round 1
+# Common goods catalogue — rounds 1 and 2
 
-This is a **draft of 150 names**, for Corey to review before the next rounds. It is not installed. Names, aliases and units are editorial search aids, not claims about what a household owns. `typical_sizes` is blank pending product and region-specific evidence; the picker must never assume a package size or quantity. The catalogue has no personal data. Stock's category keys are used exactly as declared in `modules/stock/tables.toml`.
+This is a **draft of 400 names** after round 2, for Corey to review. It is not installed. The first 150 rows remain the round-one set; 250 more rows extend pantry choices, first aid, toiletries, cleaning, power, pets, hardware, tools, garden, fuel and other household items. Names, aliases and units are editorial search aids, not claims about what a household owns. `typical_sizes` is blank pending product and region-specific evidence; the picker must never assume a package size or quantity. The catalogue has no personal data. Stock's category keys are used exactly as declared in `modules/stock/tables.toml`.
+
+Round 2 was checked against the three made-up example households. It adds generic matches for their missing terms, including paracetamol, glucose test strips, N95 respirators, a hand-crank radio, power station, furniture straps, wall plugs, bike inner tubes and picture hooks. Personalised medicines such as “Metformin 500 mg (Rosa)” stay household-owned records and are **not** prefilled from the catalogue. Existing water rows gained search aliases for bottles, casks, jugs and pouches; the stored-tap and bottled distinctions still require the person to confirm potable status. Generic Rice, Pasta, Lentils and Pain relief tablets no longer claim aliases that should point to a more specific choice. There was no substantive Corey comment on the merged round-one PR when this round was prepared on 2026-11-16; these additions are proposed for feedback, not a claim of approval.
 
 ## What a household should see
 
@@ -29,7 +31,7 @@ Checked **2026-11-16**. `counts_as_drinking_water` means an item may count *when
 
 ## Shelf life and package sizes
 
-Only 11 canned-food rows currently have an indicative unopened **best-quality** period. USDA FSIS says commercially canned high-acid tomatoes and fruit retain best quality up to 18 months; low-acid foods, including vegetables and fish, have a 2–5 year best-quality range [6]. The CSV uses **24 months**, the conservative lower end, for the low-acid examples. This is **not** a use-by date or a safety guarantee. Follow the pack label and storage instructions; damaged cans need separate attention. Other shelf-life cells remain empty, including goods where storage and packaging vary. A month value must not auto-fill a lot's use-by date without household confirmation. `typical_sizes` remains empty for the same reason; it could later offer package-size suggestions without determining quantity.
+Only 24 canned-food rows currently have an indicative unopened **best-quality** period. USDA FSIS says commercially canned high-acid tomatoes and fruit retain best quality up to 18 months; low-acid foods, including vegetables and fish, have a 2–5 year best-quality range [6]. The CSV uses **24 months**, the conservative lower end, for the low-acid examples. This is **not** a use-by date or a safety guarantee. Follow the pack label and storage instructions; damaged cans need separate attention. Other shelf-life cells remain empty, including goods where storage and packaging vary. A month value must not auto-fill a lot's use-by date without household confirmation. `typical_sizes` remains empty for the same reason; it could later offer package-size suggestions without determining quantity.
 
 USDA's official [FoodKeeper dataset](https://catalog.data.gov/dataset/fsis-foodkeeper-data) [7] would support more item-specific values, but its FSIS download returned HTTP 403 from this workspace on 2026-11-16. Populate further values only after checking the actual records, storage conditions and units. Do not infer a shelf life from the word “canned” alone. The catalogue does not contain medical dosing, infant feeding or water treatment instructions.
 
@@ -45,4 +47,4 @@ USDA's official [FoodKeeper dataset](https://catalog.data.gov/dataset/fsis-foodk
 
 ## Next rounds
 
-After Corey's review, add roughly 250 goods in round 2 and another 400 toward round 3, using the example households and missing-search feedback to prioritize additions. Keep each round in its own reviewable pull request. Assess regional names, category balance, package sizes and cited shelf-life values as the list grows.
+After Corey's review of the 400-name set, add toward 800 in round 3 using missing-search feedback and the example households. Keep each round in its own reviewable pull request. Assess regional names, category balance, package sizes and cited shelf-life values as the list grows.
