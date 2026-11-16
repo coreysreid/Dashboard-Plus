@@ -33,6 +33,8 @@ Checked **2026-11-16**. `counts_as_drinking_water` means an item may count *when
 
 Only 24 canned-food rows currently have an indicative unopened **best-quality** period. USDA FSIS says commercially canned high-acid tomatoes and fruit retain best quality up to 18 months; low-acid foods, including vegetables and fish, have a 2–5 year best-quality range [6]. The CSV uses **24 months**, the conservative lower end, for the low-acid examples. This is **not** a use-by date or a safety guarantee. Follow the pack label and storage instructions; damaged cans need separate attention. Other shelf-life cells remain empty, including goods where storage and packaging vary. A month value must not auto-fill a lot's use-by date without household confirmation. `typical_sizes` remains empty for the same reason; it could later offer package-size suggestions without determining quantity.
 
+FSANZ says the supplier sets a use-by or best-before date and the manufacturer's storage instructions matter [8, 9]. The UK Food Standards Agency says a food's **use-by** date is a food-safety limit even if it looks and smells fine [10]. The future picker should distinguish an indicative catalogue **best-quality** period from a product's actual **use-by** or **best-before** mark. It must not calculate a substitute use-by date from this CSV.
+
 USDA's official [FoodKeeper dataset](https://catalog.data.gov/dataset/fsis-foodkeeper-data) [7] would support more item-specific values, but its FSIS download returned HTTP 403 from this workspace on 2026-11-16. Populate further values only after checking the actual records, storage conditions and units. Do not infer a shelf life from the word “canned” alone. The catalogue does not contain medical dosing, infant feeding or water treatment instructions.
 
 ## Source and reuse record
@@ -44,6 +46,9 @@ USDA's official [FoodKeeper dataset](https://catalog.data.gov/dataset/fsis-foodk
 5. [WHO, *Nutrients in Drinking Water*](https://www.who.int/publications-detail-redirect/9241593989), checked 2026-11-16. Reuse licence not confirmed from the accessible publication page; paraphrase and link only, do not copy the report.
 6. [USDA FSIS, How long can you keep canned goods?](https://ask.fsis.usda.gov/article/How-long-can-you-keep-canned-goods), checked 2026-11-16. US federal government content, generally public domain; paraphrased.
 7. [USDA FSIS FoodKeeper dataset listing](https://catalog.data.gov/dataset/fsis-foodkeeper-data), checked 2026-11-16. The catalogue lists the English dataset as [CC0 1.0](https://creativecommons.org/publicdomain/zero/1.0/). Dataset not ingested yet.
+8. [FSANZ, Use-by and best-before dates](https://www.foodstandards.gov.au/consumer/labelling/dates), checked 2026-11-16. FSANZ website material is generally [CC BY 4.0](https://www.foodstandards.gov.au/legal-policies/copyright), with logo and third-party exceptions. Paraphrased and linked.
+9. [FSANZ, Storing food safely](https://www.foodstandards.gov.au/business/food-safety/storing-food-safely), checked 2026-11-16. Same FSANZ terms.
+10. [UK Food Standards Agency, Food poisoning](https://www.food.gov.uk/food-safety-and-hygiene/food-poisoning), checked 2026-11-16. UK Crown copyright, generally [Open Government Licence](https://www.food.gov.uk/crown-copyright) for site text, with third-party and image exceptions. Paraphrased and linked.
 
 ## Next rounds
 
