@@ -1,0 +1,5 @@
+# Getting-started guide hand-off
+
+This draft follows the shipped Windows path in `README.md`, the generated `docs/EXAMPLES.md` gallery and the actual Smith screenshots. Checked **2026-11-17** against `main` at `435a2e9`. All example screens and names are synthetic. The screenshot links are relative from this workbench folder; change them to `screenshots/...` if promoting the page into `docs/`.
+
+The first-use guide deliberately describes current behaviour: one date per Stock item, a local find box for Stock in, and a Safe to drink box that must be checked on water. The [batch 4 UX report](../../reports/2026-11-17-picking-water-ux.md) asks the core to require an explicit answer for newly named water and to count only confirmed litres. When Lane A changes those screens or ships lots and household-formatted dates, update these paragraphs and regenerate the screenshots before promotion. The current core also has no household-facing restore flow; the guide does not promise one. No external preparedness claim is introduced; the download, backup and update instructions come from the local README, and the water basis is shown in the current Home screenshot.

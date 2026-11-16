@@ -29,6 +29,7 @@ the "Requests" table of docs/WORKSTREAMS.md.
 | Batch 4 item 5: lots and dates acceptance | merged by Lane A | #44 | Thirteen checks for lots, date formats, warnings and current-item migration. |
 | Batch 4 item 6: readiness record matching | merged by Lane A | #45 | All 49 mapped to an exact field or none, with conservative confirmation rules. |
 | Batch 4 item 7: Collections and Vehicles | ready for a pull request: `lane-b/batch4-collections-vehicles` | pending | Two loadable drafts with three-household example rows and core needs. |
+| Batch 4 item 8: household getting started | ready for a pull request: `lane-b/batch4-getting-started` | pending | Download, first ten minutes, stocktake, emergency sheet, close and update, with screenshot paths. |
 
 ## Messages to Lane A
 

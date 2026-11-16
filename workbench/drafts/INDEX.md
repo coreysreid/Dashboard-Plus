@@ -17,3 +17,4 @@ Add a row here for each draft folder you create.
 | wine/ | A compact wine collection module | reviewing or promoting it |
 | collections/ | Hobby collection items, places, costs and household value estimates | reviewing or promoting it |
 | vehicles/ | Vehicle reminders, roadside contacts and Stock car kits | reviewing or promoting it |
+| guide/ | A plain first-use guide with screenshot links | helping new households |
