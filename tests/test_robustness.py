@@ -108,3 +108,18 @@ class ShippedModuleTests(TempDirTestCase):
                              {"person": str(person), "kind": "allergy", "detail": "ZZSECRET", "then": "another"})
         self.assertNotIn("ZZSECRET", response.headers.get("Location", ""))
         self.assertEqual(self.get("/t/people__important_info/suggest?column=detail&q=ZZ").status_code, 404)
+
+    def test_places_list_by_full_path_and_find_children_by_their_parent(self):
+        kitchen = self.records.create("stock__places", {"name": "Zzz kitchen"})
+        self.records.create("stock__places", {"name": "A child shelf", "inside": kitchen})
+        page = self.get("/t/stock__places").get_data(as_text=True)
+        self.assertLess(page.index("Zzz kitchen<"), page.index("Zzz kitchen › A child shelf"))
+        self.assertIn('aria-label="Open Zzz kitchen › A child shelf"', page)
+        found = self.get("/t/stock__places/suggest?column=name&q=zzz").get_json()
+        self.assertIn("Zzz kitchen › A child shelf", [f["name"] for f in found])
+
+    def test_a_refused_save_lists_what_to_check_and_ties_each_message_to_its_field(self):
+        page = self.post("/t/stock__items/new", {"name": "", "category": "pantry"}).get_data(as_text=True)
+        self.assertIn("Nothing was saved. Check these answers:", page)
+        self.assertIn('<a href="#f-name">Name</a>', page)
+        self.assertRegex(page, r'id="f-name"[^>]*aria-invalid="true"[^>]*aria-describedby="f-name-error f-name-help"')

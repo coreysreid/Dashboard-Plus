@@ -110,7 +110,7 @@ class SheetPageTests(TempDirTestCase):
         self.assertNotIn("Person A", page, "deleted people are left off")
         self.assertIn("Neighbour C", page)
         self.assertIn("Neighbour</td>", page)
-        self.assertIn("<td>Neighbour C</td><td>555 0199</td>", page.replace("\n", "").replace("  ", ""))
+        self.assertIn('<td data-label="Person">Neighbour C</td><td data-label="Phone">555 0199</td>', page.replace("\n", "").replace("  ", ""))
         self.assertNotIn("private details", page)
         self.assertIn("window.print()", page)
 

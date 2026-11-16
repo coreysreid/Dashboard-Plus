@@ -103,7 +103,7 @@ class WebTests(TempDirTestCase):
         grid = self.get("/t/demo__items").get_data(as_text=True)
         for text in ("Bandages", "First aid", "Garage shelf", "12 each", "How many"):
             self.assertIn(text, grid)
-        self.assertIn("<summary>Show</summary>hidden note", grid)
+        self.assertIn('<summary aria-label="Show secret">Show</summary>hidden note', grid)
 
     def test_edit_records_history_and_delete_restore(self):
         self.sign_in()

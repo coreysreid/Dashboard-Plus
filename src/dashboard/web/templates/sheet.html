@@ -7,6 +7,14 @@
   .sheet table { width: 100%; border-collapse: collapse; }
   .sheet th, .sheet td { text-align: left; padding: .3rem .5rem; border-bottom: 1px solid var(--line); vertical-align: top; }
   .sheet .empty { color: var(--muted); }
+  .sheet td { overflow-wrap: anywhere; }
+  @media screen and (max-width: 600px) {
+    .sheet table, .sheet tbody, .sheet tr, .sheet td { display: block; width: 100%; }
+    .sheet thead { position: absolute; left: -9999px; }
+    .sheet tr { border-bottom: 1px solid var(--line); padding: .4rem 0; }
+    .sheet td { border: 0; padding: .1rem 0; }
+    .sheet td::before { content: attr(data-label) ": "; color: var(--muted); }
+  }
   @page { margin: 12mm; }
   @media print {
     header, footer, .no-print { display: none !important; }
@@ -35,7 +43,7 @@
   {% if section.rows %}
   <table>
     <thead><tr>{% for h in section.headings %}<th>{{ h }}</th>{% endfor %}</tr></thead>
-    <tbody>{% for row in section.rows %}<tr>{% for cell in row %}<td>{{ cell }}</td>{% endfor %}</tr>{% endfor %}</tbody>
+    <tbody>{% for row in section.rows %}<tr>{% for cell in row %}<td data-label="{{ section.headings[loop.index0] }}">{{ cell }}</td>{% endfor %}</tr>{% endfor %}</tbody>
   </table>
   {% else %}
   <p class="empty">Nothing recorded yet.</p>

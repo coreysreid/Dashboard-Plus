@@ -209,6 +209,11 @@ def build_fields(records: Records, info: TableInfo, values: dict, errors: dict, 
                     pass
             if target.table.parent:
                 by_id = {r["id"]: dict(r) for r in rows}
+                for row in list(by_id.values()):  # parents beyond the first records still name the path
+                    parent = row.get(target.table.parent)
+                    if parent not in (None, "") and int(parent) not in by_id:
+                        for above in records.ancestors(target, int(parent)):
+                            by_id.setdefault(above["id"], above)
                 options = sorted(((str(r["id"]), path_name(target, by_id, dict(r))) for r in rows),
                                  key=lambda option: option[1].lower())
             else:

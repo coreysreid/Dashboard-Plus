@@ -8,7 +8,14 @@
 <h1>Add to {{ title | lower }}</h1>
 {% endif %}
 {% if saved %}<p class="notice" role="status">{% if record %}Saved.{% else %}Saved "{{ saved }}". Add the next one.{% endif %}</p>{% endif %}
-{% if errors %}<p class="problem" role="alert">{% if errors._form %}{{ errors._form }}{% else %}Please check the highlighted fields. Nothing was saved yet.{% endif %}</p>{% endif %}
+{% if errors and errors._form %}<p class="problem" role="alert">{{ errors._form }}</p>
+{% elif errors %}
+<div class="problem" role="alert" id="error-summary" tabindex="-1">
+  <p style="margin:0">Nothing was saved. Check these answers:</p>
+  <ul style="margin:.3rem 0 0">{% for f in fields if f.error %}<li><a href="#f-{{ f.name }}{% if f.kind == 'boolean' and f.column.required_when %}-yes{% endif %}">{{ f.label }}</a></li>{% endfor %}
+  {% for name, message in errors.items() if name not in (fields | map(attribute="name") | list) %}<li>{{ message }}</li>{% endfor %}</ul>
+</div>
+{% endif %}
 
 {% if record and record.deleted_at %}
 <form method="post" action="/t/{{ info.name }}/{{ record.id }}/restore">
@@ -22,23 +29,25 @@
   {% for f in fields %}
   <div class="{% if f.error %}has-error{% endif %}"{% if f.show_when %} data-show-when="{{ f.show_when[0] }}" data-show-value="{{ f.show_when[1] }}"{% endif %}>
     {% set fid = "f-" ~ f.name %}
+    {% set described = ([fid ~ "-error"] if f.error else []) + ([fid ~ "-help"] if f.help else []) %}
+    {% set aria %}{% if f.error %} aria-invalid="true"{% endif %}{% if described %} aria-describedby="{{ described | join(' ') }}"{% endif %}{% endset %}
     {% if f.kind == "boolean" and f.column.required_when %}
       <fieldset style="border:0;padding:0;margin:0"><legend style="font-weight:600;margin-bottom:.25rem">{{ f.label }}</legend>
         {% set answers = f.help_answers or ["Yes", "No"] %}
-        <label style="font-weight:400"><input type="radio" id="{{ fid }}-yes" name="{{ f.name }}" value="yes" {% if f.value in (1, "1", "yes", True) %}checked{% endif %}> {{ answers[0] }}</label>
-        <label style="font-weight:400"><input type="radio" id="{{ fid }}-no" name="{{ f.name }}" value="no" {% if f.value in (0, "0", "no", False) and f.value is not none and f.value != "" %}checked{% endif %}> {{ answers[1] }}</label>
+        <label style="font-weight:400"><input type="radio" id="{{ fid }}-yes" name="{{ f.name }}" value="yes"{{ aria }} {% if f.value in (1, "1", "yes", True) %}checked{% endif %}> {{ answers[0] }}</label>
+        <label style="font-weight:400"><input type="radio" id="{{ fid }}-no" name="{{ f.name }}" value="no"{{ aria }} {% if f.value in (0, "0", "no", False) and f.value is not none and f.value != "" %}checked{% endif %}> {{ answers[1] }}</label>
       </fieldset>
     {% elif f.kind == "boolean" %}
-      <label><input type="checkbox" id="{{ fid }}" name="{{ f.name }}" value="yes" {% if f.value in (1, "1", "yes", True) %}checked{% endif %}> {{ f.label }}</label>
+      <label><input type="checkbox" id="{{ fid }}" name="{{ f.name }}" value="yes"{{ aria }} {% if f.value in (1, "1", "yes", True) %}checked{% endif %}> {{ f.label }}</label>
     {% else %}
       <label for="{{ fid }}">{{ f.label }}{% if f.column.required %} <span class="required" title="required">*</span>{% endif %}{% if f.column.unit %} <span class="muted">({{ f.column.unit }})</span>{% endif %}</label>
       {% if f.kind == "longtext" %}
-        <textarea id="{{ fid }}" name="{{ f.name }}">{{ f.value or "" }}</textarea>
+        <textarea id="{{ fid }}" name="{{ f.name }}"{{ aria }}>{{ f.value or "" }}</textarea>
       {% elif f.kind in ("choice", "link") %}
         {% if f.kind == "link" and (f.options | length > 8 or f.search) %}
         <input type="search" class="find" data-find-for="{{ fid }}" data-add-new="{{ f.add_new or '' }}" data-search="{{ f.search or '' }}" placeholder="Type to find…" aria-label="Find {{ f.label | lower }}" autocomplete="off">
         {% endif %}
-        <select id="{{ fid }}" name="{{ f.name }}">
+        <select id="{{ fid }}" name="{{ f.name }}"{{ aria }}>
           <option value="">{% if f.column.required %}Choose…{% else %}(none){% endif %}</option>
           {% for value, label in f.options %}<option value="{{ value }}" {% if value == (f.value | string) %}selected{% endif %}>{{ label }}</option>{% endfor %}
         </select>
@@ -49,17 +58,17 @@
           {% if not f.options %}<p class="help">There is nothing to choose yet.</p>{% endif %}
         </div>
       {% elif f.kind == "date" %}
-        <input type="date" id="{{ fid }}" name="{{ f.name }}" value="{{ f.value or '' }}">
+        <input type="date" id="{{ fid }}" name="{{ f.name }}"{{ aria }} value="{{ f.value or '' }}">
       {% elif f.kind == "datetime" %}
-        <input type="datetime-local" id="{{ fid }}" name="{{ f.name }}" value="{{ f.value or '' }}">
+        <input type="datetime-local" id="{{ fid }}" name="{{ f.name }}"{{ aria }} value="{{ f.value or '' }}">
       {% elif f.kind in ("integer", "decimal", "measure", "money") %}
-        <input type="text" inputmode="decimal" id="{{ fid }}" name="{{ f.name }}" value="{{ f.value if f.value is not none else '' }}">
+        <input type="text" inputmode="decimal" id="{{ fid }}" name="{{ f.name }}"{{ aria }} value="{{ f.value if f.value is not none else '' }}">
       {% else %}
-        <div class="suggest-box"><input type="text" id="{{ fid }}" name="{{ f.name }}" value="{{ f.value or '' }}" {% if loop.first %}autofocus{% endif %}{% if f.suggest %} data-suggest="/t/{{ info.name }}/suggest?column={{ f.name }}" autocomplete="off" role="combobox" aria-autocomplete="list" aria-expanded="false"{% endif %}></div>
+        <div class="suggest-box"><input type="text" id="{{ fid }}" name="{{ f.name }}" value="{{ f.value or '' }}"{{ aria }} {% if loop.first and not errors %}autofocus{% endif %}{% if f.suggest %} data-suggest="/t/{{ info.name }}/suggest?column={{ f.name }}" autocomplete="off" role="combobox" aria-autocomplete="list" aria-expanded="false" aria-controls="{{ fid }}-list"{% endif %}></div>
       {% endif %}
     {% endif %}
-    {% if f.error %}<p class="error">{% if f.error[:1].isupper() %}{{ f.error }}{% else %}{{ f.label }} {{ f.error }}{% endif %}</p>{% endif %}
-    {% if f.help %}<p class="help">{{ f.help }}</p>{% endif %}
+    {% if f.error %}<p class="error" id="{{ fid }}-error">{% if f.error[:1].isupper() %}{{ f.error }}{% else %}{{ f.label }} {{ f.error }}{% endif %}</p>{% endif %}
+    {% if f.help %}<p class="help" id="{{ fid }}-help">{{ f.help }}</p>{% endif %}
     {% if f.column.sensitive %}<p class="help">Private: hidden in lists until you choose to show it.</p>{% endif %}
   </div>
   {% endfor %}
@@ -113,8 +122,10 @@
     document.querySelectorAll("input[data-suggest]").forEach(function (input) {
       var list = document.createElement("ul"), items = [], active = -1, timer;
       list.className = "suggest-list"; list.hidden = true; list.setAttribute("role", "listbox");
+      list.id = input.id + "-list";
       input.parentNode.appendChild(list);
-      function close() { list.hidden = true; input.setAttribute("aria-expanded", "false"); active = -1; }
+      function close() { list.hidden = true; input.setAttribute("aria-expanded", "false"); active = -1;
+                         input.removeAttribute("aria-activedescendant"); }
       function choose(item) {
         if (item.existing_id) { window.location = input.dataset.suggest.split("/suggest")[0] + "/" + item.existing_id; return; }
         input.value = item.name;
@@ -136,6 +147,7 @@
         found.forEach(function (item, i) {
           var li = document.createElement("li");
           li.setAttribute("role", "option");
+          li.id = input.id + "-opt-" + i;
           li.textContent = item.name;
           if (item.existing_id) { var note = document.createElement("span"); note.className = "muted"; note.textContent = " (you already have this: open it)"; li.appendChild(note); }
           li.addEventListener("mousedown", function (e) { e.preventDefault(); choose(item); });
@@ -143,6 +155,7 @@
         });
         if (found.length) {
           var own = document.createElement("li"); own.className = "muted";
+          own.setAttribute("role", "option"); own.id = input.id + "-opt-keep";
           own.textContent = "Keep \u201c" + input.value + "\u201d as you typed it";
           own.addEventListener("mousedown", function (e) { e.preventDefault(); close(); });
           list.appendChild(own);
@@ -170,7 +183,11 @@
           e.preventDefault();
           active = (active + (e.key === "ArrowDown" ? 1 : -1) + options.length) % options.length;
           options.forEach(function (li, i) { li.setAttribute("aria-selected", i === active ? "true" : "false"); });
-        } else if (e.key === "Enter" && active >= 0) { e.preventDefault(); choose(items[active]); }
+          input.setAttribute("aria-activedescendant", options[active].id);
+        } else if (e.key === "Enter" && active >= 0) {
+          e.preventDefault();
+          if (active < items.length) choose(items[active]); else close();  // the last option keeps what was typed
+        }
         else if (e.key === "Escape") { close(); }
       });
       input.addEventListener("blur", function () { setTimeout(close, 150); });
@@ -214,6 +231,8 @@
       });
     });
   })();
+  // After a refused save, move to the list of answers to check.
+  (function () { var summary = document.getElementById("error-summary"); if (summary) summary.focus(); })();
   // Fields that only apply to one choice (such as "Drinking water" for water) follow that choice.
   (function () {
     document.querySelectorAll("[data-show-when]").forEach(function (box) {

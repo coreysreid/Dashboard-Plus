@@ -57,12 +57,15 @@ def prepare(data_dir: Path, modules_dir: Path | None = None) -> StartupReport:
     path = database_path(data_dir)
     conn = db.connect(path)
     try:
-        # The core must update; a module whose update fails is left out and reported, like any broken module.
-        applied = migrations.migrate(conn, {migrations.CORE_TRACK: tracks[migrations.CORE_TRACK]},
-                                     backup_dir=data_dir / "backups")
+        # One backup before anything changes, then the core must update; a module whose update fails is
+        # left out and reported, like any broken module.
+        if migrations.plan(conn, tracks) and any(migrations.applied(conn).values()):
+            stamp = datetime.now().strftime("%Y%m%d-%H%M%S")
+            db.backup_to(conn, data_dir / "backups" / f"before-update-{stamp}.db")
+        applied = migrations.migrate(conn, {migrations.CORE_TRACK: tracks[migrations.CORE_TRACK]})
         for module in list(found):
             try:
-                applied += migrations.migrate(conn, {module.name: module.migrations}, backup_dir=data_dir / "backups")
+                applied += migrations.migrate(conn, {module.name: module.migrations})
             except migrations.MigrationError as error:
                 failures.setdefault(module.name, []).append(f"Its database change could not be applied, so it "
                                                             f"was left out and its records were not changed. {error}")

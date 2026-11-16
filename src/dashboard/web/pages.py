@@ -27,13 +27,33 @@ def _sorting(info: records.TableInfo) -> tuple[str, bool]:
     return (sort if sort in allowed else "id"), request.args.get("desc") == "1"
 
 
+def _paths(store, info) -> dict[int, str]:
+    """Every record's full path ("Kitchen › Pantry › Shelf 3"), for a table whose records nest."""
+    rows = {r["id"]: dict(r) for r in store.page(info.name, limit=5000)}
+    return {rid: display.path_name(info, rows, row) for rid, row in rows.items()}
+
+
 def _rows(store, info, offset, sort, desc):
     formatter = display.Formatter(store)
     columns = display.list_columns(info)
-    rows = store.page(info.name, offset=offset, limit=PAGE_SIZE, order_by=sort, descending=desc)
-    return [{"id": r["id"], "review": r["review_status"],
-             "cells": [{"text": formatter.text(info, c, r.get(c.name)), "sensitive": c.sensitive} for c in columns]}
-            for r in rows]
+    name_col = display.name_column(info)
+    paths = _paths(store, info) if info.table.parent else {}
+    if paths and not request.args.get("sort"):
+        # Nested records are listed by full path, so each room is followed by what is inside it.
+        ordered = sorted(paths, key=lambda rid: paths[rid].lower())[offset:offset + PAGE_SIZE]
+        rows = [store.get(info.name, rid) for rid in ordered]
+    else:
+        rows = store.page(info.name, offset=offset, limit=PAGE_SIZE, order_by=sort, descending=desc)
+    out = []
+    for r in rows:
+        label = paths.get(r["id"]) or display.display_name(info, dict(r))
+        cells = []
+        for c in columns:
+            text = paths[r["id"]] if paths and name_col is not None and c.name == name_col.name \
+                else formatter.text(info, c, r.get(c.name))
+            cells.append({"text": text, "sensitive": c.sensitive, "label": display.column_label(info, c)})
+        out.append({"id": r["id"], "review": r["review_status"], "label": label, "cells": cells})
+    return out
 
 
 @pages.get("/t/<table>")
@@ -78,6 +98,9 @@ def suggest_names(table):
                             f"AND {column} IS NOT NULL AND lower({column}) LIKE ? LIMIT 50",
                             (f"%{words[0][:3]}%",)).fetchall()
         own = [{"id": r["id"], "name": r["name"]} for r in rows]
+    if info.table.parent and query:
+        # Nested records are found and shown by full path ("kitchen" finds Kitchen › Pantry › Shelf 3).
+        own = [{"id": rid, "name": path} for rid, path in _paths(_store(), info).items()]
     catalogue = info.module.catalogues.get((info.table.name, column), [])
     return jsonify(suggest.suggestions(typed, own, catalogue))
 

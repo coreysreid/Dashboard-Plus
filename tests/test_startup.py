@@ -48,3 +48,17 @@ class StartupTests(TempDirTestCase):
         report = startup.prepare(self.tmp / "data", self.tmp / "modules")
         self.assertEqual(report.modules, [])
         self.assertIn("broken", report.module_problems)
+
+    def test_an_update_of_several_modules_makes_one_backup(self):
+        # Each module updates on its own (decision 0050), but the household gets one backup first,
+        # however long the updates take.
+        from unittest import mock
+        from dashboard.core import db
+        import make_migration
+        make_migration.make(self.make_module("first", labels=None), "first_tables")
+        startup.prepare(self.tmp / "data", self.tmp / "modules")
+        make_migration.make(self.make_module("second", labels=None), "first_tables")
+        make_migration.make(self.make_module("third", labels=None), "first_tables")
+        with mock.patch.object(db, "backup_to", wraps=db.backup_to) as backup:
+            startup.prepare(self.tmp / "data", self.tmp / "modules")
+        self.assertEqual(backup.call_count, 1)
