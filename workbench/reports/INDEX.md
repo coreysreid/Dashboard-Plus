@@ -6,3 +6,4 @@ expected, actual, severity (blocker, important, minor), suggested change.
 |---|---|---|
 | 2026-11-09-m1-check.md | Linux household journey check, with findings and limits. | planning M1 fixes |
 | 2026-11-09-module-wording.md | Exact wording and form suggestions for People and Stock. | refining the shipped modules |
+| 2026-11-13-product-swot.md | Evidence-based product SWOT, priorities and expansion ideas. | deciding what to improve after M1 |
