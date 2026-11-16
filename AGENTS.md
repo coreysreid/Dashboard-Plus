@@ -16,6 +16,7 @@ and the files you may edit before changing anything.
   Every Python file starts with a one-line docstring that its index row quotes.
 - Dependencies are few and pinned to exact versions. Ask before adding one.
 - Explain choices in plain language. Corey judges the product, not the code.
+- Lane A merges its own pull requests once every check is green; see "Who merges" in docs/WORKSTREAMS.md for the exceptions.
 
 ## Before you finish any change
 One command runs every check: `python tools/check_all.py`. The individual steps are:
