@@ -63,8 +63,8 @@ def list_columns(info: TableInfo) -> list[Column]:
 
 
 def name_column(info: TableInfo) -> Column | None:
-    """The column that best names a record: a required text column, else any text column."""
-    texts = [c for c in info.table.columns.values() if c.type == "text"]
+    """The column that best names a record: a required text column, else any text column; never a private one."""
+    texts = [c for c in info.table.columns.values() if c.type == "text" and not c.sensitive]
     required = [c for c in texts if c.required]
     return (required or texts or [None])[0]
 
@@ -161,6 +161,7 @@ class Field:
     show_when: tuple[str, str] | None = None  # shown only while another choice field has this value
     suggest: bool = False  # offer matches while typing (labels.toml `suggest_from`)
     add_new: str | None = None  # for a link: where to add a new record, with the typed name appended
+    search: str | None = None  # for a long link list: where to look past the first OPTION_LIMIT records
 
     @property
     def name(self) -> str:
@@ -198,6 +199,13 @@ def build_fields(records: Records, info: TableInfo, values: dict, errors: dict, 
             target = formatter.target(info, column)
             name_col = name_column(target)
             rows = records.page(target.name, limit=OPTION_LIMIT, order_by=name_col.name if name_col else "id")
+            current = values.get(column.name)
+            if current not in (None, "") and str(current).isdigit() and \
+                    int(current) not in {r["id"] for r in rows}:  # always offer the record already chosen
+                try:
+                    rows = list(rows) + [records.get(target.name, int(current), include_deleted=True)]
+                except Exception:  # noqa: BLE001 - a missing link should never break a form
+                    pass
             if target.table.parent:
                 by_id = {r["id"]: dict(r) for r in rows}
                 options = sorted(((str(r["id"]), path_name(target, by_id, dict(r))) for r in rows),
@@ -209,16 +217,18 @@ def build_fields(records: Records, info: TableInfo, values: dict, errors: dict, 
         if column.type == "link" and value not in (None, ""):
             value = str(value)
         shown = _labels(info).get("columns", {}).get(column.name, {}).get("show_when")
-        add_new = None
+        add_new = search = None
         if column.type == "link":
             target = formatter.target(info, column)
             name_col = name_column(target)
             if name_col is not None:
                 add_new = f"/t/{target.name}/new?{name_col.name}="
+                if len(options) >= OPTION_LIMIT:
+                    search = f"/t/{target.name}/suggest?column={name_col.name}"
         fields.append(Field(column, column_label(info, column), column_help(info, column),
                             value, errors.get(column.name), options,
                             next(iter(shown.items())) if shown else None,
-                            (info.table.name, column.name) in info.module.catalogues, add_new))
+                            (info.table.name, column.name) in info.module.catalogues, add_new, search))
     return fields
 
 

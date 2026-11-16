@@ -29,8 +29,8 @@
       {% if f.kind == "longtext" %}
         <textarea id="{{ fid }}" name="{{ f.name }}">{{ f.value or "" }}</textarea>
       {% elif f.kind in ("choice", "link") %}
-        {% if f.kind == "link" and f.options | length > 8 %}
-        <input type="search" class="find" data-find-for="{{ fid }}" data-add-new="{{ f.add_new or '' }}" placeholder="Type to find…" aria-label="Find {{ f.label | lower }}" autocomplete="off">
+        {% if f.kind == "link" and (f.options | length > 8 or f.search) %}
+        <input type="search" class="find" data-find-for="{{ fid }}" data-add-new="{{ f.add_new or '' }}" data-search="{{ f.search or '' }}" placeholder="Type to find…" aria-label="Find {{ f.label | lower }}" autocomplete="off">
         {% endif %}
         <select id="{{ fid }}" name="{{ f.name }}">
           <option value="">{% if f.column.required %}Choose…{% else %}(none){% endif %}</option>
@@ -176,6 +176,20 @@
           if (match && option.value) { shown++; if (!first) first = option; }
         });
         if (typed) select.value = first ? first.value : "";
+        if (typed && !shown && find.dataset.search) {
+          // Past the first records on the list: ask this computer's dashboard for matches.
+          fetch(find.dataset.search + "&q=" + encodeURIComponent(find.value.trim()), {credentials: "same-origin"})
+            .then(function (r) { return r.ok ? r.json() : []; })
+            .then(function (found) {
+              found.filter(function (item) { return item.existing_id; }).forEach(function (item) {
+                var option = document.createElement("option");
+                option.value = item.existing_id; option.textContent = item.name;
+                select.appendChild(option);
+                if (!select.value) select.value = option.value;
+              });
+              if (add && select.value) add.hidden = true;
+            }).catch(function () {});
+        }
         if (add) {
           add.hidden = !typed || shown > 0;
           add.textContent = "Not on the list? Add \u201c" + find.value.trim() + "\u201d as a new one";

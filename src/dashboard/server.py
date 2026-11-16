@@ -151,7 +151,10 @@ def _serve(data_dir: Path, open_browser: bool, ready: threading.Event | None,
     print("Keep this window open. To stop, use 'Save and exit'.")
     if open_browser:
         webbrowser.open(state.launch_url)
-    backups.daily(data_dir, extra_backup_dir)
+    try:
+        backups.daily(data_dir, extra_backup_dir)
+    except Exception:  # noqa: BLE001 - a failed backup is reported in Settings, not a reason to stop
+        logging.getLogger("dashboard.backups").exception("The first daily backup could not be made")
     threading.Thread(target=_daily_backups, args=(data_dir, extra_backup_dir, stopping), daemon=True).start()
     if ready:
         ready.set()

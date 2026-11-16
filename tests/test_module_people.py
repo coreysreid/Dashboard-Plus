@@ -48,8 +48,9 @@ class PeopleModuleTests(TempDirTestCase):
         self.records.delete("people__people", person)
         self.assertEqual(self.records.count("people__roles"), 0)
         self.assertEqual(self.records.count("people__important_info"), 0)
-        self.records.restore("people__roles", role)
-        self.records.restore("people__important_info", info)
+        self.records.restore("people__people", person)  # brings back what went with them
+        self.assertEqual(self.records.count("people__roles"), 1)
+        self.assertEqual(self.records.count("people__important_info"), 1)
 
     def test_both_emergency_sheets_print(self):
         settings.put(self.conn, "setup.done", True)

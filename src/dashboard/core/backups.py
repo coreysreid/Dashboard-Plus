@@ -4,6 +4,7 @@ from __future__ import annotations
 import json
 import logging
 import os
+import secrets
 import sys
 from datetime import date, datetime
 from pathlib import Path
@@ -42,6 +43,14 @@ def _write(data_dir: Path, extra_dir: Path | None, filename: str) -> list[Path]:
     try:
         if not settings.get(conn, "backups.second_copy", True):
             extra_dir = None
+        elif extra_dir is not None:
+            # Each data folder keeps its second copies in its own sub-folder, so two copies of the
+            # program on one computer never overwrite each other's backups.
+            folder_id = settings.get(conn, "backups.folder_id")
+            if not folder_id:
+                folder_id = secrets.token_hex(6)
+                settings.put(conn, "backups.folder_id", folder_id)
+            extra_dir = Path(extra_dir) / folder_id
         for i, folder in enumerate(backup_dirs(data_dir, extra_dir)):
             try:
                 written.append(db.backup_to(conn, folder / filename))
@@ -99,8 +108,9 @@ def status(data_dir: Path) -> dict:
 def daily(data_dir: Path, extra_dir: Path | None = None, today: date | None = None) -> list[Path]:
     """Make today's backup if there is not one yet. Returns the files written (empty if done already)."""
     name = f"daily-{(today or date.today()).isoformat()}.db"
-    if (Path(data_dir) / "backups" / name).exists():
-        return []
+    done = (Path(data_dir) / "backups" / name).exists()
+    if done and status(data_dir).get("second", {}).get("state") != "failed":
+        return []  # already made today (a failed second copy is tried again)
     return _write(data_dir, extra_dir, name)
 
 

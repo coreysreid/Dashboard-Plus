@@ -65,7 +65,8 @@ def suggest_names(table):
     """What to offer while someone types a name: their own records first, then the module's list."""
     info = _info(table)
     column = request.args.get("column", "")
-    if column not in info.table.columns or info.table.columns[column].type != "text":
+    if column not in info.table.columns or info.table.columns[column].type != "text" or \
+            info.table.columns[column].sensitive:  # private details are never offered as suggestions
         abort(404)
     typed = request.args.get("q", "")[:80]
     query = suggest.normalise(typed)

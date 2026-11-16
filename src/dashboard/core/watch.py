@@ -51,7 +51,7 @@ class Supply:
 
 
 def _name_column(info: TableInfo) -> str | None:
-    texts = [c for c in info.table.columns.values() if c.type == "text"]
+    texts = [c for c in info.table.columns.values() if c.type == "text" and not c.sensitive]
     required = [c for c in texts if c.required]
     chosen = (required or texts or [None])[0]
     return chosen.name if chosen else None

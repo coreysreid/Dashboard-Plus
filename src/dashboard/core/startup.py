@@ -28,6 +28,21 @@ def database_path(data_dir: Path) -> Path:
     return Path(data_dir) / DATABASE_FILE
 
 
+def _missing_columns(conn, module) -> list[str]:
+    """Tables and columns a module declares that are not in the database (its migrations are behind)."""
+    from dashboard.core.schema import table_name
+    missing = []
+    for table in module.tables.values():
+        name = table_name(module.name, table.name)
+        have = {row[1] for row in conn.execute(f"PRAGMA table_info({name})")}
+        if not have:
+            missing.append(f"the table '{table.name}'")
+            continue
+        missing += [f"'{table.name}.{c}'" for c in table.columns
+                    if c not in have and table.columns[c].type != "links"]
+    return missing
+
+
 def prepare(data_dir: Path, modules_dir: Path | None = None) -> StartupReport:
     """Open the database, bring it up to date, and record the modules in use.
 
@@ -42,7 +57,22 @@ def prepare(data_dir: Path, modules_dir: Path | None = None) -> StartupReport:
     path = database_path(data_dir)
     conn = db.connect(path)
     try:
-        applied = migrations.migrate(conn, tracks, backup_dir=data_dir / "backups")
+        # The core must update; a module whose update fails is left out and reported, like any broken module.
+        applied = migrations.migrate(conn, {migrations.CORE_TRACK: tracks[migrations.CORE_TRACK]},
+                                     backup_dir=data_dir / "backups")
+        for module in list(found):
+            try:
+                applied += migrations.migrate(conn, {module.name: module.migrations}, backup_dir=data_dir / "backups")
+            except migrations.MigrationError as error:
+                failures.setdefault(module.name, []).append(f"Its database change could not be applied, so it "
+                                                            f"was left out and its records were not changed. {error}")
+                continue
+            missing = _missing_columns(conn, module)
+            if missing:
+                failures.setdefault(module.name, []).append(
+                    f"Its tables.toml describes {', '.join(missing)}, which its migrations do not create. "
+                    f"Run tools/make_migration.py for it.")
+        found = modules.dependency_order([m for m in found if m.name not in failures], failures)
         now = datetime.now(timezone.utc).isoformat(timespec="seconds")
         with db.transaction(conn):
             for module in found:

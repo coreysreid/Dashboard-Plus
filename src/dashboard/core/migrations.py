@@ -133,7 +133,7 @@ def migrate(conn: sqlite3.Connection, tracks: dict[str, list[Migration]],
                     conn.execute(f"PRAGMA user_version = {int(migration.number)}")
         except sqlite3.Error as error:
             raise MigrationError(
-                f"The database change {migration.label} could not be applied, so nothing was changed. "
+                f"The database change {migration.label} could not be applied, so that change was not made. "
                 f"Details: {error}"
             ) from error
     return todo

@@ -187,6 +187,12 @@ def _save(form, mode: str):
     hazards = [h for h in form.getlist("hazards") if h in dict(HAZARDS)]
     country, region = _place(form, errors)
     chosen_modules = set(form.getlist("modules"))
+    for module in current_app.config["LOADED"]:
+        needed = [r for r in module.requires if r not in chosen_modules]
+        if module.name in chosen_modules and needed:
+            titles = {m.name: m.title for m in current_app.config["LOADED"]}
+            errors["modules"] = (f"{module.title} needs {', '.join(titles.get(n, n) for n in needed)}. Keep "
+                                 f"{'it' if len(needed) == 1 else 'them'} switched on, or switch {module.title} off too.")
     if errors:
         return errors
 

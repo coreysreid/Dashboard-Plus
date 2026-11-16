@@ -126,6 +126,9 @@ def _check_module_toml(folder: Path, data: dict, problems: list[str]) -> None:
         if key not in data:
             problems.append(f"{where}: '{key}' is missing.")
     name = data.get("name")
+    if name is not None and not NAME.match(str(name)):
+        problems.append(f"{where}: name must start with a letter and use only lower-case letters, digits and "
+                        f"underscores, like \"garden\".")
     if name is not None and name != folder.name:
         problems.append(f"{where}: name is '{name}' but the folder is called '{folder.name}'; they must match.")
     if "version" in data and not VERSION.match(str(data["version"])):
@@ -488,7 +491,11 @@ def _check_gaps(file: str, table: Table, tables: dict[str, Table], raw, problems
             problems.append(f"{g_where}: 'message' is missing (the question people see).")
             continue
         try:
-            fields = [f for _, f, _, _ in string.Formatter().parse(message) if f is not None]
+            parsed = list(string.Formatter().parse(message))
+            fields = [f for _, f, _, _ in parsed if f is not None]
+            if any(spec or conversion for _, f, spec, conversion in parsed if f is not None):
+                problems.append(f"{g_where}: 'message' can only use plain {{column}} names, with nothing after them.")
+                continue
         except ValueError:
             problems.append(f"{g_where}: 'message' has an unmatched {{ or }}.")
             continue
@@ -746,6 +753,9 @@ def discover(modules_dir: Path) -> tuple[list[Module], dict[str, list[str]]]:
             modules.append(load_module(folder))
         except ModuleError as error:
             failures[folder.name] = error.problems
+        except Exception as error:  # noqa: BLE001 - a malformed file must never stop the program
+            failures[folder.name] = [f"Its files could not be read ({type(error).__name__}: {error}). "
+                                     f"Check them against docs/DESIGN.md section 6."]
     return dependency_order(modules, failures), failures
 
 

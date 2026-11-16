@@ -1,6 +1,7 @@
 """Open the SQLite database with settings that are safe on USB drives."""
 from __future__ import annotations
 
+import os
 import sqlite3
 from contextlib import contextmanager
 from pathlib import Path
@@ -82,14 +83,24 @@ def integrity_ok(conn: sqlite3.Connection) -> bool:
 
 
 def backup_to(conn: sqlite3.Connection, destination: Path) -> Path:
-    """Copy the whole database safely, even while it is open, and check the copy."""
+    """Copy the whole database safely, even while it is open, and check the copy.
+
+    The copy is written under a temporary name and only renamed into place once it passes its
+    check, so a failed or interrupted backup never leaves a file that looks like a good one."""
     destination = Path(destination)
     destination.parent.mkdir(parents=True, exist_ok=True)
-    target = sqlite3.connect(destination)
+    partial = destination.with_name(destination.name + ".partial")
+    target = sqlite3.connect(partial)
     try:
         conn.backup(target)
-        if not integrity_ok(target):
-            raise DatabaseError("A backup copy failed its check and was not kept.")
-    finally:
+        ok = integrity_ok(target)
+    except BaseException:
         target.close()
+        partial.unlink(missing_ok=True)
+        raise
+    target.close()
+    if not ok:
+        partial.unlink(missing_ok=True)
+        raise DatabaseError("A backup copy failed its check and was not kept.")
+    os.replace(partial, destination)
     return destination
