@@ -25,6 +25,7 @@ the "Requests" table of docs/WORKSTREAMS.md.
 | Batch 4 item 1: picking and drinking-water UX | ready for a pull request: `lane-b/batch4-ux-picking` | pending | Twenty goods saved; regional matches work, but custom flushing water counts by default. See the dated report. |
 | Batch 4 item 2: catalogue round 4 | ready for a pull request: `lane-b/batch4-catalogue-r4` | pending | 805 goods; missed searches, manufacturer pack examples and two narrow shelf lives. See the catalogue NOTES.md. |
 | Batch 4 item 3: places list | ready for a pull request: `lane-b/batch4-places-list` | pending | 120 suggested rooms, storage places and spots, with regional search terms. |
+| Batch 4 item 4: nested places acceptance | ready for a pull request: `lane-b/batch4-nested-acceptance` | pending | Ten checks and a row-by-row mapping for all three example households. |
 
 ## Messages to Lane A
 
