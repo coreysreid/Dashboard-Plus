@@ -1,5 +1,13 @@
 # Home layout design and integration notes
 
+## Place suggestions, batch 4 item 3
+
+`places.csv` has 120 editable suggestions: 35 starting areas (`room`), 45 containers or storage areas (`storage`), and 40 finer locations (`spot`). The names and `also_called` terms are search vocabulary, including cupboard/closet, wardrobe/closet, laundry/utility room, car boot/trunk and bench/counter. `typical_in` uses `house`, `apartment` and `townhouse`, separated by `|` when a suggestion suits more than one. These are hints for sorting suggestions, never a rule that forbids a household from using a place. A household's own place names should always be offered first, then these suggestions; picking one creates a local editable place, and a household can type any other name. Places are not pre-created on setup.
+
+`kind` helps suggest a first area, then storage, then a spot, but the shipped self-link allows any depth and a household can stop at any level. **Car** is a possible top-level area and uses `room` as the closest available kind; it does not imply a vehicle is a room in the home. A shelf name can repeat under different parents; only the full path distinguishes it. The core currently supports nested Stock places but does not read this CSV or offer place names while typing. Lane A needs to load the list, match aliases case-insensitively, show the full prospective path before Save, keep local additions first, and avoid creating a duplicate just because an alias was used. This file carries no safety or storage instruction.
+
+Checked against the shipped Stock `places` self-link, `docs/DESIGN.md` section 5.6 and the three synthetic example households on **2026-11-17**. Regional terms are editorial wording for search, not external facts a household must rely on; no outside text or data was copied, and there is no third-party licence to apply.
+
 ## What a household should see
 
 A place picker should show **Kitchen › Pantry › Shelf 3**, not just “Shelf 3”. Adding a place should start with a room or area, then offer storage inside it, then an optional spot. A household may stop at any level: “Garage” or “Garage › Grey shelves” is useful too. The form should prevent a place being put inside itself or one of its descendants. Rename or move a parent and every displayed child path should update automatically.
