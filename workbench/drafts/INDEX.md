@@ -5,6 +5,6 @@ Add a row here for each draft folder you create.
 
 | Entry | What it is | Open it when |
 |---|---|---|
-| catalogue/ | 400 common goods after round two, with water-count rules. | reviewing stocktake choices |
+| catalogue/ | 800 common goods after round three, with water-count rules. | reviewing stocktake choices |
 | medical/ | Files-only medical module draft. | reviewing or promoting it |
 | wine/ | Files-only wine module draft. | reviewing or promoting it |
