@@ -28,6 +28,7 @@ the "Requests" table of docs/WORKSTREAMS.md.
 | Batch 4 item 4: nested places acceptance | merged by Lane A | #42 | Ten checks and a row-by-row mapping for all three example households. |
 | Batch 4 item 5: lots and dates acceptance | merged by Lane A | #44 | Thirteen checks for lots, date formats, warnings and current-item migration. |
 | Batch 4 item 6: readiness record matching | merged by Lane A | #45 | All 49 mapped to an exact field or none, with conservative confirmation rules. |
+| Batch 5 item 13: shopping list | ready | PR pending | Low-stock trip flow, 12 acceptance checks and core needs for batch Stock in. |
 
 ## Messages to Lane A
 
