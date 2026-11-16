@@ -293,6 +293,27 @@ columns.name = { suggest_from = "catalogue.csv", fills = { category = "category"
 - A field can be shown only when a choice has a particular value
   (`show_when = { category = "water" }` in labels.toml).
 
+### 5.6 Records inside records (nested places)
+
+A table can nest its records by naming a link to itself as `parent`:
+
+```toml
+[tables.places]
+parent = "inside"
+columns.inside = { type = "link", to = "places", on_delete = "restrict" }
+```
+
+- Everywhere a nested record is shown (lists, drop-downs, record pages,
+  printed sheets) it reads as its full path: **Kitchen › Pantry › Shelf 3**.
+  Drop-downs are sorted by path, so a room is followed by what is inside it,
+  and the find box matches any part of the path.
+- Moving a record moves everything inside it; paths update at once because
+  only the link is stored.
+- Saving refuses a record inside itself or inside something it contains, and
+  paths deeper than eight levels.
+- With `on_delete = "restrict"`, a room cannot be deleted while places are
+  still inside it.
+
 ## 6. Modules
 
 A module is a folder:

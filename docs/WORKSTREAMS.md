@@ -116,7 +116,8 @@ Draft modules may link to these with `requires = ["people"]` and
 | Batch 2: M1 check, wording, Pets/Medical/Wine drafts, AU/US research, SWOT | B | merged |
 | Batch 3: catalogue, Home layout, lots, Medical, readiness, country packs, Documents, Home care, Wine, examples, UX check | B | merged (#22, #24 to #33) |
 | Drinking water only; pick from a list while typing (catalogue) | A | merged (#35, #36) |
-| Nested places, dates shown the household's way, lots | A | next, in that order |
+| Nested places | A | in review |
+| Dates shown the household's way, then lots | A | next |
 | Batch 4 (below), then the Lane B roadmap (batches 5 to 8) | B | ready to start |
 
 ## How the lanes work together: draft, polish, test

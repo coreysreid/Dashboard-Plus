@@ -244,14 +244,32 @@ notes = "Early kidney disease. Started tablets and the kidney diet."
 # ---- Household stock ----------------------------------------------------------
 
 [[stock.places]]
+name = "Kitchen"
+
+[[stock.places]]
+name = "Hallway"
+
+[[stock.places]]
+name = "Main bedroom"
+
+[[stock.places]]
+name = "Car"
+
+[[stock.places]]
+name = "Basement"
+
+[[stock.places]]
 name = "Kitchen cabinets"
+inside = "Kitchen"
 
 [[stock.places]]
 name = "Hall closet"
+inside = "Hallway"
 notes = "Earthquake go-bags live here, by the front door."
 
 [[stock.places]]
 name = "Under the bed"
+inside = "Main bedroom"
 notes = "Shoes and a flashlight under every bed."
 
 [[stock.places]]
@@ -259,9 +277,11 @@ name = "Bathroom"
 
 [[stock.places]]
 name = "Car trunk"
+inside = "Car"
 
 [[stock.places]]
 name = "Storage locker"
+inside = "Basement"
 notes = "Basement locker 12."
 
 # Amounts are what is on hand today, after the stock in and out below.

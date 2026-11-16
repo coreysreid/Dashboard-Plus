@@ -69,6 +69,20 @@ def name_column(info: TableInfo) -> Column | None:
     return (required or texts or [None])[0]
 
 
+PATH_SEPARATOR = " › "
+
+
+def path_name(info: TableInfo, rows_by_id: dict, row: dict) -> str:
+    """"Kitchen › Pantry › Shelf 3" for a nested record, from rows already loaded by id."""
+    names, seen = [], set()
+    while row is not None and row["id"] not in seen and len(names) < 12:
+        seen.add(row["id"])
+        names.append(display_name(info, row))
+        parent = row.get(info.table.parent)
+        row = rows_by_id.get(int(parent)) if parent not in (None, "") else None
+    return PATH_SEPARATOR.join(reversed(names))
+
+
 def display_name(info: TableInfo, row: dict) -> str:
     """A short human name for a record, used wherever another record links to it."""
     column = name_column(info)
@@ -101,7 +115,11 @@ class Formatter:
         if key not in self._names:
             try:
                 row = self.records.get(target.name, int(record_id), include_deleted=True)
-                name = display_name(target, row)
+                if target.table.parent:
+                    chain = self.records.ancestors(target, int(record_id))
+                    name = path_name(target, {r["id"]: r for r in chain}, chain[-1]) if chain else display_name(target, row)
+                else:
+                    name = display_name(target, row)
                 self._names[key] = name + (" (deleted)" if row.get("deleted_at") else "")
             except Exception:  # noqa: BLE001 - a missing link should never break a page
                 self._names[key] = "(missing)"
@@ -180,7 +198,12 @@ def build_fields(records: Records, info: TableInfo, values: dict, errors: dict, 
             target = formatter.target(info, column)
             name_col = name_column(target)
             rows = records.page(target.name, limit=OPTION_LIMIT, order_by=name_col.name if name_col else "id")
-            options = [(str(r["id"]), display_name(target, r)) for r in rows]
+            if target.table.parent:
+                by_id = {r["id"]: dict(r) for r in rows}
+                options = sorted(((str(r["id"]), path_name(target, by_id, dict(r))) for r in rows),
+                                 key=lambda option: option[1].lower())
+            else:
+                options = [(str(r["id"]), display_name(target, r)) for r in rows]
         raw = values.get(column.name)
         value = raw if from_form else input_value(column, raw)
         if column.type == "link" and value not in (None, ""):

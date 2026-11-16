@@ -146,6 +146,46 @@ class StockModuleTests(TempDirTestCase):
         client.get("/?key=k", base_url=BASE)
         return client
 
+    def test_places_nest_and_show_their_full_path(self):
+        kitchen = self.records.create("stock__places", {"name": "Kitchen"})
+        pantry = self.records.create("stock__places", {"name": "Pantry", "inside": kitchen})
+        shelf = self.records.create("stock__places", {"name": "Shelf 3", "inside": pantry})
+        self.item(name="Kidney beans", quantity=5, place=shelf)
+        client = self._client()
+        items = client.get("/t/stock__items", base_url=BASE).get_data(as_text=True)
+        self.assertIn("Kitchen › Pantry › Shelf 3", items)
+        form = client.get("/t/stock__items/new", base_url=BASE).get_data(as_text=True)
+        self.assertLess(form.index(">Kitchen<"), form.index(">Kitchen › Pantry<"))
+        self.assertIn(">Kitchen › Pantry › Shelf 3<", form)
+        page = client.get(f"/t/stock__places/{shelf}", base_url=BASE).get_data(as_text=True)
+        self.assertIn("<h1>Kitchen › Pantry › Shelf 3", page)
+        sheet = client.get("/sheet/stock/supplies", base_url=BASE).get_data(as_text=True)
+        self.assertIn("Kitchen › Pantry › Shelf 3", sheet)
+
+    def test_a_place_cannot_go_inside_itself(self):
+        kitchen = self.records.create("stock__places", {"name": "Kitchen"})
+        pantry = self.records.create("stock__places", {"name": "Pantry", "inside": kitchen})
+        with self.assertRaises(records.ValidationError) as caught:
+            self.records.update("stock__places", kitchen, {"inside": pantry})
+        self.assertIn("inside", caught.exception.problems)
+        with self.assertRaises(records.ValidationError):
+            self.records.update("stock__places", kitchen, {"inside": kitchen})
+
+    def test_moving_a_cupboard_moves_everything_in_it(self):
+        kitchen = self.records.create("stock__places", {"name": "Kitchen"})
+        garage = self.records.create("stock__places", {"name": "Garage"})
+        cupboard = self.records.create("stock__places", {"name": "Tall cupboard", "inside": kitchen})
+        self.records.create("stock__places", {"name": "Top shelf", "inside": cupboard})
+        self.records.update("stock__places", cupboard, {"inside": garage})
+        form = self._client().get("/t/stock__items/new", base_url=BASE).get_data(as_text=True)
+        self.assertIn(">Garage › Tall cupboard › Top shelf<", form)
+
+    def test_a_room_with_places_inside_cannot_be_deleted(self):
+        kitchen = self.records.create("stock__places", {"name": "Kitchen"})
+        self.records.create("stock__places", {"name": "Pantry", "inside": kitchen})
+        with self.assertRaises(records.ValidationError):
+            self.records.delete("stock__places", kitchen)
+
     def test_migration_matches_its_description(self):
         from dashboard.core.schema import next_migration_sql
         self.assertIsNone(next_migration_sql(modules.load_module(ROOT / "modules" / "stock")))

@@ -100,6 +100,7 @@ marked Superseded. Each lists downsides, cost to undo, and the sign it was wrong
 | [0046](0046-show-the-water-basis-and-backup-status.md) | Show the water estimate's daily amount, and whether the second backup worked | Accepted |
 | [0047](0047-pets-moved-forward.md) | Pets is switched on now, built from the second agent's draft | Accepted |
 | [0048](0048-pick-from-a-catalogue-while-typing.md) | Pick goods from a list while typing, with your own items first | Accepted |
+| [0049](0049-nested-places.md) | Places can sit inside other places, and show their full path | Accepted |
 | [0060](0060-garden-example-outside-installed-modules.md) | Keep the worked garden outside installed modules | Accepted |
 | [0061](0061-public-reporting-and-contribution-rules.md) | Public contribution and private security reporting routes | Accepted |
 | [TEMPLATE](TEMPLATE.md) | Blank record to copy for a new decision | recording a decision |
@@ -226,6 +227,7 @@ Generate the next one with: python tools/make_migration.py stock --name <what_ch
 |---|---|---|
 | 0001_first_tables.sql | The module's first tables, generated from tables.toml | checking how the tables are stored |
 | 0002_stock_in_and_out.sql | The Stock in and out table | checking how movements are stored |
+| 0004_places_inside_places.sql | Places can sit inside other places ("Inside") | checking how nested places are stored |
 | 0003_drinking_water.sql | "Safe to drink" on items; existing water stays counted | checking how drinking water is stored |
 
 ## src/  (summary: the program's Python code)

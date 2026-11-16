@@ -1,7 +1,9 @@
 [tables.places]
 title = "Places"
-description = "Where things are kept: a cupboard, a shelf, a box in the garage."
+description = "Where things are kept: a room, a cupboard in it, a shelf in that (Kitchen › Pantry › Shelf 3)."
+parent = "inside"
 columns.name = { type = "text", required = true }
+columns.inside = { type = "link", to = "places", on_delete = "restrict" }
 columns.notes = { type = "text" }
 
 [tables.items]
