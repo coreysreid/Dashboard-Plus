@@ -6,3 +6,5 @@
 | labels.toml | Friendly form, list and first step | reviewing screen wording |
 | migrations/ | Generated schema | checking promotion readiness |
 | NOTES.md | Privacy, sheet and Home layout choices | planning integration |
+# workbench/drafts/documents/  (summary: example rows awaiting the draft module)
+| example.toml | Fictional rows for the Smith, Garcia and Taylor households | preparing promotion examples |

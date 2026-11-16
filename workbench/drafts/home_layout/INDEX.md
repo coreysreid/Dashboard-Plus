@@ -7,3 +7,5 @@
 | sheets.toml | Printable Our home sheet | reviewing what prints |
 | migrations/ | Generated first schema | checking promotion readiness |
 | NOTES.md | Design choice, migration plan and core needs | planning integration |
+# workbench/drafts/home_layout/  (summary: example rows awaiting the draft module)
+| example.toml | Fictional rows for the Smith, Garcia and Taylor households | preparing promotion examples |

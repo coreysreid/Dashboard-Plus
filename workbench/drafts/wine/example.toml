@@ -1,0 +1,41 @@
+# Optional, fictional collection entries; these households do not need Wine
+# switched on in their ordinary example setup.
+
+[[smith.wine.wines]]
+name = "Evening Red"
+producer = "Example Vineyard"
+vintage = 2023
+region = "Fictional Valley"
+grape = "Shiraz"
+
+[[smith.wine.bottles]]
+wine = "Evening Red"
+quantity = 2
+place = "Pantry"
+bought_on = "today-30"
+
+[[garcia.wine.wines]]
+name = "Garden White"
+producer = "Example Vineyard"
+vintage = 2024
+region = "Fictional Valley"
+grape = "Chardonnay"
+
+[[garcia.wine.bottles]]
+wine = "Garden White"
+quantity = 1
+place = "Kitchen cabinets"
+bought_on = "today-20"
+
+[[taylor.wine.wines]]
+name = "Weekend Rosé"
+producer = "Example Vineyard"
+vintage = 2024
+region = "Fictional Valley"
+grape = "Rosé blend"
+
+[[taylor.wine.bottles]]
+wine = "Weekend Rosé"
+quantity = 1
+place = "Kitchen cupboard"
+bought_on = "today-8"

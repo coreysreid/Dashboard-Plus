@@ -26,6 +26,8 @@ the "Requests" table of docs/WORKSTREAMS.md.
 
 | UX check after catalogue merge | ready for a pull request: `lane-b/ux-check-2026-11-16` | — | J1–J5 in three temporary examples; drinking-water count, Stock in picker and date wording, worst first. |
 
+| Example data for drafts | draft PR #31; awaiting draft merges | PR #31 | Nine `example.toml` files with Smith, Garcia and Taylor rows. The examples need to be reviewed alongside the draft modules before promotion. |
+
 ## Messages to Lane A
 
 - Please review the draft modules and their NOTES.md files before promoting them.

@@ -1,0 +1,59 @@
+# Illustrative item and lot rows for the three fictional households.
+# Relative dates match the style of examples/households/*.toml.
+
+[[smith.stock_lots.items]]
+name = "Kidney beans"
+category = "pantry"
+unit = "tins"
+minimum = 6
+catalogue_key = "kidney_beans"
+
+[[smith.stock_lots.lots]]
+item = "Kidney beans"
+quantity = 3
+use_by = "today+30"
+place = "Kitchen › Pantry › Shelf 3"
+
+[[smith.stock_lots.lots]]
+item = "Kidney beans"
+quantity = 10
+use_by = "today+210"
+place = "Garage › Grey shelves"
+
+[[garcia.stock_lots.items]]
+name = "Dry cat food"
+category = "pet"
+unit = "bags"
+minimum = 1
+catalogue_key = "dry_cat_food"
+
+[[garcia.stock_lots.lots]]
+item = "Dry cat food"
+quantity = 1
+use_by = "today+60"
+place = "Apartment › Entry cupboard"
+
+[[garcia.stock_lots.lots]]
+item = "Dry cat food"
+quantity = 1
+use_by = "today+180"
+place = "Apartment › Entry cupboard"
+
+[[taylor.stock_lots.items]]
+name = "Tinned soup"
+category = "pantry"
+unit = "tins"
+minimum = 4
+catalogue_key = "tinned_soup"
+
+[[taylor.stock_lots.lots]]
+item = "Tinned soup"
+quantity = 1
+use_by = "today+20"
+place = "Kitchen › Cupboard"
+
+[[taylor.stock_lots.lots]]
+item = "Tinned soup"
+quantity = 2
+use_by = "today+180"
+place = "Kitchen › Cupboard"
