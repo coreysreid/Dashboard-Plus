@@ -99,6 +99,9 @@ def _render_form(info, store, values, errors, from_form, record=None, status=200
             history.append({"at": entry["at"].replace("T", " ")[:16], "who": display.actor_text(entry["actor"]),
                             "action": display.ACTION_TEXT.get(entry["action"], entry["action"]), "changes": changes})
     record_name = display.display_name(info, record) if record else None
+    if record and info.table.parent:
+        chain = store.ancestors(info, record["id"])
+        record_name = display.path_name(info, {r["id"]: r for r in chain}, chain[-1]) if chain else record_name
     related = []
     if record and not record.get("deleted_at"):
         for other, column in store._dependents(info):

@@ -17,6 +17,7 @@ sessions read this page first. Newest at the top of each section.
 
 | Date | Feedback | What changed | Pull request |
 |---|---|---|---|
+| 2026-11-16 | Location as Kitchen, sub location Pantry, sub location Shelf 3. | A place can be inside another; everywhere shows Kitchen › Pantry › Shelf 3; moving a cupboard moves its shelves; a place can't go inside itself (decision 0049). Use-by lots and dates shown your way are next. | Nested places |
 | 2026-11-16 | Pick "Kidney beans" from a list while typing, and type a new one only if missing. | Typing a stock item's name offers 800 common goods (and your own items first); picking fills in its kind, unit and whether it's drinking water. Stock in and out gets a find box and "add a new one". Places (Kitchen › Pantry › Shelf 3) and use-by lots are next. | Pick from a list while typing |
 | 2026-11-16 | (Lane B UX check) Water kept for flushing counted towards days of drinking water. | Water items have "Safe to drink" (shown only for water); only drinking water counts, and the home card says what wasn't counted. Existing water stays counted. | Drinking water only |
 | 2026-11-16 | "Pets is still lacking a lot": only People and Stock were switched on. | Pets is now a shipped module: setup asks each pet's name and kind; vet, microchip, vaccinations, treatments and medicine with due dates, weigh-ins, vet visits, a pet details sheet (decision 0047). | Pets module |

@@ -27,7 +27,7 @@ SYSTEM_COLUMNS = ("id", "created_at", "updated_at", "review_status", "source", "
 
 MODULE_KEYS = ("name", "title", "version", "description", "core_api", "kind", "requires", "outbound_hosts")
 MODULE_REQUIRED = ("name", "title", "version", "description", "core_api", "kind")
-TABLE_KEYS = ("title", "description", "columns", "watch", "adjusts")
+TABLE_KEYS = ("title", "description", "columns", "watch", "adjusts", "parent")
 ADJUST_KEYS = ("link", "quantity", "amount", "direction", "adds")
 WATCH_KEYS = ("running_low", "expiring", "supply", "gaps")
 GAP_KEYS = ("missing", "none", "where", "message")
@@ -75,6 +75,7 @@ class Table:
     columns: dict[str, Column]
     watch: dict = field(default_factory=dict)  # checked `watch` section (DESIGN.md 5.1)
     adjusts: dict = field(default_factory=dict)  # checked `adjusts` section (DESIGN.md 5.3)
+    parent: str | None = None  # a link to this same table that nests records (DESIGN.md 5.6)
 
 
 @dataclass
@@ -401,6 +402,15 @@ def _check_tables(module: str, data: dict, requires: list[str], problems: list[s
         watch = _check_watch(file, tname, raw.get("watch", {}), columns, problems)
         tables[tname] = Table(tname, str(raw.get("title", tname)), raw.get("description"), columns, watch,
                               raw.get("adjusts", {}))
+    for tname, raw in raw_tables.items():
+        parent = raw.get("parent") if isinstance(raw, dict) else None
+        if parent is not None and tname in tables:
+            column = tables[tname].columns.get(parent)
+            if column is None or column.type != "link" or column.to != tname:
+                problems.append(f"In {file}, table '{tname}': 'parent' must name a link column of this table that "
+                                f"points at '{tname}' itself, like parent = \"inside\".")
+            else:
+                tables[tname].parent = parent
     for table in tables.values():
         if table.adjusts:
             table.adjusts = _check_adjusts(file, table, tables, problems)

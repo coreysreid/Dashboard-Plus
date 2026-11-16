@@ -297,6 +297,31 @@ class Records:
                           list(assignments.values()) + [target_id])
         self._audit(actor, "update", target, target_id, {rule["quantity"]: before}, {rule["quantity"]: after})
 
+    MAX_DEPTH = 8  # how deep nested records (Kitchen › Pantry › Shelf 3 › Box) may go
+
+    def ancestors(self, info: TableInfo, record_id: int | None) -> list[dict]:
+        """The chain of records `record_id` sits inside, outermost first (for a table with `parent`)."""
+        chain, seen = [], set()
+        while record_id is not None and record_id not in seen and len(chain) <= self.MAX_DEPTH + 1:
+            seen.add(record_id)
+            row = self.conn.execute(f"SELECT * FROM {info.name} WHERE id = ?", (record_id,)).fetchone()
+            if row is None:
+                break
+            chain.append(dict(row))
+            record_id = row[info.table.parent]
+        return list(reversed(chain))
+
+    def _check_nesting(self, info: TableInfo, record_id: int | None, cleaned: dict) -> None:
+        """Refuse putting a record inside itself, or nesting deeper than MAX_DEPTH."""
+        parent = info.table.parent
+        if not parent or cleaned.get(parent) in (None, ""):
+            return
+        chain = self.ancestors(info, int(cleaned[parent]))
+        if record_id is not None and any(row["id"] == record_id for row in chain):
+            raise ValidationError({parent: "can't be this place itself, or a place inside it."})
+        if len(chain) >= self.MAX_DEPTH:
+            raise ValidationError({parent: f"is too deep; places can go {self.MAX_DEPTH} levels deep."})
+
     def create(self, name: str, values: dict, actor: str = "person", review_status: str = "confirmed",
                batch_id: int | None = None) -> int:
         """Save a new record and return its id."""
@@ -304,6 +329,7 @@ class Records:
         info = self.info(name)
         with db.transaction(self.conn):
             cleaned = self.clean(info, values, creating=True)
+            self._check_nesting(info, None, cleaned)
             stored = {k: v for k, v in cleaned.items() if info.table.columns[k].type != "links"}
             now = self.clock()
             fields = ["created_at", "updated_at", "source", "review_status", "batch_id"] + list(stored)
@@ -323,6 +349,7 @@ class Records:
         with db.transaction(self.conn):
             current = self._row(info, record_id)
             cleaned = self.clean(info, values, creating=False)
+            self._check_nesting(info, record_id, cleaned)
             changed = {k: v for k, v in cleaned.items() if current.get(k) != v}
             if not changed:
                 return {}

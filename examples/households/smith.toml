@@ -248,25 +248,54 @@ cost = 98.50
 # ---- Household stock ----------------------------------------------------------
 
 [[stock.places]]
+name = "Kitchen"
+
+[[stock.places]]
+name = "Laundry"
+
+[[stock.places]]
+name = "Garage"
+
+[[stock.places]]
+name = "Bathroom"
+
+[[stock.places]]
+name = "Car"
+
+[[stock.places]]
+name = "Backyard"
+
+[[stock.places]]
 name = "Pantry"
+inside = "Kitchen"
 notes = "Kitchen, left of the fridge."
 
 [[stock.places]]
 name = "Laundry cupboard"
+inside = "Laundry"
 
 [[stock.places]]
 name = "Garage shelves"
+inside = "Garage"
 notes = "The grey steel shelves by the roller door."
 
 [[stock.places]]
 name = "Bathroom cabinet"
+inside = "Bathroom"
 
 [[stock.places]]
 name = "Car boot"
+inside = "Car"
 notes = "The family car."
 
 [[stock.places]]
 name = "Garden shed"
+inside = "Backyard"
+
+[[stock.places]]
+name = "Shelf 3"
+inside = "Pantry"
+notes = "Top shelf is 1."
 
 # Amounts are what is on hand today, after the stock in and out below.
 [[stock.items]]
@@ -312,6 +341,15 @@ unit = "tins"
 minimum = 4
 place = "Pantry"
 expires = "today+500"
+
+[[stock.items]]
+name = "Kidney beans"
+category = "pantry"
+quantity = 5
+unit = "tins"
+minimum = 4
+place = "Shelf 3"
+expires = "today+190"
 
 [[stock.items]]
 name = "Tinned tuna"

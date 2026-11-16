@@ -94,17 +94,30 @@ detail = "Coeliac disease: strictly gluten free."
 # ---- Household stock ----------------------------------------------------------
 
 [[stock.places]]
+name = "Kitchen"
+
+[[stock.places]]
+name = "Hall"
+
+[[stock.places]]
+name = "Outside"
+
+[[stock.places]]
 name = "Kitchen cupboard"
+inside = "Kitchen"
 
 [[stock.places]]
 name = "Under the sink"
+inside = "Kitchen"
 
 [[stock.places]]
 name = "Hall cupboard"
+inside = "Hall"
 notes = "Next to the boiler."
 
 [[stock.places]]
 name = "Bike shed"
+inside = "Outside"
 
 # Amounts are what is on hand today, after the stock in and out below.
 [[stock.items]]
