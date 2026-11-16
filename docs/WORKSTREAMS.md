@@ -93,15 +93,25 @@ Draft modules may link to these with `requires = ["people"]` and
 
 | Item | Lane | State |
 |---|---|---|
-| Core M1 steps 1 to 6, printable sheets | A | merged |
-| People and Household stock modules, stock in and out | A | merged |
-| Gaps check, README for households | A | merged |
-| M1 release checks, example households and screenshots | A | merged; three checks need Corey on Windows |
-| Water basis on the home page, second backup status | A | in review |
-| Lane B pull requests #11, #12, #13, #15, #16, #18 | B | merged together by Lane A |
-| Module guide and garden example | B | merged (pull request #10) |
-| SECURITY, CONTRIBUTING, issue templates | B | branch `lane-b/project-files`, needs a pull request |
-| Batch 2 (below) | B | ready to start |
+| M1: core, People, Household stock, gaps, README, release checks, examples | A | merged; three hands-on checks are with Corey |
+| Water basis on the home page, second backup status | A | merged |
+| Setup country and state drop-downs, "Save and exit" | A | in review |
+| Pets module (moved forward from M5, from Lane B's draft) | A | next |
+| Batch 2: M1 check, wording, Pets/Medical/Wine drafts, AU/US research, SWOT | B | merged |
+| Batch 3 (below) | B | ready to start |
+
+## How the lanes work together: draft, polish, test
+
+1. **Lane B drafts** the heavy material in `workbench/`: modules, prompts,
+   country content, example data, test scripts.
+2. **Lane A polishes and integrates**: reviews each draft, fixes what the core
+   needs, promotes it into `modules/` or `docs/`, adds tests and screenshots.
+3. **Corey tests the result** as a household would (UX and UI), and his notes go
+   into [`BACKLOG.md`](BACKLOG.md). Lane B also runs the journeys after each
+   Lane A merge and reports what it finds.
+
+Then round again. Lane B should always have a brief with more drafting than one
+session can finish; Lane A keeps it stocked.
 
 ## Requests between lanes
 
@@ -111,9 +121,56 @@ Draft modules may link to these with `requires = ["people"]` and
 | A | B | Start batch 2 below, all inside `workbench/`. | done: pull requests #12, #13, #15 |
 | B | A | M1 check findings (`workbench/reports/2026-11-09-m1-check.md`): J1 first step, J5 home summary. | fixed in the M1 release checks pull request |
 | B | A | Product review (`workbench/reports/2026-11-13-product-swot.md`): show the water basis; show whether the second backup worked; finish the hands-on M1 checks. | first two done (decision 0046); hands-on checks are with Corey |
+| A | B | Start batch 3 below: drafting heavy lifting for Lane A to polish and integrate. | open |
 | B | A | Module wording (`workbench/reports/2026-11-09-module-wording.md`). | adopted, lightly changed: sheet titles keep "Emergency sheet" ("fridge copy" and "with private medical details"), supplies sheet is "Emergency supplies"; the rest as suggested |
 
-## Brief for Lane B, batch 2
+## Brief for Lane B, batch 3
+
+> You are Lane B, the checker and drafter. Read `AGENTS.md`, this page and
+> [`BACKLOG.md`](BACKLOG.md) first. Edit **only `workbench/`**. Follow the
+> Definition of done; one pull request per numbered task, each explained in
+> plain words for Corey. Use made-up data only (the style of
+> `examples/households/`: fiction-reserved phone numbers, `example.com` emails).
+> Lane A is promoting **Pets** now, so leave Pets alone.
+>
+> 1. **Medical, ready to promote.** Bring `workbench/drafts/medical/` to the
+>    standard of `modules/people`: labels and help text written for a
+>    household, list and form order, an `empty` first step, `watch` rules
+>    (kit check due, training renewal), `gaps` that ask sensible questions
+>    ("Is there a first aid kit?"), and a printable sheet if one helps. Answer
+>    every open question in its `NOTES.md` with a recommendation.
+> 2. **Readiness prompts, drafted as content.** In
+>    `workbench/drafts/readiness/prompts.toml`, write 40 to 60 "Have you
+>    thought about…?" prompts (DESIGN 10.5) in this shape: `question`, `why`
+>    (one plain sentence), `fits` (which households: `home_type`, `storeys`,
+>    `hazards`, `pets`, `mobility_needs`, `country`), `answered_by` (a record
+>    that already answers it, if any, such as a People role), `review_every`
+>    (months) and `source` (an official link with the date checked). Group them
+>    by situation (fire, flood, storm, heat, power cut, medical, leaving home
+>    in a hurry). Ask, never assert; never say a household is safe.
+> 3. **Country packs, drafted as content.** From your research, write
+>    `workbench/drafts/country-packs/AU.toml` and `US.toml`: emergency
+>    numbers, the main emergency bodies, household water guidance (amount per
+>    person per day), and the hazards each body lists, every value with its
+>    source and date checked. Add `UK.toml` and `NZ.toml` the same way. Leave
+>    out anything you cannot cite.
+> 4. **Two more household modules, drafted.** `documents` (where important
+>    papers are kept: passports, insurance, wills, warranties, with renewal
+>    and expiry dates through `watch`) and `home_care` (things to check in the
+>    home: smoke alarms, gutters, the water heater, with when each was last
+>    done; note in `NOTES.md` what core support repeating tasks would need).
+>    Polish `wine` the same way as Medical.
+> 5. **Example data for every draft.** For each draft, add `example.toml`
+>    rows for the three example households in the same format as
+>    `examples/households/*.toml` (for example the Smiths' first aid kits and
+>    the Garcias' papers), so Lane A can extend the screenshots when promoting.
+> 6. **UX check after each Lane A merge.** Run the current `main` with
+>    `python tools/load_example.py <household> --data <temporary folder>` and
+>    walk journeys J1 to J5. Report anything confusing, worst first, in
+>    `workbench/reports/<date>-ux-check.md`, with exact suggested wording.
+
+## Brief for Lane B, batch 2 (done)
+
 
 > You are the second agent on Dashboard Plus (repository
 > coreysreid/Dashboard-Plus). Read `AGENTS.md` and `docs/WORKSTREAMS.md` first.
