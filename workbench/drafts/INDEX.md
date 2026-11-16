@@ -18,5 +18,6 @@ Add a row here for each draft folder you create.
 | country-packs/ | Fictional pack selections awaiting the content draft. | preparing example households |
 | documents/ | Fictional document rows awaiting the draft module. | preparing example households |
 | home_care/ | Fictional care jobs awaiting the draft module. | preparing example households |
+| catalogue/ | 800 common goods after round three, with water-count rules. | reviewing stocktake choices |
 | medical/ | Files-only medical module draft. | reviewing or promoting it |
 | wine/ | Files-only wine module draft. | reviewing or promoting it |

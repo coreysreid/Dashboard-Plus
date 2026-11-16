@@ -27,6 +27,8 @@ the "Requests" table of docs/WORKSTREAMS.md.
 | UX check after catalogue merge | ready for a pull request: `lane-b/ux-check-2026-11-16` | — | J1–J5 in three temporary examples; drinking-water count, Stock in picker and date wording, worst first. |
 
 | Example data for drafts | draft PR #31; awaiting draft merges | PR #31 | Nine `example.toml` files with Smith, Garcia and Taylor rows. The examples need to be reviewed alongside the draft modules before promotion. |
+| Catalogue round 2 | ready for a pull request: `lane-b/catalogue-round-2` | — | 400 goods total after adding 250 terms. Example-household gaps and regional aliases covered; package sizes and most shelf lives await evidence. |
+| Catalogue round 3 | draft PR #33, pending round 2 | PR #33 | 800 goods total after adding 400; search must remain selective. Package sizes and most shelf lives still need item-specific evidence. |
 
 ## Messages to Lane A
 
