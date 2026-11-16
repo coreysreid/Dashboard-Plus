@@ -15,6 +15,7 @@ Add a row here for each draft folder you create.
 | documents/ | Where important papers are, with renewal dates | reviewing document records |
 | home_care/ | Household checks and jobs with due-date history | reviewing home checks |
 | wine/ | A compact wine collection module | reviewing or promoting it |
+| seasonal_checklists/ | Source-linked bushfire, cyclone, winter, heat and hurricane questions | building M3 seasonal reviews |
 | collections/ | Hobby collection items, places, costs and household value estimates | reviewing or promoting it |
 | vehicles/ | Vehicle reminders, roadside contacts and Stock car kits | reviewing or promoting it |
 | guide/ | A plain first-use guide with screenshot links | helping new households |

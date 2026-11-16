@@ -28,6 +28,7 @@ the "Requests" table of docs/WORKSTREAMS.md.
 | Batch 4 item 4: nested places acceptance | merged by Lane A | #42 | Ten checks and a row-by-row mapping for all three example households. |
 | Batch 4 item 5: lots and dates acceptance | merged by Lane A | #44 | Thirteen checks for lots, date formats, warnings and current-item migration. |
 | Batch 4 item 6: readiness record matching | merged by Lane A | #45 | All 49 mapped to an exact field or none, with conservative confirmation rules. |
+| Batch 6 item 19: seasonal checklists | ready | PR pending | Five source-linked sets, 25 questions tied to Stock and Home layout; eight checks. |
 | Batch 4 item 7: Collections and Vehicles | merged by Lane A | #47 | Two loadable drafts with three-household example rows and core needs. |
 | Batch 4 item 8: household getting started | merged by Lane A | #48 | Download, first ten minutes, stocktake, emergency sheet, close and update, with screenshot paths. |
 | Batch 5 item 9: UX after nested Places | merged by Lane A | #49 | Three example households passed route checks; long place lists can lose a parent path. |
