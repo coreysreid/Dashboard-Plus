@@ -17,7 +17,7 @@ the "Requests" table of docs/WORKSTREAMS.md.
 
 | Catalogue round 2 | ready for a pull request: `lane-b/catalogue-round-2` | — | 400 goods total after adding 250 terms. Example-household gaps and regional aliases covered; package sizes and most shelf lives await evidence. |
 
-| Catalogue round 3 | draft PR pending round 2: `lane-b/catalogue-round-3` | — | 800 goods total after adding 400; search must remain selective. Package sizes and most shelf lives still need item-specific evidence. |
+| Catalogue round 3 | draft PR #33, pending round 2 | PR #33 | 800 goods total after adding 400; search must remain selective. Package sizes and most shelf lives still need item-specific evidence. |
 
 ## Messages to Lane A
 
