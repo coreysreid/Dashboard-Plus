@@ -26,6 +26,7 @@ the "Requests" table of docs/WORKSTREAMS.md.
 | Batch 4 item 2: catalogue round 4 | ready for a pull request: `lane-b/batch4-catalogue-r4` | pending | 805 goods; missed searches, manufacturer pack examples and two narrow shelf lives. See the catalogue NOTES.md. |
 | Batch 4 item 3: places list | ready for a pull request: `lane-b/batch4-places-list` | pending | 120 suggested rooms, storage places and spots, with regional search terms. |
 | Batch 4 item 4: nested places acceptance | ready for a pull request: `lane-b/batch4-nested-acceptance` | pending | Ten checks and a row-by-row mapping for all three example households. |
+| Batch 4 item 5: lots and dates acceptance | ready for a pull request: `lane-b/batch4-lots-acceptance` | pending | Thirteen checks for lots, date formats, warnings and current-item migration. |
 
 ## Messages to Lane A
 
