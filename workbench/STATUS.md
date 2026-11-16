@@ -13,7 +13,7 @@ the "Requests" table of docs/WORKSTREAMS.md.
 | AU and US country-source research | merged as research | PR #16 | Verified official links and licences where available; source gaps remain. |
 | Product SWOT and feedback | merged; water and backup findings being fixed by Lane A | PR #18 | Water and backup visibility, M1 release gates, later expansion ideas. |
 
-| Catalogue round 1 | ready for a pull request: `lane-b/catalogue-round-1` | — | 150 goods and water-count decisions; type-ahead, local additions and accurate water totals need core support. USDA FoodKeeper download was blocked, so most shelf-life and all package-size suggestions remain open for later rounds. |
+| Catalogue round 1 | merged | PR #22 | 150 goods and water-count decisions; type-ahead, local additions and accurate water totals need core support. |
 
 | Catalogue round 2 | ready for a pull request: `lane-b/catalogue-round-2` | — | 400 goods total after adding 250 terms. Example-household gaps and regional aliases covered; package sizes and most shelf lives await evidence. |
 
