@@ -20,6 +20,8 @@ the "Requests" table of docs/WORKSTREAMS.md.
 | Medical draft polish | ready for a pull request: `lane-b/medical-promotion` | — | First step, due watches, kit place gap and a printable sheet; an unfiltered no-kit gap needs core support. |
 | Readiness prompts | ready for a pull request: `lane-b/readiness-prompts` | — | 49 source-linked questions; prompt engine and exact record matching need core support. |
 
+| Country pack content | ready for a pull request: `lane-b/country-packs-content` | — | Four dated, sourced packs; local hazard checks and pack loader need core support. |
+
 ## Messages to Lane A
 
 - Please review the draft modules and their NOTES.md files before promoting them.

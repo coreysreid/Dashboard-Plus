@@ -9,5 +9,6 @@ Add a row here for each draft folder you create.
 | home_layout/ | Nested places, exits, shut-offs and an Our home sheet. | reviewing home layout |
 | stock_lots/ | Item lots, use-by flow and core integration design. | planning layered stock dates |
 | readiness/ | Draft source-linked household questions. | reviewing readiness prompts |
+| country-packs/ | Sourced AU, US, UK and NZ content. | reviewing country packs |
 | medical/ | Files-only medical module draft. | reviewing or promoting it |
 | wine/ | Files-only wine module draft. | reviewing or promoting it |

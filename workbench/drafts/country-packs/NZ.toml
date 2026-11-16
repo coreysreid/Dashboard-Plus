@@ -1,0 +1,45 @@
+country = "NZ"
+checked = "2026-11-16"
+review_by = "2027-02-16"
+local_prompt = "Check your local emergency authority for advice that applies to your address and current conditions."
+reuse = "Get Ready Crown content: CC BY 4.0 unless indicated otherwise; logos and design excluded. NZ Police and NEMA site reuse terms not confirmed; links and paraphrases only."
+
+reuse_source = { url = "https://getready.govt.nz/about-this-site/", checked = "2026-11-16" }
+local_prompt_source = { url = "https://getready.govt.nz/prepared/household/make-a-plan", checked = "2026-11-16" }
+
+[[emergency_number]]
+number = "111"
+service = "Police, fire and ambulance"
+source = { url = "https://www.police.govt.nz/call-111", checked = "2026-11-16" }
+
+[[body]]
+name = "National Emergency Management Agency"
+scope = "national"
+source = { url = "https://www.civildefence.govt.nz/about/what-we-do", checked = "2026-11-16" }
+
+[water]
+amount_per_person_per_day = 3
+unit = "litres"
+scope = "Get Ready guidance for days without water"
+source = { url = "https://getready.govt.nz/prepared/household/impacts/no-water", checked = "2026-11-16" }
+
+[[hazard]]
+name = "flood"
+scope = "Get Ready emergency topics"
+source = { url = "https://getready.govt.nz/emergency/", checked = "2026-11-16" }
+
+[[hazard]]
+name = "storm"
+scope = "Get Ready emergency topics"
+source = { url = "https://getready.govt.nz/emergency/", checked = "2026-11-16" }
+
+[[hazard]]
+name = "earthquake"
+scope = "Get Ready emergency topics"
+source = { url = "https://getready.govt.nz/emergency/", checked = "2026-11-16" }
+
+[[hazard]]
+name = "tsunami"
+scope = "Get Ready emergency topics"
+source = { url = "https://getready.govt.nz/emergency/", checked = "2026-11-16" }
+
