@@ -22,6 +22,7 @@ the "Requests" table of docs/WORKSTREAMS.md.
 | UX check after catalogue merge | merged by Lane A | PR #30 | Drinking-water count, Stock in picker and date wording, worst first. |
 | Example data for drafts | merged by Lane A | PR #31 | Nine example.toml files with Smith, Garcia and Taylor rows. |
 | Catalogue rounds 2 and 3 | merged by Lane A | PRs #32, #33 | 800 goods; package sizes and most shelf lives still need evidence. |
+| Batch 4 item 5: lots and dates acceptance | ready for a pull request: `lane-b/batch4-lots-acceptance` | pending | Thirteen checks for lots, date formats, warnings and current-item migration. |
 
 ## Messages to Lane A
 
