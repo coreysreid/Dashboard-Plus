@@ -5,5 +5,6 @@ Add a row here for each draft folder you create.
 
 | Entry | What it is | Open it when |
 |---|---|---|
+| stock_lots/ | Item lots, use-by flow and core integration design. | planning layered stock dates |
 | medical/ | Files-only medical module draft. | reviewing or promoting it |
 | wine/ | Files-only wine module draft. | reviewing or promoting it |

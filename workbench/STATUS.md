@@ -13,6 +13,8 @@ the "Requests" table of docs/WORKSTREAMS.md.
 | AU and US country-source research | merged as research | PR #16 | Verified official links and licences where available; source gaps remain. |
 | Product SWOT and feedback | merged; water and backup findings being fixed by Lane A | PR #18 | Water and backup visibility, M1 release gates, later expansion ideas. |
 
+| Stock lots design | ready for a pull request: `lane-b/stock-lots-design` | — | Screen-by-screen lot flows and exact core needs; includes a long-term phone or webcam scanning idea. |
+
 ## Messages to Lane A
 
 - Please review the draft modules and their NOTES.md files before promoting them.
