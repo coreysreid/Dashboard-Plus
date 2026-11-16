@@ -54,7 +54,7 @@ class StockModuleTests(TempDirTestCase):
         self.assertEqual(supply.daily_need, 10)  # 3 people x 3 litres + 1 pet x 1 litre
         self.assertAlmostEqual(supply.days, 3)
         self.assertEqual(supply.shortfall, 0)
-        self.assertEqual(supply.label, "water")
+        self.assertEqual(supply.label, "drinking water")
 
     def test_a_place_cannot_be_deleted_while_things_are_kept_there(self):
         garage = self.records.create("stock__places", {"name": "Garage shelf"})
@@ -111,14 +111,40 @@ class StockModuleTests(TempDirTestCase):
         home = client.get("/", base_url=BASE).get_data(as_text=True)
         self.assertIn("Add a few things from the pantry.", home)
         self.assertIn('href="/t/stock__items/new"', home)
-        self.assertIn("No water recorded yet", home)
+        self.assertIn("No drinking water recorded yet", home)
         self.item(name="Water casks", category="water", quantity=10)
         settings.put(self.conn, "household.pets", 1)
         self.records.create("people__people", {"name": "Person A", "lives_here": True})
         home = client.get("/", base_url=BASE).get_data(as_text=True)
         self.assertIn("Based on 3 litres per person a day, 1 per pet. Check your local authority", home)
         self.assertNotIn("Add a few things from the pantry.", home)
-        self.assertNotIn("No water recorded yet", home)
+        self.assertNotIn("No drinking water recorded yet", home)
+
+    def test_only_drinking_water_counts_towards_days_of_water(self):
+        self.records.create("people__people", {"name": "Person A", "lives_here": True})
+        self.item(name="Bottled water", category="water", quantity=12)
+        self.item(name="Flushing water", category="water", quantity=20, drinking=False)
+        supply = watch.supplies(self.conn, self.registry)[0]
+        self.assertEqual((supply.total, supply.not_counted, round(supply.days)), (12, 20, 4))
+        self.assertIn("Not counted: 20 litres not marked as drinking water", supply.notes[0])
+        client = self._client()
+        home = client.get("/", base_url=BASE).get_data(as_text=True)
+        self.assertIn("days of drinking water", home)
+        self.assertIn("Not counted: 20 litres not marked as drinking water.", home)
+        form = client.get("/t/stock__items/new", base_url=BASE).get_data(as_text=True)
+        self.assertIn('data-show-when="category" data-show-value="water"', form)
+
+    def test_water_recorded_before_the_change_stays_counted(self):
+        sql = (ROOT / "modules" / "stock" / "migrations" / "0003_drinking_water.sql").read_text(encoding="utf-8")
+        self.assertIn("UPDATE stock__items SET drinking = 1 WHERE category = 'water'", sql)
+
+    def _client(self):
+        settings.put(self.conn, "setup.done", True)
+        app = create_app("t", lambda: None, self.report, data_dir=self.data, session_key="k")
+        app.config["PORT"] = PORT
+        client = app.test_client()
+        client.get("/?key=k", base_url=BASE)
+        return client
 
     def test_migration_matches_its_description(self):
         from dashboard.core.schema import next_migration_sql

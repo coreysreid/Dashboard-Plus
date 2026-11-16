@@ -117,6 +117,15 @@ place = "Hall cupboard"
 expires = "today+240"
 
 [[stock.items]]
+name = "Distilled water (for the iron)"
+category = "water"
+drinking = false
+quantity = 1
+unit = "litres"
+place = "Under the sink"
+notes = "For the steam iron. Not for drinking."
+
+[[stock.items]]
 name = "Gluten-free pasta"
 category = "pantry"
 quantity = 2
