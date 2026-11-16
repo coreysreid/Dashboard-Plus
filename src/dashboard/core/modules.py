@@ -258,12 +258,19 @@ def _check_watch(file: str, table: str, raw, columns: dict[str, Column], problem
         if not isinstance(expiring, dict):
             problems.append(f"{where}, expiring: write it like {{ date = \"expires\", warn_days = 30 }}.")
         else:
-            problems.extend(_unknown_keys(f"{where}, expiring", expiring, ("date", "warn_days")))
+            problems.extend(_unknown_keys(f"{where}, expiring", expiring, ("date", "warn_days", "wording", "what")))
             days = expiring.get("warn_days", 30)
+            wording = expiring.get("wording", "expires")
+            what = expiring.get("what", "")
             if not isinstance(days, int) or isinstance(days, bool) or days < 1:
                 problems.append(f"{where}, expiring: warn_days must be a whole number of days, 1 or more.")
+            elif wording not in ("expires", "due"):
+                problems.append(f"{where}, expiring: wording must be \"expires\" (use-by dates) or \"due\" "
+                                f"(things to do by a date).")
+            elif not isinstance(what, str):
+                problems.append(f"{where}, expiring: 'what' must be a few words, like \"vaccinations\".")
             elif column("expiring", "date", expiring.get("date"), ("date",)):
-                watch["expiring"] = {"date": expiring["date"], "warn_days": days}
+                watch["expiring"] = {"date": expiring["date"], "warn_days": days, "wording": wording, "what": what}
 
     supply = raw.get("supply")
     if supply is not None:
@@ -475,7 +482,12 @@ def _check_gaps(file: str, table: Table, tables: dict[str, Table], raw, problems
                 gaps.append({"none": dict(gap["none"]), "message": message})
             continue
         missing = gap["missing"]
-        if not isinstance(missing, str) or _linked_column(missing, table, tables) is None:
+        link = table.columns.get(missing.partition(".")[0]) if isinstance(missing, str) and "." in missing else None
+        if link is not None and link.type == "link" and "." in (link.to or ""):
+            # A link into a module this one requires (like vet.phone into People): its column is
+            # checked once every module has loaded (see dependency_order).
+            pass
+        elif not isinstance(missing, str) or _linked_column(missing, table, tables) is None:
             problems.append(f"{g_where}: 'missing' must name a column of this table, or a link column and a column "
                             f"of the table it points at, like \"person.phone\".{_suggest(missing, list(table.columns))}")
             continue
@@ -646,6 +658,24 @@ def discover(modules_dir: Path) -> tuple[list[Module], dict[str, list[str]]]:
     return dependency_order(modules, failures), failures
 
 
+def _cross_module_gap_problems(module: Module, by_name: dict[str, Module]) -> list[str]:
+    """Check gaps like "vet.phone" whose link points into another module, once that module is loaded."""
+    problems = []
+    for table in module.tables.values():
+        for gap in table.watch.get("gaps", []):
+            link_name, _, field_name = gap.get("missing", "").partition(".")
+            link = table.columns.get(link_name)
+            if not field_name or link is None or "." not in (link.to or ""):
+                continue
+            other, _, other_table = link.to.partition(".")
+            target = by_name[other].tables.get(other_table) if other in by_name else None
+            if target is None or field_name not in target.columns:
+                choices = list(target.columns) if target else []
+                problems.append(f"In tables.toml, table '{table.name}', watch.gaps: '{gap['missing']}' names a column "
+                                f"'{field_name}' that '{link.to}' does not have.{_suggest(field_name, choices)}")
+    return problems
+
+
 def dependency_order(modules: list[Module], failures: dict[str, list[str]]) -> list[Module]:
     """Order modules so each comes after the ones it requires; drop any whose requirements fail."""
     by_name = {m.name: m for m in modules}
@@ -672,6 +702,11 @@ def dependency_order(modules: list[Module], failures: dict[str, list[str]]) -> l
                 failures.setdefault(module.name, []).append(f"It requires the '{name}' module, which could not be loaded.")
                 state[module.name] = "failed"
                 return False
+        problems = _cross_module_gap_problems(module, by_name)
+        if problems:
+            failures.setdefault(module.name, []).extend(problems)
+            state[module.name] = "failed"
+            return False
         state[module.name] = "done"
         ordered.append(module)
         return True

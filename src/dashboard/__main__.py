@@ -45,7 +45,7 @@ def main(argv: list[str] | None = None) -> int:
 
         if args.close:
             if server.close_running(data_dir):
-                print("Dashboard closed safely. You can unplug the drive now.")
+                print("Saved and closed. You can unplug the drive now.")
             else:
                 print("Dashboard is not running, so there is nothing to close.")
             return 0

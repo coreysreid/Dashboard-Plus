@@ -38,7 +38,7 @@ README_TXT = """Dashboard Plus
 Look after what your household has.
 
 To start:   double-click "Open Dashboard".
-To stop:    double-click "Close Dashboard safely" (or use the button on the page)
+To stop:    click "Save and exit" on the page (or double-click "Save and exit Dashboard")
             before you unplug a USB drive.
 
 Your records are kept in the "data" folder next to these files. Nothing is sent
@@ -182,7 +182,7 @@ def build(out: Path, python_zip: Path | None = None, skip_libraries: bool = Fals
     shutil.copy2(ROOT / "LICENSE", folder / "LICENSE.txt")
     write_text_crlf(folder / "READ ME FIRST.txt", README_TXT)
     write_text_crlf(folder / "Open Dashboard.bat", OPEN_BAT)
-    write_text_crlf(folder / "Close Dashboard safely.bat", CLOSE_BAT)
+    write_text_crlf(folder / "Save and exit Dashboard.bat", CLOSE_BAT)
 
     zip_path = out / f"Dashboard-Plus-{program_version()}-windows.zip"
     if zip_path.exists():

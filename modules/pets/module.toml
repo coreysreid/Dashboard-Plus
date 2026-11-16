@@ -1,7 +1,7 @@
 name = "pets"
 title = "Pets"
 version = "1.0.0"
-description = "Pets, their food, weight, medicine and vet visits."
+description = "Your pets: their vet, weight, food, medicine and treatments, and when the next one is due."
 core_api = "1"
 kind = "declarative"
 requires = ["people"]

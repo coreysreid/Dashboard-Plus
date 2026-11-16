@@ -143,3 +143,31 @@ class SetupTests(TempDirTestCase):
         self.assertIn("The last good second copy is from", page)
         self.assertIn("The copy in your data folder is fine.", page)
         self.assertIn("second backup copy on this computer could not be made", self.get("/").get_data(as_text=True))
+
+    def test_country_and_state_are_chosen_from_lists(self):
+        self.start()
+        page = self.get("/setup").get_data(as_text=True)
+        self.assertIn('<option value="United States"', page)
+        self.assertIn('"Australia/Sydney": ["Australia", "New South Wales"]', page)  # the time-zone guess
+        self.post("/setup", {"name_1": "Person A", "country": "Australia", "region": "Queensland"})
+        self.assertEqual((self.setting("household.country"), self.setting("household.region")),
+                         ("Australia", "Queensland"))
+        page = self.get("/settings").get_data(as_text=True)
+        self.assertRegex(page, r'<option value="Queensland"\s+selected>')
+        self.assertNotIn('<option value="Texas"', page)  # only this country's states are offered
+
+    def test_a_state_from_another_country_is_refused(self):
+        self.start()
+        response = self.post("/setup", {"name_1": "Person A", "country": "Australia", "region": "Texas"})
+        self.assertEqual(response.status_code, 422)
+        self.assertIn("Choose a state or region from the list", response.get_data(as_text=True))
+        self.assertIsNone(self.setting("household.country"))
+
+    def test_somewhere_else_takes_a_typed_country_and_region(self):
+        self.start()
+        self.post("/setup", {"name_1": "Person A", "country": "other", "country_other": "Fiji",
+                             "region_other": "Central"})
+        self.assertEqual((self.setting("household.country"), self.setting("household.region")), ("Fiji", "Central"))
+        page = self.get("/settings").get_data(as_text=True)
+        self.assertRegex(page, r'<option value="other"\s+selected>Somewhere else')
+        self.assertIn('value="Fiji"', page)

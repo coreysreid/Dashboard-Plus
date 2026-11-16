@@ -16,12 +16,73 @@ HOME_TYPES = [("house", "House"), ("apartment", "Apartment or flat"), ("townhous
 HAZARDS = [("bushfire", "Bushfire or wildfire"), ("flood", "Flood"), ("storm", "Cyclone or severe storm"),
            ("earthquake", "Earthquake"), ("heat", "Extreme heat"), ("snow", "Snow or extreme cold"),
            ("power", "Long power cuts")]
-COUNTRIES = ["Australia", "Canada", "Ireland", "New Zealand", "South Africa", "United Kingdom", "United States"]
+REGIONS = {
+    "Australia": ["Australian Capital Territory", "New South Wales", "Northern Territory", "Queensland",
+                  "South Australia", "Tasmania", "Victoria", "Western Australia"],
+    "Canada": ["Alberta", "British Columbia", "Manitoba", "New Brunswick", "Newfoundland and Labrador",
+               "Northwest Territories", "Nova Scotia", "Nunavut", "Ontario", "Prince Edward Island", "Quebec",
+               "Saskatchewan", "Yukon"],
+    "Ireland": ["Connacht", "Leinster", "Munster", "Ulster"],
+    "New Zealand": ["Auckland", "Bay of Plenty", "Canterbury", "Gisborne", "Hawke's Bay", "Manawatū-Whanganui",
+                    "Marlborough", "Nelson", "Northland", "Otago", "Southland", "Taranaki", "Tasman", "Waikato",
+                    "Wellington", "West Coast"],
+    "South Africa": ["Eastern Cape", "Free State", "Gauteng", "KwaZulu-Natal", "Limpopo", "Mpumalanga",
+                     "North West", "Northern Cape", "Western Cape"],
+    "United Kingdom": ["England", "Northern Ireland", "Scotland", "Wales"],
+    "United States": ["Alabama", "Alaska", "Arizona", "Arkansas", "California", "Colorado", "Connecticut",
+                      "Delaware", "District of Columbia", "Florida", "Georgia", "Hawaii", "Idaho", "Illinois",
+                      "Indiana", "Iowa", "Kansas", "Kentucky", "Louisiana", "Maine", "Maryland", "Massachusetts",
+                      "Michigan", "Minnesota", "Mississippi", "Missouri", "Montana", "Nebraska", "Nevada",
+                      "New Hampshire", "New Jersey", "New Mexico", "New York", "North Carolina", "North Dakota",
+                      "Ohio", "Oklahoma", "Oregon", "Pennsylvania", "Rhode Island", "South Carolina",
+                      "South Dakota", "Tennessee", "Texas", "Utah", "Vermont", "Virginia", "Washington",
+                      "West Virginia", "Wisconsin", "Wyoming"],
+}
+COUNTRIES = list(REGIONS)
+# A first guess at country and state from the computer's time zone (no internet needed). Only zones that
+# pin down one state name it; the rest suggest the country alone. The household can always change it.
+TIMEZONE_GUESS = {
+    "Australia/Sydney": ["Australia", "New South Wales"], "Australia/Broken_Hill": ["Australia", "New South Wales"],
+    "Australia/Melbourne": ["Australia", "Victoria"], "Australia/Brisbane": ["Australia", "Queensland"],
+    "Australia/Lindeman": ["Australia", "Queensland"], "Australia/Adelaide": ["Australia", "South Australia"],
+    "Australia/Perth": ["Australia", "Western Australia"], "Australia/Hobart": ["Australia", "Tasmania"],
+    "Australia/Darwin": ["Australia", "Northern Territory"],
+    "Australia/Canberra": ["Australia", "Australian Capital Territory"],
+    "Pacific/Auckland": ["New Zealand", ""], "Pacific/Chatham": ["New Zealand", ""],
+    "Europe/London": ["United Kingdom", ""], "Europe/Belfast": ["United Kingdom", "Northern Ireland"],
+    "Europe/Dublin": ["Ireland", ""], "Africa/Johannesburg": ["South Africa", ""],
+    "America/Toronto": ["Canada", ""], "America/Vancouver": ["Canada", "British Columbia"],
+    "America/Edmonton": ["Canada", "Alberta"], "America/Winnipeg": ["Canada", "Manitoba"],
+    "America/Regina": ["Canada", "Saskatchewan"], "America/Halifax": ["Canada", ""],
+    "America/St_Johns": ["Canada", "Newfoundland and Labrador"], "America/Moncton": ["Canada", "New Brunswick"],
+    "America/Whitehorse": ["Canada", "Yukon"], "America/Yellowknife": ["Canada", "Northwest Territories"],
+    "America/Iqaluit": ["Canada", "Nunavut"],
+    "America/New_York": ["United States", ""], "America/Chicago": ["United States", ""],
+    "America/Denver": ["United States", ""], "America/Los_Angeles": ["United States", ""],
+    "America/Phoenix": ["United States", "Arizona"], "America/Anchorage": ["United States", "Alaska"],
+    "America/Juneau": ["United States", "Alaska"], "Pacific/Honolulu": ["United States", "Hawaii"],
+    "America/Boise": ["United States", "Idaho"], "America/Detroit": ["United States", "Michigan"],
+    "America/Indiana/Indianapolis": ["United States", "Indiana"],
+    "America/Kentucky/Louisville": ["United States", "Kentucky"],
+}
+OTHER_COUNTRY = "other"
 PEOPLE_TABLE = "people__people"
+PETS_TABLE = "pets__pets"
+PET_SLOTS = 6
 
 
 def _conn():
     return current_app.config["CONNECT"]()
+
+
+def _pets_info():
+    """The Pets table when that module is switched on and has the columns the wizard fills in."""
+    info = current_app.config["REGISTRY_FOR_REQUEST"]().get(PETS_TABLE)
+    return info if info and {"name", "species"} <= set(info.table.columns) else None
+
+
+def _pet_count(conn) -> int:
+    return conn.execute(f"SELECT COUNT(*) FROM {PETS_TABLE} WHERE deleted_at IS NULL").fetchone()[0]
 
 
 def _people_table_ready() -> bool:
@@ -82,9 +143,14 @@ def _render(mode: str, values: dict, errors: dict, status: int = 200, saved: boo
     if _people_table_ready():
         people_count = conn.execute(
             f"SELECT COUNT(*) FROM {PEOPLE_TABLE} WHERE deleted_at IS NULL AND lives_here = 1").fetchone()[0]
+    pets_info = _pets_info()
+    pet_kinds = [(c.key, c.label) for c in pets_info.table.columns["species"].choices] if pets_info else []
     return render_template("setup.html", mode=mode, values=values, errors=errors, saved=saved,
+                           pets_table=bool(pets_info), pet_count=_pet_count(conn) if pets_info else 0,
+                           pet_slots=PET_SLOTS, pet_kinds=pet_kinds,
                            modules=modules, people_table=_people_table_ready(), people_count=people_count,
                            name_slots=NAME_SLOTS, home_types=HOME_TYPES, hazards=HAZARDS, countries=COUNTRIES,
+                           regions=REGIONS, timezone_guess=TIMEZONE_GUESS,
                            data_backups=current_app.config["DATA_DIR"] / "backups",
                            extra_backups=default_extra_dir(),
                            backup=backup_report(current_app.config["DATA_DIR"])), status
@@ -97,7 +163,18 @@ def _save(form, mode: str):
     names = [form.get(f"name_{i}", "").strip() for i in range(1, NAME_SLOTS + 1)]
     names = [n for n in names if n]
     use_people_table = mode == "setup" and _people_table_ready() and not _existing_people(conn)
-    pets = _whole(form.get("pets"), 0, 50, "Number of pets", errors, "pets")
+    pets_info = _pets_info()
+    new_pets = []
+    if pets_info is not None:
+        kinds = {c.key for c in pets_info.table.columns["species"].choices}
+        if mode == "setup" and not _pet_count(conn):
+            for i in range(1, PET_SLOTS + 1):
+                name, kind = form.get(f"pet_{i}", "").strip(), form.get(f"pet_kind_{i}", "")
+                if name:
+                    new_pets.append({"name": name[:80], "species": kind if kind in kinds else "other"})
+        pets = None
+    else:
+        pets = _whole(form.get("pets"), 0, 50, "Number of pets", errors, "pets")
     storeys = _whole(form.get("storeys"), 1, 20, "Number of storeys", errors, "storeys")
     people = None
     if not use_people_table or not names:
@@ -108,6 +185,7 @@ def _save(form, mode: str):
     if home_type and home_type not in dict(HOME_TYPES):
         errors["home_type"] = "Choose one of the listed kinds of home."
     hazards = [h for h in form.getlist("hazards") if h in dict(HAZARDS)]
+    country, region = _place(form, errors)
     chosen_modules = set(form.getlist("modules"))
     if errors:
         return errors
@@ -117,8 +195,14 @@ def _save(form, mode: str):
         for name in names:
             store.create(PEOPLE_TABLE, {"name": name, "lives_here": True})
         people = len(names)
-    values = {"household.pets": pets or 0, "household.country": form.get("country", "").strip(),
-              "household.region": form.get("region", "").strip(), "household.home_type": home_type,
+    if new_pets:
+        store = records.Records(conn, current_app.config["REGISTRY_FOR_REQUEST"]())
+        for pet in new_pets:
+            store.create(PETS_TABLE, pet)
+    if pets is None:  # the Pets module counts the pets itself
+        pets = _pet_count(conn) if pets_info is not None else 0
+    values = {"household.pets": pets or 0, "household.country": country,
+              "household.region": region, "household.home_type": home_type,
               "household.storeys": storeys, "household.mobility_needs": bool(form.get("mobility_needs")),
               "household.hazards": hazards, "backups.second_copy": bool(form.get("second_copy"))}
     if people is not None:
@@ -134,16 +218,35 @@ def _save(form, mode: str):
     return {}
 
 
+def _place(form, errors: dict) -> tuple[str, str]:
+    """The country and state from the form: a listed country with one of its states, or one typed in."""
+    country = form.get("country", "").strip()
+    if country == OTHER_COUNTRY:
+        return form.get("country_other", "").strip()[:60], form.get("region_other", "").strip()[:60]
+    if country and country not in REGIONS:
+        errors["country"] = "Choose a country from the list, or \"Somewhere else\" to type it."
+        return "", ""
+    region = form.get("region", "").strip()
+    if region and region not in REGIONS.get(country, []):
+        errors["region"] = "Choose a state or region from the list for this country."
+        return country, ""
+    return country, region
+
+
 def _existing_people(conn) -> int:
     return conn.execute(f"SELECT COUNT(*) FROM {PEOPLE_TABLE} WHERE deleted_at IS NULL").fetchone()[0]
 
 
 def _form_values(form) -> dict:
-    return {"people": form.get("people"), "pets": form.get("pets"), "country": form.get("country", ""),
-            "region": form.get("region", ""), "home_type": form.get("home_type", ""),
+    other = form.get("country") == OTHER_COUNTRY
+    return {"people": form.get("people"), "pets": form.get("pets"),
+            "country": form.get("country_other", "") if other else form.get("country", ""),
+            "region": form.get("region_other" if other else "region", ""), "country_is_other": other, "home_type": form.get("home_type", ""),
             "storeys": form.get("storeys"), "mobility_needs": bool(form.get("mobility_needs")),
             "hazards": form.getlist("hazards"), "second_copy": bool(form.get("second_copy")),
-            "names": [form.get(f"name_{i}", "") for i in range(1, NAME_SLOTS + 1)]}
+            "names": [form.get(f"name_{i}", "") for i in range(1, NAME_SLOTS + 1)],
+            "pet_names": [form.get(f"pet_{i}", "") for i in range(1, PET_SLOTS + 1)],
+            "pet_kinds": [form.get(f"pet_kind_{i}", "") for i in range(1, PET_SLOTS + 1)]}
 
 
 @setup_pages.get("/setup")

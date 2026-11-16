@@ -1,0 +1,34 @@
+[tables.pets]
+empty = "Add your pets, with their vet."
+form = ["name", "species", "breed", "birthday", "microchip", "vet", "owner", "vaccinations_due", "notes"]
+list = ["name", "species", "breed", "vet", "vaccinations_due"]
+columns.species = { label = "Kind of animal" }
+columns.microchip = { label = "Microchip number", help = "On the registration papers or the vet's records. Useful if the pet goes missing." }
+columns.owner = { label = "Looked after by", help = "The person in the household who looks after this pet day to day." }
+columns.vet = { help = "Add the vet in People first, with their phone number." }
+columns.vaccinations_due = { label = "Vaccinations due", help = "You'll see it under Needs attention a month before." }
+
+[tables.treatments]
+form = ["pet", "name", "kind", "dose", "every_days", "next_due", "notes"]
+list = ["pet", "name", "kind", "next_due"]
+columns.name = { label = "Treatment or medicine", help = "For example \"Monthly flea chew\" or \"Arthritis tablets\"." }
+columns.kind = { label = "What kind" }
+columns.dose = { help = "How much, as on the label or the vet's instructions." }
+columns.every_days = { label = "Every (days)", help = "For example 30 for monthly. Leave blank if it isn't regular." }
+columns.next_due = { label = "Next due", help = "You'll see it under Needs attention a week before." }
+
+[tables.given]
+form = ["treatment", "given_on", "notes"]
+list = ["given_on", "treatment", "notes"]
+columns.given_on = { label = "Date given" }
+
+[tables.weigh_ins]
+form = ["pet", "day", "weight", "notes"]
+list = ["day", "pet", "weight", "notes"]
+columns.day = { label = "Date" }
+
+[tables.vet_visits]
+form = ["pet", "day", "vet", "reason", "cost", "notes"]
+list = ["day", "pet", "vet", "reason", "cost"]
+columns.day = { label = "Date" }
+columns.reason = { help = "For example \"Annual check-up and vaccinations\"." }

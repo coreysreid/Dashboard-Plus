@@ -9,14 +9,14 @@ summary = "Two parents, two young children, a dog and a cat in a two-storey hous
 
 [setup]
 people = ["John Smith", "Jane Smith", "Emily Smith", "Jack Smith"]
-pets = 2
+pets = [{ name = "Rex", kind = "dog" }, { name = "Whiskers", kind = "cat" }]
 country = "Australia"
 region = "New South Wales"
 home_type = "house"
 storeys = 2
 mobility_needs = false
 hazards = ["bushfire", "heat", "storm"]
-modules = ["people", "stock"]
+modules = ["people", "pets", "stock"]
 
 # ---- People -----------------------------------------------------------------
 
@@ -153,6 +153,97 @@ detail = "Lactose intolerant."
 person = "Bob Jones"
 kind = "access"
 detail = "Spare front door key. The side gate code is 1-9-8-4."
+
+# ---- Pets -------------------------------------------------------------------
+
+[[pets.pets]]
+name = "Rex"
+species = "dog"
+breed = "Kelpie cross"
+birthday = "2019-04-11"
+microchip = "900000000123456"
+owner = "Jane Smith"
+vet = "Riverside Vet Clinic"
+vaccinations_due = "today+21"
+notes = "Scared of thunder: shut him in the laundry during storms. Escapes under the side gate."
+
+[[pets.pets]]
+name = "Whiskers"
+species = "cat"
+breed = "Domestic shorthair"
+birthday = "2016-09-30"
+microchip = "900000000654321"
+owner = "Emily Smith"
+vet = "Riverside Vet Clinic"
+vaccinations_due = "today+150"
+notes = "Indoor cat. Hides under Emily's bed."
+
+[[pets.treatments]]
+pet = "Rex"
+name = "Monthly flea and tick chew"
+kind = "flea"
+dose = "One 10-25 kg chew"
+every_days = 30
+next_due = "today+3"
+
+[[pets.treatments]]
+pet = "Rex"
+name = "Heartworm injection"
+kind = "heartworm"
+every_days = 365
+next_due = "today+200"
+
+[[pets.treatments]]
+pet = "Whiskers"
+name = "Worming tablet"
+kind = "worming"
+dose = "One tablet in food"
+every_days = 90
+next_due = "today+40"
+
+[[pets.given]]
+treatment = "Monthly flea and tick chew"
+given_on = "today-27"
+
+[[pets.given]]
+treatment = "Worming tablet"
+given_on = "today-50"
+
+[[pets.weigh_ins]]
+pet = "Rex"
+day = "today-120"
+weight = 19.4
+
+[[pets.weigh_ins]]
+pet = "Rex"
+day = "today-60"
+weight = 20.1
+
+[[pets.weigh_ins]]
+pet = "Rex"
+day = "today-2"
+weight = 21.3
+notes = "Vet says cut back the treats."
+
+[[pets.weigh_ins]]
+pet = "Whiskers"
+day = "today-60"
+weight = 4.6
+
+[[pets.vet_visits]]
+pet = "Rex"
+day = "today-60"
+vet = "Riverside Vet Clinic"
+reason = "Limping on the front left leg"
+cost = 145.00
+notes = "Sprain. Rest for a week; no further treatment."
+
+[[pets.vet_visits]]
+pet = "Whiskers"
+day = "today-200"
+vet = "Riverside Vet Clinic"
+reason = "Annual check-up and vaccinations"
+cost = 98.50
 
 # ---- Household stock ----------------------------------------------------------
 

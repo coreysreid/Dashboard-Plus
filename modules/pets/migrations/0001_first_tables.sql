@@ -13,9 +13,12 @@ CREATE TABLE pets__pets (
     deleted_at TEXT,
     name TEXT,
     species TEXT,
+    breed TEXT,
     birthday TEXT,
-    owner INTEGER REFERENCES people__people(id) ON DELETE RESTRICT,
-    vet INTEGER REFERENCES people__people(id) ON DELETE RESTRICT,
+    microchip TEXT,
+    owner INTEGER REFERENCES people__people(id) ON DELETE SET NULL,
+    vet INTEGER REFERENCES people__people(id) ON DELETE SET NULL,
+    vaccinations_due TEXT,
     notes TEXT
 );
 
@@ -24,6 +27,50 @@ CREATE INDEX pets__pets__birthday__idx ON pets__pets(birthday);
 CREATE INDEX pets__pets__owner__idx ON pets__pets(owner);
 
 CREATE INDEX pets__pets__vet__idx ON pets__pets(vet);
+
+CREATE INDEX pets__pets__vaccinations_due__idx ON pets__pets(vaccinations_due);
+
+-- Treatments and medicine
+CREATE TABLE pets__treatments (
+    id INTEGER PRIMARY KEY,
+    created_at TEXT NOT NULL,
+    updated_at TEXT NOT NULL,
+    review_status TEXT NOT NULL DEFAULT 'confirmed',
+    source TEXT NOT NULL DEFAULT 'person',
+    batch_id INTEGER,
+    edited_by_person INTEGER NOT NULL DEFAULT 0,
+    deleted_at TEXT,
+    pet INTEGER REFERENCES pets__pets(id) ON DELETE CASCADE,
+    name TEXT,
+    kind TEXT,
+    dose TEXT,
+    every_days INTEGER,
+    next_due TEXT,
+    notes TEXT
+);
+
+CREATE INDEX pets__treatments__pet__idx ON pets__treatments(pet);
+
+CREATE INDEX pets__treatments__next_due__idx ON pets__treatments(next_due);
+
+-- Treatments given
+CREATE TABLE pets__given (
+    id INTEGER PRIMARY KEY,
+    created_at TEXT NOT NULL,
+    updated_at TEXT NOT NULL,
+    review_status TEXT NOT NULL DEFAULT 'confirmed',
+    source TEXT NOT NULL DEFAULT 'person',
+    batch_id INTEGER,
+    edited_by_person INTEGER NOT NULL DEFAULT 0,
+    deleted_at TEXT,
+    treatment INTEGER REFERENCES pets__treatments(id) ON DELETE CASCADE,
+    given_on TEXT,
+    notes TEXT
+);
+
+CREATE INDEX pets__given__treatment__idx ON pets__given(treatment);
+
+CREATE INDEX pets__given__given_on__idx ON pets__given(given_on);
 
 -- Weigh-ins
 CREATE TABLE pets__weigh_ins (
@@ -35,7 +82,7 @@ CREATE TABLE pets__weigh_ins (
     batch_id INTEGER,
     edited_by_person INTEGER NOT NULL DEFAULT 0,
     deleted_at TEXT,
-    pet INTEGER REFERENCES pets__pets(id) ON DELETE RESTRICT,
+    pet INTEGER REFERENCES pets__pets(id) ON DELETE CASCADE,
     day TEXT,
     weight REAL,
     notes TEXT
@@ -44,66 +91,6 @@ CREATE TABLE pets__weigh_ins (
 CREATE INDEX pets__weigh_ins__pet__idx ON pets__weigh_ins(pet);
 
 CREATE INDEX pets__weigh_ins__day__idx ON pets__weigh_ins(day);
-
--- Food given
-CREATE TABLE pets__food (
-    id INTEGER PRIMARY KEY,
-    created_at TEXT NOT NULL,
-    updated_at TEXT NOT NULL,
-    review_status TEXT NOT NULL DEFAULT 'confirmed',
-    source TEXT NOT NULL DEFAULT 'person',
-    batch_id INTEGER,
-    edited_by_person INTEGER NOT NULL DEFAULT 0,
-    deleted_at TEXT,
-    pet INTEGER REFERENCES pets__pets(id) ON DELETE RESTRICT,
-    given_at TEXT,
-    food TEXT,
-    amount REAL,
-    unit TEXT,
-    notes TEXT
-);
-
-CREATE INDEX pets__food__pet__idx ON pets__food(pet);
-
-CREATE INDEX pets__food__given_at__idx ON pets__food(given_at);
-
--- Pet medications
-CREATE TABLE pets__medications (
-    id INTEGER PRIMARY KEY,
-    created_at TEXT NOT NULL,
-    updated_at TEXT NOT NULL,
-    review_status TEXT NOT NULL DEFAULT 'confirmed',
-    source TEXT NOT NULL DEFAULT 'person',
-    batch_id INTEGER,
-    edited_by_person INTEGER NOT NULL DEFAULT 0,
-    deleted_at TEXT,
-    pet INTEGER REFERENCES pets__pets(id) ON DELETE RESTRICT,
-    name TEXT,
-    instructions TEXT,
-    notes TEXT
-);
-
-CREATE INDEX pets__medications__pet__idx ON pets__medications(pet);
-
--- Medicine given
-CREATE TABLE pets__doses (
-    id INTEGER PRIMARY KEY,
-    created_at TEXT NOT NULL,
-    updated_at TEXT NOT NULL,
-    review_status TEXT NOT NULL DEFAULT 'confirmed',
-    source TEXT NOT NULL DEFAULT 'person',
-    batch_id INTEGER,
-    edited_by_person INTEGER NOT NULL DEFAULT 0,
-    deleted_at TEXT,
-    medication INTEGER REFERENCES pets__medications(id) ON DELETE RESTRICT,
-    given_at TEXT,
-    amount TEXT,
-    notes TEXT
-);
-
-CREATE INDEX pets__doses__medication__idx ON pets__doses(medication);
-
-CREATE INDEX pets__doses__given_at__idx ON pets__doses(given_at);
 
 -- Vet visits
 CREATE TABLE pets__vet_visits (
@@ -115,10 +102,11 @@ CREATE TABLE pets__vet_visits (
     batch_id INTEGER,
     edited_by_person INTEGER NOT NULL DEFAULT 0,
     deleted_at TEXT,
-    pet INTEGER REFERENCES pets__pets(id) ON DELETE RESTRICT,
+    pet INTEGER REFERENCES pets__pets(id) ON DELETE CASCADE,
     day TEXT,
-    vet INTEGER REFERENCES people__people(id) ON DELETE RESTRICT,
+    vet INTEGER REFERENCES people__people(id) ON DELETE SET NULL,
     reason TEXT,
+    cost INTEGER,
     notes TEXT
 );
 

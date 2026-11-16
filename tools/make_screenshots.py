@@ -57,23 +57,28 @@ STAGES = [
      "date are already filled in.", {"goto": "/t/stock__movements/new?item={id:stock__items:item}"}),
     ("15-stock-in-and-out", "Stock in and out", "Everything bought, used, expired or thrown away.",
      {"goto": "/t/stock__movements"}),
-    ("16-needs-attention", "Needs attention", "Days of water with the working shown, running low, use-by "
-     "dates, and details worth filling in.", {"goto": "/attention"}),
-    ("17-supplies-sheet", "Emergency supplies sheet", "As it prints: water, first aid, power and food, and "
+    ("16-pets", "Pets", "Every pet, its vet and when vaccinations are due.", {"goto": "/t/pets__pets", "module": "pets"}),
+    ("17-pet", "One pet's page", "Its details, treatments and medicine, weigh-ins and vet visits.",
+     {"goto": "/t/pets__pets/{id:pets__pets:pet}", "module": "pets"}),
+    ("18-pet-sheet", "Pet details sheet", "As it prints: for a sitter, a kennel or an evacuation centre.",
+     {"goto": "/sheet/pets/pets", "media": "print", "module": "pets"}),
+    ("19-needs-attention", "Needs attention", "Days of water with the working shown, running low, use-by "
+     "and due dates, and details worth filling in.", {"goto": "/attention"}),
+    ("20-supplies-sheet", "Emergency supplies sheet", "As it prints: water, first aid, power and food, and "
      "where each is kept.", {"goto": "/sheet/stock/supplies", "media": "print"}),
-    ("18-settings", "Settings", "The setup answers, which can be changed at any time.",
+    ("21-settings", "Settings", "The setup answers, which can be changed at any time.",
      {"goto": "/settings"}),
-    ("19-close", "Closing safely", "A backup is made before it stops, so a USB stick can be unplugged.",
+    ("22-close", "Save and exit", "A final backup is made before it stops, so a USB stick can be unplugged.",
      {"goto": "/close"}),
-    ("20-closed", "Closed", "Safe to unplug.", {"submit": "form button[type=submit]"}),
+    ("23-closed", "Saved and closed", "Safe to unplug.", {"submit": "form button[type=submit]"}),
 ]
 # Which record each household shows on the person and stock item pages.
 # How each household's browser shows dates, as it would in their country.
 LOCALES = {"smith": ("en-AU", "Australia/Sydney"), "garcia": ("en-US", "America/Los_Angeles"),
            "taylor": ("en-GB", "Europe/London")}
 FEATURED = {
-    "smith": {"person": "Emily Smith", "item": "Adrenaline auto-injector (Emily)"},
-    "garcia": {"person": "Rosa Garcia", "item": "Metformin 500 mg (Rosa)"},
+    "smith": {"person": "Emily Smith", "item": "Adrenaline auto-injector (Emily)", "pet": "Rex"},
+    "garcia": {"person": "Rosa Garcia", "item": "Metformin 500 mg (Rosa)", "pet": "Luna"},
     "taylor": {"person": "Sam Taylor", "item": "Bottled water (6 x 2 L)"},
 }
 
@@ -85,10 +90,14 @@ def wizard_steps(setup: dict) -> list[dict]:
         steps.append({"click": "#add-person"})
     for number, name in enumerate(setup["people"], start=1):
         steps.append({"fill": f"#name_{number}", "value": name})
-    steps += [{"fill": "#pets", "value": setup.get("pets", 0)},
-              {"check": "input[name=mobility_needs]", "value": bool(setup.get("mobility_needs"))},
-              {"fill": "#country", "value": setup.get("country", "")},
-              {"fill": "#region", "value": setup.get("region", "")},
+    pets = setup.get("pets", [])
+    for _ in range(max(0, len(pets) - 2)):
+        steps.append({"click": "#add-pet"})
+    for number, pet in enumerate(pets, start=1):
+        steps += [{"fill": f"#pet_{number}", "value": pet["name"]}, {"select": f"#pet_kind_{number}", "value": pet["kind"]}]
+    steps += [{"check": "input[name=mobility_needs]", "value": bool(setup.get("mobility_needs"))},
+              {"select": "#country", "value": setup.get("country", "")},
+              {"select": "#region", "value": setup.get("region", "")},
               {"select": "#home_type", "value": setup.get("home_type", "")},
               {"fill": "#storeys", "value": setup.get("storeys", "")}]
     steps += [{"check": f"input[name=hazards][value={h}]"} for h in setup.get("hazards", [])]
@@ -102,7 +111,9 @@ def record_ids(data_dir: Path, featured: dict) -> dict:
     conn = db.connect(data_dir / "dashboard.db")
     try:
         ids = {}
-        for key, table in (("person", "people__people"), ("item", "stock__items")):
+        for key, table in (("person", "people__people"), ("item", "stock__items"), ("pet", "pets__pets")):
+            if key not in featured:
+                continue
             row = conn.execute(f"SELECT id FROM {table} WHERE name = ? AND deleted_at IS NULL",
                                (featured[key],)).fetchone()
             ids[f"{table}:{key}"] = row["id"]
@@ -115,8 +126,10 @@ def run_browser(plan: dict, work: Path) -> list[str]:
     """Run the browser steps; return the printed page counts it reports, like "pages /sheet/x A4 1"."""
     path = work / "steps.json"
     path.write_text(json.dumps(plan), encoding="utf-8")
-    result = subprocess.run(["node", str(ROOT / "tools" / "screenshots.js"), str(path)], check=True, cwd=ROOT,
+    result = subprocess.run(["node", str(ROOT / "tools" / "screenshots.js"), str(path)], cwd=ROOT,
                             capture_output=True, text=True)
+    if result.returncode != 0:
+        raise RuntimeError("The browser steps failed:\n" + result.stderr.strip()[-2000:])
     return [line for line in result.stdout.splitlines() if line.startswith("pages ")]
 
 
@@ -153,6 +166,8 @@ def make(household: str, work: Path, executable: str | None) -> list[tuple[str, 
         steps: list[dict] = [{"goto": launch.replace(launch.split("/?")[0], "")}]
         ids: dict = {}
         for name, title, caption, action in STAGES:
+            if action and action.get("module") and action["module"] not in example["setup"]["modules"]:
+                continue  # this household does not use that module
             if name == "load":
                 run_browser({"base": launch.split("/?")[0], "steps": steps, "width": WIDTH, "height": HEIGHT,
                              "swaps": swaps, "executablePath": executable,
@@ -209,7 +224,7 @@ def write_index(household: str, example: dict, shown: list) -> None:
 
 def write_gallery(results: dict) -> None:
     lines = ["# Examples: Dashboard Plus at every stage", "",
-             "Three made-up households, each taken from the first start to closing safely. Every name,",
+             "Three made-up households, each taken from the first start to saving and exiting. Every name,",
              "number and address is invented (see `examples/households/`). The screenshots are made",
              "automatically by `tools/make_screenshots.py`, so they always match the current program;",
              "they are taken on Linux, with folder names shown as they appear on Windows.", ""]

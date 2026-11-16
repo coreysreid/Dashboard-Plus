@@ -106,19 +106,35 @@ def expiring(conn: sqlite3.Connection, registry: dict[str, TableInfo], today: da
             days = (when - today).days
             if days > warn:
                 continue
-            if days < 0:
-                detail = f"expired {when.isoformat()} ({-days} day{'s' if days != -1 else ''} ago)"
-            elif days == 0:
-                detail = "expires today"
-            else:
-                detail = f"expires {when.isoformat()} (in {days} day{'s' if days != 1 else ''})"
+            detail = _due_words(rule.get("wording", "expires"), rule.get("what", ""), when, days)
             items.append(WatchItem(info.name, row["id"], _name(info, row), detail, days))
     return sorted(items, key=lambda i: (i.sort_key, i.name))
+
+
+def _due_words(wording: str, what: str, when: date, days: int) -> str:
+    """How a date reads under Needs attention: "expires …" for use-by dates, "due …" for things to do."""
+    plural = lambda n: f"{n} day{'s' if n != 1 else ''}"  # noqa: E731
+    if wording == "due":
+        if days < 0:
+            words = f"overdue since {when.isoformat()} ({plural(-days)} ago)"
+        elif days == 0:
+            words = "due today"
+        else:
+            words = f"due {when.isoformat()} (in {plural(days)})"
+    elif days < 0:
+        words = f"expired {when.isoformat()} ({plural(-days)} ago)"
+    elif days == 0:
+        words = "expires today"
+    else:
+        words = f"expires {when.isoformat()} (in {plural(days)})"
+    return f"{what} {words}" if what else words
 
 
 def household(conn: sqlite3.Connection, registry: dict[str, TableInfo]) -> Household:
     """How many people and pets the household has, for days-of-cover sums."""
     pets = int(settings.get(conn, "household.pets", 0) or 0)
+    if "pets__pets" in registry:  # the Pets module is switched on: count the pets recorded there
+        pets = conn.execute("SELECT COUNT(*) FROM pets__pets WHERE deleted_at IS NULL").fetchone()[0]
     info = registry.get(PEOPLE_TABLE)
     if info and "lives_here" in info.table.columns:
         count = conn.execute(f"SELECT COUNT(*) FROM {PEOPLE_TABLE} WHERE deleted_at IS NULL AND lives_here = 1"

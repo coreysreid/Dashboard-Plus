@@ -11,6 +11,6 @@
 | sheet.html | A printable sheet, styled to fit one page | changing how sheets print |
 | start.html | Shown to a browser that was not opened by the shortcut | changing that message |
 | report.html | Shown after saving a report | changing that message |
-| close.html | The "Close Dashboard safely" page | changing how closing works |
+| close.html | The "Save and exit" page | changing how closing works |
 | closed.html | Shown after a safe close | changing that message |
 | error.html | Plain-language error page with "Save a report" | changing error wording |

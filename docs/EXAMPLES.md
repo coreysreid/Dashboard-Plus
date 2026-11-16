@@ -1,6 +1,6 @@
 # Examples: Dashboard Plus at every stage
 
-Three made-up households, each taken from the first start to closing safely. Every name,
+Three made-up households, each taken from the first start to saving and exiting. Every name,
 number and address is invented (see `examples/households/`). The screenshots are made
 automatically by `tools/make_screenshots.py`, so they always match the current program;
 they are taken on Linux, with folder names shown as they appear on Windows.
@@ -104,35 +104,53 @@ Everything bought, used, expired or thrown away.
 
 ![Stock in and out](screenshots/smith/15-stock-in-and-out.png)
 
+### Pets
+
+Every pet, its vet and when vaccinations are due.
+
+![Pets](screenshots/smith/16-pets.png)
+
+### One pet's page
+
+Its details, treatments and medicine, weigh-ins and vet visits.
+
+![One pet's page](screenshots/smith/17-pet.png)
+
+### Pet details sheet
+
+As it prints: for a sitter, a kennel or an evacuation centre.
+
+![Pet details sheet](screenshots/smith/18-pet-sheet.png)
+
 ### Needs attention
 
-Days of water with the working shown, running low, use-by dates, and details worth filling in.
+Days of water with the working shown, running low, use-by and due dates, and details worth filling in.
 
-![Needs attention](screenshots/smith/16-needs-attention.png)
+![Needs attention](screenshots/smith/19-needs-attention.png)
 
 ### Emergency supplies sheet
 
 As it prints: water, first aid, power and food, and where each is kept.
 
-![Emergency supplies sheet](screenshots/smith/17-supplies-sheet.png)
+![Emergency supplies sheet](screenshots/smith/20-supplies-sheet.png)
 
 ### Settings
 
 The setup answers, which can be changed at any time.
 
-![Settings](screenshots/smith/18-settings.png)
+![Settings](screenshots/smith/21-settings.png)
 
-### Closing safely
+### Save and exit
 
-A backup is made before it stops, so a USB stick can be unplugged.
+A final backup is made before it stops, so a USB stick can be unplugged.
 
-![Closing safely](screenshots/smith/19-close.png)
+![Save and exit](screenshots/smith/22-close.png)
 
-### Closed
+### Saved and closed
 
 Safe to unplug.
 
-![Closed](screenshots/smith/20-closed.png)
+![Saved and closed](screenshots/smith/23-closed.png)
 
 
 <a id="garcia"></a>
@@ -230,35 +248,53 @@ Everything bought, used, expired or thrown away.
 
 ![Stock in and out](screenshots/garcia/15-stock-in-and-out.png)
 
+### Pets
+
+Every pet, its vet and when vaccinations are due.
+
+![Pets](screenshots/garcia/16-pets.png)
+
+### One pet's page
+
+Its details, treatments and medicine, weigh-ins and vet visits.
+
+![One pet's page](screenshots/garcia/17-pet.png)
+
+### Pet details sheet
+
+As it prints: for a sitter, a kennel or an evacuation centre.
+
+![Pet details sheet](screenshots/garcia/18-pet-sheet.png)
+
 ### Needs attention
 
-Days of water with the working shown, running low, use-by dates, and details worth filling in.
+Days of water with the working shown, running low, use-by and due dates, and details worth filling in.
 
-![Needs attention](screenshots/garcia/16-needs-attention.png)
+![Needs attention](screenshots/garcia/19-needs-attention.png)
 
 ### Emergency supplies sheet
 
 As it prints: water, first aid, power and food, and where each is kept.
 
-![Emergency supplies sheet](screenshots/garcia/17-supplies-sheet.png)
+![Emergency supplies sheet](screenshots/garcia/20-supplies-sheet.png)
 
 ### Settings
 
 The setup answers, which can be changed at any time.
 
-![Settings](screenshots/garcia/18-settings.png)
+![Settings](screenshots/garcia/21-settings.png)
 
-### Closing safely
+### Save and exit
 
-A backup is made before it stops, so a USB stick can be unplugged.
+A final backup is made before it stops, so a USB stick can be unplugged.
 
-![Closing safely](screenshots/garcia/19-close.png)
+![Save and exit](screenshots/garcia/22-close.png)
 
-### Closed
+### Saved and closed
 
 Safe to unplug.
 
-![Closed](screenshots/garcia/20-closed.png)
+![Saved and closed](screenshots/garcia/23-closed.png)
 
 
 <a id="taylor"></a>
@@ -358,30 +394,30 @@ Everything bought, used, expired or thrown away.
 
 ### Needs attention
 
-Days of water with the working shown, running low, use-by dates, and details worth filling in.
+Days of water with the working shown, running low, use-by and due dates, and details worth filling in.
 
-![Needs attention](screenshots/taylor/16-needs-attention.png)
+![Needs attention](screenshots/taylor/19-needs-attention.png)
 
 ### Emergency supplies sheet
 
 As it prints: water, first aid, power and food, and where each is kept.
 
-![Emergency supplies sheet](screenshots/taylor/17-supplies-sheet.png)
+![Emergency supplies sheet](screenshots/taylor/20-supplies-sheet.png)
 
 ### Settings
 
 The setup answers, which can be changed at any time.
 
-![Settings](screenshots/taylor/18-settings.png)
+![Settings](screenshots/taylor/21-settings.png)
 
-### Closing safely
+### Save and exit
 
-A backup is made before it stops, so a USB stick can be unplugged.
+A final backup is made before it stops, so a USB stick can be unplugged.
 
-![Closing safely](screenshots/taylor/19-close.png)
+![Save and exit](screenshots/taylor/22-close.png)
 
-### Closed
+### Saved and closed
 
 Safe to unplug.
 
-![Closed](screenshots/taylor/20-closed.png)
+![Saved and closed](screenshots/taylor/23-closed.png)

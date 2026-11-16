@@ -148,7 +148,7 @@ def _serve(data_dir: Path, open_browser: bool, ready: threading.Event | None,
 
     print("Dashboard Plus is running.")
     print(f"It is open in your browser at {state.url}")
-    print("Keep this window open. To stop, use 'Close Dashboard safely'.")
+    print("Keep this window open. To stop, use 'Save and exit'.")
     if open_browser:
         webbrowser.open(state.launch_url)
     backups.daily(data_dir, extra_backup_dir)
@@ -173,7 +173,7 @@ def _serve(data_dir: Path, open_browser: bool, ready: threading.Event | None,
     except Exception:  # noqa: BLE001 - say so, but still finish closing
         log.exception("The backup on close could not be made")
         print("Note: the backup on close could not be made. Your data is still saved.")
-    print("Dashboard closed safely. You can unplug the drive now.")
+    print("Saved and closed. You can unplug the drive now.")
 
 
 def close_running(data_dir: Path, timeout: float = 10.0) -> bool:

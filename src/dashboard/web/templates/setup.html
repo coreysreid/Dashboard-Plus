@@ -38,21 +38,51 @@
     {% if errors.people %}<p class="error">{{ errors.people }}</p>{% endif %}
   </div>
   {% endif %}
+  {% if pets_table and mode == "setup" and not pet_count %}
+  <div><span style="font-weight:600">Pets (if you have any)</span>
+    <p class="help" style="margin-top:0">A name and what kind of animal. You can add their vet and other details later.</p></div>
+  {% for i in range(1, pet_slots + 1) %}
+  {% set typed = (values.pet_names or [])[i-1] if values.pet_names else '' %}
+  {% set kind = (values.pet_kinds or [])[i-1] if values.pet_kinds else '' %}
+  <div class="pet-slot" style="display:grid;grid-template-columns:2fr 1fr;gap:.5rem" {% if i > 2 and not typed %}hidden{% endif %}>
+    <div><label for="pet_{{ i }}">Pet {{ i }}</label><input type="text" id="pet_{{ i }}" name="pet_{{ i }}" value="{{ typed }}"></div>
+    <div><label for="pet_kind_{{ i }}">Kind</label><select id="pet_kind_{{ i }}" name="pet_kind_{{ i }}">
+      {% for key, label in pet_kinds %}<option value="{{ key }}" {% if kind == key %}selected{% endif %}>{{ label }}</option>{% endfor %}</select></div>
+  </div>
+  {% endfor %}
+  <div><button type="button" class="quiet" id="add-pet">Add another pet</button>
+    <p class="help">Pets count towards how long water would last.</p></div>
+  {% elif pets_table %}
+  <p>{{ pet_count }} pet{{ "" if pet_count == 1 else "s" }} recorded. <a href="/t/pets__pets">{{ "Change your pets" if pet_count else "Add a pet" }}</a>.</p>
+  {% else %}
   <div class="{% if errors.pets %}has-error{% endif %}">
     <label for="pets">How many pets?</label>
     <input type="text" inputmode="numeric" id="pets" name="pets" value="{{ values.pets if values.pets is not none else '' }}">
     {% if errors.pets %}<p class="error">{{ errors.pets }}</p>{% endif %}
     <p class="help">Used to work out how long water and supplies would last.</p>
   </div>
+  {% endif %}
   <div><label><input type="checkbox" name="mobility_needs" value="yes" {% if values.mobility_needs %}checked{% endif %}> Someone here has mobility or care needs</label>
     <p class="help">Helps later questions about getting out safely fit your home.</p></div>
 
   <h2>2. Your home</h2>
-  <div><label for="country">Country</label>
-    <input type="text" id="country" name="country" list="countries" value="{{ values.country or '' }}">
-    <datalist id="countries">{% for c in countries %}<option value="{{ c }}">{% endfor %}</datalist></div>
-  <div><label for="region">Region or state (optional)</label>
-    <input type="text" id="region" name="region" value="{{ values.region or '' }}"></div>
+  {% set other = values.country_is_other or (values.country and values.country not in countries) %}
+  <div class="{% if errors.country %}has-error{% endif %}"><label for="country">Country</label>
+    <select id="country" name="country"><option value="">(choose)</option>
+      {% for c in countries %}<option value="{{ c }}" {% if not other and values.country == c %}selected{% endif %}>{{ c }}</option>{% endfor %}
+      <option value="other" {% if other %}selected{% endif %}>Somewhere else</option>
+    </select>
+    {% if errors.country %}<p class="error">{{ errors.country }}</p>{% endif %}
+    <p class="help" id="place-guess" hidden>Suggested from this computer's time zone. Change it if it's wrong.</p></div>
+  <div id="country-other" {% if not other %}hidden{% endif %}><label for="country_other">Which country?</label>
+    <input type="text" id="country_other" name="country_other" value="{{ values.country if other else '' }}"></div>
+  <div id="region-list" class="{% if errors.region %}has-error{% endif %}" {% if other %}hidden{% endif %}><label for="region">State or region (optional)</label>
+    <select id="region" name="region"><option value="">(choose)</option>
+      {% for r in regions.get(values.country, []) %}<option value="{{ r }}" {% if values.region == r %}selected{% endif %}>{{ r }}</option>{% endfor %}
+    </select>
+    {% if errors.region %}<p class="error">{{ errors.region }}</p>{% endif %}</div>
+  <div id="region-other" {% if not other %}hidden{% endif %}><label for="region_other">State or region (optional)</label>
+    <input type="text" id="region_other" name="region_other" value="{{ values.region if other else '' }}"></div>
   <div class="{% if errors.home_type %}has-error{% endif %}"><label for="home_type">Kind of home</label>
     <select id="home_type" name="home_type"><option value="">(choose)</option>
       {% for key, label in home_types %}<option value="{{ key }}" {% if values.home_type == key %}selected{% endif %}>{{ label }}</option>{% endfor %}
@@ -100,6 +130,15 @@
 </form>
 <script>
   (function () {
+    var button = document.getElementById("add-pet");
+    if (!button) return;
+    button.addEventListener("click", function () {
+      var next = document.querySelector(".pet-slot[hidden]");
+      if (next) { next.hidden = false; next.querySelector("input").focus(); }
+      if (!document.querySelector(".pet-slot[hidden]")) button.hidden = true;
+    });
+  })();
+  (function () {
     var button = document.getElementById("add-person");
     if (!button) return;
     button.addEventListener("click", function () {
@@ -108,6 +147,32 @@
       if (!document.querySelector(".person-slot[hidden]")) button.hidden = true;
     });
   })();
-  try { document.getElementById("timezone").value = Intl.DateTimeFormat().resolvedOptions().timeZone || ""; } catch (e) {}
+  var zone = "";
+  try { zone = Intl.DateTimeFormat().resolvedOptions().timeZone || ""; document.getElementById("timezone").value = zone; } catch (e) {}
+  (function () {
+    // Country and state: the state list follows the country, and a first guess comes from the time zone.
+    var regions = {{ regions | tojson }}, guesses = {{ timezone_guess | tojson }};
+    var country = document.getElementById("country"), region = document.getElementById("region");
+    if (!country || !region) return;
+    function show(id, on) { document.getElementById(id).hidden = !on; }
+    function fill(chosen) {
+      var keep = region.value;
+      region.innerHTML = '<option value="">(choose)</option>';
+      (regions[country.value] || []).forEach(function (name) {
+        var option = document.createElement("option");
+        option.value = option.textContent = name;
+        if (name === (chosen || keep)) option.selected = true;
+        region.appendChild(option);
+      });
+      var other = country.value === "other";
+      show("country-other", other); show("region-other", other); show("region-list", !other);
+    }
+    country.addEventListener("change", function () { show("place-guess", false); fill(""); });
+    if ({{ "true" if mode == "setup" else "false" }} && !country.value && guesses[zone]) {
+      country.value = guesses[zone][0];
+      fill(guesses[zone][1]);
+      show("place-guess", true);
+    }
+  })();
 </script>
 {% endblock %}

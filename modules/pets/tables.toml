@@ -1,0 +1,79 @@
+[tables.pets]
+title = "Pets"
+description = "Every animal in the household, with its vet and microchip number."
+columns.name = { type = "text", required = true }
+columns.species = { type = "choice", required = true, default = "dog", choices = [
+  "dog",
+  "cat",
+  "bird",
+  "fish",
+  "rabbit",
+  { key = "guinea_pig", label = "Guinea pig" },
+  { key = "reptile", label = "Reptile" },
+  { key = "horse", label = "Horse or pony" },
+  { key = "poultry", label = "Chickens or other poultry" },
+  "other",
+] }
+columns.breed = { type = "text" }
+columns.birthday = { type = "date" }
+columns.microchip = { type = "text" }
+columns.owner = { type = "link", to = "people.people", on_delete = "clear" }
+columns.vet = { type = "link", to = "people.people", on_delete = "clear" }
+columns.vaccinations_due = { type = "date" }
+columns.notes = { type = "longtext" }
+
+[tables.pets.watch]
+expiring = { date = "vaccinations_due", warn_days = 30, wording = "due", what = "vaccinations" }
+
+[[tables.pets.watch.gaps]]
+missing = "vet"
+message = "Who is {name}'s vet? Their vet is not filled in yet."
+
+[[tables.pets.watch.gaps]]
+missing = "vet.phone"
+message = "What is the phone number for {vet}, {name}'s vet?"
+
+[tables.treatments]
+title = "Treatments and medicine"
+description = "Regular treatments (flea, worming, heartworm) and medicines, with when the next one is due."
+columns.pet = { type = "link", to = "pets", required = true, on_delete = "cascade" }
+columns.name = { type = "text", required = true }
+columns.kind = { type = "choice", required = true, default = "flea", choices = [
+  { key = "flea", label = "Flea and tick" },
+  "worming",
+  "heartworm",
+  "medicine",
+  "other",
+] }
+columns.dose = { type = "text" }
+columns.every_days = { type = "integer", min = 1, max = 3650 }
+columns.next_due = { type = "date" }
+columns.notes = { type = "text" }
+
+[tables.treatments.watch]
+expiring = { date = "next_due", warn_days = 7, wording = "due" }
+
+[tables.given]
+title = "Treatments given"
+description = "Each time a treatment or medicine is given."
+columns.treatment = { type = "link", to = "treatments", required = true, on_delete = "cascade" }
+columns.given_on = { type = "date", required = true, default = "today" }
+columns.notes = { type = "text" }
+
+[tables.weigh_ins]
+title = "Weigh-ins"
+description = "A pet's weight over time, so slow changes are noticed."
+columns.pet = { type = "link", to = "pets", required = true, on_delete = "cascade" }
+columns.day = { type = "date", required = true, default = "today" }
+columns.weight = { type = "decimal", required = true, min = 0, unit = "kg" }
+columns.notes = { type = "text" }
+
+[tables.vet_visits]
+title = "Vet visits"
+description = "Every visit: why, what happened and what it cost."
+columns.pet = { type = "link", to = "pets", required = true, on_delete = "cascade" }
+columns.day = { type = "date", required = true, default = "today" }
+columns.vet = { type = "link", to = "people.people", on_delete = "clear" }
+columns.reason = { type = "text", required = true }
+columns.cost = { type = "money", min = 0 }
+columns.notes = { type = "longtext" }

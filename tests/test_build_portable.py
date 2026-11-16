@@ -27,7 +27,7 @@ class BuildPortableTests(unittest.TestCase):
             zip_path = build_portable.build(tmp / "out", fake, skip_libraries=True,
                                             require_pinned=True, config=config)
             folder = tmp / "out" / build_portable.FOLDER_NAME
-            for name in ("Open Dashboard.bat", "Close Dashboard safely.bat", "READ ME FIRST.txt", "LICENSE.txt"):
+            for name in ("Open Dashboard.bat", "Save and exit Dashboard.bat", "READ ME FIRST.txt", "LICENSE.txt"):
                 self.assertTrue((folder / name).exists(), name)
             self.assertTrue((folder / "app" / "src" / "dashboard" / "__main__.py").exists())
             self.assertFalse(list((folder / "app" / "src").rglob("__pycache__")))
