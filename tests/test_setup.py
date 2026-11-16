@@ -126,3 +126,20 @@ class SetupTests(TempDirTestCase):
         made = backups.on_close(self.data, extra)
         self.assertEqual(len(made), 1)
         self.assertFalse(extra.exists())
+
+    def test_a_failed_second_backup_is_shown_on_settings_and_home(self):
+        from datetime import date
+        from dashboard.core import backups
+        self.start()
+        self.post("/setup", {"name_1": "Person A", "modules": ["demo", "people"], "second_copy": "yes"})
+        backups.daily(self.data, self.tmp / "computer-copy", today=date(2026, 6, 1))
+        page = self.get("/settings").get_data(as_text=True)
+        self.assertIn("Second copy on this computer:</strong> last made", page)
+        blocker = self.tmp / "not-a-folder"
+        blocker.write_text("x", encoding="utf-8")
+        backups.daily(self.data, blocker, today=date(2026, 6, 2))
+        page = self.get("/settings").get_data(as_text=True)
+        self.assertIn("the last one failed", page)
+        self.assertIn("The last good second copy is from", page)
+        self.assertIn("The copy in your data folder is fine.", page)
+        self.assertIn("second backup copy on this computer could not be made", self.get("/").get_data(as_text=True))

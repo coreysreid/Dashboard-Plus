@@ -45,6 +45,7 @@ class Supply:
     needs_household: bool = False
     label: str = "supplies"
     rows: int = 0
+    basis: str = ""  # the daily amounts the estimate assumes, e.g. "3 litres per person a day, 1 per pet"
     notes: list[str] = field(default_factory=list)
 
 
@@ -144,22 +145,25 @@ def supplies(conn: sqlite3.Connection, registry: dict[str, TableInfo]) -> list[S
                            f"WHERE deleted_at IS NULL{clause}", list(filters.values())).fetchone()
         total, count = float(row["total"]), row["n"]
         unit = rule["unit"]
+        u = f" {unit}" if unit else ""
+        basis = f"{_number(rule['per_person_per_day'])}{u} per person a day"
+        if rule["per_pet_per_day"] and home.pets:
+            basis += f", {_number(rule['per_pet_per_day'])} per pet"
         title = info.module.labels.get("tables", {}).get(info.table.name, {}).get("title") or info.table.title
         if home.people is None:
             results.append(Supply(info.name, title, unit, total, 0, None, rule["target_days"], 0,
                                   "Tell the program how many people live here to work out days of cover.",
-                                  needs_household=True, rows=count, label=rule["label"]))
+                                  needs_household=True, rows=count, label=rule["label"], basis=basis))
             continue
         need = home.people * rule["per_person_per_day"] + home.pets * rule["per_pet_per_day"]
         target = rule["target_days"]
-        u = f" {unit}" if unit else ""
         who = f"{home.people} {'person' if home.people == 1 else 'people'}"
         if home.pets and rule["per_pet_per_day"]:
             who += f" and {home.pets} pet{'s' if home.pets != 1 else ''}"
         if need <= 0:
             results.append(Supply(info.name, title, unit, total, 0, None, target, 0,
                                   "The daily need works out as zero, so days of cover cannot be calculated.", rows=count,
-                                  label=rule["label"]))
+                                  label=rule["label"], basis=basis))
             continue
         days = total / need
         shortfall = max(0.0, target * need - total)
@@ -167,7 +171,7 @@ def supplies(conn: sqlite3.Connection, registry: dict[str, TableInfo]) -> list[S
                    f"= about {_number(round(days, 1))} days (aim: {_number(target)} days).")
         notes = ["The daily figures are a starting point. Your local authority's advice comes first."]
         results.append(Supply(info.name, title, unit, total, need, days, target, shortfall, working,
-                              rows=count, notes=notes, label=rule["label"]))
+                              rows=count, notes=notes, label=rule["label"], basis=basis))
     return results
 
 

@@ -113,7 +113,10 @@ class StockModuleTests(TempDirTestCase):
         self.assertIn('href="/t/stock__items/new"', home)
         self.assertIn("No water recorded yet", home)
         self.item(name="Water casks", category="water", quantity=10)
+        settings.put(self.conn, "household.pets", 1)
+        self.records.create("people__people", {"name": "Person A", "lives_here": True})
         home = client.get("/", base_url=BASE).get_data(as_text=True)
+        self.assertIn("Based on 3 litres per person a day, 1 per pet. Check your local authority", home)
         self.assertNotIn("Add a few things from the pantry.", home)
         self.assertNotIn("No water recorded yet", home)
 

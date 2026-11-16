@@ -78,6 +78,20 @@
   <code>{{ data_backups }}</code>.</p>
   <div><label><input type="checkbox" name="second_copy" value="yes" {% if values.second_copy %}checked{% endif %}> Also keep a copy on this computer</label>
     <p class="help">In <code>{{ extra_backups }}</code>, so a lost USB stick does not lose everything. This means your records are also stored on this computer.</p></div>
+  {% if mode == "settings" and backup.main %}
+  <div class="card" id="backup-status">
+    <p style="margin-top:0"><strong>Copy in your data folder:</strong> last made {{ backup.main }}.</p>
+    {% if backup.second_state == "ok" %}
+    <p><strong>Second copy on this computer:</strong> last made {{ backup.second_at }}.</p>
+    {% elif backup.second_state == "failed" %}
+    <p class="problem" role="alert"><strong>Second copy on this computer: the last one failed</strong> ({{ backup.second_at }}):
+      {{ backup.second_reason }}. {% if backup.second_last_ok %}The last good second copy is from {{ backup.second_last_ok }}.{% else %}No second copy has been made yet.{% endif %}
+      The copy in your data folder is fine.</p>
+    {% else %}
+    <p><strong>Second copy on this computer:</strong> switched off.</p>
+    {% endif %}
+  </div>
+  {% endif %}
 
   <div class="actions">
     <button type="submit">{% if mode == "setup" %}Finish setup{% else %}Save settings{% endif %}</button>
