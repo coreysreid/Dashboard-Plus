@@ -161,6 +161,8 @@ class Records:
                 raise ValueError("must be a number.") from None
             if not number.is_finite():
                 raise ValueError("must be a number.")
+            if abs(number) >= Decimal("1e12"):
+                raise ValueError("is too large.")
             if kind == "integer" and number != number.to_integral_value():
                 raise ValueError("must be a whole number.")
             if column.min is not None and number < Decimal(str(column.min)):
@@ -171,7 +173,7 @@ class Records:
                 return int(number)
             if kind == "money":
                 return int((number * 100).quantize(Decimal("1")))  # stored as whole cents
-            return float(number)
+            return float(round(number, 6))
         if kind == "date":
             try:
                 return date.fromisoformat(str(value)).isoformat()
@@ -263,33 +265,43 @@ class Records:
                 self.conn.executemany(f"INSERT INTO {join} (from_id, to_id) VALUES (?, ?)",
                                       [(record_id, to) for to in values[column.name]])
 
+    def _effect(self, info: TableInfo, row: dict) -> tuple[int, Decimal] | None:
+        """What a record adds to (or takes from) its linked quantity: (linked id, signed amount)."""
+        rule = info.table.adjusts
+        if not rule or row.get("deleted_at") or row.get(rule["link"]) is None or row.get(rule["amount"]) is None:
+            return None
+        amount = Decimal(str(row[rule["amount"]]))
+        return row[rule["link"]], amount if row[rule["direction"]] in rule["adds"] else -amount
+
     def _adjust(self, info: TableInfo, row: dict, sign: int, actor: str, skip: set | None = None) -> None:
         """Apply (sign=+1) or undo (sign=-1) a record's effect on a linked quantity.
 
         Used for tables with an `adjusts` section, such as stock in and out: buying
         adds to an item's quantity, using takes from it. Refuses to go below zero.
         """
+        effect = self._effect(info, row)
+        if effect is not None:
+            self._shift(info, effect[0], sign * effect[1], actor, skip, undoing=sign < 0)
+
+    def _shift(self, info: TableInfo, target_id: int, delta: Decimal, actor: str, skip: set | None = None,
+               undoing: bool = True) -> None:
+        """Change the linked quantity by `delta`, in exact decimals, refusing to go below zero."""
         rule = info.table.adjusts
-        if not rule or row.get("deleted_at") or row.get(rule["link"]) is None or row.get(rule["amount"]) is None:
-            return
         target = self.registry[table_name(info.module.name, rule["target"])]
-        target_id = row[rule["link"]]
         if skip and (target.name, target_id) in skip:
             return  # the linked record is itself being deleted
         current = self.conn.execute(f"SELECT {rule['quantity']}, deleted_at FROM {target.name} WHERE id = ?",
                                     (target_id,)).fetchone()
-        if current is None or current["deleted_at"]:
+        if current is None or current["deleted_at"] or not delta:
             return
         before = current[rule["quantity"]] or 0
-        amount = row[rule["amount"]] if row[rule["direction"]] in rule["adds"] else -row[rule["amount"]]
-        after = before + sign * amount
+        after = Decimal(str(before)) + delta
         if after < 0:
             column = target.table.columns[rule["quantity"]]
             raise ValidationError({rule["amount"]: f"is more than there is: only {_plain_number(before)} "
-                                   f"{'left' if sign > 0 else 'would remain'}. If the count was wrong, correct "
+                                   f"{'would remain' if undoing else 'left'}. If the count was wrong, correct "
                                    f"{column.name.replace('_', ' ')} on the {target.table.title.lower()} record first."})
-        if target.table.columns[rule["quantity"]].type == "integer":
-            after = int(after)
+        after = int(after) if target.table.columns[rule["quantity"]].type == "integer" else float(round(after, 6))
         assignments = {rule["quantity"]: after, "updated_at": self.clock()}
         if actor == "person":
             assignments["edited_by_person"] = 1
@@ -319,8 +331,18 @@ class Records:
         chain = self.ancestors(info, int(cleaned[parent]))
         if record_id is not None and any(row["id"] == record_id for row in chain):
             raise ValidationError({parent: "can't be this place itself, or a place inside it."})
-        if len(chain) >= self.MAX_DEPTH:
+        if len(chain) + self._levels_below(info, record_id) >= self.MAX_DEPTH:
             raise ValidationError({parent: f"is too deep; places can go {self.MAX_DEPTH} levels deep."})
+
+    def _levels_below(self, info: TableInfo, record_id: int | None) -> int:
+        """How many levels of records sit inside this one (0 when none), so moving a branch stays in bounds."""
+        levels, current = 0, [record_id] if record_id is not None else []
+        while current and levels <= self.MAX_DEPTH:
+            marks = ", ".join("?" * len(current))
+            current = [r[0] for r in self.conn.execute(
+                f"SELECT id FROM {info.name} WHERE deleted_at IS NULL AND {info.table.parent} IN ({marks})", current)]
+            levels += 1 if current else 0
+        return levels
 
     def create(self, name: str, values: dict, actor: str = "person", review_status: str = "confirmed",
                batch_id: int | None = None) -> int:
@@ -364,8 +386,12 @@ class Records:
             self._audit(actor, "update", info, record_id, {k: current.get(k) for k in changed}, changed)
             rule = info.table.adjusts
             if rule and any(k in changed for k in (rule["link"], rule["amount"], rule["direction"])):
-                self._adjust(info, current, -1, actor)
-                self._adjust(info, self._row(info, record_id), +1, actor)
+                old, new = self._effect(info, current), self._effect(info, self._row(info, record_id))
+                if old and new and old[0] == new[0]:
+                    self._shift(info, new[0], new[1] - old[1], actor, undoing=False)  # one net change
+                else:
+                    self._adjust(info, current, -1, actor)
+                    self._adjust(info, self._row(info, record_id), +1, actor)
         return {k: [current.get(k), v] for k, v in changed.items()}
 
     def _dependents(self, info: TableInfo):
@@ -384,9 +410,13 @@ class Records:
         self._check_actor(actor)
         info = self.info(name)
         with db.transaction(self.conn):
-            self._delete(info, record_id, actor, set())
+            self._delete(info, record_id, actor, set(), f"{info.name}:{record_id}")
 
-    def _delete(self, info: TableInfo, record_id: int, actor: str, seen: set) -> None:
+    def _delete(self, info: TableInfo, record_id: int, actor: str, seen: set, root: str) -> None:
+        """Delete one record and what its links say should go with it.
+
+        Everything deleted or cleared along with the record is tagged with `root` (the record the
+        person deleted), so restoring that record brings it all back (decision 0050)."""
         if (info.name, record_id) in seen:
             return
         seen.add((info.name, record_id))
@@ -401,29 +431,72 @@ class Records:
                 blocking.append(f"{len(ids)} {other.table.title.lower()} record(s)")
             elif column.on_delete == "cascade":
                 for child in ids:
-                    self._delete(other, child, actor, seen)
+                    self._delete(other, child, actor, seen, root)
             else:  # clear
                 for child in ids:
                     self.conn.execute(f"UPDATE {other.name} SET {column.name} = NULL, updated_at = ? WHERE id = ?",
                                       (self.clock(), child))
-                    self._audit(actor, "update", other, child, {column.name: record_id}, {column.name: None})
+                    self._audit(actor, "update", other, child, {column.name: record_id},
+                                {column.name: None, "_cleared_with": root})
         if blocking:
             raise ValidationError({"delete": "cannot be done yet because " + " and ".join(blocking) +
                                    " still point at it. Change or delete those first."})
+        rule = info.table.adjusts
+        kept = bool(rule and row.get(rule["link"]) is not None and
+                    (table_name(info.module.name, rule["target"]), row[rule["link"]]) in seen)
         self._adjust(info, row, -1, actor, skip=seen)
         now = self.clock()
         self.conn.execute(f"UPDATE {info.name} SET deleted_at = ?, updated_at = ? WHERE id = ?", (now, now, record_id))
-        self._audit(actor, "delete", info, record_id, None, None)
+        # kept_effect: a stock movement deleted with its item still counts in the item's amount.
+        self._audit(actor, "delete", info, record_id, None, {"with": root, "kept_effect": kept})
 
     def restore(self, name: str, record_id: int, actor: str = "person") -> None:
-        """Bring back a deleted record."""
+        """Bring back a deleted record, with everything that was deleted or cleared along with it."""
         self._check_actor(actor)
         info = self.info(name)
         with db.transaction(self.conn):
             row = self._row(info, record_id, include_deleted=True)
             if not row["deleted_at"]:
                 return
-            self.conn.execute(f"UPDATE {info.name} SET deleted_at = NULL, updated_at = ? WHERE id = ?",
-                              (self.clock(), record_id))
-            self._audit(actor, "restore", info, record_id, None, None)
+            for column in info.table.columns.values():  # it can't come back pointing at something deleted
+                if column.type == "link" and row.get(column.name) is not None:
+                    target = self.registry.get(target_table(info.module.name, column))
+                    linked = self.conn.execute(f"SELECT deleted_at FROM {target.name} WHERE id = ?",
+                                               (row[column.name],)).fetchone() if target else None
+                    if linked is not None and linked["deleted_at"]:
+                        raise ValidationError({"restore": f"needs its {column.name.replace('_', ' ')} back first: "
+                                               f"restore that {target.table.title.lower()} record, and this one "
+                                               f"comes back with it."})
+            self._restore_one(info, record_id, actor)
+            key = f"{info.name}:{record_id}"
+            for entry in self.conn.execute(
+                    "SELECT table_name, record_id FROM core__audit WHERE action = 'delete' AND id IN ("
+                    "SELECT MAX(id) FROM core__audit WHERE action = 'delete' GROUP BY table_name, record_id) "
+                    "AND json_extract(after, '$.with') = ? AND NOT (table_name = ? AND record_id = ?)",
+                    (key, info.name, record_id)).fetchall():
+                other = self.registry.get(entry["table_name"])
+                if other is not None:
+                    self._restore_one(other, entry["record_id"], actor)
+            for entry in self.conn.execute(
+                    "SELECT table_name, record_id, before FROM core__audit WHERE action = 'update' "
+                    "AND json_extract(after, '$._cleared_with') = ?", (key,)).fetchall():
+                other = self.registry.get(entry["table_name"])
+                if other is None:
+                    continue
+                for column, value in json.loads(entry["before"]).items():
+                    self.conn.execute(f"UPDATE {other.name} SET {column} = ?, updated_at = ? "
+                                      f"WHERE id = ? AND {column} IS NULL", (value, self.clock(), entry["record_id"]))
+                    self._audit(actor, "update", other, entry["record_id"], {column: None}, {column: value})
+
+    def _restore_one(self, info: TableInfo, record_id: int, actor: str) -> None:
+        row = self.conn.execute(f"SELECT * FROM {info.name} WHERE id = ?", (record_id,)).fetchone()
+        if row is None or not row["deleted_at"]:
+            return
+        last = self.conn.execute("SELECT after FROM core__audit WHERE action = 'delete' AND table_name = ? "
+                                 "AND record_id = ? ORDER BY id DESC LIMIT 1", (info.name, record_id)).fetchone()
+        kept = bool(last and last["after"] and json.loads(last["after"]).get("kept_effect"))
+        self.conn.execute(f"UPDATE {info.name} SET deleted_at = NULL, updated_at = ? WHERE id = ?",
+                          (self.clock(), record_id))
+        self._audit(actor, "restore", info, record_id, None, None)
+        if not kept:
             self._adjust(info, self._row(info, record_id), +1, actor)
