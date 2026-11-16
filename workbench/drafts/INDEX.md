@@ -15,3 +15,4 @@ Add a row here for each draft folder you create.
 | documents/ | Where important papers are, with renewal dates | reviewing document records |
 | home_care/ | Household checks and jobs with due-date history | reviewing home checks |
 | wine/ | A compact wine collection module | reviewing or promoting it |
+| receipt_entry/ | Synthetic 200-line receipt matching vocabulary and review flow | building M2 receipt entry |
