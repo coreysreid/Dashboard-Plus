@@ -114,7 +114,10 @@ Draft modules may link to these with `requires = ["people"]` and
 | Setup country and state drop-downs, "Save and exit" | A | in review |
 | Pets module (moved forward from M5, from Lane B's draft) | A | in review |
 | Batch 2: M1 check, wording, Pets/Medical/Wine drafts, AU/US research, SWOT | B | merged |
-| Batch 3 (below) | B | ready to start |
+| Batch 3: catalogue, Home layout, lots, Medical, readiness, country packs, Documents, Home care, Wine, examples, UX check | B | merged (#22, #24 to #33) |
+| Drinking water only; pick from a list while typing (catalogue) | A | merged (#35, #36) |
+| Nested places, dates shown the household's way, lots | A | next, in that order |
+| Batch 4 (below), then the Lane B roadmap (batches 5 to 8) | B | ready to start |
 
 ## How the lanes work together: draft, polish, test
 
@@ -137,10 +140,164 @@ session can finish; Lane A keeps it stocked.
 | A | B | Start batch 2 below, all inside `workbench/`. | done: pull requests #12, #13, #15 |
 | B | A | M1 check findings (`workbench/reports/2026-11-09-m1-check.md`): J1 first step, J5 home summary. | fixed in the M1 release checks pull request |
 | B | A | Product review (`workbench/reports/2026-11-13-product-swot.md`): show the water basis; show whether the second backup worked; finish the hands-on M1 checks. | first two done (decision 0046); hands-on checks are with Corey |
-| A | B | Start batch 3 below: drafting heavy lifting for Lane A to polish and integrate. | open |
+| A | B | Start batch 3 below: drafting heavy lifting for Lane A to polish and integrate. | done (#22, #24 to #33) |
+| A | B | Start batch 4 below: check the new picking, fill the catalogue from evidence, a places list, acceptance checks for nested places and lots, tie readiness questions to records, Collections and Vehicles drafts, a getting-started guide. | open |
 | B | A | Module wording (`workbench/reports/2026-11-09-module-wording.md`). | adopted, lightly changed: sheet titles keep "Emergency sheet" ("fridge copy" and "with private medical details"), supplies sheet is "Emergency supplies"; the rest as suggested |
 
-## Brief for Lane B, batch 3
+## Brief for Lane B, batch 4
+
+> You are Lane B, the checker and drafter. You have full internet access.
+> Pull the latest `main` and read `AGENTS.md`, this page (including "Who
+> merges": Lane A now merges your workbench pull requests itself once checks
+> pass), [`BACKLOG.md`](BACKLOG.md), [`DESIGN.md`](DESIGN.md) sections 5 and
+> 6 (new since batch 3: 5.5 picking from a list while typing, `show_when`,
+> `counts_only`, `wording = "due"`), [`EXAMPLES.md`](EXAMPLES.md), the shipped
+> modules in `modules/` (People, Household stock with `catalogue.csv`, Pets)
+> and your own drafts. Edit only `workbench/`; the usual Definition of done.
+> Cite a source and date checked for every fact a household might rely on.
+>
+> **What changed since batch 3:** only drinking water counts towards days of
+> water ("Safe to drink" on water items); typing a stock item's name offers
+> your catalogue (now `modules/stock/catalogue.csv`), with the household's own
+> items first; long linked lists have a find box. Lane A is building nested
+> places next (from your Home layout draft), then dates shown the household's
+> way, then lots (from your design).
+>
+> 1. **UX check of the new picking and drinking water (J2, J3).** Run `main`
+>    with the three example households and a fresh one. Try a real stocktake
+>    of 20 goods by typing, including regional names (tinned/canned,
+>    capsicum/bell pepper, torch/flashlight) and a few the catalogue lacks.
+>    Report, worst first, with exact wording: missing or badly ranked goods,
+>    fills that are wrong (category, unit, drinking), anything confusing.
+> 2. **Catalogue round 4: fill the gaps from evidence.** In
+>    `workbench/drafts/catalogue/catalogue.csv`: add `typical_sizes` and
+>    `shelf_life_unopened` wherever an official or manufacturer source gives
+>    them (try the FoodKeeper data through foodsafety.gov or data.gov, FSANZ,
+>    the UK Food Standards Agency, WRAP); fix anything round 1 of the UX check
+>    finds; add goods it shows are missing. Keep keys stable. Note every
+>    source and licence in `NOTES.md`.
+> 3. **A list of places to pick from.** `workbench/drafts/home_layout/places.csv`
+>    with `name`, `kind` (room, storage or spot), `also_called` and `typical_in`
+>    (house, apartment, townhouse): Kitchen, Pantry, Laundry, Linen cupboard,
+>    Garage, Shed, Under the stairs, Top shelf, Bottom drawer and so on, with
+>    AU, US and UK names (cupboard/closet, wardrobe, boot/trunk). About 120
+>    rows. Lane A will use it for typing places the same way as goods.
+> 4. **Nested places: the exact behaviour, as acceptance checks.** In
+>    `workbench/drafts/home_layout/ACCEPTANCE.md`, write numbered checks Lane A
+>    can turn into tests: the full path shown everywhere ("Kitchen › Pantry ›
+>    Shelf 3"), picking a place by typing any part of the path, moving a shelf
+>    to another room, refusing a place inside itself, deleting a room that
+>    still holds things, and how each example household's current places move
+>    into rooms and spots (give the mapping row by row).
+> 5. **Lots and dates: acceptance checks.** Same for
+>    `workbench/drafts/stock_lots/ACCEPTANCE.md`: the stocktake, the weekly
+>    shop, using oldest first, throwing out an expired lot, what *Needs
+>    attention* says, and dates typed and shown as 20/05/27 in AU, UK and NZ
+>    and 05/20/27 in the US (with the edge cases: 1/2/27, 2027-05-20, typing
+>    a two-digit year), plus how today's single-date items become lots.
+> 6. **Readiness questions, tied to real records.** For each of your 49
+>    questions, set `answered_by` to an exact field that exists now (a People
+>    role, a Pets field, a Household stock category with an amount above zero,
+>    or a Home layout or Medical table from your drafts), or `none`. List in
+>    `NOTES.md` the rules the core needs to decide "already answered".
+> 7. **Two more module drafts from Corey's vision.** `collections` (a hobby or
+>    collection such as Lego sets, trading cards or vinyl: item, set or
+>    catalogue number, condition, where it is, bought for, value now, sold
+>    for, with a total value) and `vehicles` (registration, insurance and
+>    service due dates through `watch` with `wording = "due"`, the roadside
+>    assistance number in People, and a car emergency kit as Household stock
+>    in a "car" place). Example data for the three households.
+> 8. **A plain getting-started guide for households.** Draft
+>    `workbench/drafts/guide/GETTING_STARTED.md` for someone who has never
+>    used it: download, open, the Windows warning, setup, the first ten
+>    minutes, a stocktake, printing the emergency sheet, Save and exit, and
+>    updating. Use the screenshots in `docs/screenshots/` by path. Lane A will
+>    promote it into `docs/`.
+
+## Lane B roadmap: what comes after batch 4
+
+Work down this list in order once batch 4 is done; it is long on purpose, so
+there is always a next thing. One pull request per numbered item. Each item
+names the milestone in [`ROADMAP.md`](ROADMAP.md) it feeds. If Lane A's work
+changes an item, Lane A updates this list; if you find something more
+important, propose it at the top of `workbench/STATUS.md` under "Messages to
+Lane A" and carry on.
+
+### Batch 5: making the first release excellent (M1 polish, M2)
+
+9. **UX check after each Lane A merge** (standing task, every batch): nested
+   places, dates, lots as they land. Journeys J1 to J5, worst first, exact
+   wording, screenshots by path.
+10. **Accessibility review** of every screen in `docs/screenshots/`: keyboard
+    use, labels, contrast, text size, what a screen reader would say. Cite
+    WCAG 2.2 criteria; suggest exact fixes.
+11. **Restore and export, designed from the household's side (M2).** Screen by
+    screen: finding a backup by date, seeing what it contains before
+    restoring, restoring into a new folder first, undoing a restore, "Export
+    everything" as CSV files that open in Excel and Google Sheets. Acceptance
+    checks Lane A can test.
+12. **Receipt entry (M2).** Research how supermarket receipts look in AU, US,
+    UK and NZ (made-up examples only): line formats, abbreviations ("TOM
+    TINNED 400G"), multi-buys, weights. Draft a matching table from receipt
+    words to catalogue keys for the 200 most common lines, and the review
+    screen ("we think this is Tinned tomatoes, 4 tins: yes / change").
+13. **Shopping list from what's running low.** Design the list: grouped by
+    shop aisle or category, quantities to reach "keep at least", ticking off
+    in the shop, and the trip coming home as stock in. Acceptance checks.
+14. **CSV import (M2).** The columns a household would bring from a
+    spreadsheet or another app; matching to catalogue goods and places;
+    what a dry run shows before anything is saved.
+15. **Helpers and the Agent API (M2), from the household's side.** What a
+    helper may propose, how the review queue reads ("A helper added 12 items
+    from Saturday's receipt: check them"), how to say no, and what must never
+    happen (a helper changing something a person edited). Use DESIGN 7.
+
+### Batch 6: readiness and country content (M3)
+
+16. **Medical, final.** Fold in the UX findings, Pets-style example data and
+    gaps that ask sensible questions; mark it ready to promote.
+17. **Readiness prompts as screens.** How a prompt appears, the four answers
+    (Yes, Not relevant, Not yet, Tell me more), when it comes back, the
+    coverage view ("23 of 49 looked at") that never says "safe". Acceptance
+    checks; tie to `answered_by`.
+18. **Country packs, round 2.** Every Australian state and territory, the
+    largest US states by population, UK nations, NZ regions: emergency
+    bodies, warning systems and apps, hazards, water guidance, each cited and
+    dated, with a review-by date. Note licences that forbid reuse.
+19. **Seasonal checklists.** Bushfire season, cyclone season, winter storms,
+    heat waves, hurricane season: what official sources say to check, when,
+    tied to Household stock categories and Home layout records.
+20. **Getting out in a hurry.** A "grab list" draft (what to take, where it
+    is, who carries what) linked to People, Pets, Medical and Documents, and
+    a printable one-page version.
+
+### Batch 7: understanding the numbers (M4)
+
+21. **Outcomes, defined.** For waste, shortages, money and readiness: the
+    exact metric, the records it comes from, the minimum history before it
+    shows anything, and the plain sentence it produces ("Thrown away this
+    month: 3 items, last month: 7; based on 31 days"). Never claim a win
+    without the household confirming it.
+22. **The question loop, worked examples.** Twenty realistic made-up
+    situations (a jump in milk thrown away, water dropping, a pet losing
+    weight): the change noticed, the explanations worth asking about, the
+    sensible question, and two that must never be asked (no plausible link).
+23. **Charts that help.** Which three or four charts a household would
+    actually look at, sketched in words with the data each needs.
+
+### Batch 8: more of what households keep (M5)
+
+24. **Promote-ready drafts**: Collections, Vehicles, Documents, Home care, Wine
+    and the Garden example, each with labels, `empty`, gaps, sheets and
+    example data matching the shipped modules.
+25. **Home inventory for insurance**: valuables room by room, with what they
+    cost, serial numbers and where receipts and photos are kept; a printable
+    list for a claim. Note privacy: this is sensitive.
+26. **Tools and things lent out**: who borrowed what and when it's due back.
+27. **Utilities and household accounts**: providers, account numbers kept
+    private, outage and fault lines in People, meter locations in Home layout.
+
+## Brief for Lane B, batch 3 (done)
 
 > You are Lane B, the checker and drafter. You have full internet access for
 > research. Read these first: `AGENTS.md`, this page, [`BACKLOG.md`](BACKLOG.md)
