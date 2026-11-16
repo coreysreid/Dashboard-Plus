@@ -4,6 +4,9 @@ from __future__ import annotations
 from flask import Blueprint, current_app, redirect, render_template, request, url_for
 
 from dashboard.core import records, settings
+from datetime import datetime
+
+from dashboard.core import backups
 from dashboard.core.backups import default_extra_dir
 
 setup_pages = Blueprint("setup", __name__)
@@ -54,6 +57,22 @@ def _current() -> dict:
             "hazards": get("household.hazards", []), "second_copy": get("backups.second_copy", True)}
 
 
+def _when(text: str | None) -> str | None:
+    try:
+        return datetime.fromisoformat(text).strftime("%d %b %Y %H:%M") if text else None
+    except ValueError:
+        return None
+
+
+def backup_report(data_dir) -> dict:
+    """How the last backup went, in words for the Settings and home pages."""
+    found = backups.status(data_dir) if data_dir is not None else {}
+    second = found.get("second", {})
+    return {"main": _when(found.get("main", {}).get("at")), "second_state": second.get("state"),
+            "second_at": _when(second.get("at")), "second_last_ok": _when(second.get("last_ok")),
+            "second_reason": second.get("reason")}
+
+
 def _render(mode: str, values: dict, errors: dict, status: int = 200, saved: bool = False):
     conn = _conn()
     on = settings.enabled_modules(conn)
@@ -67,7 +86,8 @@ def _render(mode: str, values: dict, errors: dict, status: int = 200, saved: boo
                            modules=modules, people_table=_people_table_ready(), people_count=people_count,
                            name_slots=NAME_SLOTS, home_types=HOME_TYPES, hazards=HAZARDS, countries=COUNTRIES,
                            data_backups=current_app.config["DATA_DIR"] / "backups",
-                           extra_backups=default_extra_dir()), status
+                           extra_backups=default_extra_dir(),
+                           backup=backup_report(current_app.config["DATA_DIR"])), status
 
 
 def _save(form, mode: str):

@@ -130,8 +130,10 @@ def create_app(shutdown_token: str, on_shutdown: Callable[[], None], report=None
                          "gaps": watch.gaps(conn, registry())}
             from dashboard.web.sheets import available_sheets
             sheets = available_sheets(registry())
+        from dashboard.web.setup import backup_report
         return render_template("home.html", report=report, tables=tables, attention=attention,
-                               last_backup=last_backup, sheets=sheets)
+                               last_backup=last_backup, sheets=sheets,
+                               backup=backup_report(app.config["DATA_DIR"]))
 
     @app.get("/attention")
     def attention_page():

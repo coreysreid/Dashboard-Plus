@@ -96,6 +96,7 @@ marked Superseded. Each lists downsides, cost to undo, and the sign it was wrong
 | [0043](0043-records-that-change-a-count.md) | Stock in and out updates the item's count automatically | Accepted |
 | [0044](0044-gaps-are-asked-not-asserted.md) | Gaps are declared in module files and asked as questions | Accepted |
 | [0045](0045-example-households-and-generated-screenshots.md) | Three made-up households, and screenshots made from them automatically | Accepted |
+| [0046](0046-show-the-water-basis-and-backup-status.md) | Show the water estimate's daily amount, and whether the second backup worked | Accepted |
 | [0060](0060-garden-example-outside-installed-modules.md) | Keep the worked garden outside installed modules | Accepted |
 | [0061](0061-public-reporting-and-contribution-rules.md) | Public contribution and private security reporting routes | Accepted |
 | [TEMPLATE](TEMPLATE.md) | Blank record to copy for a new decision | recording a decision |

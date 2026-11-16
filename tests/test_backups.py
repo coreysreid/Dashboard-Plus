@@ -35,6 +35,21 @@ class BackupTests(TempDirTestCase):
         self.assertEqual(len(made), 1)
         self.assertTrue((self.data / "backups" / "daily-2026-06-02.db").exists())
 
+    def test_how_the_second_copy_went_is_recorded(self):
+        backups.daily(self.data, self.extra, today=date(2026, 6, 1))
+        first = backups.status(self.data)
+        self.assertEqual(first["main"]["file"], "daily-2026-06-01.db")
+        self.assertEqual(first["second"]["state"], "ok")
+        blocker = self.tmp / "not-a-folder"
+        blocker.write_text("x", encoding="utf-8")
+        backups.daily(self.data, blocker, today=date(2026, 6, 2))
+        second = backups.status(self.data)["second"]
+        self.assertEqual(second["state"], "failed")
+        self.assertIn("could not be written", second["reason"])
+        self.assertEqual(second["last_ok"], first["second"]["last_ok"])  # the last good copy is remembered
+        backups.daily(self.data, None, today=date(2026, 6, 3))
+        self.assertEqual(backups.status(self.data)["second"]["state"], "off")
+
     def test_old_backups_are_pruned_but_recent_ones_kept(self):
         for day in range(1, 21):
             backups.daily(self.data, today=date(2026, 6, day))

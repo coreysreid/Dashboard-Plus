@@ -1,6 +1,7 @@
 """Automatic backups: one a day, one at every safe close, kept in two places."""
 from __future__ import annotations
 
+import json
 import logging
 import os
 import sys
@@ -11,6 +12,7 @@ from dashboard.core import db
 
 log = logging.getLogger("dashboard.backups")
 KEEP = {"daily": 14, "close": 10, "before-update": 5}
+STATUS_FILE = "status.json"  # in the data folder's backups folder: how the last backup went
 
 
 def default_extra_dir() -> Path:
@@ -35,6 +37,7 @@ def _write(data_dir: Path, extra_dir: Path | None, filename: str) -> list[Path]:
     from dashboard.core import settings
 
     written = []
+    second: dict = {"state": "off"}
     conn = db.connect(Path(data_dir) / "dashboard.db")
     try:
         if not settings.get(conn, "backups.second_copy", True):
@@ -42,15 +45,55 @@ def _write(data_dir: Path, extra_dir: Path | None, filename: str) -> list[Path]:
         for i, folder in enumerate(backup_dirs(data_dir, extra_dir)):
             try:
                 written.append(db.backup_to(conn, folder / filename))
-            except Exception:  # noqa: BLE001 - the main copy must not depend on the second
+                if i == 1:
+                    second = {"state": "ok", "folder": str(folder)}
+            except Exception as error:  # noqa: BLE001 - the main copy must not depend on the second
                 if i == 0:
                     raise
                 log.warning("The second backup copy could not be written to %s", folder)
+                second = {"state": "failed", "folder": str(folder), "reason": _reason(error)}
     finally:
         conn.close()
+    _record(data_dir, filename, second)
     for folder in backup_dirs(data_dir, extra_dir):
         prune(folder)
     return written
+
+
+def _reason(error: Exception) -> str:
+    """A short, plain reason a copy failed, for the Settings page."""
+    if isinstance(error, PermissionError):
+        return "the folder could not be written to (no permission)"
+    if isinstance(error, OSError) and getattr(error, "errno", None) == 28:
+        return "the disk is full"
+    if isinstance(error, OSError):
+        return "the folder could not be written to"
+    return "an unexpected problem"
+
+
+def _record(data_dir: Path, filename: str, second: dict) -> None:
+    """Remember how this backup went, so the household can see a failed second copy."""
+    now = datetime.now().isoformat(timespec="seconds")
+    previous = status(data_dir).get("second", {})
+    second = dict(second, at=now)
+    if second["state"] == "ok":
+        second["last_ok"] = now
+    elif previous.get("last_ok"):
+        second["last_ok"] = previous["last_ok"]
+    path = Path(data_dir) / "backups" / STATUS_FILE
+    try:
+        path.write_text(json.dumps({"main": {"file": filename, "at": now}, "second": second}, indent=1),
+                        encoding="utf-8")
+    except OSError:
+        log.warning("Could not record how the backup went")
+
+
+def status(data_dir: Path) -> dict:
+    """How the last backup went: {"main": {...}, "second": {"state": "ok" | "failed" | "off", ...}}."""
+    try:
+        return json.loads((Path(data_dir) / "backups" / STATUS_FILE).read_text(encoding="utf-8"))
+    except (OSError, ValueError):
+        return {}
 
 
 def daily(data_dir: Path, extra_dir: Path | None = None, today: date | None = None) -> list[Path]:

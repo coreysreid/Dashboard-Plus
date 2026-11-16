@@ -171,7 +171,9 @@ supply = { quantity = "quantity", per_person_per_day = 3, per_pet_per_day = 0,
   the `household.people` setting the wizard writes. Pets count from the
   `household.pets` setting in M1. The page shows the working ("2 × 10 litres
   for 3 people at 3 litres a day = about 2 days") and says the daily figures
-  are a starting point, local advice comes first.
+  are a starting point, local advice comes first. The home page shows the
+  daily amounts it assumes next to the result ("Based on 3 litres per person a
+  day, 1 per pet"), so the basis is never hidden (decision 0046).
 - Watch results always leave out deleted rows.
 
 ### 5.2 Printable sheets
@@ -850,6 +852,10 @@ only to choose which pack applies; nothing is looked up online.
   any migration, plus a copy on the computer's own disk. Kept for a configured
   number of days; the latest of each kind is never deleted automatically.
   Backups are verified by opening them and running `PRAGMA integrity_check`.
+  Each backup records how it went in `backups/status.json` in the data folder;
+  Settings shows when each copy was last made, and if the copy on the computer
+  failed, Settings and the home page say so plainly, with the reason and the
+  date of the last good copy (decision 0046).
 - **Restore.** One click on the Backups screen. Restoring first backs up the
   current state, so a restore can be undone too.
 - **Export everything.** One click writes a folder: one CSV per table (with

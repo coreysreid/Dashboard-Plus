@@ -121,9 +121,9 @@ def run_browser(plan: dict, work: Path) -> list[str]:
 
 
 def start_server(data_dir: Path, env: dict) -> tuple[subprocess.Popen, str]:
-    process = subprocess.Popen([sys.executable, "-m", "dashboard", "--data", str(data_dir), "--no-browser",
-                                "--no-extra-backup"], cwd=ROOT, env=env, stdout=subprocess.DEVNULL,
-                               stderr=subprocess.DEVNULL)
+    # The second backup goes to the temporary HOME (see `make`), so Settings shows it working.
+    process = subprocess.Popen([sys.executable, "-m", "dashboard", "--data", str(data_dir), "--no-browser"],
+                               cwd=ROOT, env=env, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
     state = data_dir / "run" / "dashboard.json"
     for _ in range(100):
         if state.exists():
