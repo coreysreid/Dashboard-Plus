@@ -1,9 +1,21 @@
 [tables.wines]
+empty = "Add a wine you want to remember."
 form = ["name", "producer", "vintage", "region", "grape"]
 list = ["name", "producer", "vintage", "region"]
+columns.name = { label = "Wine", help = "Use the name shown on the bottle, or your own short name." }
+columns.vintage = { help = "Leave blank for a non-vintage wine." }
+columns.region = { help = "As written on the label, if you want to record it." }
+
 [tables.bottles]
 form = ["wine", "quantity", "place", "bought_on", "price"]
 list = ["wine", "quantity", "place", "bought_on"]
+columns.quantity = { label = "Bottles on hand", help = "The current count. Update it when bottles are added or opened." }
+columns.place = { label = "Where kept", help = "A shelf, rack or other place you can recognise." }
+columns.bought_on = { label = "Bought on" }
+columns.price = { label = "Price paid", help = "For this entry, in the household's own currency. Leave blank if unhelpful." }
+
 [tables.tastings]
 form = ["wine", "tasted_on", "notes"]
 list = ["wine", "tasted_on", "notes"]
+columns.tasted_on = { label = "Tasted on" }
+columns.notes = { label = "Your notes", help = "Write what you want to remember; there is no required scoring system." }

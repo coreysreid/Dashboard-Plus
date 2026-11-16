@@ -1,0 +1,10 @@
+[[sheet]]
+name = "collection"
+title = "Wine collection"
+intro = "A snapshot of the bottles recorded here. Check the count if bottles have been opened or moved."
+
+[[sheet.section]]
+title = "Bottles on hand"
+table = "bottles"
+columns = ["wine", "quantity", "place", "bought_on"]
+order_by = "wine"

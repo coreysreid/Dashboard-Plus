@@ -10,5 +10,7 @@ Add a row here for each draft folder you create.
 | stock_lots/ | Item lots, use-by flow and core integration design. | planning layered stock dates |
 | readiness/ | Draft source-linked household questions. | reviewing readiness prompts |
 | country-packs/ | Sourced AU, US, UK and NZ content. | reviewing country packs |
+| documents/ | Important paper locations and renewal dates. | reviewing document records |
+| home_care/ | Household work and due-date history. | reviewing home checks |
 | medical/ | Files-only medical module draft. | reviewing or promoting it |
 | wine/ | Files-only wine module draft. | reviewing or promoting it |

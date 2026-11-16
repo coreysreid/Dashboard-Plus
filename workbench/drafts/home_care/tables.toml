@@ -1,0 +1,20 @@
+[tables.jobs]
+title = "Home care jobs"
+description = "Checks and upkeep around the home, with the last and next date."
+columns.name = { type = "text", required = true }
+columns.kind = { type = "choice", required = true, choices = ["smoke_alarm", "gutters", "water_heater", "other"] }
+columns.place = { type = "text" }
+columns.last_done = { type = "date" }
+columns.next_due = { type = "date" }
+columns.notes = { type = "longtext" }
+
+[tables.jobs.watch]
+expiring = { date = "next_due", warn_days = 30, wording = "due", what = "home care" }
+
+[tables.work_done]
+title = "Work done"
+description = "A dated note of what was checked or done."
+columns.job = { type = "link", to = "jobs", required = true, on_delete = "cascade" }
+columns.done_on = { type = "date", required = true, default = "today" }
+columns.done_by = { type = "text" }
+columns.notes = { type = "longtext" }

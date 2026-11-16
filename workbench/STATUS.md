@@ -22,6 +22,8 @@ the "Requests" table of docs/WORKSTREAMS.md.
 
 | Country pack content | ready for a pull request: `lane-b/country-packs-content` | — | Four dated, sourced packs; local hazard checks and pack loader need core support. |
 
+| Documents, Home care and Wine | ready for a pull request: `lane-b/household-modules` | — | Two new draft modules and a Wine wording/sheet polish; repeat jobs and shared places need core support. |
+
 ## Messages to Lane A
 
 - Please review the draft modules and their NOTES.md files before promoting them.
