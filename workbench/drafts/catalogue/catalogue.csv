@@ -1,7 +1,7 @@
 key,name,category,also_called,unit,typical_sizes,shelf_life_unopened,shelf_life_source,counts_as_drinking_water,notes
 rice,Rice,pantry,white rice,kg,,,,,
-pasta,Pasta,pantry,generic pasta,packs,,,,,
-oats,Oats,pantry,porridge oats|oatmeal,kg,,,,,
+pasta,Pasta,pantry,generic pasta,packs,500 g,,,,Illustrative UK retail pack size observed 2026-11-16: https://www.tesco.com/shop/en-GB/products/254878482. Confirm the actual label.
+oats,Oats,pantry,porridge oats|oatmeal,kg,1 kg,,,,Illustrative UK retail pack size observed 2026-11-16: https://www.tesco.com/shop/en-GB/products/267449498. Confirm the actual label.
 plain_flour,Plain flour,pantry,all-purpose flour|all purpose flour,kg,,,,,
 self_raising_flour,Self-raising flour,pantry,self-rising flour,kg,,,,,
 sugar,Sugar,pantry,granulated sugar|white sugar,kg,,,,,
@@ -28,12 +28,12 @@ instant_coffee,Instant coffee,pantry,,jars,,,,,
 cocoa_powder,Cocoa powder,pantry,drinking chocolate,packs,,,,,
 long_life_milk,Long-life milk,pantry,UHT milk|shelf-stable milk,cartons,,,,,
 powdered_milk,Powdered milk,pantry,dry milk,packs,,,,,
-kidney_beans,Kidney beans,pantry,tinned kidney beans|canned kidney beans|red kidney beans,tins,,24,https://ask.fsis.usda.gov/article/How-long-can-you-keep-canned-goods (checked 2026-11-16),,Indicative best-quality period for an intact commercial can stored cool and dry; follow the package date and inspect the can.
-chickpeas,Chickpeas,pantry,garbanzo beans|tinned chickpeas|canned chickpeas,tins,,24,https://ask.fsis.usda.gov/article/How-long-can-you-keep-canned-goods (checked 2026-11-16),,Indicative best-quality period for an intact commercial can stored cool and dry; follow the package date and inspect the can.
+kidney_beans,Kidney beans,pantry,tinned kidney beans|canned kidney beans|red kidney beans,tins,400 g,24,https://ask.fsis.usda.gov/article/How-long-can-you-keep-canned-goods (checked 2026-11-16),,Indicative best-quality period for an intact commercial can stored cool and dry; follow the package date and inspect the can. Illustrative UK retail pack size observed 2026-11-16: https://www.tesco.com/shop/en-GB/products/259061829. Confirm the actual label.
+chickpeas,Chickpeas,pantry,garbanzo beans|tinned chickpeas|canned chickpeas,tins,400 g,24,https://ask.fsis.usda.gov/article/How-long-can-you-keep-canned-goods (checked 2026-11-16),,Indicative best-quality period for an intact commercial can stored cool and dry; follow the package date and inspect the can. Illustrative UK retail pack size observed 2026-11-16: https://www.tesco.com/shop/en-GB/products/262490576. Confirm the actual label.
 black_beans,Black beans,pantry,tinned black beans|canned black beans,tins,,24,https://ask.fsis.usda.gov/article/How-long-can-you-keep-canned-goods (checked 2026-11-16),,Indicative best-quality period for an intact commercial can stored cool and dry; follow the package date and inspect the can.
-baked_beans,Baked beans,pantry,tinned baked beans|canned baked beans,tins,,24,https://ask.fsis.usda.gov/article/How-long-can-you-keep-canned-goods (checked 2026-11-16),,Indicative best-quality period for an intact commercial can stored cool and dry; follow the package date and inspect the can.
+baked_beans,Baked beans,pantry,tinned baked beans|canned baked beans,tins,420 g,24,https://ask.fsis.usda.gov/article/How-long-can-you-keep-canned-goods (checked 2026-11-16),,Indicative best-quality period for an intact commercial can stored cool and dry; follow the package date and inspect the can. Illustrative UK retail pack size observed 2026-11-16: https://www.tesco.com/shop/en-GB/products/258510116. Confirm the actual label.
 lentils,Lentils,pantry,dried lentils|dry lentils,kg,,,,,
-tinned_tomatoes,Tinned tomatoes,pantry,canned tomatoes|tomato cans,tins,,18,https://ask.fsis.usda.gov/article/How-long-can-you-keep-canned-goods (checked 2026-11-16),,Indicative best-quality period for an intact commercial can stored cool and dry; follow the package date and inspect the can.
+tinned_tomatoes,Tinned tomatoes,pantry,canned tomatoes|tomato cans,tins,400 g,18,https://ask.fsis.usda.gov/article/How-long-can-you-keep-canned-goods (checked 2026-11-16),,Indicative best-quality period for an intact commercial can stored cool and dry; follow the package date and inspect the can. Illustrative UK retail pack size observed 2026-11-16: https://www.tesco.com/shop/en-GB/products/254757959. Confirm the actual label.
 tomato_paste,Tomato paste,pantry,tomato purée,tubes,,,,,
 tinned_corn,Tinned corn,pantry,canned corn|sweetcorn,tins,,24,https://ask.fsis.usda.gov/article/How-long-can-you-keep-canned-goods (checked 2026-11-16),,Indicative best-quality period for an intact commercial can stored cool and dry; follow the package date and inspect the can.
 tinned_peas,Tinned peas,pantry,canned peas,tins,,24,https://ask.fsis.usda.gov/article/How-long-can-you-keep-canned-goods (checked 2026-11-16),,Indicative best-quality period for an intact commercial can stored cool and dry; follow the package date and inspect the can.
@@ -73,11 +73,11 @@ fruit_juice,Fruit juice,pantry,juice,cartons,,,,,
 sports_drink,Sports drink,pantry,electrolyte drink,bottles,,,,,
 infant_formula,Infant formula,pantry,baby formula,tins,,,,,
 baby_food,Baby food,pantry,pouches,packs,,,,,
-bottled_drinking_water,Bottled drinking water,water,still water|bottled water|water bottles|emergency water pouches,litres,,,,yes,Sealed commercial drinking water; confirm the label.
+bottled_drinking_water,Bottled drinking water,water,still water|bottled water|water bottles|emergency water pouches,litres,2 L,,,yes,Sealed commercial drinking water; confirm the label. Illustrative UK retail pack size observed 2026-11-16: https://www.tesco.com/shop/en-GB/products/271108314. Confirm the actual label.
 stored_tap_drinking_water,Stored tap drinking water,water,stored potable water|tap water|water casks|water jugs,litres,,,,yes,Count only clean tap water stored in a sanitized food-grade container and labelled drinking water.
 filtered_drinking_water,Filtered drinking water,water,filtered water,litres,,,,yes,Count only water known potable before or after filtering; a filter alone does not prove safety.
 boiled_drinking_water,Boiled drinking water,water,boiled water,litres,,,,yes,Count only water correctly boiled and cooled for drinking under local advice.
-sparkling_drinking_water,Sparkling drinking water,water,carbonated water|seltzer,litres,,,,yes,Count only sealed sparkling water labelled for drinking.
+sparkling_drinking_water,Sparkling drinking water,water,carbonated water|seltzer,litres,2 L,,,yes,Count only sealed sparkling water labelled for drinking. Illustrative UK retail pack size observed 2026-11-16: https://www.tesco.com/shop/en-GB/products/271106518. Confirm the actual label.
 distilled_water,Distilled water,water,demineralised water|deionised water,litres,,,,no,Exclude from long-term drinking-water planning; usually kept for appliances. It is not inherently poisonous.
 stored_non_drinking_water,Stored non-drinking water,water,grey water|flushing water|washing water,litres,,,,no,For washing or flushing only; never count as drinking water.
 water_purification_tablets,Water purification tablets,water,water treatment tablets|chlorine tablets,packs,,,,no,"Treatment supplies, not litres of water."
@@ -214,7 +214,7 @@ ramen_noodles,Ramen noodles,pantry,,packs,,,,,
 lasagne_sheets,Lasagne sheets,pantry,lasagna sheets,packs,,,,,
 macaroni,Macaroni,pantry,,packs,,,,,
 spaghetti,Spaghetti,pantry,,packs,,,,,
-basmati_rice,Basmati rice,pantry,,kg,,,,,
+basmati_rice,Basmati rice,pantry,,kg,1 kg,,,,Illustrative UK retail pack size observed 2026-11-16: https://www.tesco.com/shop/en-GB/products/254877477. Confirm the actual label.
 brown_rice,Brown rice,pantry,,kg,,,,,
 jasmine_rice,Jasmine rice,pantry,,kg,,,,,
 arborio_rice,Arborio rice,pantry,risotto rice,kg,,,,,
