@@ -9,26 +9,19 @@ the "Requests" table of docs/WORKSTREAMS.md.
 | SECURITY, CONTRIBUTING, issue templates | merged | PR #11 | Public reporting and contribution guidance. |
 | M1 household journey check | merged; findings fixed in PR #17 | PR #12 | Screen findings, with Stock in/out rechecked. |
 | People and Stock wording review | merged; adopted in PR #17 | PR #13 | Exact wording and layout suggestions. |
-| Pets, Medical and Wine drafts | merged as drafts; Lane A to review | PR #15 | Three files-only drafts; open questions in each NOTES.md. |
-| AU and US country-source research | merged as research | PR #16 | Verified official links and licences where available; source gaps remain. |
-| Product SWOT and feedback | merged; water and backup findings being fixed by Lane A | PR #18 | Water and backup visibility, M1 release gates, later expansion ideas. |
-
-| Catalogue round 1 | merged | PR #22 | 150 goods and water-count decisions; type-ahead, local additions and accurate water totals need core support. |
-| Home layout draft | ready for a pull request: `lane-b/home-layout-draft` | PR #24 | Nested places and an Our home sheet; full paths, Stock migration and cycle checks need core support. |
-
-| Stock lots design | ready for a pull request: `lane-b/stock-lots-design` | — | Screen-by-screen lot flows and exact core needs; includes a long-term phone or webcam scanning idea. |
-| Medical draft polish | ready for a pull request: `lane-b/medical-promotion` | — | First step, due watches, kit place gap and a printable sheet; an unfiltered no-kit gap needs core support. |
-| Readiness prompts | ready for a pull request: `lane-b/readiness-prompts` | — | 49 source-linked questions; prompt engine and exact record matching need core support. |
-
-| Country pack content | ready for a pull request: `lane-b/country-packs-content` | — | Four dated, sourced packs; local hazard checks and pack loader need core support. |
-
-| Documents, Home care and Wine | ready for a pull request: `lane-b/household-modules` | — | Two new draft modules and a Wine wording/sheet polish; repeat jobs and shared places need core support. |
-
-| UX check after catalogue merge | ready for a pull request: `lane-b/ux-check-2026-11-16` | — | J1–J5 in three temporary examples; drinking-water count, Stock in picker and date wording, worst first. |
-
-| Example data for drafts | draft PR #31; awaiting draft merges | PR #31 | Nine `example.toml` files with Smith, Garcia and Taylor rows. The examples need to be reviewed alongside the draft modules before promotion. |
-| Catalogue round 2 | ready for a pull request: `lane-b/catalogue-round-2` | — | 400 goods total after adding 250 terms. Example-household gaps and regional aliases covered; package sizes and most shelf lives await evidence. |
-| Catalogue round 3 | draft PR #33, pending round 2 | PR #33 | 800 goods total after adding 400; search must remain selective. Package sizes and most shelf lives still need item-specific evidence. |
+| Pets, Medical and Wine drafts | merged; Pets promoted by Lane A | PR #15 | Medical and Wine stay drafts. |
+| AU and US country-source research | merged as research | PR #16 | Source gaps remain. |
+| Product SWOT and feedback | merged; findings fixed by Lane A | PR #18 | Water basis and backup status now shown. |
+| Catalogue round 1 | merged | PR #22 | 150 goods and water-count decisions. |
+| Home layout draft | merged by Lane A | PR #24 | Full paths, Stock migration and cycle checks need core support. |
+| Stock lots design | merged by Lane A | PR #25 | Includes a long-term phone or webcam scanning idea. |
+| Medical draft polish | merged by Lane A | PR #26 | An unfiltered no-kit gap needs core support. |
+| Readiness prompts | merged by Lane A | PR #27 | Prompt engine and record matching need core support. |
+| Country pack content | merged by Lane A | PR #28 | Local hazard checks and pack loader need core support. |
+| Documents, Home care and Wine | merged by Lane A | PR #29 | Repeat jobs and shared places need core support. |
+| UX check after catalogue merge | merged by Lane A | PR #30 | Drinking-water count, Stock in picker and date wording, worst first. |
+| Example data for drafts | merged by Lane A | PR #31 | Nine example.toml files with Smith, Garcia and Taylor rows. |
+| Catalogue rounds 2 and 3 | merged by Lane A | PRs #32, #33 | 800 goods; package sizes and most shelf lives still need evidence. |
 
 ## Messages to Lane A
 
