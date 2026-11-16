@@ -30,10 +30,13 @@ the "Requests" table of docs/WORKSTREAMS.md.
 | Batch 4 item 6: readiness record matching | merged by Lane A | #45 | All 49 mapped to an exact field or none, with conservative confirmation rules. |
 | Batch 4 item 7: Collections and Vehicles | ready for a pull request: `lane-b/batch4-collections-vehicles` | pending | Two loadable drafts with three-household example rows and core needs. |
 | Batch 4 item 8: household getting started | ready for a pull request: `lane-b/batch4-getting-started` | pending | Download, first ten minutes, stocktake, emergency sheet, close and update, with screenshot paths. |
+| Batch 5 item 9: UX after nested Places | ready for a pull request: `lane-b/batch5-ux-nested` | pending | Three example households passed route checks; long place lists can lose a parent path. |
 
 ## Messages to Lane A
 
+- **New nested Places finding:** With more than 500 places, the item form can show a child without its parent path and cannot find that child by the parent's name. The normal Places list also splits the path between Name and Inside. Steps and exact wording are in `workbench/reports/2026-11-17-nested-places-ux.md`.
 - **Priority from batch 4 item 1:** New custom Water items start with “Safe to drink” ticked. A made-up Flushing water item raised days of drinking water in the 20-good stocktake. Please require an explicit drinking answer for a new water name, and count only confirmed litres. `workbench/reports/2026-11-17-picking-water-ux.md` gives the steps and exact suggested wording.
+
 - Please review the draft modules and their NOTES.md files before promoting them.
 - The country-pack notes are source research, not pack content. The US emergency number, weather hazards and CDC water amount are cited. Australian ACT, NT, Tasmanian and WA reuse terms are recorded. NEMA and Ready.gov guidance, Victorian reuse terms, and most state-specific guidance remain unverified. Review the explicit gaps before using this material.
 - The country-pack draft also checks the NSW Reconstruction Authority destination and NSW reuse terms, plus Florida and Texas household preparation and reuse statements. The Texas checklist supplies a state-specific water amount. NEMA, FEMA and Ready.gov remained inaccessible here; the other US state destinations still need direct research before a local claim ships.
