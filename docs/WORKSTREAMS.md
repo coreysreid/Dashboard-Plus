@@ -117,7 +117,7 @@ Draft modules may link to these with `requires = ["people"]` and
 | Batch 3: catalogue, Home layout, lots, Medical, readiness, country packs, Documents, Home care, Wine, examples, UX check | B | merged (#22, #24 to #33) |
 | Drinking water only; pick from a list while typing (catalogue) | A | merged (#35, #36) |
 | Nested places, dates shown the household's way, lots | A | next, in that order |
-| Batch 4 (below) | B | ready to start |
+| Batch 4 (below), then the Lane B roadmap (batches 5 to 8) | B | ready to start |
 
 ## How the lanes work together: draft, polish, test
 
@@ -213,6 +213,89 @@ session can finish; Lane A keeps it stocked.
 >    minutes, a stocktake, printing the emergency sheet, Save and exit, and
 >    updating. Use the screenshots in `docs/screenshots/` by path. Lane A will
 >    promote it into `docs/`.
+
+## Lane B roadmap: what comes after batch 4
+
+Work down this list in order once batch 4 is done; it is long on purpose, so
+there is always a next thing. One pull request per numbered item. Each item
+names the milestone in [`ROADMAP.md`](ROADMAP.md) it feeds. If Lane A's work
+changes an item, Lane A updates this list; if you find something more
+important, propose it at the top of `workbench/STATUS.md` under "Messages to
+Lane A" and carry on.
+
+### Batch 5: making the first release excellent (M1 polish, M2)
+
+9. **UX check after each Lane A merge** (standing task, every batch): nested
+   places, dates, lots as they land. Journeys J1 to J5, worst first, exact
+   wording, screenshots by path.
+10. **Accessibility review** of every screen in `docs/screenshots/`: keyboard
+    use, labels, contrast, text size, what a screen reader would say. Cite
+    WCAG 2.2 criteria; suggest exact fixes.
+11. **Restore and export, designed from the household's side (M2).** Screen by
+    screen: finding a backup by date, seeing what it contains before
+    restoring, restoring into a new folder first, undoing a restore, "Export
+    everything" as CSV files that open in Excel and Google Sheets. Acceptance
+    checks Lane A can test.
+12. **Receipt entry (M2).** Research how supermarket receipts look in AU, US,
+    UK and NZ (made-up examples only): line formats, abbreviations ("TOM
+    TINNED 400G"), multi-buys, weights. Draft a matching table from receipt
+    words to catalogue keys for the 200 most common lines, and the review
+    screen ("we think this is Tinned tomatoes, 4 tins: yes / change").
+13. **Shopping list from what's running low.** Design the list: grouped by
+    shop aisle or category, quantities to reach "keep at least", ticking off
+    in the shop, and the trip coming home as stock in. Acceptance checks.
+14. **CSV import (M2).** The columns a household would bring from a
+    spreadsheet or another app; matching to catalogue goods and places;
+    what a dry run shows before anything is saved.
+15. **Helpers and the Agent API (M2), from the household's side.** What a
+    helper may propose, how the review queue reads ("A helper added 12 items
+    from Saturday's receipt: check them"), how to say no, and what must never
+    happen (a helper changing something a person edited). Use DESIGN 7.
+
+### Batch 6: readiness and country content (M3)
+
+16. **Medical, final.** Fold in the UX findings, Pets-style example data and
+    gaps that ask sensible questions; mark it ready to promote.
+17. **Readiness prompts as screens.** How a prompt appears, the four answers
+    (Yes, Not relevant, Not yet, Tell me more), when it comes back, the
+    coverage view ("23 of 49 looked at") that never says "safe". Acceptance
+    checks; tie to `answered_by`.
+18. **Country packs, round 2.** Every Australian state and territory, the
+    largest US states by population, UK nations, NZ regions: emergency
+    bodies, warning systems and apps, hazards, water guidance, each cited and
+    dated, with a review-by date. Note licences that forbid reuse.
+19. **Seasonal checklists.** Bushfire season, cyclone season, winter storms,
+    heat waves, hurricane season: what official sources say to check, when,
+    tied to Household stock categories and Home layout records.
+20. **Getting out in a hurry.** A "grab list" draft (what to take, where it
+    is, who carries what) linked to People, Pets, Medical and Documents, and
+    a printable one-page version.
+
+### Batch 7: understanding the numbers (M4)
+
+21. **Outcomes, defined.** For waste, shortages, money and readiness: the
+    exact metric, the records it comes from, the minimum history before it
+    shows anything, and the plain sentence it produces ("Thrown away this
+    month: 3 items, last month: 7; based on 31 days"). Never claim a win
+    without the household confirming it.
+22. **The question loop, worked examples.** Twenty realistic made-up
+    situations (a jump in milk thrown away, water dropping, a pet losing
+    weight): the change noticed, the explanations worth asking about, the
+    sensible question, and two that must never be asked (no plausible link).
+23. **Charts that help.** Which three or four charts a household would
+    actually look at, sketched in words with the data each needs.
+
+### Batch 8: more of what households keep (M5)
+
+24. **Promote-ready drafts**: Collections, Vehicles, Documents, Home care, Wine
+    and the Garden example, each with labels, `empty`, gaps, sheets and
+    example data matching the shipped modules.
+25. **Home inventory for insurance**: valuables room by room, with what they
+    cost, serial numbers and where receipts and photos are kept; a printable
+    list for a claim. Note privacy: this is sensitive.
+26. **Tools and things lent out**: who borrowed what and when it's due back.
+27. **Utilities and household accounts**: providers, account numbers kept
+    private, outage and fault lines in People, meter locations in Home layout.
 
 ## Brief for Lane B, batch 3 (done)
 
