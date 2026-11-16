@@ -162,6 +162,7 @@ class Field:
     suggest: bool = False  # offer matches while typing (labels.toml `suggest_from`)
     add_new: str | None = None  # for a link: where to add a new record, with the typed name appended
     search: str | None = None  # for a long link list: where to look past the first OPTION_LIMIT records
+    help_answers: list | None = None  # the words for yes and no, for a yes/no that must be answered
 
     @property
     def name(self) -> str:
@@ -228,7 +229,8 @@ def build_fields(records: Records, info: TableInfo, values: dict, errors: dict, 
         fields.append(Field(column, column_label(info, column), column_help(info, column),
                             value, errors.get(column.name), options,
                             next(iter(shown.items())) if shown else None,
-                            (info.table.name, column.name) in info.module.catalogues, add_new, search))
+                            (info.table.name, column.name) in info.module.catalogues, add_new, search,
+                            _labels(info).get("columns", {}).get(column.name, {}).get("answers")))
     return fields
 
 
@@ -238,6 +240,8 @@ def values_from_form(info: TableInfo, form) -> dict:
     for column in form_columns(info):
         if column.type == "links":
             values[column.name] = form.getlist(column.name)
+        elif column.type == "boolean" and column.required_when:
+            values[column.name] = form.get(column.name, "")  # an explicit yes or no, or no answer yet
         elif column.type == "boolean":
             values[column.name] = "yes" if form.get(column.name) else "no"
         else:

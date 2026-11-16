@@ -178,6 +178,10 @@ supply = { quantity = "quantity", per_person_per_day = 3, per_pet_per_day = 0,
   are a starting point, local advice comes first. The home page shows the
   daily amounts it assumes next to the result ("Based on 3 litres per person a
   day, 1 per pet"), so the basis is never hidden (decision 0046).
+- `supply` may add `counts_only` (a yes/no that must be yes to count, such as
+  "safe to drink") and `unit_from` with `unit_words` (rows recorded in another
+  unit, like "6 bottles", are left out and named until their total is
+  entered in the supply's unit).
 - Watch results always leave out deleted rows.
 
 ### 5.2 Printable sheets
@@ -290,6 +294,10 @@ columns.name = { suggest_from = "catalogue.csv", fills = { category = "category"
 - Whatever was typed can always be kept as it is.
 - Any linked-record drop-down with more than eight choices also gets a box to
   type into, and offers to add a new record when nothing matches.
+- A yes/no column can be required only for some records
+  (`required_when = { category = "water" }` in tables.toml). It is then asked
+  as two choices with neither picked (`answers` in labels.toml give the
+  words), so nobody agrees by not noticing a ticked box.
 - A field can be shown only when a choice has a particular value
   (`show_when = { category = "water" }` in labels.toml).
 

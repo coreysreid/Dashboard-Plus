@@ -31,9 +31,10 @@ TABLE_KEYS = ("title", "description", "columns", "watch", "adjusts", "parent")
 ADJUST_KEYS = ("link", "quantity", "amount", "direction", "adds")
 WATCH_KEYS = ("running_low", "expiring", "supply", "gaps")
 GAP_KEYS = ("missing", "none", "where", "message")
-COLUMN_KEYS = ("type", "required", "default", "min", "max", "unit", "choices", "help", "sensitive", "to", "on_delete")
+COLUMN_KEYS = ("type", "required", "required_when", "default", "min", "max", "unit", "choices", "help", "sensitive",
+               "to", "on_delete")
 LABEL_TABLE_KEYS = ("title", "columns", "form", "list", "empty")
-LABEL_COLUMN_KEYS = ("label", "help", "show_when", "suggest_from", "fills")
+LABEL_COLUMN_KEYS = ("label", "help", "show_when", "suggest_from", "fills", "answers")
 
 
 class ModuleError(PlainError):
@@ -65,6 +66,7 @@ class Column:
     sensitive: bool = False
     to: str | None = None          # for link/links: "table" or "module.table"
     on_delete: str = "restrict"
+    required_when: dict = field(default_factory=dict)  # required only while another choice has a value
 
 
 @dataclass
@@ -192,7 +194,10 @@ def _parse_column(file: str, table: str, name: str, raw, problems: list[str]) ->
         return None
     column = Column(name=name, type=kind, required=bool(raw.get("required", False)), default=raw.get("default"),
                     unit=raw.get("unit"), help=raw.get("help"), sensitive=bool(raw.get("sensitive", False)),
-                    to=raw.get("to"), on_delete=raw.get("on_delete", "restrict"))
+                    to=raw.get("to"), on_delete=raw.get("on_delete", "restrict"),
+                    required_when=raw.get("required_when") if isinstance(raw.get("required_when"), dict) else {})
+    if "required_when" in raw and (not isinstance(raw["required_when"], dict) or len(raw["required_when"]) != 1):
+        problems.append(f"{where}: required_when names one choice column and a value, like {{ category = \"water\" }}.")
     for bound in ("min", "max"):
         if bound in raw:
             if kind not in NUMERIC_TYPES:
@@ -282,7 +287,7 @@ def _check_watch(file: str, table: str, raw, columns: dict[str, Column], problem
     supply = raw.get("supply")
     if supply is not None:
         keys = ("quantity", "per_person_per_day", "per_pet_per_day", "target_days", "unit", "label", "where",
-                "counts_only")
+                "counts_only", "unit_from", "unit_words")
         if not isinstance(supply, dict):
             problems.append(f"{where}, supply: write it as settings, like {{ quantity = \"quantity\", ... }}.")
         else:
@@ -309,6 +314,14 @@ def _check_watch(file: str, table: str, raw, columns: dict[str, Column], problem
                     elif columns[name].type == "choice" and value not in [c.key for c in columns[name].choices]:
                         problems.append(f"{where}, supply: '{value}' is not one of the choices for '{name}'.")
                         ok = False
+            unit_from = supply.get("unit_from")
+            if unit_from is not None and (unit_from not in columns or columns[unit_from].type != "text"):
+                problems.append(f"{where}, supply: 'unit_from' must name a text column holding each row's unit.")
+                ok = False
+            words = supply.get("unit_words", [])
+            if not isinstance(words, list) or not all(isinstance(w, str) for w in words):
+                problems.append(f"{where}, supply: 'unit_words' must be a list of other ways to write the unit.")
+                ok = False
             counts_only = supply.get("counts_only", {})
             if not isinstance(counts_only, dict):
                 problems.append(f"{where}, supply: 'counts_only' must be settings like {{ drinking = true }}.")
@@ -326,7 +339,9 @@ def _check_watch(file: str, table: str, raw, columns: dict[str, Column], problem
                                    "target_days": supply["target_days"],
                                    "unit": str(supply.get("unit", "")),
                                    "label": str(supply.get("label", "supplies")), "where": dict(filters),
-                                   "counts_only": dict(supply.get("counts_only", {}))}
+                                   "counts_only": dict(supply.get("counts_only", {})),
+                                   "unit_from": supply.get("unit_from"),
+                                   "unit_words": [str(w).lower() for w in supply.get("unit_words", [])]}
     return watch
 
 
@@ -405,6 +420,13 @@ def _check_tables(module: str, data: dict, requires: list[str], problems: list[s
         watch = _check_watch(file, tname, raw.get("watch", {}), columns, problems)
         tables[tname] = Table(tname, str(raw.get("title", tname)), raw.get("description"), columns, watch,
                               raw.get("adjusts", {}))
+    for table in tables.values():
+        for column in table.columns.values():
+            for other, value in column.required_when.items():
+                col = table.columns.get(other)
+                if col is None or col.type != "choice" or value not in [c.key for c in col.choices]:
+                    problems.append(f"In {file}, table '{table.name}', column '{column.name}': required_when must "
+                                    f"name a choice column of this table and one of its choices.")
     for tname, raw in raw_tables.items():
         parent = raw.get("parent") if isinstance(raw, dict) else None
         if parent is not None and tname in tables:

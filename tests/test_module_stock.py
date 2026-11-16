@@ -46,8 +46,8 @@ class StockModuleTests(TempDirTestCase):
         for name in ("Person A", "Person B", "Person C"):
             self.records.create("people__people", {"name": name, "lives_here": True})
         settings.put(self.conn, "household.pets", 1)
-        self.item(name="Bottled water", category="water", quantity=20, unit="litres")
-        self.item(name="Water container", category="water", quantity=10, unit="litres")
+        self.item(name="Bottled water", category="water", quantity=20, unit="litres", drinking=True)
+        self.item(name="Water container", category="water", quantity=10, unit="litres", drinking=True)
         self.item(name="Juice", category="pantry", quantity=6)
         supply = watch.supplies(self.conn, self.registry)[0]
         self.assertEqual(supply.total, 30)
@@ -65,7 +65,7 @@ class StockModuleTests(TempDirTestCase):
     def test_supplies_checklist_prints_by_category(self):
         settings.put(self.conn, "setup.done", True)
         shelf = self.records.create("stock__places", {"name": "Garage shelf"})
-        self.item(name="Bottled water", category="water", quantity=20, place=shelf)
+        self.item(name="Bottled water", category="water", quantity=20, place=shelf, drinking=True)
         self.item(name="Antiseptic cream", category="first_aid", quantity=1, unit="tube")
         app = create_app("t", lambda: None, self.report, data_dir=self.data, session_key="k")
         app.config["PORT"] = PORT
@@ -112,7 +112,7 @@ class StockModuleTests(TempDirTestCase):
         self.assertIn("Add a few things from the pantry.", home)
         self.assertIn('href="/t/stock__items/new"', home)
         self.assertIn("No drinking water recorded yet", home)
-        self.item(name="Water casks", category="water", quantity=10)
+        self.item(name="Water casks", category="water", quantity=10, drinking=True)
         settings.put(self.conn, "household.pets", 1)
         self.records.create("people__people", {"name": "Person A", "lives_here": True})
         home = client.get("/", base_url=BASE).get_data(as_text=True)
@@ -122,7 +122,7 @@ class StockModuleTests(TempDirTestCase):
 
     def test_only_drinking_water_counts_towards_days_of_water(self):
         self.records.create("people__people", {"name": "Person A", "lives_here": True})
-        self.item(name="Bottled water", category="water", quantity=12)
+        self.item(name="Bottled water", category="water", quantity=12, drinking=True)
         self.item(name="Flushing water", category="water", quantity=20, drinking=False)
         supply = watch.supplies(self.conn, self.registry)[0]
         self.assertEqual((supply.total, supply.not_counted, round(supply.days)), (12, 20, 4))
@@ -133,6 +133,24 @@ class StockModuleTests(TempDirTestCase):
         self.assertIn("Not counted: 20 litres not marked as drinking water.", home)
         form = client.get("/t/stock__items/new", base_url=BASE).get_data(as_text=True)
         self.assertIn('data-show-when="category" data-show-value="water"', form)
+
+    def test_water_must_say_whether_it_is_safe_to_drink(self):
+        with self.assertRaises(records.ValidationError) as caught:
+            self.item(name="Flushing water", category="water", quantity=20)
+        self.assertEqual(caught.exception.problems, {"drinking": "Please choose one."})
+        self.item(name="Rice", quantity=2)  # only water is asked
+        form = self._client().get("/t/stock__items/new", base_url=BASE).get_data(as_text=True)
+        self.assertIn("Yes, count these litres as drinking water", form)
+        self.assertNotRegex(form, r'value="yes"\s+checked>\s*Yes, count')
+
+    def test_water_in_bottles_is_not_counted_as_litres(self):
+        self.records.create("people__people", {"name": "Person A", "lives_here": True})
+        self.item(name="Water casks", category="water", quantity=10, unit="litres", drinking=True)
+        self.item(name="Water bottles", category="water", quantity=6, unit="bottles", drinking=True)
+        supply = watch.supplies(self.conn, self.registry)[0]
+        self.assertEqual(supply.total, 10)
+        self.assertEqual(supply.wrong_unit, ["Water bottles (6 bottles)"])
+        self.assertIn("Not counted until its total is entered in litres", supply.notes[0])
 
     def test_water_recorded_before_the_change_stays_counted(self):
         sql = (ROOT / "modules" / "stock" / "migrations" / "0003_drinking_water.sql").read_text(encoding="utf-8")

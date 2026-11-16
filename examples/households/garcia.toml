@@ -288,6 +288,7 @@ notes = "Basement locker 12."
 [[stock.items]]
 name = "Water jugs (1 gallon)"
 category = "water"
+drinking = true
 quantity = 22.7
 unit = "litres"
 minimum = 30
@@ -298,6 +299,7 @@ notes = "Six jugs. A gallon is about 3.8 litres."
 [[stock.items]]
 name = "Emergency water pouches"
 category = "water"
+drinking = true
 quantity = 2
 unit = "litres"
 place = "Hall closet"
