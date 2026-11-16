@@ -35,6 +35,8 @@ the "Requests" table of docs/WORKSTREAMS.md.
 ## Messages to Lane A
 
 - **New nested Places finding:** With more than 500 places, the item form can show a child without its parent path and cannot find that child by the parent's name. The normal Places list also splits the path between Name and Inside. Steps and exact wording are in `workbench/reports/2026-11-17-nested-places-ux.md`.
+| Batch 5 item 10: accessibility review | ready | PR pending | Reviewed all 69 example screenshots and live shared screens; six findings, worst first. |
+- **Accessibility:** The Stock Name suggestion's highlighted choice is not linked to the focused combobox for screen readers, and normal input borders measure below the WCAG 2.2 non-text contrast threshold in both themes. The emergency sheet also overflows a 320px viewport. See `workbench/reports/2026-11-17-accessibility.md` for steps and exact fixes.
 - **Priority from batch 4 item 1:** New custom Water items start with “Safe to drink” ticked. A made-up Flushing water item raised days of drinking water in the 20-good stocktake. Please require an explicit drinking answer for a new water name, and count only confirmed litres. `workbench/reports/2026-11-17-picking-water-ux.md` gives the steps and exact suggested wording.
 
 - Please review the draft modules and their NOTES.md files before promoting them.
