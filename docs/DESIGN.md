@@ -37,7 +37,7 @@ folder and keeping `data/`.
 ```text
 Dashboard/                      <- the portable folder (or the git clone)
   Open Dashboard.bat            starts the program and opens the browser
-  Close Dashboard safely.bat    stops it cleanly
+  Save and exit Dashboard.bat   stops it cleanly
   app/                          program code (replaced on update)
     core/  web/  modules/  python/  (bundled interpreter + libraries)
   data/                         YOUR data (kept on update, never committed)
@@ -902,7 +902,7 @@ only to choose which pack applies; nothing is looked up online.
   registry, PATH or any system Python, and needs no admin rights.
 - `Open Dashboard.bat` runs the bundled Python, starts the server on a free
   local port, opens the default browser, and waits.
-- **Close Dashboard safely** is a button in the app (and a second shortcut). It
+- **Save and exit** is a button in the app (and a second shortcut). It
   stops accepting writes, finishes the current one, checkpoints and closes
   SQLite, writes a backup, and only then says "You can unplug the drive now."
 - **SQLite settings for removable drives:** `journal_mode=DELETE` (not WAL: WAL

@@ -95,7 +95,7 @@ with no Python installed:
       telling the household to check with their local authority.
 - [ ] Sensitive details (such as allergies) are hidden from helpers unless the
       helper was explicitly given access.
-- [ ] Pulling the USB stick out after *Close Dashboard safely* loses nothing.
+- [ ] Pulling the USB stick out after *Save and exit* loses nothing.
 - [ ] A failing outside source shows "unavailable" and the app keeps running.
 - [ ] *Export everything* produces CSV and plain files that open without this
       program.

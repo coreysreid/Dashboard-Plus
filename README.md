@@ -16,7 +16,7 @@ switch on an optional outside source.
 **See it first:** [`docs/EXAMPLES.md`](docs/EXAMPLES.md) shows three made-up
 households (a family with pets in Australia, three generations in the United
 States, one person in the United Kingdom) at every stage, from the first start
-to closing safely.
+to saving and exiting.
 
 **Status: an early test version of the first release (M1).** It works, but it
 is new: keep a copy of anything important somewhere else too. See
@@ -66,7 +66,7 @@ with it. To carry on:
 1. Click **More info**.
 2. Check the file is `Open Dashboard.bat`, then click **Run anyway**.
 
-Windows may ask again for *Close Dashboard safely*; answer the same way. To
+Windows may ask again for *Save and exit Dashboard*; answer the same way. To
 stop these questions for good, before unzipping, right-click the zip, choose
 *Properties*, tick **Unblock** at the bottom and click *OK*. Only do this for a
 zip you downloaded from this project's GitHub page.
@@ -76,8 +76,8 @@ Dashboard Plus listens only on this computer (the address starts with
 
 ### Closing it
 
-Click **Close safely** at the top of the page, or double-click `Close Dashboard
-safely` in the folder. It makes a backup and finishes writing before it stops.
+Click **Save and exit** at the top of the page, or double-click `Save and exit
+Dashboard` in the folder. It makes a backup and finishes writing before it stops.
 **Always do this before unplugging a USB stick.**
 
 ### Where your data is

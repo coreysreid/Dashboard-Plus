@@ -64,7 +64,7 @@ def run(folder: Path) -> list[str]:
                 failures.append(f"a request naming another host was not refused (got {status})")
             close = subprocess.run([str(python), "-m", "dashboard", "--data", str(data), "--close"],
                                    capture_output=True, text=True, timeout=60)
-            if "closed safely" not in close.stdout:
+            if "Saved and closed" not in close.stdout:
                 failures.append(f"close command said: {close.stdout.strip()}")
             try:
                 code = process.wait(timeout=20)
@@ -95,7 +95,7 @@ def main(argv: list[str] | None = None) -> int:
             print(f"  - {failure}")
         return 1
     print("Portable smoke test passed: it started, showed the first-run wizard, turned away a browser "
-          "without it, refused a forged host and closed safely.")
+          "without it, refused a forged host and saved and closed.")
     return 0
 
 

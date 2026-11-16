@@ -25,7 +25,7 @@ low or expiring, how many days of water the household has, and has a printed
 sheet of who to call.
 
 **In M1**
-- Portable folder with *Open Dashboard* and *Close Dashboard safely*, built
+- Portable folder with *Open Dashboard* and *Save and exit*, built
   automatically by GitHub. Built first, so problems show up early.
 - Core: database with the USB-safe settings, migrations, module loader and file
   validator, records with links and history (who changed what), forms and a
@@ -57,7 +57,7 @@ analysis, the question loop, prompts, outcomes, other modules, outside sources.
 - [x] Running low, expiring soon and days of water are correct for test data.
 - [x] The emergency sheet prints on one page with no internet.
 - [x] People and Stock are built from module files only, with no module code.
-- [ ] *Close Dashboard safely*, unplug, plug in again: nothing is lost.
+- [ ] *Save and exit*, unplug, plug in again: nothing is lost.
 - [ ] A backup exists after the first day and after each safe close.
 - [ ] No screen shows a stack trace; *Save a report* writes a file.
 - [ ] It listens on 127.0.0.1 only. CI privacy and index checks pass.

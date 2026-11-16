@@ -1,11 +1,11 @@
 {% extends "base.html" %}
-{% block title %}Close Dashboard safely{% endblock %}
+{% block title %}Save and exit{% endblock %}
 {% block body %}
-<h1>Close Dashboard safely</h1>
-<p class="lead">Do this before you unplug a USB drive. It finishes saving and then stops the program.</p>
+<h1>Save and exit</h1>
+<p class="lead">Your changes are saved as you go. This makes a final backup and stops the program, so it is safe to unplug a USB drive.</p>
 <form method="post" action="/api/shutdown">
   <input type="hidden" name="token" value="{{ token }}">
-  <button type="submit">Close now</button>
+  <button type="submit">Save and exit now</button>
 </form>
 <p><a href="/">Go back</a></p>
 {% endblock %}

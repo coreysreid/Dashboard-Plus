@@ -1,6 +1,6 @@
 # Examples: Dashboard Plus at every stage
 
-Three made-up households, each taken from the first start to closing safely. Every name,
+Three made-up households, each taken from the first start to saving and exiting. Every name,
 number and address is invented (see `examples/households/`). The screenshots are made
 automatically by `tools/make_screenshots.py`, so they always match the current program;
 they are taken on Linux, with folder names shown as they appear on Windows.
@@ -122,17 +122,17 @@ The setup answers, which can be changed at any time.
 
 ![Settings](screenshots/smith/18-settings.png)
 
-### Closing safely
+### Save and exit
 
-A backup is made before it stops, so a USB stick can be unplugged.
+A final backup is made before it stops, so a USB stick can be unplugged.
 
-![Closing safely](screenshots/smith/19-close.png)
+![Save and exit](screenshots/smith/19-close.png)
 
-### Closed
+### Saved and closed
 
 Safe to unplug.
 
-![Closed](screenshots/smith/20-closed.png)
+![Saved and closed](screenshots/smith/20-closed.png)
 
 
 <a id="garcia"></a>
@@ -248,17 +248,17 @@ The setup answers, which can be changed at any time.
 
 ![Settings](screenshots/garcia/18-settings.png)
 
-### Closing safely
+### Save and exit
 
-A backup is made before it stops, so a USB stick can be unplugged.
+A final backup is made before it stops, so a USB stick can be unplugged.
 
-![Closing safely](screenshots/garcia/19-close.png)
+![Save and exit](screenshots/garcia/19-close.png)
 
-### Closed
+### Saved and closed
 
 Safe to unplug.
 
-![Closed](screenshots/garcia/20-closed.png)
+![Saved and closed](screenshots/garcia/20-closed.png)
 
 
 <a id="taylor"></a>
@@ -374,14 +374,14 @@ The setup answers, which can be changed at any time.
 
 ![Settings](screenshots/taylor/18-settings.png)
 
-### Closing safely
+### Save and exit
 
-A backup is made before it stops, so a USB stick can be unplugged.
+A final backup is made before it stops, so a USB stick can be unplugged.
 
-![Closing safely](screenshots/taylor/19-close.png)
+![Save and exit](screenshots/taylor/19-close.png)
 
-### Closed
+### Saved and closed
 
 Safe to unplug.
 
-![Closed](screenshots/taylor/20-closed.png)
+![Saved and closed](screenshots/taylor/20-closed.png)

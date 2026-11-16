@@ -36,6 +36,7 @@ Follow the INDEX.md in a folder before opening its files. Hidden files are not l
 | CORE.md | The one-page v1 promise and acceptance list | testing any feature against it |
 | DESIGN.md | Object model, modules, API, security, packaging, build order | planning or building |
 | ROADMAP.md | Milestones M1 to M5, what M1 includes, success measures, open questions | deciding what comes next |
+| BACKLOG.md | Corey's feedback from using it, and what happened to each item | adding feedback or choosing the next fix |
 | WORKSTREAMS.md | How two agents split the work: lanes, owned files, contracts, status | before starting any work |
 | JOURNEYS.md | Short stories of real use, each an acceptance test | reviewing the experience |
 | INFLUENCES.md | Books and ideas we build on, credited, and how we credit | adding or checking a credit |
@@ -268,7 +269,7 @@ Add a new file with the next number instead of changing an old one.
 | sheet.html | A printable sheet, styled to fit one page | changing how sheets print |
 | start.html | Shown to a browser that was not opened by the shortcut | changing that message |
 | report.html | Shown after saving a report | changing that message |
-| close.html | The "Close Dashboard safely" page | changing how closing works |
+| close.html | The "Save and exit" page | changing how closing works |
 | closed.html | Shown after a safe close | changing that message |
 | error.html | Plain-language error page with "Save a report" | changing error wording |
 

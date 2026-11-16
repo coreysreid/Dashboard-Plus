@@ -63,9 +63,9 @@ STAGES = [
      "where each is kept.", {"goto": "/sheet/stock/supplies", "media": "print"}),
     ("18-settings", "Settings", "The setup answers, which can be changed at any time.",
      {"goto": "/settings"}),
-    ("19-close", "Closing safely", "A backup is made before it stops, so a USB stick can be unplugged.",
+    ("19-close", "Save and exit", "A final backup is made before it stops, so a USB stick can be unplugged.",
      {"goto": "/close"}),
-    ("20-closed", "Closed", "Safe to unplug.", {"submit": "form button[type=submit]"}),
+    ("20-closed", "Saved and closed", "Safe to unplug.", {"submit": "form button[type=submit]"}),
 ]
 # Which record each household shows on the person and stock item pages.
 # How each household's browser shows dates, as it would in their country.
@@ -87,8 +87,8 @@ def wizard_steps(setup: dict) -> list[dict]:
         steps.append({"fill": f"#name_{number}", "value": name})
     steps += [{"fill": "#pets", "value": setup.get("pets", 0)},
               {"check": "input[name=mobility_needs]", "value": bool(setup.get("mobility_needs"))},
-              {"fill": "#country", "value": setup.get("country", "")},
-              {"fill": "#region", "value": setup.get("region", "")},
+              {"select": "#country", "value": setup.get("country", "")},
+              {"select": "#region", "value": setup.get("region", "")},
               {"select": "#home_type", "value": setup.get("home_type", "")},
               {"fill": "#storeys", "value": setup.get("storeys", "")}]
     steps += [{"check": f"input[name=hazards][value={h}]"} for h in setup.get("hazards", [])]
@@ -115,8 +115,10 @@ def run_browser(plan: dict, work: Path) -> list[str]:
     """Run the browser steps; return the printed page counts it reports, like "pages /sheet/x A4 1"."""
     path = work / "steps.json"
     path.write_text(json.dumps(plan), encoding="utf-8")
-    result = subprocess.run(["node", str(ROOT / "tools" / "screenshots.js"), str(path)], check=True, cwd=ROOT,
+    result = subprocess.run(["node", str(ROOT / "tools" / "screenshots.js"), str(path)], cwd=ROOT,
                             capture_output=True, text=True)
+    if result.returncode != 0:
+        raise RuntimeError("The browser steps failed:\n" + result.stderr.strip()[-2000:])
     return [line for line in result.stdout.splitlines() if line.startswith("pages ")]
 
 
@@ -209,7 +211,7 @@ def write_index(household: str, example: dict, shown: list) -> None:
 
 def write_gallery(results: dict) -> None:
     lines = ["# Examples: Dashboard Plus at every stage", "",
-             "Three made-up households, each taken from the first start to closing safely. Every name,",
+             "Three made-up households, each taken from the first start to saving and exiting. Every name,",
              "number and address is invented (see `examples/households/`). The screenshots are made",
              "automatically by `tools/make_screenshots.py`, so they always match the current program;",
              "they are taken on Linux, with folder names shown as they appear on Windows.", ""]
