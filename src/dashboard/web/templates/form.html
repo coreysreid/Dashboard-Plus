@@ -29,6 +29,9 @@
       {% if f.kind == "longtext" %}
         <textarea id="{{ fid }}" name="{{ f.name }}">{{ f.value or "" }}</textarea>
       {% elif f.kind in ("choice", "link") %}
+        {% if f.kind == "link" and f.options | length > 8 %}
+        <input type="search" class="find" data-find-for="{{ fid }}" data-add-new="{{ f.add_new or '' }}" placeholder="Type to find…" aria-label="Find {{ f.label | lower }}" autocomplete="off">
+        {% endif %}
         <select id="{{ fid }}" name="{{ f.name }}">
           <option value="">{% if f.column.required %}Choose…{% else %}(none){% endif %}</option>
           {% for value, label in f.options %}<option value="{{ value }}" {% if value == (f.value | string) %}selected{% endif %}>{{ label }}</option>{% endfor %}
@@ -46,7 +49,7 @@
       {% elif f.kind in ("integer", "decimal", "measure", "money") %}
         <input type="text" inputmode="decimal" id="{{ fid }}" name="{{ f.name }}" value="{{ f.value if f.value is not none else '' }}">
       {% else %}
-        <input type="text" id="{{ fid }}" name="{{ f.name }}" value="{{ f.value or '' }}" {% if loop.first %}autofocus{% endif %}>
+        <div class="suggest-box"><input type="text" id="{{ fid }}" name="{{ f.name }}" value="{{ f.value or '' }}" {% if loop.first %}autofocus{% endif %}{% if f.suggest %} data-suggest="/t/{{ info.name }}/suggest?column={{ f.name }}" autocomplete="off" role="combobox" aria-autocomplete="list" aria-expanded="false"{% endif %}></div>
       {% endif %}
     {% endif %}
     {% if f.error %}<p class="error">{{ f.label }} {{ f.error }}</p>{% endif %}
@@ -89,7 +92,98 @@
   {% endfor %}
 </ul>
 {% endif %}
+<style>
+  .suggest-box { position: relative; }
+  .suggest-list { position: absolute; z-index: 5; left: 0; right: 0; margin: .2rem 0 0; padding: .25rem 0; list-style: none;
+                  background: var(--card); border: 1px solid var(--line); border-radius: 8px; box-shadow: 0 4px 14px rgba(0,0,0,.12); }
+  .suggest-list li { padding: .4rem .7rem; cursor: pointer; }
+  .suggest-list li[aria-selected="true"], .suggest-list li:hover { background: var(--bg); }
+  .suggest-list .muted { font-size: .9rem; }
+  input.find { margin-bottom: .35rem; }
+</style>
 <script>
+  // While typing a name: matches from this household's records first, then the module's list of common things.
+  (function () {
+    document.querySelectorAll("input[data-suggest]").forEach(function (input) {
+      var list = document.createElement("ul"), items = [], active = -1, timer;
+      list.className = "suggest-list"; list.hidden = true; list.setAttribute("role", "listbox");
+      input.parentNode.appendChild(list);
+      function close() { list.hidden = true; input.setAttribute("aria-expanded", "false"); active = -1; }
+      function choose(item) {
+        if (item.existing_id) { window.location = input.dataset.suggest.split("/suggest")[0] + "/" + item.existing_id; return; }
+        input.value = item.name;
+        Object.keys(item.fills || {}).forEach(function (name) {
+          var field = document.getElementById("f-" + name), value = item.fills[name];
+          if (!field) return;
+          if (field.type === "checkbox") field.checked = !!value;
+          else if (field.tagName === "SELECT" || !field.value) field.value = value;
+          field.dispatchEvent(new Event("change"));
+        });
+        close();
+      }
+      function show(found) {
+        items = found; list.innerHTML = ""; active = -1;
+        found.forEach(function (item, i) {
+          var li = document.createElement("li");
+          li.setAttribute("role", "option");
+          li.textContent = item.name;
+          if (item.existing_id) { var note = document.createElement("span"); note.className = "muted"; note.textContent = " (you already have this: open it)"; li.appendChild(note); }
+          li.addEventListener("mousedown", function (e) { e.preventDefault(); choose(item); });
+          list.appendChild(li);
+        });
+        if (found.length) {
+          var own = document.createElement("li"); own.className = "muted";
+          own.textContent = "Keep \u201c" + input.value + "\u201d as you typed it";
+          own.addEventListener("mousedown", function (e) { e.preventDefault(); close(); });
+          list.appendChild(own);
+        }
+        list.hidden = !found.length; input.setAttribute("aria-expanded", found.length ? "true" : "false");
+      }
+      input.addEventListener("input", function () {
+        clearTimeout(timer);
+        if (!input.value.trim()) { close(); return; }
+        timer = setTimeout(function () {
+          fetch(input.dataset.suggest + "&q=" + encodeURIComponent(input.value), {credentials: "same-origin"})
+            .then(function (r) { return r.ok ? r.json() : []; }).then(show).catch(function () {});
+        }, 120);
+      });
+      input.addEventListener("keydown", function (e) {
+        if (list.hidden) return;
+        var options = list.querySelectorAll("li[role=option]");
+        if (e.key === "ArrowDown" || e.key === "ArrowUp") {
+          e.preventDefault();
+          active = (active + (e.key === "ArrowDown" ? 1 : -1) + options.length) % options.length;
+          options.forEach(function (li, i) { li.setAttribute("aria-selected", i === active ? "true" : "false"); });
+        } else if (e.key === "Enter" && active >= 0) { e.preventDefault(); choose(items[active]); }
+        else if (e.key === "Escape") { close(); }
+      });
+      input.addEventListener("blur", function () { setTimeout(close, 150); });
+    });
+  })();
+  // Long lists of linked records (such as stock items) get a box to type into.
+  (function () {
+    document.querySelectorAll("input.find").forEach(function (find) {
+      var select = document.getElementById(find.dataset.findFor), add = null;
+      if (find.dataset.addNew) {
+        add = document.createElement("a"); add.hidden = true; add.className = "help"; add.style.display = "block";
+        find.parentNode.insertBefore(add, select.nextSibling);
+      }
+      find.addEventListener("input", function () {
+        var typed = find.value.trim().toLowerCase(), first = null, shown = 0;
+        Array.prototype.forEach.call(select.options, function (option) {
+          var match = !option.value || option.text.toLowerCase().indexOf(typed) >= 0;
+          option.hidden = !match;
+          if (match && option.value) { shown++; if (!first) first = option; }
+        });
+        if (typed) select.value = first ? first.value : "";
+        if (add) {
+          add.hidden = !typed || shown > 0;
+          add.textContent = "Not on the list? Add \u201c" + find.value.trim() + "\u201d as a new one";
+          add.href = find.dataset.addNew + encodeURIComponent(find.value.trim());
+        }
+      });
+    });
+  })();
   // Fields that only apply to one choice (such as "Drinking water" for water) follow that choice.
   (function () {
     document.querySelectorAll("[data-show-when]").forEach(function (box) {

@@ -99,6 +99,7 @@ marked Superseded. Each lists downsides, cost to undo, and the sign it was wrong
 | [0045](0045-example-households-and-generated-screenshots.md) | Three made-up households, and screenshots made from them automatically | Accepted |
 | [0046](0046-show-the-water-basis-and-backup-status.md) | Show the water estimate's daily amount, and whether the second backup worked | Accepted |
 | [0047](0047-pets-moved-forward.md) | Pets is switched on now, built from the second agent's draft | Accepted |
+| [0048](0048-pick-from-a-catalogue-while-typing.md) | Pick goods from a list while typing, with your own items first | Accepted |
 | [0060](0060-garden-example-outside-installed-modules.md) | Keep the worked garden outside installed modules | Accepted |
 | [0061](0061-public-reporting-and-contribution-rules.md) | Public contribution and private security reporting routes | Accepted |
 | [TEMPLATE](TEMPLATE.md) | Blank record to copy for a new decision | recording a decision |
@@ -215,6 +216,7 @@ Generate the next one with: python tools/make_migration.py pets --name <what_cha
 | tables.toml | Places, stock items (running low, use-by, days of water) and stock in and out | adding a field, category or rule |
 | labels.toml | Friendly labels, help text, form and list order | changing wording or order |
 | sheets.toml | Emergency supplies checklist | changing what prints |
+| catalogue.csv | 800 common goods to pick from while typing (from Lane B's catalogue) | adding or correcting a good |
 | migrations/ | Numbered database changes | after changing tables.toml |
 
 ## modules/stock/migrations/  (summary: this module's numbered database changes; never edit a released one)
@@ -253,6 +255,7 @@ Generate the next one with: python tools/make_migration.py stock --name <what_ch
 | records.py | Create, change, delete and read records, checking every value and keeping a history. | changing how records are saved or checked |
 | settings.py | Read and write household settings kept in the database (core__settings). | storing a new setting |
 | schema.py | Turn a module's declared tables into SQL, and work out its next migration. | changing how tables are built |
+| suggest.py | Suggestions while typing: a household's own records first, then a module's list of common things. | changing how picking from a list matches |
 | watch.py | Work out what is running low, what expires soon, how many days of supplies are on hand, and what is worth filling in. | changing running low, expiring, days of cover or gaps |
 | startup.py | Prepare the database at start-up: load modules, back up if needed, and migrate. | changing what happens at start-up |
 
@@ -311,6 +314,7 @@ How to run them is in AGENTS.md.
 | test_watch.py | Tests for running low, expiring soon and days of cover, and for checking `watch` sections. | changing watch rules |
 | test_gaps.py | Tests for gaps: details worth filling in, declared in a table's `watch.gaps` and asked as questions. | changing gaps |
 | test_examples.py | Tests for the example households: each loads cleanly and shows exactly what it was written to show. | changing an example household |
+| test_suggest.py | Tests for suggestions while typing: matching, the household's own records first, and module catalogues. | changing picking from a list |
 | test_adjusts.py | Tests for records that change a linked quantity (stock in and out), and the checks on `adjusts`. | changing stock in and out |
 | test_backups.py | Tests for automatic backups: daily, on close, in two places, and keeping only recent ones. | changing backups |
 | test_setup.py | Tests for the first-run wizard and the settings page. | changing setup or settings |

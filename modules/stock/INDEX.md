@@ -5,4 +5,5 @@
 | tables.toml | Places, stock items (running low, use-by, days of water) and stock in and out | adding a field, category or rule |
 | labels.toml | Friendly labels, help text, form and list order | changing wording or order |
 | sheets.toml | Emergency supplies checklist | changing what prints |
+| catalogue.csv | 800 common goods to pick from while typing (from Lane B's catalogue) | adding or correcting a good |
 | migrations/ | Numbered database changes | after changing tables.toml |

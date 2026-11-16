@@ -1,9 +1,9 @@
 """Pages built from module declarations: the record grid, add and edit forms, and history."""
 from __future__ import annotations
 
-from flask import Blueprint, abort, current_app, redirect, render_template, request, url_for
+from flask import Blueprint, abort, current_app, jsonify, redirect, render_template, request, url_for
 
-from dashboard.core import records, schema
+from dashboard.core import records, schema, suggest
 from dashboard.web import display
 
 pages = Blueprint("pages", __name__)
@@ -58,6 +58,27 @@ def more_rows(table):
     total = store.count(table)
     next_offset = offset + len(rows) if offset + len(rows) < total else None
     return render_template("rows.html", info=info, rows=rows, next_offset=next_offset)
+
+
+@pages.get("/t/<table>/suggest")
+def suggest_names(table):
+    """What to offer while someone types a name: their own records first, then the module's list."""
+    info = _info(table)
+    column = request.args.get("column", "")
+    if column not in info.table.columns or info.table.columns[column].type != "text":
+        abort(404)
+    typed = request.args.get("q", "")[:80]
+    query = suggest.normalise(typed)
+    own = []
+    if query:
+        conn = current_app.config["CONNECT"]()
+        words = query.split()
+        rows = conn.execute(f"SELECT id, {column} AS name FROM {info.name} WHERE deleted_at IS NULL "
+                            f"AND {column} IS NOT NULL AND lower({column}) LIKE ? LIMIT 50",
+                            (f"%{words[0][:3]}%",)).fetchall()
+        own = [{"id": r["id"], "name": r["name"]} for r in rows]
+    catalogue = info.module.catalogues.get((info.table.name, column), [])
+    return jsonify(suggest.suggestions(typed, own, catalogue))
 
 
 def _render_form(info, store, values, errors, from_form, record=None, status=200, saved=None, back=None):

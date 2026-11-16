@@ -1,6 +1,7 @@
 """Find module folders, check their files, and explain any mistakes in plain words."""
 from __future__ import annotations
 
+import csv
 import difflib
 import re
 import string
@@ -32,7 +33,7 @@ WATCH_KEYS = ("running_low", "expiring", "supply", "gaps")
 GAP_KEYS = ("missing", "none", "where", "message")
 COLUMN_KEYS = ("type", "required", "default", "min", "max", "unit", "choices", "help", "sensitive", "to", "on_delete")
 LABEL_TABLE_KEYS = ("title", "columns", "form", "list", "empty")
-LABEL_COLUMN_KEYS = ("label", "help", "show_when")
+LABEL_COLUMN_KEYS = ("label", "help", "show_when", "suggest_from", "fills")
 
 
 class ModuleError(PlainError):
@@ -90,6 +91,8 @@ class Module:
     labels: dict
     migrations: list[Migration]
     sheets: list = field(default_factory=list)  # checked printable sheets (DESIGN.md 5.2)
+    # Lists of common things to pick from while typing, by (table, column) (DESIGN.md 5.5).
+    catalogues: dict = field(default_factory=dict)
 
 
 def _suggest(word: str, options) -> str:
@@ -641,6 +644,60 @@ def _check_sheets(data: dict, tables: dict[str, Table], problems: list[str]) -> 
     return sheets
 
 
+def _catalogue_value(column: Column, text: str):
+    """A catalogue cell as the value it fills in, or None when blank or not valid for that column."""
+    text = (text or "").strip()
+    if not text:
+        return None
+    if column.type == "boolean":
+        return {"yes": True, "no": False}.get(text.lower())
+    if column.type == "choice":
+        return text if text in [c.key for c in column.choices] else None
+    return text
+
+
+def _load_catalogues(folder: Path, labels: dict, tables: dict[str, Table], problems: list[str]) -> dict:
+    """Read the CSV lists named by `suggest_from` in labels.toml: things to pick from while typing."""
+    catalogues = {}
+    for tname, raw in (labels or {}).get("tables", {}).items():
+        for cname, craw in (raw.get("columns", {}) if isinstance(raw, dict) else {}).items():
+            if not isinstance(craw, dict) or "suggest_from" not in craw or tname not in tables:
+                continue
+            where = f"In labels.toml, table '{tname}', column '{cname}'"
+            table = tables[tname]
+            if cname not in table.columns or table.columns[cname].type != "text":
+                problems.append(f"{where}: suggest_from only works on a text column.")
+                continue
+            path = folder / str(craw["suggest_from"])
+            if path.suffix != ".csv" or path.parent != folder or not path.is_file():
+                problems.append(f"{where}: suggest_from must name a .csv file in the module folder.")
+                continue
+            fills = craw.get("fills", {})
+            bad = [c for c in (fills or {}) if c not in table.columns] if isinstance(fills, dict) else ["?"]
+            if bad:
+                problems.append(f"{where}: fills names columns that do not exist: {', '.join(bad)}.")
+                continue
+            with open(path, encoding="utf-8", newline="") as handle:
+                reader = csv.DictReader(handle)
+                header = reader.fieldnames or []
+                missing = [h for h in ["name", *fills.values()] if h not in header]
+                if missing:
+                    problems.append(f"In {path.name}: the first line needs the columns {', '.join(missing)}.")
+                    continue
+                entries = []
+                for row in reader:
+                    name = (row.get("name") or "").strip()
+                    if not name:
+                        continue
+                    also = [a.strip() for a in (row.get("also_called") or "").split("|") if a.strip()]
+                    filled = {target: _catalogue_value(table.columns[target], row.get(source))
+                              for target, source in fills.items()}
+                    entries.append({"name": name, "also": also,
+                                    "fills": {k: v for k, v in filled.items() if v is not None}})
+            catalogues[(tname, cname)] = entries
+    return catalogues
+
+
 def load_module(folder: Path) -> Module:
     """Read and check one module folder. Raises ModuleError listing every problem found."""
     folder = Path(folder)
@@ -653,6 +710,7 @@ def load_module(folder: Path) -> Module:
                            requires, problems)
     labels = _check_labels(_read_toml(folder / "labels.toml", problems, required=False), tables, problems)
     sheets = _check_sheets(_read_toml(folder / "sheets.toml", problems, required=False), tables, problems)
+    catalogues = _load_catalogues(folder, labels, tables, problems)
     try:
         migrations = load_track(folder.name, folder / "migrations")
     except MigrationError as error:
@@ -663,7 +721,7 @@ def load_module(folder: Path) -> Module:
     return Module(name=meta["name"], title=meta["title"], version=meta["version"],
                   description=meta["description"], kind=meta["kind"], requires=list(requires),
                   outbound_hosts=list(meta.get("outbound_hosts", [])), folder=folder,
-                  tables=tables, labels=labels, migrations=migrations, sheets=sheets)
+                  tables=tables, labels=labels, migrations=migrations, sheets=sheets, catalogues=catalogues)
 
 
 def discover(modules_dir: Path) -> tuple[list[Module], dict[str, list[str]]]:

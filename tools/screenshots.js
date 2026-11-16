@@ -14,6 +14,7 @@ const { chromium } = require('playwright');
     for (const step of plan.steps) {
       if (step.goto) await page.goto(base + step.goto);
       if (step.fill) await page.fill(step.fill, String(step.value));
+      if (step.type) { await page.type(step.type, String(step.value), { delay: 40 }); await page.waitForTimeout(700); }
       if (step.select) await page.selectOption(step.select, String(step.value));
       if (step.check) await page.setChecked(step.check, step.value !== false);
       if (step.click) await page.click(step.click);
