@@ -8,3 +8,4 @@
 | migrations/ | Generated first schema | checking promotion readiness |
 | NOTES.md | Design choice, migration plan and core needs | planning integration |
 | example.toml | Fictional rows for the Smith, Garcia and Taylor households | preparing promotion examples |
+| ACCEPTANCE.md | Numbered full-path, move, refusal and example migration checks | testing nested places |
