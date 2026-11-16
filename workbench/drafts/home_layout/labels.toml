@@ -1,0 +1,32 @@
+[tables.homes]
+empty = "Describe your home and how to get out."
+form = ["name", "storeys", "upstairs_way_out", "notes"]
+list = ["name", "storeys"]
+columns.storeys = { label = "Floors", help = "Include the ground floor. Leave blank if it does not help describe your home." }
+columns.upstairs_way_out = { label = "Way out from upstairs", help = "Write the route people here would use. Keep it current if the layout changes." }
+
+[tables.places]
+form = ["name", "kind", "parent", "notes"]
+list = ["name", "kind", "parent"]
+columns.kind = { label = "Type of place" }
+columns.parent = { label = "Inside", help = "For example, Pantry is inside Kitchen; Shelf 3 is inside Pantry." }
+
+[tables.exits]
+form = ["name", "from_floor", "place", "route", "notes"]
+list = ["name", "from_floor", "place", "route"]
+columns.from_floor = { label = "Floor" }
+columns.route = { label = "How to get there", help = "Describe the route in your own words, including a way from upstairs where relevant." }
+
+[tables.shutoffs]
+form = ["name", "kind", "place", "how_to_find", "notes"]
+list = ["kind", "place", "how_to_find"]
+columns.place = { label = "Where it is" }
+columns.how_to_find = { label = "How to find it", help = "Include a landmark if the place name alone is unclear." }
+
+[tables.equipment]
+form = ["name", "kind", "place", "last_tested", "battery_changed", "next_check", "notes"]
+list = ["name", "kind", "place", "next_check"]
+columns.place = { label = "Where it is" }
+columns.last_tested = { label = "Last tested" }
+columns.battery_changed = { label = "Battery changed", help = "Use only when this equipment has a replaceable battery." }
+columns.next_check = { label = "Next check due", help = "Enter the date from your own equipment guidance or household plan." }

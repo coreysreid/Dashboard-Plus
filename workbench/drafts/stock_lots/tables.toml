@@ -1,0 +1,35 @@
+# Target data model, not a loadable module. The current core cannot derive an
+# item's amount from its lots or link Stock to a draft Home layout place.
+# Lane A will integrate these tables into Household stock after core support.
+
+[tables.items]
+title = "Stock items"
+columns.name = { type = "text", required = true }
+columns.catalogue_key = { type = "text" }
+columns.category = { type = "choice", required = true, choices = ["pantry", "water", "first_aid", "toiletries", "cleaning", "power", "fuel", "tools", "hardware", "pet", "garden", "other"] }
+columns.unit = { type = "text", required = true }
+columns.minimum = { type = "decimal", min = 0 }
+columns.notes = { type = "longtext" }
+# item amount is SUM(active lots.quantity), never an editable independent column.
+
+[tables.lots]
+title = "Batches and use-by dates"
+columns.item = { type = "link", to = "items", required = true, on_delete = "cascade" }
+columns.quantity = { type = "decimal", required = true, min = 0 }
+columns.use_by = { type = "date" }
+columns.place = { type = "link", to = "home_layout.places", on_delete = "restrict" }
+columns.package_size = { type = "text" }
+columns.notes = { type = "text" }
+# Same item + place + use-by can be combined only after the person confirms.
+
+[tables.movements]
+title = "Stock in and out"
+columns.item = { type = "link", to = "items", required = true, on_delete = "cascade" }
+columns.lot = { type = "link", to = "lots", required = true, on_delete = "restrict" }
+columns.reason = { type = "choice", required = true, choices = ["bought", "used", "expired", "thrown_away", "given_away", "correction_in", "correction_out"] }
+columns.amount = { type = "decimal", required = true, min = 0 }
+columns.happened_on = { type = "date", required = true, default = "today" }
+columns.notes = { type = "text" }
+# A movement changes its chosen lot. The core must also recompute item total
+# and its watches atomically. The current adjusts contract covers one target
+# quantity but cannot express the full item/lot invariants.

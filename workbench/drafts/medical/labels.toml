@@ -1,11 +1,26 @@
 [tables.kits]
-form = ["name", "place", "notes"]
-list = ["name", "place"]
+empty = "Add a first aid kit and where to find it."
+form = ["name", "place", "last_checked", "next_check", "notes"]
+list = ["name", "place", "last_checked", "next_check"]
+columns.place = { label = "Where it is", help = "Choose a place recorded in Household stock. Keep first aid supplies in Stock too." }
+columns.last_checked = { label = "Last checked", help = "The date someone checked this kit's contents." }
+columns.next_check = { label = "Check again by", help = "Choose a date from your household plan or kit guidance. The dashboard will remind you a month before." }
+columns.notes = { help = "For example, what needs replacing. Keep medicine and care details in People." }
+
 [tables.kit_checks]
 form = ["kit", "checked_on", "next_check", "checked_by", "notes"]
-list = ["kit", "checked_on", "next_check", "checked_by"]
-columns.next_check = { label = "Check again by" }
+list = ["checked_on", "kit", "next_check", "checked_by", "notes"]
+columns.checked_on = { label = "Checked on" }
+columns.next_check = { label = "Next check planned", help = "For this check record only. Also update the kit's current Check again by date." }
+columns.checked_by = { label = "Checked by" }
+columns.notes = { label = "What you found", help = "Record missing or expired supplies here; update their amounts and dates in Household stock." }
+
 [tables.training]
 form = ["person", "course", "provider", "completed_on", "renew_by", "notes"]
-list = ["person", "course", "completed_on", "renew_by"]
-columns.renew_by = { label = "Renew by" }
+list = ["person", "course", "provider", "renew_by"]
+columns.person = { label = "Who trained" }
+columns.course = { label = "Training" }
+columns.provider = { label = "Training provider" }
+columns.completed_on = { label = "Completed on" }
+columns.renew_by = { label = "Renew by", help = "Use the date on the certificate or from the provider. The dashboard will remind you a month before." }
+columns.notes = { help = "For example, where the certificate is kept. Do not enter private medical details here." }

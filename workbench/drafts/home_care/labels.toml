@@ -1,0 +1,15 @@
+[tables.jobs]
+empty = "Add one home check you want to remember."
+form = ["name", "kind", "place", "last_done", "next_due", "notes"]
+list = ["name", "kind", "place", "last_done", "next_due"]
+columns.place = { label = "Where it is", help = "For example, upstairs hallway or outside beside the kitchen." }
+columns.last_done = { label = "Last done" }
+columns.next_due = { label = "Next due", help = "Use a date from the equipment instructions, a qualified service provider or your household plan." }
+columns.notes = { help = "Record the detail that will help next time; follow local safety advice for the work itself." }
+
+[tables.work_done]
+form = ["job", "done_on", "done_by", "notes"]
+list = ["done_on", "job", "done_by", "notes"]
+columns.done_on = { label = "Done on" }
+columns.done_by = { label = "Who did it" }
+columns.notes = { label = "What was done" }

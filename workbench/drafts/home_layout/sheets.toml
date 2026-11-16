@@ -1,0 +1,28 @@
+[[sheet]]
+name = "our_home"
+title = "Our home"
+intro = "A quick guide to exits, shut-offs and safety things. Check that each place still matches the home before printing."
+
+[[sheet.section]]
+title = "Home and upstairs route"
+table = "homes"
+columns = ["name", "storeys", "upstairs_way_out"]
+order_by = "name"
+
+[[sheet.section]]
+title = "Ways out"
+table = "exits"
+columns = ["name", "from_floor", "place", "route"]
+order_by = "name"
+
+[[sheet.section]]
+title = "Shut-offs and power board"
+table = "shutoffs"
+columns = ["kind", "place", "how_to_find"]
+order_by = "kind"
+
+[[sheet.section]]
+title = "Safety things"
+table = "equipment"
+columns = ["name", "kind", "place", "next_check"]
+order_by = "kind"

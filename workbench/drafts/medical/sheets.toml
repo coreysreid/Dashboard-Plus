@@ -1,0 +1,16 @@
+[[sheet]]
+name = "first_aid"
+title = "First aid at home"
+intro = "Where the kits are and who has recorded training. Check that places and dates are current before sharing this sheet. In an emergency, follow local emergency advice."
+
+[[sheet.section]]
+title = "First aid kits"
+table = "kits"
+columns = ["name", "place", "last_checked", "next_check"]
+order_by = "name"
+
+[[sheet.section]]
+title = "Training"
+table = "training"
+columns = ["person", "course", "provider", "renew_by"]
+order_by = "person"

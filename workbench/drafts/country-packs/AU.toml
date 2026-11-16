@@ -1,0 +1,60 @@
+country = "AU"
+checked = "2026-11-16"
+review_by = "2027-02-16"
+local_prompt = "Check your local emergency authority for advice that applies to your address and current conditions."
+reuse = "Links and paraphrases only. Home Affairs: CC BY 3.0 AU; Queensland Government: CC BY 4.0 with exceptions. NSW RFS reuse terms not confirmed."
+
+reuse_source = { url = "https://www.qld.gov.au/legal/copyright", checked = "2026-11-16" }
+local_prompt_source = { url = "https://www.disasterassist.gov.au/", checked = "2026-11-16" }
+
+[[emergency_number]]
+number = "000"
+service = "Police, fire and ambulance"
+source = { url = "https://www.qld.gov.au/emergency/emergencies-services", checked = "2026-11-16" }
+
+[[body]]
+name = "National Emergency Management Agency"
+scope = "national"
+source = { url = "https://www.homeaffairs.gov.au/about-us/our-portfolios/emergency-management", checked = "2026-11-16" }
+
+[[body]]
+name = "Queensland State Emergency Service"
+scope = "Queensland"
+source = { url = "https://www.qld.gov.au/emergency/emergencies-services", checked = "2026-11-16" }
+
+[water]
+amount_per_person_per_day = 3
+unit = "litres"
+scope = "NSW Rural Fire Service emergency survival kit starting amount"
+source = { url = "https://www.rfs.nsw.gov.au/plan-and-prepare/prepare-your-family/emergency-survival-kit", checked = "2026-11-16" }
+
+[[hazard]]
+name = "flood"
+scope = "Queensland hazards listed by Queensland Government"
+source = { url = "https://www.qld.gov.au/emergency/dealing-disasters", checked = "2026-11-16" }
+
+[[hazard]]
+name = "bushfire"
+scope = "Queensland hazards listed by Queensland Government"
+source = { url = "https://www.qld.gov.au/emergency/dealing-disasters", checked = "2026-11-16" }
+
+[[hazard]]
+name = "cyclone"
+scope = "Queensland hazards listed by Queensland Government"
+source = { url = "https://www.qld.gov.au/emergency/dealing-disasters", checked = "2026-11-16" }
+
+[[hazard]]
+name = "storm"
+scope = "Queensland hazards listed by Queensland Government"
+source = { url = "https://www.qld.gov.au/emergency/dealing-disasters", checked = "2026-11-16" }
+
+[[hazard]]
+name = "heatwave"
+scope = "Queensland hazards listed by Queensland Government"
+source = { url = "https://www.qld.gov.au/emergency/dealing-disasters", checked = "2026-11-16" }
+
+[[hazard]]
+name = "earthquake"
+scope = "Queensland hazards listed by Queensland Government"
+source = { url = "https://www.qld.gov.au/emergency/dealing-disasters", checked = "2026-11-16" }
+

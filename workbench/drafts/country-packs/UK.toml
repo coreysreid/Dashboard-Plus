@@ -1,0 +1,55 @@
+country = "UK"
+checked = "2026-11-16"
+review_by = "2027-02-16"
+local_prompt = "Check your local emergency authority for advice that applies to your address and current conditions."
+reuse = "GOV.UK and Be Ready text generally under Open Government Licence 3.0, subject to third-party exceptions; links and paraphrases only."
+
+reuse_source = { url = "https://www.gov.uk/help/terms-conditions", checked = "2026-11-16" }
+local_prompt_source = { url = "https://beready.campaign.gov.uk/about-this-website-and-uk-resilience/", checked = "2026-11-16" }
+
+[[emergency_number]]
+number = "999"
+service = "Emergency services"
+source = { url = "https://www.gov.uk/guidance/999-and-112-the-uks-national-emergency-numbers", checked = "2026-11-16" }
+
+[[emergency_number]]
+number = "112"
+service = "Emergency services"
+source = { url = "https://www.gov.uk/guidance/999-and-112-the-uks-national-emergency-numbers", checked = "2026-11-16" }
+
+[[body]]
+name = "Cabinet Office COBR Directorate"
+scope = "national"
+source = { url = "https://www.gov.uk/guidance/resilience-guidance-and-doctrine", checked = "2026-11-16" }
+
+[[body]]
+name = "Local Resilience Forums"
+scope = "local coordination in England and Wales"
+source = { url = "https://beready.campaign.gov.uk/about-this-website-and-uk-resilience/", checked = "2026-11-16" }
+
+[water]
+amount_per_person_per_day = 3
+unit = "litres"
+scope = "UK Be Ready advice: drinking water for three days"
+source = { url = "https://beready.campaign.gov.uk/be-informed-about-hazards/water-supply-interruptions-or-outages/", checked = "2026-11-16" }
+
+[[hazard]]
+name = "hot weather and heatwaves"
+scope = "UK Be Ready hazard topics"
+source = { url = "https://beready.campaign.gov.uk/be-informed-about-hazards/", checked = "2026-11-16" }
+
+[[hazard]]
+name = "power cuts"
+scope = "UK Be Ready hazard topics"
+source = { url = "https://beready.campaign.gov.uk/be-informed-about-hazards/", checked = "2026-11-16" }
+
+[[hazard]]
+name = "storms"
+scope = "UK Be Ready hazard topics"
+source = { url = "https://beready.campaign.gov.uk/be-informed-about-hazards/", checked = "2026-11-16" }
+
+[[hazard]]
+name = "flooding"
+scope = "UK Be Ready hazard topics"
+source = { url = "https://beready.campaign.gov.uk/be-informed-about-hazards/", checked = "2026-11-16" }
+
