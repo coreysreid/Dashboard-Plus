@@ -123,6 +123,7 @@ inside = "Outside"
 [[stock.items]]
 name = "Bottled water (6 x 2 L)"
 category = "water"
+drinking = true
 quantity = 12
 unit = "litres"
 minimum = 9

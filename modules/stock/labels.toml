@@ -1,4 +1,5 @@
 [tables.places]
+columns.name = { help = "Start typing to pick a room, cupboard or shelf, or type your own.", suggest_from = "places.csv" }
 form = ["name", "inside", "notes"]
 list = ["name", "inside", "notes"]
 columns.inside = { label = "Inside", help = "Leave blank for a room or area. For a shelf, choose the cupboard it's in: the full path, like Kitchen › Pantry › Shelf 3, then shows everywhere." }
@@ -9,7 +10,7 @@ empty = "Add a few things from the pantry."
 form = ["name", "category", "drinking", "quantity", "unit", "minimum", "place", "expires", "notes"]
 list = ["name", "category", "quantity", "unit", "minimum", "place", "expires"]
 columns.quantity = { label = "Amount on hand", help = "For water, enter the total number of litres, not the number of bottles." }
-columns.drinking = { label = "Safe to drink", help = "Untick for water kept for washing or flushing, or distilled water for appliances. Only drinking water counts towards days of water.", show_when = { category = "water" } }
+columns.drinking = { label = "Is this water safe to drink now?", help = "Only drinking water counts towards days of water. Water for washing or flushing, or distilled water for appliances, does not.", show_when = { category = "water" }, answers = ["Yes, count these litres as drinking water", "No, keep it out of days of water"] }
 columns.unit = { label = "Unit", help = "Use litres for water; for other things, a unit such as tins, kg or packs." }
 columns.minimum = { label = "Keep at least", help = "You'll see it under Needs attention when it drops below this." }
 columns.expires = { label = "Use by" }

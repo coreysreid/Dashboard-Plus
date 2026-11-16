@@ -344,6 +344,15 @@ class Records:
             levels += 1 if current else 0
         return levels
 
+    @staticmethod
+    def _check_required_when(info: TableInfo, record: dict) -> None:
+        """Refuse a record that leaves blank a field its other answers make necessary (e.g. "Safe to drink")."""
+        problems = {c.name: "Please choose one." for c in info.table.columns.values()
+                    if c.required_when and record.get(c.name) is None
+                    and all(record.get(k) == v for k, v in c.required_when.items())}
+        if problems:
+            raise ValidationError(problems)
+
     def create(self, name: str, values: dict, actor: str = "person", review_status: str = "confirmed",
                batch_id: int | None = None) -> int:
         """Save a new record and return its id."""
@@ -351,6 +360,7 @@ class Records:
         info = self.info(name)
         with db.transaction(self.conn):
             cleaned = self.clean(info, values, creating=True)
+            self._check_required_when(info, cleaned)
             self._check_nesting(info, None, cleaned)
             stored = {k: v for k, v in cleaned.items() if info.table.columns[k].type != "links"}
             now = self.clock()
@@ -371,6 +381,7 @@ class Records:
         with db.transaction(self.conn):
             current = self._row(info, record_id)
             cleaned = self.clean(info, values, creating=False)
+            self._check_required_when(info, dict(current, **cleaned))
             self._check_nesting(info, record_id, cleaned)
             changed = {k: v for k, v in cleaned.items() if current.get(k) != v}
             if not changed:
