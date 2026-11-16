@@ -47,6 +47,7 @@ class Supply:
     rows: int = 0
     basis: str = ""  # the daily amounts the estimate assumes, e.g. "3 litres per person a day, 1 per pet"
     not_counted: float = 0  # amount that matches but is left out by `counts_only` (e.g. water for flushing)
+    wrong_unit: list = field(default_factory=list)  # names of rows recorded in another unit (e.g. bottles)
     notes: list[str] = field(default_factory=list)
 
 
@@ -169,6 +170,17 @@ def supplies(conn: sqlite3.Connection, registry: dict[str, TableInfo]) -> list[S
                                    f"WHERE deleted_at IS NULL{clause}{extra}",
                                    list(filters.values()) + [int(v) for v in only.values()]).fetchone()[0]
             not_counted, total = total - float(counted), float(counted)
+        wrong_unit = []
+        if rule.get("unit_from"):
+            # Only rows in the supply's own unit are added up; "6 bottles" is not 6 litres.
+            accepted = {"", rule["unit"].lower(), rule["unit"].lower().rstrip("s"), *rule.get("unit_words", [])}
+            extra = "".join(f" AND COALESCE({name}, 0) = ?" for name in only)
+            for bad in conn.execute(f"SELECT {_name_column(info) or 'id'} AS name, {rule['quantity']} AS amount, "
+                                    f"{rule['unit_from']} AS unit FROM {info.name} WHERE deleted_at IS NULL"
+                                    f"{clause}{extra}", list(filters.values()) + [int(v) for v in only.values()]):
+                if (bad["unit"] or "").strip().lower() not in accepted:
+                    wrong_unit.append(f"{bad['name']} ({_number(bad['amount'] or 0)} {bad['unit']})")
+                    total -= float(bad["amount"] or 0)
         unit = rule["unit"]
         u = f" {unit}" if unit else ""
         basis = f"{_number(rule['per_person_per_day'])}{u} per person a day"
@@ -196,11 +208,14 @@ def supplies(conn: sqlite3.Connection, registry: dict[str, TableInfo]) -> list[S
         working = (f"{_number(total)}{u} on hand ÷ {_number(need)}{u} a day for {who} "
                    f"= about {_number(round(days, 1))} days (aim: {_number(target)} days).")
         notes = ["The daily figures are a starting point. Your local authority's advice comes first."]
+        if wrong_unit:
+            notes.insert(0, f"Not counted until its total is entered in {unit}: {', '.join(wrong_unit)}.")
         if not_counted:
             notes.insert(0, f"Not counted: {_number(not_counted)}{u} not marked as {rule['label']} "
                             f"(for example water for washing or flushing).")
         results.append(Supply(info.name, title, unit, total, need, days, target, shortfall, working,
-                              rows=count, notes=notes, label=rule["label"], basis=basis, not_counted=not_counted))
+                              rows=count, notes=notes, label=rule["label"], basis=basis, not_counted=not_counted,
+                              wrong_unit=wrong_unit))
     return results
 
 

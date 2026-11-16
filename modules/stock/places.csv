@@ -1,0 +1,121 @@
+name,kind,also_called,typical_in
+Kitchen,room,Cookhouse,house|apartment|townhouse
+Living room,room,Lounge|Sitting room|Family room,house|apartment|townhouse
+Dining room,room,Dining area,house|apartment|townhouse
+Bedroom,room,Bed room,house|apartment|townhouse
+Main bedroom,room,Master bedroom|Primary bedroom,house|apartment|townhouse
+Guest bedroom,room,Spare bedroom|Guest room,house|apartment|townhouse
+Children's bedroom,room,Kids' room|Child's bedroom,house|apartment|townhouse
+Nursery,room,Baby's room,house|apartment|townhouse
+Bathroom,room,Bath room,house|apartment|townhouse
+Ensuite,room,En suite|Attached bathroom,house|apartment|townhouse
+Toilet,room,WC|Restroom|Powder room,house|apartment|townhouse
+Laundry,room,Utility room|Washroom,house|apartment|townhouse
+Garage,room,,house|townhouse
+Shed,room,Garden shed|Tool shed,house|townhouse
+Study,room,Home office|Office,house|apartment|townhouse
+Hallway,room,Hall|Corridor,house|apartment|townhouse
+Entry,room,Entryway|Foyer|Vestibule,house|apartment|townhouse
+Stairway,room,Stairs|Stairwell,house|townhouse
+Landing,room,Upstairs landing,house|townhouse
+Basement,room,Cellar,house|townhouse
+Attic,room,Loft|Roof space,house|townhouse
+Balcony,room,,apartment|townhouse
+Patio,room,Terrace,house|townhouse
+Porch,room,Veranda|Verandah,house|townhouse
+Garden,room,Yard|Backyard,house|townhouse
+Front garden,room,Front yard,house|townhouse
+Side passage,room,Side yard,house|townhouse
+Driveway,room,Drive,house|townhouse
+Workshop,room,Work room,house|townhouse
+Playroom,room,Play room,house|townhouse
+Sunroom,room,Conservatory,house|townhouse
+Mudroom,room,Boot room,house|townhouse
+Utility area,room,Service area,house|apartment|townhouse
+Apartment storage room,room,Storage cage|Storage locker,apartment
+Car,room,Vehicle,house|apartment|townhouse
+Pantry,storage,Larder|Food cupboard,house|apartment|townhouse
+Kitchen cupboard,storage,Kitchen cabinet,house|apartment|townhouse
+Kitchen drawer,storage,Kitchen cabinet drawer,house|apartment|townhouse
+Linen cupboard,storage,Linen closet,house|apartment|townhouse
+Wardrobe,storage,Closet|Clothes closet,house|apartment|townhouse
+Walk-in wardrobe,storage,Walk-in closet,house|townhouse
+Built-in wardrobe,storage,Fitted wardrobe|Reach-in closet,house|apartment|townhouse
+Coat cupboard,storage,Coat closet|Hall closet,house|apartment|townhouse
+Broom cupboard,storage,Utility closet,house|apartment|townhouse
+Bathroom cabinet,storage,Medicine cabinet,house|apartment|townhouse
+Vanity cupboard,storage,Under-sink bathroom cabinet,house|apartment|townhouse
+Under-sink cupboard,storage,Under-sink cabinet,house|apartment|townhouse
+Fridge,storage,Refrigerator,house|apartment|townhouse
+Freezer,storage,Deep freezer,house|apartment|townhouse
+Chest freezer,storage,Deep freeze,house|townhouse
+Dishwasher,storage,Dish washer,house|apartment|townhouse
+Shelves,storage,Shelving unit|Bookcase,house|apartment|townhouse
+Garage shelves,storage,Garage shelving,house|townhouse
+Storage rack,storage,Wire rack|Shelving rack,house|apartment|townhouse
+Cabinet,storage,Cupboard,house|apartment|townhouse
+Sideboard,storage,Buffet|Credenza,house|apartment|townhouse
+Chest of drawers,storage,Dresser|Tallboy,house|apartment|townhouse
+Bedside table,storage,Nightstand,house|apartment|townhouse
+Desk drawers,storage,Desk pedestal,house|apartment|townhouse
+Filing cabinet,storage,File cabinet,house|apartment|townhouse
+Toolbox,storage,Tool box,house|apartment|townhouse
+Tool cabinet,storage,Tool chest,house|townhouse
+Storage box,storage,Storage bin|Tote,house|apartment|townhouse
+Plastic tub,storage,Plastic tote|Storage tote,house|apartment|townhouse
+Basket,storage,Storage basket,house|apartment|townhouse
+First aid kit,storage,Medical kit,house|apartment|townhouse
+Go-bag,storage,Emergency bag|Grab bag|Bug-out bag,house|apartment|townhouse
+Under the stairs,storage,Under-stairs cupboard|Stair closet,house|townhouse
+Under the bed,storage,Under-bed storage,house|apartment|townhouse
+Overhead cabinet,storage,Upper cupboard|Wall cabinet,house|apartment|townhouse
+Laundry cabinet,storage,Utility cupboard,house|apartment|townhouse
+Shoe rack,storage,Shoe shelf,house|apartment|townhouse
+Shoe cupboard,storage,Shoe cabinet|Shoe closet,house|apartment|townhouse
+Garage locker,storage,Storage locker,house|townhouse
+Shed shelves,storage,Shed shelving,house|townhouse
+Outdoor storage box,storage,Deck box|Garden box,house|townhouse
+Bike shed,storage,Bicycle shed,house|townhouse
+Car boot,storage,Trunk|Boot,house|apartment|townhouse
+Glove box,storage,Glove compartment,house|apartment|townhouse
+Roof storage,storage,Roof box|Cargo box,house|apartment|townhouse
+Top shelf,spot,Upper shelf,house|apartment|townhouse
+Middle shelf,spot,Centre shelf|Center shelf,house|apartment|townhouse
+Bottom shelf,spot,Lower shelf,house|apartment|townhouse
+Shelf 1,spot,First shelf,house|apartment|townhouse
+Shelf 2,spot,Second shelf,house|apartment|townhouse
+Shelf 3,spot,Third shelf,house|apartment|townhouse
+Top drawer,spot,Upper drawer,house|apartment|townhouse
+Middle drawer,spot,Centre drawer|Center drawer,house|apartment|townhouse
+Bottom drawer,spot,Lower drawer,house|apartment|townhouse
+Left drawer,spot,Left-hand drawer,house|apartment|townhouse
+Right drawer,spot,Right-hand drawer,house|apartment|townhouse
+Front drawer,spot,Front compartment,house|apartment|townhouse
+Back drawer,spot,Rear drawer,house|apartment|townhouse
+Left side,spot,Left-hand side,house|apartment|townhouse
+Right side,spot,Right-hand side,house|apartment|townhouse
+Front,spot,At the front,house|apartment|townhouse
+Back,spot,At the back|Rear,house|apartment|townhouse
+Upper compartment,spot,Top compartment,house|apartment|townhouse
+Lower compartment,spot,Bottom compartment,house|apartment|townhouse
+Door pocket,spot,Door shelf,house|apartment|townhouse
+Freezer drawer,spot,Freezer compartment,house|apartment|townhouse
+Crisper drawer,spot,Vegetable drawer|Produce drawer,house|apartment|townhouse
+Top of cupboard,spot,Above the cabinet,house|apartment|townhouse
+Behind the door,spot,Back of door,house|apartment|townhouse
+On the door,spot,Door hooks,house|apartment|townhouse
+Under the sink,spot,Beneath the sink,house|apartment|townhouse
+Under the bench,spot,Under the counter|Under the countertop,house|apartment|townhouse
+On the bench,spot,On the counter|Countertop,house|apartment|townhouse
+By the front door,spot,Near the entry,house|apartment|townhouse
+Beside the bed,spot,By the bed,house|apartment|townhouse
+Behind the sofa,spot,Behind the couch,house|apartment|townhouse
+Under the sofa,spot,Under the couch,house|apartment|townhouse
+On the wall,spot,Wall hook|Wall mount,house|apartment|townhouse
+On the floor,spot,Floor level,house|apartment|townhouse
+Ceiling hatch,spot,Attic hatch|Loft hatch,house|townhouse
+Window ledge,spot,Window sill|Windowsill,house|apartment|townhouse
+Top hook,spot,Upper hook,house|apartment|townhouse
+Bottom hook,spot,Lower hook,house|apartment|townhouse
+Box A,spot,Container A,house|apartment|townhouse
+Box B,spot,Container B,house|apartment|townhouse

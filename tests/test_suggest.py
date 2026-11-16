@@ -87,3 +87,7 @@ class StockCatalogueTests(TempDirTestCase):
                           encoding="utf-8")
         _, failures = modules.discover(self.tmp / "modules")
         self.assertIn("suggest_from must name a .csv file in the module folder", " ".join(failures["stock"]))
+
+    def test_places_are_suggested_while_typing(self):
+        found = self.get("/t/stock__places/suggest?column=name&q=pan").get_json()
+        self.assertIn("Pantry", [f["name"] for f in found])

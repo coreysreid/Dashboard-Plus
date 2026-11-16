@@ -22,7 +22,13 @@
   {% for f in fields %}
   <div class="{% if f.error %}has-error{% endif %}"{% if f.show_when %} data-show-when="{{ f.show_when[0] }}" data-show-value="{{ f.show_when[1] }}"{% endif %}>
     {% set fid = "f-" ~ f.name %}
-    {% if f.kind == "boolean" %}
+    {% if f.kind == "boolean" and f.column.required_when %}
+      <fieldset style="border:0;padding:0;margin:0"><legend style="font-weight:600;margin-bottom:.25rem">{{ f.label }}</legend>
+        {% set answers = f.help_answers or ["Yes", "No"] %}
+        <label style="font-weight:400"><input type="radio" id="{{ fid }}-yes" name="{{ f.name }}" value="yes" {% if f.value in (1, "1", "yes", True) %}checked{% endif %}> {{ answers[0] }}</label>
+        <label style="font-weight:400"><input type="radio" id="{{ fid }}-no" name="{{ f.name }}" value="no" {% if f.value in (0, "0", "no", False) and f.value is not none and f.value != "" %}checked{% endif %}> {{ answers[1] }}</label>
+      </fieldset>
+    {% elif f.kind == "boolean" %}
       <label><input type="checkbox" id="{{ fid }}" name="{{ f.name }}" value="yes" {% if f.value in (1, "1", "yes", True) %}checked{% endif %}> {{ f.label }}</label>
     {% else %}
       <label for="{{ fid }}">{{ f.label }}{% if f.column.required %} <span class="required" title="required">*</span>{% endif %}{% if f.column.unit %} <span class="muted">({{ f.column.unit }})</span>{% endif %}</label>
@@ -52,7 +58,7 @@
         <div class="suggest-box"><input type="text" id="{{ fid }}" name="{{ f.name }}" value="{{ f.value or '' }}" {% if loop.first %}autofocus{% endif %}{% if f.suggest %} data-suggest="/t/{{ info.name }}/suggest?column={{ f.name }}" autocomplete="off" role="combobox" aria-autocomplete="list" aria-expanded="false"{% endif %}></div>
       {% endif %}
     {% endif %}
-    {% if f.error %}<p class="error">{{ f.label }} {{ f.error }}</p>{% endif %}
+    {% if f.error %}<p class="error">{% if f.error[:1].isupper() %}{{ f.error }}{% else %}{{ f.label }} {{ f.error }}{% endif %}</p>{% endif %}
     {% if f.help %}<p class="help">{{ f.help }}</p>{% endif %}
     {% if f.column.sensitive %}<p class="help">Private: hidden in lists until you choose to show it.</p>{% endif %}
   </div>
@@ -114,7 +120,11 @@
         input.value = item.name;
         Object.keys(item.fills || {}).forEach(function (name) {
           var field = document.getElementById("f-" + name), value = item.fills[name];
-          if (!field) return;
+          if (!field) {  // yes/no asked as two choices
+            var radio = document.getElementById("f-" + name + (value ? "-yes" : "-no"));
+            if (radio) { radio.checked = true; }
+            return;
+          }
           if (field.type === "checkbox") field.checked = !!value;
           else if (field.tagName === "SELECT" || !field.value) field.value = value;
           field.dispatchEvent(new Event("change"));
@@ -137,7 +147,13 @@
           own.addEventListener("mousedown", function (e) { e.preventDefault(); close(); });
           list.appendChild(own);
         }
-        list.hidden = !found.length; input.setAttribute("aria-expanded", found.length ? "true" : "false");
+        if (!found.length && input.value.trim()) {
+          var none = document.createElement("li"); none.className = "muted";
+          none.textContent = "No match. Keep \u201c" + input.value.trim() + "\u201d as a new item, then choose its kind and unit.";
+          list.appendChild(none);
+        }
+        list.hidden = !list.children.length;
+        input.setAttribute("aria-expanded", list.hidden ? "false" : "true");
       }
       input.addEventListener("input", function () {
         clearTimeout(timer);

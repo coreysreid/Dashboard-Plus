@@ -301,6 +301,7 @@ notes = "Top shelf is 1."
 [[stock.items]]
 name = "Water casks (10 L)"
 category = "water"
+drinking = true
 quantity = 20
 unit = "litres"
 minimum = 20
@@ -310,6 +311,7 @@ expires = "today+300"
 [[stock.items]]
 name = "Water bottles (24 x 600 mL)"
 category = "water"
+drinking = true
 quantity = 14.4
 unit = "litres"
 place = "Pantry"

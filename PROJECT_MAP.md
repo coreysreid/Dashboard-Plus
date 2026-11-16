@@ -219,6 +219,7 @@ Generate the next one with: python tools/make_migration.py pets --name <what_cha
 | labels.toml | Friendly labels, help text, form and list order | changing wording or order |
 | sheets.toml | Emergency supplies checklist | changing what prints |
 | catalogue.csv | 800 common goods to pick from while typing (from Lane B's catalogue) | adding or correcting a good |
+| places.csv | 120 rooms, cupboards and shelves to pick from while typing a place (from Lane B's list) | adding a place name |
 | migrations/ | Numbered database changes | after changing tables.toml |
 
 ## modules/stock/migrations/  (summary: this module's numbered database changes; never edit a released one)
