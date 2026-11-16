@@ -1,0 +1,8 @@
+name = "collections"
+title = "Collections"
+version = "1.0.0"
+description = "Keep track of hobby collections and what each item is worth to you."
+core_api = "1"
+kind = "declarative"
+requires = ["stock"]
+outbound_hosts = []

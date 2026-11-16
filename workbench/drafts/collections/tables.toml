@@ -1,0 +1,21 @@
+[tables.collections]
+title = "Collections"
+description = "A group of things you collect, such as building sets, cards or records."
+columns.name = { type = "text", required = true }
+columns.kind = { type = "choice", choices = ["building_sets", "trading_cards", "vinyl", "books", "other"] }
+columns.notes = { type = "longtext" }
+
+[tables.items]
+title = "Collection items"
+description = "One set, card, record or other thing in a collection. Values are your own estimates."
+columns.collection = { type = "link", to = "collections", required = true, on_delete = "restrict" }
+columns.name = { type = "text", required = true }
+columns.catalogue_number = { type = "text" }
+columns.condition = { type = "choice", choices = ["sealed", "excellent", "good", "fair", "needs_repair"] }
+columns.place = { type = "link", to = "stock.places", on_delete = "clear" }
+columns.bought_for = { type = "money", min = 0 }
+columns.value_now = { type = "money", min = 0 }
+columns.status = { type = "choice", required = true, default = "owned", choices = ["owned", "sold", "given_away"] }
+columns.sold_for = { type = "money", min = 0 }
+columns.sold_on = { type = "date" }
+columns.notes = { type = "longtext" }

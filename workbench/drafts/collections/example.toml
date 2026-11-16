@@ -1,0 +1,63 @@
+# Made-up collection rows for the three example households. Values are household estimates.
+
+[[smith.collections.collections]]
+name = "Building sets"
+kind = "building_sets"
+
+[[smith.collections.items]]
+collection = "Building sets"
+name = "Blue cottage set"
+catalogue_number = "DEMO-SET-01"
+condition = "good"
+place = "Pantry"
+bought_for = 45
+value_now = 60
+status = "owned"
+
+[[smith.collections.items]]
+collection = "Building sets"
+name = "River bridge set"
+catalogue_number = "DEMO-SET-02"
+condition = "excellent"
+place = "Pantry"
+bought_for = 30
+value_now = 35
+status = "owned"
+
+[[garcia.collections.collections]]
+name = "Trading cards"
+kind = "trading_cards"
+
+[[garcia.collections.items]]
+collection = "Trading cards"
+name = "Silver heron card"
+catalogue_number = "DEMO-CARD-01"
+condition = "good"
+place = "Hall closet"
+bought_for = 8
+value_now = 12
+status = "owned"
+
+[[garcia.collections.items]]
+collection = "Trading cards"
+name = "Cedar grove card"
+catalogue_number = "DEMO-CARD-02"
+condition = "fair"
+place = "Hall closet"
+bought_for = 6
+value_now = 8
+status = "owned"
+
+[[taylor.collections.collections]]
+name = "Vinyl records"
+kind = "vinyl"
+
+[[taylor.collections.items]]
+collection = "Vinyl records"
+name = "Evening Signals"
+catalogue_number = "DEMO-LP-01"
+condition = "good"
+place = "Hall cupboard"
+bought_for = 15
+value_now = 22
+status = "owned"

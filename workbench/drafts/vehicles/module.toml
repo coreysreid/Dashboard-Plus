@@ -1,0 +1,8 @@
+name = "vehicles"
+title = "Vehicles"
+version = "1.0.0"
+description = "Keep vehicle details, where its kit is, and dates that need attention."
+core_api = "1"
+kind = "declarative"
+requires = ["people", "stock"]
+outbound_hosts = []
