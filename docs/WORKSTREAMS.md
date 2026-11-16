@@ -126,45 +126,121 @@ session can finish; Lane A keeps it stocked.
 
 ## Brief for Lane B, batch 3
 
-> You are Lane B, the checker and drafter. Read `AGENTS.md`, this page and
-> [`BACKLOG.md`](BACKLOG.md) first. Edit **only `workbench/`**. Follow the
-> Definition of done; one pull request per numbered task, each explained in
-> plain words for Corey. Use made-up data only (the style of
-> `examples/households/`: fiction-reserved phone numbers, `example.com` emails).
-> Lane A is promoting **Pets** now, so leave Pets alone.
+> You are Lane B, the checker and drafter. You have full internet access for
+> research. Read these first: `AGENTS.md`, this page, [`BACKLOG.md`](BACKLOG.md)
+> (Corey's own feedback), [`VISION.md`](VISION.md), [`DESIGN.md`](DESIGN.md)
+> sections 5 and 6 (the file contracts: `watch`, `gaps`, `adjusts`, sheets,
+> labels including `empty`), [`MODULES.md`](MODULES.md), the shipped modules in
+> `modules/` (People, Household stock, Pets) as the standard to match,
+> `examples/households/` for the made-up data style, your own
+> `workbench/research/`, and [`EXAMPLES.md`](EXAMPLES.md) to see the screens.
 >
-> 1. **Medical, ready to promote.** Bring `workbench/drafts/medical/` to the
+> Edit **only `workbench/`**. Follow the Definition of done; one pull request
+> per numbered task, each explained in plain words for Corey. Use made-up data
+> only (fiction-reserved phone numbers, `example.com` emails). Cite a source
+> and the date checked for every fact a household might rely on. Where a task
+> needs something the core cannot do yet, do not work around it: write what is
+> needed in the draft's `NOTES.md` (what the household sees, then what the core
+> would have to do), and Lane A builds it. Pets is shipped now; leave it alone.
+>
+> **Corey's priorities (do these first, in this order):**
+>
+> 1. **A list of common goods to pick from (the catalogue).** When Corey does a
+>    stocktake he wants to type "kid…", pick **Kidney beans** from a list, and
+>    only type a new name when it is missing. Draft
+>    `workbench/drafts/catalogue/`:
+>    - `catalogue.csv`, one row per good: `key`, `name` (as a household says
+>      it), `category` (one of Household stock's categories in
+>      `modules/stock/tables.toml`), `also_called` (search words, separated
+>      by `|`, including regional names: tinned/canned, capsicum/bell pepper,
+>      nappies/diapers, torch/flashlight), `unit` (the usual unit: tins, kg,
+>      litres, packs, rolls), `typical_sizes` (such as 400 g|800 g),
+>      `shelf_life_unopened` (months, where a source gives one),
+>      `shelf_life_source`, `notes`.
+>    - Work in rounds. **Round 1:** the 150 goods most households keep (pantry
+>      staples, water, first aid, cleaning, toiletries, batteries and power,
+>      pet food, basic hardware). Open the pull request so Corey can react, then
+>      **round 2** to about 400 and **round 3** towards 800, adding what Corey
+>      and the example households show is missing.
+>    - **Water needs care**, because only drinking water counts towards days
+>      of water: drinking water (bottled or stored tap), filtered, boiled,
+>      sparkling, distilled or demineralised (not for long-term drinking;
+>      irons and CPAP machines), non-drinking stored water (flushing,
+>      washing), water purification tablets. Add a column `counts_as_drinking_water`
+>      (yes/no) with a sourced reason for each water row.
+>    - Use public sources such as the USDA FoodKeeper data (public domain) and
+>      food safety agencies (FSANZ, UK Food Standards Agency) for shelf life;
+>      record each source's licence in `NOTES.md`.
+>    - In `NOTES.md`, describe how picking should feel (type-ahead, best
+>      matches first, regional names, "Add 'xyz' as a new item"), and what a
+>      household's own additions should do (kept locally, offered next time).
+> 2. **Home layout (a new module).** Corey wants to record where things are as
+>    **Kitchen › Pantry › Shelf 3**. Draft `workbench/drafts/home_layout/`:
+>    - Places that nest: area or room (Kitchen, Garage), storage inside it
+>      (Pantry, Grey shelves), and a spot (Shelf 3, Top drawer). Compare one
+>      places table that links to itself (`parent`) with fixed levels
+>      (room, storage, spot); recommend one in `NOTES.md`, with what the core
+>      must do to show the full path in drop-downs and lists.
+>    - The home itself for emergencies: floors, exits and the way out from
+>      upstairs, where the water main, gas shut-off and power board are,
+>      smoke alarms (with battery or test dates), fire extinguishers and
+>      blankets, and where the first aid kit and go-bags are kept. A printable
+>      "Our home" sheet: the shut-offs, exits and where the safety things are.
+>    - Say in `NOTES.md` how Household stock's existing `places` should move
+>      into this (Lane A will migrate it).
+> 3. **Layered use-by dates (lots).** Corey has 3 tins of beans that expire in
+>    a month and 10 that expire in six months, and wants that recorded
+>    gracefully. Draft the design in `workbench/drafts/stock_lots/`:
+>    - Tables: an item (Kidney beans, keep at least 6) and its lots (3 tins,
+>      use by 20/05/27, Kitchen › Pantry › Shelf 3; 10 tins, use by
+>      20/11/27, Garage › Grey shelves). The item's amount is the sum of its
+>      lots.
+>    - Walk through, screen by screen in words: a stocktake ("Kidney beans,
+>      Kitchen › Pantry › Shelf 3, 5, use by 20/05/27"), the weekly shop
+>      coming in, using some (which lot? suggest oldest first, and let the
+>      person change it), throwing out an expired lot, and what *Needs
+>      attention* shows ("3 tins of Kidney beans expire in 30 days").
+>    - Dates must be typed the household's way: 20/05/27 in Australia and the
+>      UK, 05/20/27 in the US. Note what the core must do.
+>    - List exactly what the core would need (amounts summed from lots,
+>      running low on the total, use-by per lot, choosing a lot when stock
+>      goes out, moving today's single-date items into lots).
+>
+> **Then:**
+>
+> 4. **Medical, ready to promote.** Bring `workbench/drafts/medical/` to the
 >    standard of `modules/people`: labels and help text written for a
 >    household, list and form order, an `empty` first step, `watch` rules
->    (kit check due, training renewal), `gaps` that ask sensible questions
->    ("Is there a first aid kit?"), and a printable sheet if one helps. Answer
->    every open question in its `NOTES.md` with a recommendation.
-> 2. **Readiness prompts, drafted as content.** In
+>    (kit check due, training renewal, with `wording = "due"`), `gaps` that
+>    ask sensible questions ("Is there a first aid kit?"), and a printable
+>    sheet if one helps. Answer every open question in its `NOTES.md`.
+> 5. **Readiness prompts, drafted as content.** In
 >    `workbench/drafts/readiness/prompts.toml`, write 40 to 60 "Have you
->    thought about…?" prompts (DESIGN 10.5) in this shape: `question`, `why`
->    (one plain sentence), `fits` (which households: `home_type`, `storeys`,
->    `hazards`, `pets`, `mobility_needs`, `country`), `answered_by` (a record
->    that already answers it, if any, such as a People role), `review_every`
->    (months) and `source` (an official link with the date checked). Group them
->    by situation (fire, flood, storm, heat, power cut, medical, leaving home
->    in a hurry). Ask, never assert; never say a household is safe.
-> 3. **Country packs, drafted as content.** From your research, write
->    `workbench/drafts/country-packs/AU.toml` and `US.toml`: emergency
->    numbers, the main emergency bodies, household water guidance (amount per
->    person per day), and the hazards each body lists, every value with its
->    source and date checked. Add `UK.toml` and `NZ.toml` the same way. Leave
->    out anything you cannot cite.
-> 4. **Two more household modules, drafted.** `documents` (where important
->    papers are kept: passports, insurance, wills, warranties, with renewal
->    and expiry dates through `watch`) and `home_care` (things to check in the
->    home: smoke alarms, gutters, the water heater, with when each was last
->    done; note in `NOTES.md` what core support repeating tasks would need).
->    Polish `wine` the same way as Medical.
-> 5. **Example data for every draft.** For each draft, add `example.toml`
->    rows for the three example households in the same format as
->    `examples/households/*.toml` (for example the Smiths' first aid kits and
->    the Garcias' papers), so Lane A can extend the screenshots when promoting.
-> 6. **UX check after each Lane A merge.** Run the current `main` with
+>    thought about…?" prompts (DESIGN 10.5): `question`, `why` (one plain
+>    sentence), `fits` (which households: `home_type`, `storeys`, `hazards`,
+>    `pets`, `mobility_needs`, `country`), `answered_by` (a record that
+>    already answers it, such as a People role or a Home layout shut-off),
+>    `review_every` (months) and `source` (an official link with the date
+>    checked). Group them by situation (fire, flood, storm, heat, power cut,
+>    medical, leaving home in a hurry). Ask, never assert; never say a
+>    household is safe.
+> 6. **Country packs, drafted as content.** From your research, write
+>    `workbench/drafts/country-packs/AU.toml`, `US.toml`, `UK.toml` and
+>    `NZ.toml`: emergency numbers, the main emergency bodies, household water
+>    guidance (amount per person per day), and the hazards each body lists,
+>    every value with its source and date checked. Leave out anything you
+>    cannot cite.
+> 7. **More household modules, drafted.** `documents` (where important papers
+>    are kept: passports, insurance, wills, warranties, with renewal dates
+>    through `watch`) and `home_care` (smoke alarms, gutters, the water
+>    heater, with when each was last done; note what repeating tasks need from
+>    the core). Polish `wine` the same way as Medical.
+> 8. **Example data for every draft.** For each draft, add `example.toml`
+>    rows for the three example households in the format of
+>    `examples/households/*.toml` (the Smiths' two-storey house layout, the
+>    Garcias' apartment and go-bags, Sam Taylor's flat), so Lane A can extend
+>    the screenshots when promoting.
+> 9. **UX check after each Lane A merge.** Run the current `main` with
 >    `python tools/load_example.py <household> --data <temporary folder>` and
 >    walk journeys J1 to J5. Report anything confusing, worst first, in
 >    `workbench/reports/<date>-ux-check.md`, with exact suggested wording.
