@@ -48,7 +48,7 @@ USDA's official [FoodKeeper dataset](https://catalog.data.gov/dataset/fsis-foodk
 7. [USDA FSIS FoodKeeper dataset listing](https://catalog.data.gov/dataset/fsis-foodkeeper-data), checked 2026-11-16. The catalogue lists the English dataset as [CC0 1.0](https://creativecommons.org/publicdomain/zero/1.0/). Dataset not ingested yet.
 8. [FSANZ, Use-by and best-before dates](https://www.foodstandards.gov.au/consumer/labelling/dates), checked 2026-11-16. FSANZ website material is generally [CC BY 4.0](https://www.foodstandards.gov.au/legal-policies/copyright), with logo and third-party exceptions. Paraphrased and linked.
 9. [FSANZ, Storing food safely](https://www.foodstandards.gov.au/business/food-safety/storing-food-safely), checked 2026-11-16. Same FSANZ terms.
-10. [UK Food Standards Agency, Food poisoning](https://www.food.gov.uk/food-safety-and-hygiene/food-poisoning), checked 2026-11-16. UK Crown copyright, generally [Open Government Licence](https://www.food.gov.uk/crown-copyright) for site text, with third-party and image exceptions. Paraphrased and linked.
+10. [UK Food Standards Agency, Food poisoning](https://www.food.gov.uk/food-safety-and-hygiene/food-poisoning), checked 2026-11-16. UK Crown copyright, generally [Open Government Licence](https://ratings.food.gov.uk/crown-copyright) for site text, with third-party and image exceptions. Paraphrased and linked.
 
 ## Next rounds
 
