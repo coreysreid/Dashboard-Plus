@@ -98,6 +98,12 @@ def create_app(shutdown_token: str, on_shutdown: Callable[[], None], report=None
                 from dashboard.core import settings
                 on = settings.enabled_modules(connection())
                 loaded = [m for m in loaded if m.name in on]
+                while True:  # a module whose required module is switched off is off too
+                    names = {m.name for m in loaded}
+                    kept = [m for m in loaded if all(r in names for r in m.requires)]
+                    if len(kept) == len(loaded):
+                        break
+                    loaded = kept
             g.registry = records.build_registry(loaded)
         return g.registry
 

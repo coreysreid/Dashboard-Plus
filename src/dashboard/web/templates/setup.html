@@ -100,6 +100,7 @@
   <div class="choices">{% for m in modules %}
     <label style="font-weight:400"><input type="checkbox" name="modules" value="{{ m.name }}" {% if m.on %}checked{% endif %}> <strong>{{ m.title }}</strong>: {{ m.description }}</label>
   {% endfor %}</div>
+  {% if errors.modules %}<p class="error" style="color:var(--bad)">{{ errors.modules }}</p>{% endif %}
   <p class="help">Switching something off hides it. Nothing you recorded is deleted.</p>
   {% else %}<p class="muted">No modules are installed yet.</p>{% endif %}
 
