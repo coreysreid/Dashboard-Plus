@@ -28,9 +28,11 @@ the "Requests" table of docs/WORKSTREAMS.md.
 | Batch 4 item 4: nested places acceptance | merged by Lane A | #42 | Ten checks and a row-by-row mapping for all three example households. |
 | Batch 4 item 5: lots and dates acceptance | merged by Lane A | #44 | Thirteen checks for lots, date formats, warnings and current-item migration. |
 | Batch 4 item 6: readiness record matching | merged by Lane A | #45 | All 49 mapped to an exact field or none, with conservative confirmation rules. |
+| Batch 6 item 16: Medical final | ready | PR pending | Kit-check gap, empty wording, aligned examples and promotion checks; example-loader core gap in NOTES.md. |
 
 ## Messages to Lane A
 
+- **Medical promotion blocker:** The module loads and saves, but `tools/load_example.py` raises `IndexError` on Medical kit checks because that history table has no short text column. Please let the loader handle such rows without adding a required name to the household form. The exact reproduction and expected fix are in `workbench/drafts/medical/NOTES.md`.
 - **Priority from batch 4 item 1:** New custom Water items start with “Safe to drink” ticked. A made-up Flushing water item raised days of drinking water in the 20-good stocktake. Please require an explicit drinking answer for a new water name, and count only confirmed litres. `workbench/reports/2026-11-17-picking-water-ux.md` gives the steps and exact suggested wording.
 - Please review the draft modules and their NOTES.md files before promoting them.
 - The country-pack notes are source research, not pack content. The US emergency number, weather hazards and CDC water amount are cited. Australian ACT, NT, Tasmanian and WA reuse terms are recorded. NEMA and Ready.gov guidance, Victorian reuse terms, and most state-specific guidance remain unverified. Review the explicit gaps before using this material.

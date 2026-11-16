@@ -8,3 +8,4 @@
 | sheets.toml | Printable first aid location and training sheet. | reviewing what prints |
 | migrations/ | Generated database changes. | reviewing this draft |
 | example.toml | Fictional rows for the Smith, Garcia and Taylor households | preparing promotion examples |
+| ACCEPTANCE.md | Nine promotion checks for kit paths, due wording, gaps and safe migration | testing Medical after promotion |
