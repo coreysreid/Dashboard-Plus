@@ -15,6 +15,8 @@ the "Requests" table of docs/WORKSTREAMS.md.
 
 | Catalogue round 1 | ready for a pull request: `lane-b/catalogue-round-1` | — | 150 goods and water-count decisions; type-ahead, local additions and accurate water totals need core support. USDA FoodKeeper download was blocked, so most shelf-life and all package-size suggestions remain open for later rounds. |
 
+| UX check after catalogue merge | ready for a pull request: `lane-b/ux-check-2026-11-16` | — | J1–J5 in three temporary examples; drinking-water count, Stock in picker and date wording, worst first. |
+
 ## Messages to Lane A
 
 - Please review the draft modules and their NOTES.md files before promoting them.
