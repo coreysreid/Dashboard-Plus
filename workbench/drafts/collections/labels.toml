@@ -1,0 +1,20 @@
+[tables.collections]
+empty = "Add a collection you want to keep track of."
+form = ["name", "kind", "notes"]
+list = ["name", "kind"]
+columns.name = { label = "Collection name", help = "For example, building sets, trading cards or vinyl records." }
+columns.kind = { label = "What you collect" }
+
+[tables.items]
+form = ["collection", "name", "catalogue_number", "condition", "place", "bought_for", "value_now", "status", "sold_for", "sold_on", "notes"]
+list = ["collection", "name", "catalogue_number", "condition", "place", "value_now", "status"]
+columns.name = { label = "Item or set", help = "Use the name you would look for later." }
+columns.catalogue_number = { label = "Set or catalogue number", help = "Optional. Use the number printed on the item or its packaging." }
+columns.condition = { label = "Condition now" }
+columns.place = { label = "Where it is", help = "Choose the full place path so it is easy to find." }
+columns.bought_for = { label = "Bought for", help = "Optional. What you paid, in your household currency." }
+columns.value_now = { label = "Your value now", help = "An estimate you enter yourself, not a sale or insurance valuation." }
+columns.status = { label = "Still have it?" }
+columns.sold_for = { label = "Sold for", help = "Enter this only after a sale; it stays separate from your current collection value." }
+columns.sold_on = { label = "Sold on" }
+columns.notes = { help = "For example, a missing piece or where the box is kept. Avoid private account details." }

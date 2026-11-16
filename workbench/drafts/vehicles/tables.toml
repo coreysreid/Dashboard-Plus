@@ -1,0 +1,36 @@
+[tables.vehicles]
+title = "Vehicles"
+description = "A household vehicle, its registration reminder and who to call for roadside help."
+columns.name = { type = "text", required = true }
+columns.registration = { type = "text", sensitive = true }
+columns.registration_due = { type = "date" }
+columns.roadside_contact = { type = "link", to = "people.people", on_delete = "clear" }
+columns.parked_at = { type = "link", to = "stock.places", on_delete = "clear" }
+columns.emergency_kit = { type = "link", to = "stock.items", on_delete = "clear" }
+columns.notes = { type = "longtext" }
+
+[tables.vehicles.watch]
+expiring = { date = "registration_due", warn_days = 30, wording = "due", what = "registration" }
+
+[tables.insurance]
+title = "Vehicle insurance"
+description = "An insurance renewal reminder; keep policy numbers in your own paperwork."
+columns.vehicle = { type = "link", to = "vehicles", required = true, on_delete = "restrict" }
+columns.name = { type = "text", required = true }
+columns.renew_by = { type = "date" }
+columns.notes = { type = "text" }
+
+[tables.insurance.watch]
+expiring = { date = "renew_by", warn_days = 30, wording = "due", what = "vehicle insurance" }
+
+[tables.services]
+title = "Vehicle services"
+description = "Service reminders for each vehicle."
+columns.vehicle = { type = "link", to = "vehicles", required = true, on_delete = "restrict" }
+columns.name = { type = "text", required = true }
+columns.last_done = { type = "date" }
+columns.next_due = { type = "date" }
+columns.notes = { type = "text" }
+
+[tables.services.watch]
+expiring = { date = "next_due", warn_days = 30, wording = "due", what = "vehicle service" }

@@ -91,15 +91,16 @@
   <div class="{% if errors.storeys %}has-error{% endif %}"><label for="storeys">How many storeys?</label>
     <input type="text" inputmode="numeric" id="storeys" name="storeys" value="{{ values.storeys or '' }}">
     {% if errors.storeys %}<p class="error">{{ errors.storeys }}</p>{% endif %}</div>
-  <div><span style="font-weight:600">Things that can happen where you live (optional)</span>
+  <fieldset style="border:0;padding:0;margin:0"><legend style="font-weight:600">Things that can happen where you live (optional)</legend>
     <div class="choices">{% for key, label in hazards %}<label style="font-weight:400"><input type="checkbox" name="hazards" value="{{ key }}" {% if key in (values.hazards or []) %}checked{% endif %}> {{ label }}</label>{% endfor %}</div>
-    <p class="help">Only used on this computer, to choose which "have you thought about…?" questions make sense for you.</p></div>
+    <p class="help">Only used on this computer, to choose which "have you thought about…?" questions make sense for you.</p></fieldset>
 
   <h2>3. What to track</h2>
   {% if modules %}
+  <fieldset style="border:0;padding:0;margin:0"><legend class="muted">Choose what to track</legend>
   <div class="choices">{% for m in modules %}
     <label style="font-weight:400"><input type="checkbox" name="modules" value="{{ m.name }}" {% if m.on %}checked{% endif %}> <strong>{{ m.title }}</strong>: {{ m.description }}</label>
-  {% endfor %}</div>
+  {% endfor %}</div></fieldset>
   {% if errors.modules %}<p class="error" style="color:var(--bad)">{{ errors.modules }}</p>{% endif %}
   <p class="help">Switching something off hides it. Nothing you recorded is deleted.</p>
   {% else %}<p class="muted">No modules are installed yet.</p>{% endif %}
