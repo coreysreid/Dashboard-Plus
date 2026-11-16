@@ -22,9 +22,11 @@ the "Requests" table of docs/WORKSTREAMS.md.
 | UX check after catalogue merge | merged by Lane A | PR #30 | Drinking-water count, Stock in picker and date wording, worst first. |
 | Example data for drafts | merged by Lane A | PR #31 | Nine example.toml files with Smith, Garcia and Taylor rows. |
 | Catalogue rounds 2 and 3 | merged by Lane A | PRs #32, #33 | 800 goods; package sizes and most shelf lives still need evidence. |
+| Batch 5 item 9: UX after nested Places | ready for a pull request: `lane-b/batch5-ux-nested` | pending | Three example households passed route checks; long place lists can lose a parent path. |
 
 ## Messages to Lane A
 
+- **New nested Places finding:** With more than 500 places, the item form can show a child without its parent path and cannot find that child by the parent's name. The normal Places list also splits the path between Name and Inside. Steps and exact wording are in `workbench/reports/2026-11-17-nested-places-ux.md`.
 - Please review the draft modules and their NOTES.md files before promoting them.
 - The country-pack notes are source research, not pack content. The US emergency number, weather hazards and CDC water amount are cited. Australian ACT, NT, Tasmanian and WA reuse terms are recorded. NEMA and Ready.gov guidance, Victorian reuse terms, and most state-specific guidance remain unverified. Review the explicit gaps before using this material.
 - The country-pack draft also checks the NSW Reconstruction Authority destination and NSW reuse terms, plus Florida and Texas household preparation and reuse statements. The Texas checklist supplies a state-specific water amount. NEMA, FEMA and Ready.gov remained inaccessible here; the other US state destinations still need direct research before a local claim ships.
