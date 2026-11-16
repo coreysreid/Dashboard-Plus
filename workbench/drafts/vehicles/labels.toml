@@ -1,0 +1,24 @@
+[tables.vehicles]
+empty = "Add a vehicle and its next registration date."
+form = ["name", "registration", "registration_due", "roadside_contact", "parked_at", "emergency_kit", "notes"]
+list = ["name", "registration_due", "roadside_contact", "emergency_kit"]
+columns.name = { label = "Vehicle", help = "Use a name your household recognises, such as Family car." }
+columns.registration = { label = "Registration number", help = "Private. Leave blank if you prefer to keep the number with your vehicle papers." }
+columns.registration_due = { label = "Registration due", help = "Enter the date from your own renewal notice; Needs attention will remind you a month before." }
+columns.roadside_contact = { label = "Roadside assistance", help = "Add the provider and its number in People first, then choose it here." }
+columns.parked_at = { label = "Usual place", help = "Choose Car or another place in Stock Places; use a full path where helpful." }
+columns.emergency_kit = { label = "Car emergency kit", help = "Add this kit as a Household stock item in a Car place, then choose it here." }
+columns.notes = { help = "For example, where vehicle papers are kept. Avoid private account or policy numbers." }
+
+[tables.insurance]
+form = ["vehicle", "name", "renew_by", "notes"]
+list = ["vehicle", "name", "renew_by"]
+columns.name = { label = "Insurer or reminder name", help = "Use the name you recognise; keep the policy itself with your papers." }
+columns.renew_by = { label = "Insurance due", help = "Use the date on your own policy or renewal notice." }
+
+[tables.services]
+form = ["vehicle", "name", "last_done", "next_due", "notes"]
+list = ["vehicle", "name", "last_done", "next_due"]
+columns.name = { label = "Service or check", help = "For example, Routine service. Follow your vehicle's own schedule." }
+columns.last_done = { label = "Last done" }
+columns.next_due = { label = "Next due", help = "Choose a date from your own service plan; this is a reminder, not a safety assessment." }

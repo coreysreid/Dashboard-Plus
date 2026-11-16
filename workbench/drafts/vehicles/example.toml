@@ -1,0 +1,114 @@
+# Fictional supporting contacts, kit stock and vehicle records for three households.
+# Phone numbers are reserved for fiction in AU, US and UK; no real registration is used.
+
+[[smith.people.people]]
+name = "Example Roadside AU"
+phone = "0491 570 160"
+
+[[smith.people.roles]]
+person = "Example Roadside AU"
+role = "other"
+notes = "Roadside assistance for the family car."
+
+[[smith.stock.items]]
+name = "Car emergency kit"
+category = "first_aid"
+quantity = 1
+unit = "kits"
+place = "Car boot"
+
+[[smith.vehicles.vehicles]]
+name = "Family car"
+registration = "DEMO-AU-001"
+registration_due = "today+100"
+roadside_contact = "Example Roadside AU"
+parked_at = "Car"
+emergency_kit = "Car emergency kit"
+
+[[smith.vehicles.insurance]]
+vehicle = "Family car"
+name = "Example car cover"
+renew_by = "today+80"
+
+[[smith.vehicles.services]]
+vehicle = "Family car"
+name = "Routine service"
+last_done = "today-120"
+next_due = "today+60"
+
+[[garcia.people.people]]
+name = "Example Roadside US"
+phone = "(415) 555-0110"
+
+[[garcia.people.roles]]
+person = "Example Roadside US"
+role = "other"
+notes = "Roadside assistance for the household car."
+
+[[garcia.stock.items]]
+name = "Car emergency kit"
+category = "first_aid"
+quantity = 1
+unit = "kits"
+place = "Car trunk"
+
+[[garcia.vehicles.vehicles]]
+name = "Household car"
+registration = "DEMO-US-001"
+registration_due = "today+120"
+roadside_contact = "Example Roadside US"
+parked_at = "Car"
+emergency_kit = "Car emergency kit"
+
+[[garcia.vehicles.insurance]]
+vehicle = "Household car"
+name = "Example auto cover"
+renew_by = "today+90"
+
+[[garcia.vehicles.services]]
+vehicle = "Household car"
+name = "Routine service"
+last_done = "today-100"
+next_due = "today+45"
+
+[[taylor.people.people]]
+name = "Example Roadside UK"
+phone = "07700 900789"
+
+[[taylor.people.roles]]
+person = "Example Roadside UK"
+role = "other"
+notes = "Roadside assistance for the small car."
+
+[[taylor.stock.places]]
+name = "Car"
+
+[[taylor.stock.places]]
+name = "Car boot"
+inside = "Car"
+
+[[taylor.stock.items]]
+name = "Car emergency kit"
+category = "first_aid"
+quantity = 1
+unit = "kits"
+place = "Car boot"
+
+[[taylor.vehicles.vehicles]]
+name = "Small car"
+registration = "DEMO-UK-001"
+registration_due = "today+110"
+roadside_contact = "Example Roadside UK"
+parked_at = "Car"
+emergency_kit = "Car emergency kit"
+
+[[taylor.vehicles.insurance]]
+vehicle = "Small car"
+name = "Example motor cover"
+renew_by = "today+75"
+
+[[taylor.vehicles.services]]
+vehicle = "Small car"
+name = "Routine service"
+last_done = "today-110"
+next_due = "today+50"
