@@ -4,3 +4,4 @@
 | tables.toml | Illustrative target item, lot and movement schema; not loadable yet | integrating lots into Stock |
 | NOTES.md | Screen-by-screen flow, migration and exact core needs | planning core work |
 | example.toml | Fictional rows for the Smith, Garcia and Taylor households | preparing promotion examples |
+| ACCEPTANCE.md | Numbered stocktake, lot, watch, date and migration checks | testing lots and local dates |

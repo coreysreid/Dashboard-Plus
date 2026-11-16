@@ -12,7 +12,7 @@ cooking_oil,Cooking oil,pantry,vegetable oil,litres,,,,,
 olive_oil,Olive oil,pantry,,litres,,,,,
 vinegar,Vinegar,pantry,white vinegar,litres,,,,,
 soy_sauce,Soy sauce,pantry,,bottles,,,,,
-tomato_sauce,Tomato sauce,pantry,ketchup,bottles,,,,,
+tomato_sauce,Tomato sauce,pantry,ketchup,bottles,460 g,,,,Example UK Heinz ketchup packs: 460 g; manufacturer page checked 2026-11-17: https://www.heinz.com/en-GB/products/00000050457243-tomato-ketchup-460-g. Check the actual label.
 mustard,Mustard,pantry,,jars,,,,,
 mayonnaise,Mayonnaise,pantry,,jars,,,,,
 honey,Honey,pantry,,jars,,,,,
@@ -31,7 +31,7 @@ powdered_milk,Powdered milk,pantry,dry milk,packs,,,,,
 kidney_beans,Kidney beans,pantry,tinned kidney beans|canned kidney beans|red kidney beans,tins,400 g,24,https://ask.fsis.usda.gov/article/How-long-can-you-keep-canned-goods (checked 2026-11-16),,Indicative best-quality period for an intact commercial can stored cool and dry; follow the package date and inspect the can. Illustrative UK retail pack size observed 2026-11-16: https://www.tesco.com/shop/en-GB/products/259061829. Confirm the actual label.
 chickpeas,Chickpeas,pantry,garbanzo beans|tinned chickpeas|canned chickpeas,tins,400 g,24,https://ask.fsis.usda.gov/article/How-long-can-you-keep-canned-goods (checked 2026-11-16),,Indicative best-quality period for an intact commercial can stored cool and dry; follow the package date and inspect the can. Illustrative UK retail pack size observed 2026-11-16: https://www.tesco.com/shop/en-GB/products/262490576. Confirm the actual label.
 black_beans,Black beans,pantry,tinned black beans|canned black beans,tins,,24,https://ask.fsis.usda.gov/article/How-long-can-you-keep-canned-goods (checked 2026-11-16),,Indicative best-quality period for an intact commercial can stored cool and dry; follow the package date and inspect the can.
-baked_beans,Baked beans,pantry,tinned baked beans|canned baked beans,tins,420 g,24,https://ask.fsis.usda.gov/article/How-long-can-you-keep-canned-goods (checked 2026-11-16),,Indicative best-quality period for an intact commercial can stored cool and dry; follow the package date and inspect the can. Illustrative UK retail pack size observed 2026-11-16: https://www.tesco.com/shop/en-GB/products/258510116. Confirm the actual label.
+baked_beans,Baked beans,pantry,tinned baked beans|canned baked beans,tins,420 g|415 g,24,https://ask.fsis.usda.gov/article/How-long-can-you-keep-canned-goods (checked 2026-11-16),,Indicative best-quality period for an intact commercial can stored cool and dry; follow the package date and inspect the can. Illustrative UK retail pack size observed 2026-11-16: https://www.tesco.com/shop/en-GB/products/258510116. Confirm the actual label. Example UK Heinz packs: 415 g; manufacturer page checked 2026-11-17: https://www.heinz.com/en-GB/products/05000157024671-baked-beanz. Check the actual label.
 lentils,Lentils,pantry,dried lentils|dry lentils,kg,,,,,
 tinned_tomatoes,Tinned tomatoes,pantry,canned tomatoes|tomato cans,tins,400 g,18,https://ask.fsis.usda.gov/article/How-long-can-you-keep-canned-goods (checked 2026-11-16),,Indicative best-quality period for an intact commercial can stored cool and dry; follow the package date and inspect the can. Illustrative UK retail pack size observed 2026-11-16: https://www.tesco.com/shop/en-GB/products/254757959. Confirm the actual label.
 tomato_paste,Tomato paste,pantry,tomato purée,tubes,,,,,
@@ -151,8 +151,8 @@ garden_hose,Garden hose,garden,hose,each,,,,,
 camping_gas,Camping gas,fuel,butane canister|propane canister,canisters,,,,,
 muesli_bars,Muesli bars,pantry,granola bars,boxes,,,,,
 tortillas,Tortillas,pantry,wraps,packs,,,,,
-gluten_free_pasta,Gluten-free pasta,pantry,gluten free pasta,packs,,,,,
-oat_milk,Oat milk,pantry,oat drink,cartons,,,,,
+gluten_free_pasta,Gluten-free pasta,pantry,gluten free pasta,packs,12 oz|48 oz,,,,Example US Barilla gluten-free penne packs: 12 oz|48 oz; manufacturer page checked 2026-11-17: https://www.barilla.com/en-us/products/pasta/gluten-free/gluten-free-penne. Check the actual label.
+oat_milk,Oat milk,pantry,oat drink|shelf-stable oat milk|shelf stable oat milk,cartons,,,,,
 almond_milk,Almond milk,pantry,almond drink,cartons,,,,,
 soy_milk,Soy milk,pantry,soya milk,cartons,,,,,
 coconut_water,Coconut water,pantry,,cartons,,,,,
@@ -213,7 +213,7 @@ egg_noodles,Egg noodles,pantry,,packs,,,,,
 ramen_noodles,Ramen noodles,pantry,,packs,,,,,
 lasagne_sheets,Lasagne sheets,pantry,lasagna sheets,packs,,,,,
 macaroni,Macaroni,pantry,,packs,,,,,
-spaghetti,Spaghetti,pantry,,packs,,,,,
+spaghetti,Spaghetti,pantry,,packs,16 oz|32 oz,,,,Example US Barilla packs: 16 oz|32 oz; manufacturer page checked 2026-11-17: https://www.barilla.com/en-us/products/pasta/classic-blue-box/spaghetti. Check the actual label.
 basmati_rice,Basmati rice,pantry,,kg,1 kg,,,,Illustrative UK retail pack size observed 2026-11-16: https://www.tesco.com/shop/en-GB/products/254877477. Confirm the actual label.
 brown_rice,Brown rice,pantry,,kg,,,,,
 jasmine_rice,Jasmine rice,pantry,,kg,,,,,
@@ -273,7 +273,7 @@ aspirin,Aspirin,first_aid,,packs,,,,,
 antihistamine_tablets,Antihistamine tablets,first_aid,allergy tablets,packs,,,,,
 adrenaline_auto_injector,Adrenaline auto-injector,first_aid,epinephrine auto-injector,each,,,,,
 reliever_inhaler,Reliever inhaler,first_aid,rescue inhaler|puffer,each,,,,,
-blood_glucose_test_strips,Blood glucose test strips,first_aid,glucose strips,packs,,,,,
+blood_glucose_test_strips,Blood glucose test strips,first_aid,glucose strips|glucose test strips,packs,,,,,
 blood_glucose_meter,Blood glucose meter,first_aid,glucometer,each,,,,,
 prescription_medicine,Prescription medicine,first_aid,regular medication,packs,,,,,
 n95_respirators,N95 respirators,first_aid,N95 masks,packs,,,,,
@@ -799,3 +799,8 @@ bike_lights,Bike lights,other,bicycle lights,each,,,,,
 notebook,Notebook,other,,each,,,,,
 pens,Pens,other,,packs,,,,,
 permanent_marker,Permanent marker,other,,each,,,,,
+black_garlic,Black garlic,pantry,fermented black garlic,,,,,,
+gochujang,Gochujang,pantry,Korean chilli paste|Korean chili paste,,,,,,
+injera,Injera,pantry,Ethiopian flatbread,,,,,,
+clorox_disinfecting_bleach,Clorox disinfecting bleach,cleaning,Clorox bleach,bottles,,12,https://www.clorox.com/learn/how-to-tell-when-a-bleach-bottle-was-made/ (checked 2026-11-17),,"Manufacturer says one year from production when stored cool and dry, for opened or unopened bottles; disinfecting use depends on age. Brand-specific; check bottle and local label."
+barilla_ready_pasta,Barilla Ready Pasta,pantry,ready pasta pouch|fully cooked pasta pouch,pouches,,14,https://www.barilla.com/en-us/help-with/storage-reheat-and-product-faqs/ready-pasta-product-nutrition-and-allergen-faqs (checked 2026-11-17),,Manufacturer says 14 months at room temperature for this fully cooked pouch; not for dried pasta or other brands. Check package date.
