@@ -5,6 +5,8 @@ Follow the INDEX.md in a folder before opening its files. Hidden files are not l
 |---|---|---|
 | README.md | Friendly introduction, status and how to run the checks | first meeting the project |
 | AGENTS.md | How an AI agent should work here | before changing anything |
+| CONTRIBUTING.md | Public contribution rules and checks | before contributing |
+| SECURITY.md | How to report a problem that could expose household data | reporting security concerns |
 | CLAUDE.md | One line pointing to AGENTS.md | never; tools read it for you |
 | LICENSE | MIT licence, Copyright (c) 2026 Corey Reid | checking reuse terms |
 | PROJECT_MAP.md | Generated one-page map of every INDEX.md | you want the whole picture |
