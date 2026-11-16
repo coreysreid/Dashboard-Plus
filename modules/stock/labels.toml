@@ -3,6 +3,7 @@ form = ["name", "notes"]
 list = ["name", "notes"]
 
 [tables.items]
+columns.name = { help = "Start typing to pick from common goods, or type your own.", suggest_from = "catalogue.csv", fills = { category = "category", unit = "unit", drinking = "counts_as_drinking_water" } }
 empty = "Add a few things from the pantry."
 form = ["name", "category", "drinking", "quantity", "unit", "minimum", "place", "expires", "notes"]
 list = ["name", "category", "quantity", "unit", "minimum", "place", "expires"]

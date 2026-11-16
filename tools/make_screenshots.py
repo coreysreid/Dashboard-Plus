@@ -51,6 +51,8 @@ STAGES = [
     ("11-places", "Places", "Where things are kept.", {"goto": "/t/stock__places"}),
     ("12-stock", "Stock items", "What the household has, how much, and how much to keep.",
      {"goto": "/t/stock__items"}),
+    ("12b-adding-stock", "Adding a stock item", "Start typing and pick from 800 common goods; picking one fills "
+     "in its kind and usual unit. Your own items come first.", {"goto": "/t/stock__items/new", "type": ["#f-name", "kid"]}),
     ("13-stock-item", "One stock item", "Its amount, where it is, and every change to it.",
      {"goto": "/t/stock__items/{id:stock__items:item}"}),
     ("14-stock-in", "Recording stock in", "Opened from the item's page: the item, the reason and today's "
@@ -193,6 +195,8 @@ def make(household: str, work: Path, executable: str | None) -> list[tuple[str, 
                 steps.append({"goto": target})
                 if action.get("media") == "print":
                     steps.append({"pages": target})
+            if "type" in action:
+                steps.append({"type": action["type"][0], "value": action["type"][1]})
             if "submit" in action:
                 steps.append({"submit": action["submit"]})
             steps.append({"shot": str(out / f"{name}.png")})

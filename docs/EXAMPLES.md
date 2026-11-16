@@ -86,6 +86,12 @@ What the household has, how much, and how much to keep.
 
 ![Stock items](screenshots/smith/12-stock.png)
 
+### Adding a stock item
+
+Start typing and pick from 800 common goods; picking one fills in its kind and usual unit. Your own items come first.
+
+![Adding a stock item](screenshots/smith/12b-adding-stock.png)
+
 ### One stock item
 
 Its amount, where it is, and every change to it.
@@ -230,6 +236,12 @@ What the household has, how much, and how much to keep.
 
 ![Stock items](screenshots/garcia/12-stock.png)
 
+### Adding a stock item
+
+Start typing and pick from 800 common goods; picking one fills in its kind and usual unit. Your own items come first.
+
+![Adding a stock item](screenshots/garcia/12b-adding-stock.png)
+
 ### One stock item
 
 Its amount, where it is, and every change to it.
@@ -373,6 +385,12 @@ Where things are kept.
 What the household has, how much, and how much to keep.
 
 ![Stock items](screenshots/taylor/12-stock.png)
+
+### Adding a stock item
+
+Start typing and pick from 800 common goods; picking one fills in its kind and usual unit. Your own items come first.
+
+![Adding a stock item](screenshots/taylor/12b-adding-stock.png)
 
 ### One stock item
 

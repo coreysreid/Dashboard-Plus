@@ -268,6 +268,31 @@ message = "What is {person}'s phone number?"
   relevant". Gaps have no "not relevant" answer in M1: they stop when filled in.
 - Deleted rows are left out.
 
+### 5.5 Picking from a list while typing
+
+A text column can offer matches while someone types, from a CSV list in the
+module folder. Household stock uses it for the name of an item:
+
+```toml
+# labels.toml
+[tables.items]
+columns.name = { suggest_from = "catalogue.csv", fills = { category = "category", unit = "unit", drinking = "counts_as_drinking_water" } }
+```
+
+- The CSV needs a `name` column; `also_called` (other names separated by `|`)
+  is searched too, and `fills` copies cells into other fields when a match is
+  picked (a choice must be one of the column's choices; yes/no is `yes` or
+  `no`; blank cells fill nothing).
+- Matches come in this order: the household's own records (shown as "you
+  already have this: open it", so nothing is added twice), then names that
+  start with what was typed, names with a word that does, then other names.
+  Case, accents and punctuation are ignored.
+- Whatever was typed can always be kept as it is.
+- Any linked-record drop-down with more than eight choices also gets a box to
+  type into, and offers to add a new record when nothing matches.
+- A field can be shown only when a choice has a particular value
+  (`show_when = { category = "water" }` in labels.toml).
+
 ## 6. Modules
 
 A module is a folder:
