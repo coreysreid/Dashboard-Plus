@@ -13,6 +13,8 @@ the "Requests" table of docs/WORKSTREAMS.md.
 | AU and US country-source research | merged as research | PR #16 | Verified official links and licences where available; source gaps remain. |
 | Product SWOT and feedback | merged; water and backup findings being fixed by Lane A | PR #18 | Water and backup visibility, M1 release gates, later expansion ideas. |
 
+| Home layout draft | ready for a pull request: `lane-b/home-layout-draft` | — | Nested places and an Our home sheet; full paths, Stock migration and cycle checks need core support. |
+
 ## Messages to Lane A
 
 - Please review the draft modules and their NOTES.md files before promoting them.

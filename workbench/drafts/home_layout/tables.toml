@@ -1,0 +1,47 @@
+[tables.homes]
+title = "Our home"
+description = "A short description of the home and how to leave it safely."
+columns.name = { type = "text", required = true }
+columns.storeys = { type = "integer", min = 1 }
+columns.upstairs_way_out = { type = "longtext" }
+columns.notes = { type = "longtext" }
+
+[tables.places]
+title = "Places"
+description = "Rooms, storage and spots inside the home."
+columns.name = { type = "text", required = true }
+columns.kind = { type = "choice", required = true, choices = ["room_or_area", "storage", "spot"] }
+columns.parent = { type = "link", to = "places", on_delete = "restrict" }
+columns.notes = { type = "text" }
+
+[tables.exits]
+title = "Ways out"
+description = "Each exit and the route to reach it, including from upstairs."
+columns.name = { type = "text", required = true }
+columns.from_floor = { type = "text" }
+columns.place = { type = "link", to = "places", on_delete = "clear" }
+columns.route = { type = "longtext", required = true }
+columns.notes = { type = "text" }
+
+[tables.shutoffs]
+title = "Shut-offs and power board"
+description = "Where to find the water main, gas shut-off and power board."
+columns.name = { type = "text", required = true }
+columns.kind = { type = "choice", required = true, choices = ["water_main", "gas_shutoff", "power_board", "other"] }
+columns.place = { type = "link", to = "places", on_delete = "clear" }
+columns.how_to_find = { type = "longtext" }
+columns.notes = { type = "text" }
+
+[tables.equipment]
+title = "Safety things"
+description = "Where alarms, fire equipment, first aid kits and go-bags are."
+columns.name = { type = "text", required = true }
+columns.kind = { type = "choice", required = true, choices = ["smoke_alarm", "fire_extinguisher", "fire_blanket", "first_aid_kit", "go_bag", "other"] }
+columns.place = { type = "link", to = "places", on_delete = "clear" }
+columns.last_tested = { type = "date" }
+columns.battery_changed = { type = "date" }
+columns.next_check = { type = "date" }
+columns.notes = { type = "text" }
+
+[tables.equipment.watch]
+expiring = { date = "next_check", warn_days = 30, wording = "due", what = "check" }
