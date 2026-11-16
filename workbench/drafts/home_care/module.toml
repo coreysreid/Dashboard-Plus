@@ -1,0 +1,8 @@
+name = "home_care"
+title = "Home care"
+version = "1.0.0"
+description = "Keep a record of home checks and work to do next."
+core_api = "1"
+kind = "declarative"
+requires = []
+outbound_hosts = []
