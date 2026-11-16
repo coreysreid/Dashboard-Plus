@@ -16,6 +16,8 @@ the "Requests" table of docs/WORKSTREAMS.md.
 | Catalogue round 1 | merged | PR #22 | 150 goods and water-count decisions; type-ahead, local additions and accurate water totals need core support. |
 | Home layout draft | ready for a pull request: `lane-b/home-layout-draft` | PR #24 | Nested places and an Our home sheet; full paths, Stock migration and cycle checks need core support. |
 
+| Stock lots design | ready for a pull request: `lane-b/stock-lots-design` | — | Screen-by-screen lot flows and exact core needs; includes a long-term phone or webcam scanning idea. |
+
 ## Messages to Lane A
 
 - Please review the draft modules and their NOTES.md files before promoting them.
