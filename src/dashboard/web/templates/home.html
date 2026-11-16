@@ -22,6 +22,7 @@
     <h2 style="margin-top:.2rem">About {{ "%.1f" | format(s.days) | replace(".0", "") }} day{{ "" if s.days|round(1) == 1 else "s" }} of {{ s.label }}</h2>
     <p class="muted">Aim: {{ s.target_days | int if s.target_days == s.target_days|int else s.target_days }} days.{% if s.shortfall > 0 %} About {{ "%.0f" | format(s.shortfall) }} {{ s.unit }} short.{% endif %}</p>
     <p class="muted">Based on {{ s.basis }}. Check your local authority's advice.</p>
+    {% if s.not_counted %}<p class="muted">Not counted: {{ "%g" | format(s.not_counted) }} {{ s.unit }} not marked as {{ s.label }}.</p>{% endif %}
     {% else %}
     <p>{{ s.working }}</p>
     {% endif %}

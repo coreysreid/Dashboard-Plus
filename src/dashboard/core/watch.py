@@ -46,6 +46,7 @@ class Supply:
     label: str = "supplies"
     rows: int = 0
     basis: str = ""  # the daily amounts the estimate assumes, e.g. "3 litres per person a day, 1 per pet"
+    not_counted: float = 0  # amount that matches but is left out by `counts_only` (e.g. water for flushing)
     notes: list[str] = field(default_factory=list)
 
 
@@ -160,6 +161,14 @@ def supplies(conn: sqlite3.Connection, registry: dict[str, TableInfo]) -> list[S
         row = conn.execute(f"SELECT COALESCE(SUM({rule['quantity']}), 0) AS total, COUNT(*) AS n FROM {info.name} "
                            f"WHERE deleted_at IS NULL{clause}", list(filters.values())).fetchone()
         total, count = float(row["total"]), row["n"]
+        not_counted = 0.0
+        only = rule.get("counts_only") or {}
+        if only:
+            extra = "".join(f" AND COALESCE({name}, 0) = ?" for name in only)
+            counted = conn.execute(f"SELECT COALESCE(SUM({rule['quantity']}), 0) FROM {info.name} "
+                                   f"WHERE deleted_at IS NULL{clause}{extra}",
+                                   list(filters.values()) + [int(v) for v in only.values()]).fetchone()[0]
+            not_counted, total = total - float(counted), float(counted)
         unit = rule["unit"]
         u = f" {unit}" if unit else ""
         basis = f"{_number(rule['per_person_per_day'])}{u} per person a day"
@@ -169,7 +178,8 @@ def supplies(conn: sqlite3.Connection, registry: dict[str, TableInfo]) -> list[S
         if home.people is None:
             results.append(Supply(info.name, title, unit, total, 0, None, rule["target_days"], 0,
                                   "Tell the program how many people live here to work out days of cover.",
-                                  needs_household=True, rows=count, label=rule["label"], basis=basis))
+                                  needs_household=True, rows=count, label=rule["label"], basis=basis,
+                                  not_counted=not_counted))
             continue
         need = home.people * rule["per_person_per_day"] + home.pets * rule["per_pet_per_day"]
         target = rule["target_days"]
@@ -179,15 +189,18 @@ def supplies(conn: sqlite3.Connection, registry: dict[str, TableInfo]) -> list[S
         if need <= 0:
             results.append(Supply(info.name, title, unit, total, 0, None, target, 0,
                                   "The daily need works out as zero, so days of cover cannot be calculated.", rows=count,
-                                  label=rule["label"], basis=basis))
+                                  label=rule["label"], basis=basis, not_counted=not_counted))
             continue
         days = total / need
         shortfall = max(0.0, target * need - total)
         working = (f"{_number(total)}{u} on hand ÷ {_number(need)}{u} a day for {who} "
                    f"= about {_number(round(days, 1))} days (aim: {_number(target)} days).")
         notes = ["The daily figures are a starting point. Your local authority's advice comes first."]
+        if not_counted:
+            notes.insert(0, f"Not counted: {_number(not_counted)}{u} not marked as {rule['label']} "
+                            f"(for example water for washing or flushing).")
         results.append(Supply(info.name, title, unit, total, need, days, target, shortfall, working,
-                              rows=count, notes=notes, label=rule["label"], basis=basis))
+                              rows=count, notes=notes, label=rule["label"], basis=basis, not_counted=not_counted))
     return results
 
 

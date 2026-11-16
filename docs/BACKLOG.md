@@ -17,6 +17,7 @@ sessions read this page first. Newest at the top of each section.
 
 | Date | Feedback | What changed | Pull request |
 |---|---|---|---|
+| 2026-11-16 | (Lane B UX check) Water kept for flushing counted towards days of drinking water. | Water items have "Safe to drink" (shown only for water); only drinking water counts, and the home card says what wasn't counted. Existing water stays counted. | Drinking water only |
 | 2026-11-16 | "Pets is still lacking a lot": only People and Stock were switched on. | Pets is now a shipped module: setup asks each pet's name and kind; vet, microchip, vaccinations, treatments and medicine with due dates, weigh-ins, vet visits, a pet details sheet (decision 0047). | Pets module |
 | 2026-11-16 | The Country drop-down worked differently from the other choices. | Country is a normal drop-down; "Somewhere else" lets you type it. | Setup and Save and exit fixes |
 | 2026-11-16 | No state was chosen automatically. | State is a drop-down that follows the country, pre-chosen from the computer's time zone where that pins it down (works offline). | Setup and Save and exit fixes |

@@ -140,6 +140,7 @@ class Field:
     value: object
     error: str | None
     options: list[tuple[str, str]]  # (value, label) for choices and links
+    show_when: tuple[str, str] | None = None  # shown only while another choice field has this value
 
     @property
     def name(self) -> str:
@@ -182,8 +183,10 @@ def build_fields(records: Records, info: TableInfo, values: dict, errors: dict, 
         value = raw if from_form else input_value(column, raw)
         if column.type == "link" and value not in (None, ""):
             value = str(value)
+        shown = _labels(info).get("columns", {}).get(column.name, {}).get("show_when")
         fields.append(Field(column, column_label(info, column), column_help(info, column),
-                            value, errors.get(column.name), options))
+                            value, errors.get(column.name), options,
+                            next(iter(shown.items())) if shown else None))
     return fields
 
 

@@ -5,3 +5,4 @@ Generate the next one with: python tools/make_migration.py stock --name <what_ch
 |---|---|---|
 | 0001_first_tables.sql | The module's first tables, generated from tables.toml | checking how the tables are stored |
 | 0002_stock_in_and_out.sql | The Stock in and out table | checking how movements are stored |
+| 0003_drinking_water.sql | "Safe to drink" on items; existing water stays counted | checking how drinking water is stored |

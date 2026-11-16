@@ -23,6 +23,7 @@ columns.category = { type = "choice", required = true, default = "pantry", choic
   "other",
 ] }
 columns.quantity = { type = "decimal", min = 0 }
+columns.drinking = { type = "boolean", default = true }
 columns.unit = { type = "text" }
 columns.minimum = { type = "decimal", min = 0 }
 columns.place = { type = "link", to = "places", on_delete = "restrict" }
@@ -34,7 +35,7 @@ running_low = { quantity = "quantity", minimum = "minimum" }
 expiring = { date = "expires", warn_days = 30 }
 # Water: a commonly used starting figure is about 3 litres per person per day.
 # The page always says local advice comes first.
-supply = { quantity = "quantity", per_person_per_day = 3, per_pet_per_day = 1, target_days = 3, unit = "litres", label = "water", where = { category = "water" } }
+supply = { quantity = "quantity", per_person_per_day = 3, per_pet_per_day = 1, target_days = 3, unit = "litres", label = "drinking water", where = { category = "water" }, counts_only = { drinking = true } }
 
 [tables.movements]
 title = "Stock in and out"

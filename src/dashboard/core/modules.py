@@ -32,7 +32,7 @@ WATCH_KEYS = ("running_low", "expiring", "supply", "gaps")
 GAP_KEYS = ("missing", "none", "where", "message")
 COLUMN_KEYS = ("type", "required", "default", "min", "max", "unit", "choices", "help", "sensitive", "to", "on_delete")
 LABEL_TABLE_KEYS = ("title", "columns", "form", "list", "empty")
-LABEL_COLUMN_KEYS = ("label", "help")
+LABEL_COLUMN_KEYS = ("label", "help", "show_when")
 
 
 class ModuleError(PlainError):
@@ -274,7 +274,8 @@ def _check_watch(file: str, table: str, raw, columns: dict[str, Column], problem
 
     supply = raw.get("supply")
     if supply is not None:
-        keys = ("quantity", "per_person_per_day", "per_pet_per_day", "target_days", "unit", "label", "where")
+        keys = ("quantity", "per_person_per_day", "per_pet_per_day", "target_days", "unit", "label", "where",
+                "counts_only")
         if not isinstance(supply, dict):
             problems.append(f"{where}, supply: write it as settings, like {{ quantity = \"quantity\", ... }}.")
         else:
@@ -301,13 +302,24 @@ def _check_watch(file: str, table: str, raw, columns: dict[str, Column], problem
                     elif columns[name].type == "choice" and value not in [c.key for c in columns[name].choices]:
                         problems.append(f"{where}, supply: '{value}' is not one of the choices for '{name}'.")
                         ok = False
+            counts_only = supply.get("counts_only", {})
+            if not isinstance(counts_only, dict):
+                problems.append(f"{where}, supply: 'counts_only' must be settings like {{ drinking = true }}.")
+                ok = False
+            else:
+                for name, value in counts_only.items():
+                    if name not in columns or columns[name].type != "boolean" or not isinstance(value, bool):
+                        problems.append(f"{where}, supply: 'counts_only' must name a yes/no column with true or "
+                                        f"false, like {{ drinking = true }}.")
+                        ok = False
             if ok:
                 watch["supply"] = {"quantity": supply["quantity"],
                                    "per_person_per_day": supply["per_person_per_day"],
                                    "per_pet_per_day": supply.get("per_pet_per_day", 0),
                                    "target_days": supply["target_days"],
                                    "unit": str(supply.get("unit", "")),
-                                   "label": str(supply.get("label", "supplies")), "where": dict(filters)}
+                                   "label": str(supply.get("label", "supplies")), "where": dict(filters),
+                                   "counts_only": dict(supply.get("counts_only", {}))}
     return watch
 
 
@@ -523,6 +535,17 @@ def _check_labels(data: dict, tables: dict[str, Table], problems: list[str]) -> 
                 problems.append(f"{where}: there is no column '{cname}'.{_suggest(cname, list(known))}")
             elif isinstance(craw, dict):
                 problems.extend(_unknown_keys(f"{where}, column '{cname}'", craw, LABEL_COLUMN_KEYS))
+                if "show_when" in craw:
+                    shown = craw["show_when"]
+                    if not isinstance(shown, dict) or len(shown) != 1:
+                        problems.append(f"{where}, column '{cname}': show_when names one choice column and a value, "
+                                        f"like {{ category = \"water\" }}.")
+                    else:
+                        (other, value), = shown.items()
+                        col = known.get(other)
+                        if col is None or col.type != "choice" or value not in [c.key for c in col.choices]:
+                            problems.append(f"{where}, column '{cname}': show_when must name a choice column of "
+                                            f"this table and one of its choices.")
         for listing in ("form", "list"):
             for cname in raw.get(listing, []):
                 if cname not in known:

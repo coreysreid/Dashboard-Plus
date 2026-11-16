@@ -20,7 +20,7 @@
 <form class="record" method="post" action="{% if record %}/t/{{ info.name }}/{{ record.id }}{% else %}/t/{{ info.name }}/new{% endif %}">
   <input type="hidden" name="_csrf" value="{{ csrf_token }}">
   {% for f in fields %}
-  <div class="{% if f.error %}has-error{% endif %}">
+  <div class="{% if f.error %}has-error{% endif %}"{% if f.show_when %} data-show-when="{{ f.show_when[0] }}" data-show-value="{{ f.show_when[1] }}"{% endif %}>
     {% set fid = "f-" ~ f.name %}
     {% if f.kind == "boolean" %}
       <label><input type="checkbox" id="{{ fid }}" name="{{ f.name }}" value="yes" {% if f.value in (1, "1", "yes", True) %}checked{% endif %}> {{ f.label }}</label>
@@ -89,4 +89,16 @@
   {% endfor %}
 </ul>
 {% endif %}
+<script>
+  // Fields that only apply to one choice (such as "Drinking water" for water) follow that choice.
+  (function () {
+    document.querySelectorAll("[data-show-when]").forEach(function (box) {
+      var other = document.getElementById("f-" + box.dataset.showWhen);
+      if (!other) return;
+      function update() { box.hidden = other.value !== box.dataset.showValue; }
+      other.addEventListener("change", update);
+      update();
+    });
+  })();
+</script>
 {% endblock %}
