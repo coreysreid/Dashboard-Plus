@@ -34,7 +34,7 @@
     {% set kinds = [attention.low, attention.expiring, attention.gaps] | select | list | length %}
     {% set each = [1, (5 // kinds) if kinds else 0] | max %}
     {% for item in attention.low[:each] %}<p class="muted" style="margin:.2rem 0">Running low: {{ item.name }}, {{ item.detail }}</p>{% endfor %}
-    {% for item in attention.expiring[:each] %}<p class="muted" style="margin:.2rem 0">Use by: {{ item.name }}, {{ item.detail }}</p>{% endfor %}
+    {% for item in attention.expiring[:each] %}<p class="muted" style="margin:.2rem 0">Coming up: {{ item.name }}, {{ item.detail }}</p>{% endfor %}
     {% for gap in attention.gaps[:each] %}<p class="muted" style="margin:.2rem 0">{{ gap.message }}</p>{% endfor %}
   </div>
 </div>

@@ -96,7 +96,7 @@ Draft modules may link to these with `requires = ["people"]` and
 | M1: core, People, Household stock, gaps, README, release checks, examples | A | merged; three hands-on checks are with Corey |
 | Water basis on the home page, second backup status | A | merged |
 | Setup country and state drop-downs, "Save and exit" | A | in review |
-| Pets module (moved forward from M5, from Lane B's draft) | A | next |
+| Pets module (moved forward from M5, from Lane B's draft) | A | in review |
 | Batch 2: M1 check, wording, Pets/Medical/Wine drafts, AU/US research, SWOT | B | merged |
 | Batch 3 (below) | B | ready to start |
 

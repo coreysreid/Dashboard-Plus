@@ -98,6 +98,7 @@ marked Superseded. Each lists downsides, cost to undo, and the sign it was wrong
 | [0044](0044-gaps-are-asked-not-asserted.md) | Gaps are declared in module files and asked as questions | Accepted |
 | [0045](0045-example-households-and-generated-screenshots.md) | Three made-up households, and screenshots made from them automatically | Accepted |
 | [0046](0046-show-the-water-basis-and-backup-status.md) | Show the water estimate's daily amount, and whether the second backup worked | Accepted |
+| [0047](0047-pets-moved-forward.md) | Pets is switched on now, built from the second agent's draft | Accepted |
 | [0060](0060-garden-example-outside-installed-modules.md) | Keep the worked garden outside installed modules | Accepted |
 | [0061](0061-public-reporting-and-contribution-rules.md) | Public contribution and private security reporting routes | Accepted |
 | [TEMPLATE](TEMPLATE.md) | Blank record to copy for a new decision | recording a decision |
@@ -172,6 +173,7 @@ numbered migrations. See docs/DESIGN.md section 6 for the module contract.
 | Entry | What it is | Open it when |
 |---|---|---|
 | people/ | Who lives here, who to call, important details, emergency sheets | changing people, contacts or the emergency sheet |
+| pets/ | Pets, their vet, treatments and medicine with due dates, weigh-ins, vet visits; a pet details sheet | changing pets |
 | stock/ | Pantry, water, first aid, tools and hardware, with places, minimums and use-by dates | changing stock, running low or days of water |
 
 ## modules/people/  (summary: the People module, files only)
@@ -185,6 +187,22 @@ numbered migrations. See docs/DESIGN.md section 6 for the module contract.
 
 ## modules/people/migrations/  (summary: this module's numbered database changes; never edit a released one)
 Generate the next one with: python tools/make_migration.py people --name <what_changed>
+
+| Entry | What it is | Open it when |
+|---|---|---|
+| 0001_first_tables.sql | The module's first tables, generated from tables.toml | checking how the tables are stored |
+
+## modules/pets/  (summary: the Pets module, files only; promoted from Lane B's draft)
+| Entry | What it is | Open it when |
+|---|---|---|
+| module.toml | Name, version, description; requires People (for vets and owners) | changing the module's details |
+| tables.toml | Pets, treatments and medicine with next due, treatments given, weigh-ins, vet visits; due dates and gaps | adding a field, a choice or a gap question |
+| labels.toml | Friendly labels, help text, form and list order | changing wording or order |
+| sheets.toml | Pet details sheet for a sitter, kennel or evacuation | changing what prints |
+| migrations/ | Numbered database changes | after changing tables.toml |
+
+## modules/pets/migrations/  (summary: this module's numbered database changes; never edit a released one)
+Generate the next one with: python tools/make_migration.py pets --name <what_changed>
 
 | Entry | What it is | Open it when |
 |---|---|---|

@@ -9,14 +9,14 @@ summary = "Three generations and a cat in a third-floor apartment in California,
 
 [setup]
 people = ["Maria Garcia", "Carlos Garcia", "Sofia Garcia", "Rosa Garcia"]
-pets = 1
+pets = [{ name = "Luna", kind = "cat" }]
 country = "United States"
 region = "California"
 home_type = "apartment"
 storeys = 1
 mobility_needs = true
 hazards = ["earthquake", "heat", "power"]
-modules = ["people", "stock"]
+modules = ["people", "pets", "stock"]
 
 # ---- People -----------------------------------------------------------------
 
@@ -188,6 +188,58 @@ detail = "Vegetarian."
 person = "Mei Chen"
 kind = "access"
 detail = "Spare apartment key. The building's front door code is with the building manager."
+
+# ---- Pets -------------------------------------------------------------------
+
+[[pets.pets]]
+name = "Luna"
+species = "cat"
+breed = "Siamese mix"
+birthday = "2018-02-14"
+microchip = "985000000777888"
+owner = "Sofia Garcia"
+vet = "Whisker Wellness Vet"
+vaccinations_due = "today-5"
+notes = "Carrier is in the hall closet with the go-bags. Needs her kidney diet food."
+
+[[pets.treatments]]
+pet = "Luna"
+name = "Kidney support tablets"
+kind = "medicine"
+dose = "Half a tablet twice a day with food"
+every_days = 1
+next_due = "today"
+notes = "Prescription from Whisker Wellness Vet; refills take two days."
+
+[[pets.treatments]]
+pet = "Luna"
+name = "Flea drops"
+kind = "flea"
+every_days = 30
+next_due = "today+12"
+
+[[pets.given]]
+treatment = "Flea drops"
+given_on = "today-18"
+
+[[pets.weigh_ins]]
+pet = "Luna"
+day = "today-90"
+weight = 4.1
+
+[[pets.weigh_ins]]
+pet = "Luna"
+day = "today-30"
+weight = 3.8
+notes = "Losing a little weight. Vet to recheck."
+
+[[pets.vet_visits]]
+pet = "Luna"
+day = "today-30"
+vet = "Whisker Wellness Vet"
+reason = "Weight loss and drinking more water"
+cost = 310.00
+notes = "Early kidney disease. Started tablets and the kidney diet."
 
 # ---- Household stock ----------------------------------------------------------
 

@@ -38,12 +38,30 @@
     {% if errors.people %}<p class="error">{{ errors.people }}</p>{% endif %}
   </div>
   {% endif %}
+  {% if pets_table and mode == "setup" and not pet_count %}
+  <div><span style="font-weight:600">Pets (if you have any)</span>
+    <p class="help" style="margin-top:0">A name and what kind of animal. You can add their vet and other details later.</p></div>
+  {% for i in range(1, pet_slots + 1) %}
+  {% set typed = (values.pet_names or [])[i-1] if values.pet_names else '' %}
+  {% set kind = (values.pet_kinds or [])[i-1] if values.pet_kinds else '' %}
+  <div class="pet-slot" style="display:grid;grid-template-columns:2fr 1fr;gap:.5rem" {% if i > 2 and not typed %}hidden{% endif %}>
+    <div><label for="pet_{{ i }}">Pet {{ i }}</label><input type="text" id="pet_{{ i }}" name="pet_{{ i }}" value="{{ typed }}"></div>
+    <div><label for="pet_kind_{{ i }}">Kind</label><select id="pet_kind_{{ i }}" name="pet_kind_{{ i }}">
+      {% for key, label in pet_kinds %}<option value="{{ key }}" {% if kind == key %}selected{% endif %}>{{ label }}</option>{% endfor %}</select></div>
+  </div>
+  {% endfor %}
+  <div><button type="button" class="quiet" id="add-pet">Add another pet</button>
+    <p class="help">Pets count towards how long water would last.</p></div>
+  {% elif pets_table %}
+  <p>{{ pet_count }} pet{{ "" if pet_count == 1 else "s" }} recorded. <a href="/t/pets__pets">{{ "Change your pets" if pet_count else "Add a pet" }}</a>.</p>
+  {% else %}
   <div class="{% if errors.pets %}has-error{% endif %}">
     <label for="pets">How many pets?</label>
     <input type="text" inputmode="numeric" id="pets" name="pets" value="{{ values.pets if values.pets is not none else '' }}">
     {% if errors.pets %}<p class="error">{{ errors.pets }}</p>{% endif %}
     <p class="help">Used to work out how long water and supplies would last.</p>
   </div>
+  {% endif %}
   <div><label><input type="checkbox" name="mobility_needs" value="yes" {% if values.mobility_needs %}checked{% endif %}> Someone here has mobility or care needs</label>
     <p class="help">Helps later questions about getting out safely fit your home.</p></div>
 
@@ -111,6 +129,15 @@
   </div>
 </form>
 <script>
+  (function () {
+    var button = document.getElementById("add-pet");
+    if (!button) return;
+    button.addEventListener("click", function () {
+      var next = document.querySelector(".pet-slot[hidden]");
+      if (next) { next.hidden = false; next.querySelector("input").focus(); }
+      if (!document.querySelector(".pet-slot[hidden]")) button.hidden = true;
+    });
+  })();
   (function () {
     var button = document.getElementById("add-person");
     if (!button) return;

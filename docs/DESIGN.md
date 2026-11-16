@@ -162,14 +162,18 @@ supply = { quantity = "quantity", per_person_per_day = 3, per_pet_per_day = 0,
            target_days = 3, unit = "litres", label = "water", where = { category = "water" } }
 ```
 
+- `expiring` may add `wording = "due"` for things to do by a date rather than
+  use-by dates ("due in 3 days", "overdue since …"), and `what` to name it
+  ("vaccinations due …").
 - `running_low` and `expiring` name columns of the same table; `quantity` and
   `minimum` must be number columns, `date` a date column. Checked when the
   module loads, with plain-language errors like everything else.
 - `supply` adds up `quantity` for matching rows and divides by the household's
   daily need. **Household size** comes from the People module (rows of
   `people__people` with `lives_here` set) when it is installed, otherwise from
-  the `household.people` setting the wizard writes. Pets count from the
-  `household.pets` setting in M1. The page shows the working ("2 × 10 litres
+  the `household.people` setting the wizard writes. Pets count from the Pets
+  module's records when it is switched on, otherwise from the `household.pets`
+  setting. The page shows the working ("2 × 10 litres
   for 3 people at 3 litres a day = about 2 days") and says the daily figures
   are a starting point, local advice comes first. The home page shows the
   daily amounts it assumes next to the result ("Based on 3 litres per person a
@@ -371,10 +375,14 @@ number and the core can load both for a transition period.
 
 ### v1 modules
 
-- **Pets** (declarative). Tables: pets, weights, meals (item, amount, time),
-  daily food totals, medications and doses given, vet visits, litter or walk
-  logs. Not tied to one animal: species is a choice, and every record links to
-  a pet. Supports entering data off paper (below).
+- **Pets** (declarative; shipped in M1, decision 0047). Tables: pets (kind,
+  breed, birthday, microchip, vet and carer linked to People, vaccinations
+  due), treatments and medicine (with how often and next due), treatments
+  given, weigh-ins and vet visits (with cost). Gaps ask for a missing vet or vet
+  phone number; due dates appear under *Needs attention*; a pet details sheet
+  prints for a sitter, kennel or evacuation. Setup asks each pet's name and
+  kind. Later: meals and daily food totals, litter or walk logs, entering data
+  off paper (below).
 - **People** (declarative; on by default; a pillar of resilience). Tables:
   - *people*: name, preferred name, lives here (yes/no), relationship, birthday,
     phone, email, address, notes.

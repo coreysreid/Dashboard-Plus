@@ -1,0 +1,16 @@
+[[sheet]]
+name = "pets"
+title = "Pet details"
+intro = "For a pet sitter, a boarding kennel or an evacuation centre. Take a copy when you leave home with your pets."
+
+[[sheet.section]]
+title = "Pets"
+table = "pets"
+columns = ["name", "species", "breed", "microchip", "vet", "vaccinations_due"]
+order_by = "name"
+
+[[sheet.section]]
+title = "Treatments and medicine"
+table = "treatments"
+columns = ["pet", "name", "dose", "every_days", "next_due"]
+order_by = "pet"

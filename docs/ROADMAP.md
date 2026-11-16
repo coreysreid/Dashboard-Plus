@@ -6,11 +6,11 @@ from people using the earlier ones; that is the point of shipping early.
 
 | Milestone | What a household can do | Status |
 |---|---|---|
-| **M1** | Unzip, run the wizard, record People and Stock, see running low, expiring soon and days of water, print the emergency sheet | **In progress** |
+| **M1** | Unzip, run the wizard, record People, Stock and Pets, see running low, expiring soon and days of water, print the emergency sheet | **In progress** |
 | M2 | Restore and export, review queue, inbox, Agent API, receipt entry | Planned |
 | M3 | Medical, Readiness prompts, first country pack, optional data-folder passphrase | Planned |
 | M4 | Graphing, Analysis, the question loop, the monthly outcomes screen | Planned |
-| M5 | Pets, Garden, Wine, API connector | Planned |
+| M5 | Garden, Wine, API connector (Pets moved into M1, decision 0047) | Planned |
 
 Why this order: M1 proves the riskiest promises (unzip-and-click on Windows,
 modules built from files alone) and gives real value on day one. The question

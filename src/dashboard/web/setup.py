@@ -67,10 +67,22 @@ TIMEZONE_GUESS = {
 }
 OTHER_COUNTRY = "other"
 PEOPLE_TABLE = "people__people"
+PETS_TABLE = "pets__pets"
+PET_SLOTS = 6
 
 
 def _conn():
     return current_app.config["CONNECT"]()
+
+
+def _pets_info():
+    """The Pets table when that module is switched on and has the columns the wizard fills in."""
+    info = current_app.config["REGISTRY_FOR_REQUEST"]().get(PETS_TABLE)
+    return info if info and {"name", "species"} <= set(info.table.columns) else None
+
+
+def _pet_count(conn) -> int:
+    return conn.execute(f"SELECT COUNT(*) FROM {PETS_TABLE} WHERE deleted_at IS NULL").fetchone()[0]
 
 
 def _people_table_ready() -> bool:
@@ -131,7 +143,11 @@ def _render(mode: str, values: dict, errors: dict, status: int = 200, saved: boo
     if _people_table_ready():
         people_count = conn.execute(
             f"SELECT COUNT(*) FROM {PEOPLE_TABLE} WHERE deleted_at IS NULL AND lives_here = 1").fetchone()[0]
+    pets_info = _pets_info()
+    pet_kinds = [(c.key, c.label) for c in pets_info.table.columns["species"].choices] if pets_info else []
     return render_template("setup.html", mode=mode, values=values, errors=errors, saved=saved,
+                           pets_table=bool(pets_info), pet_count=_pet_count(conn) if pets_info else 0,
+                           pet_slots=PET_SLOTS, pet_kinds=pet_kinds,
                            modules=modules, people_table=_people_table_ready(), people_count=people_count,
                            name_slots=NAME_SLOTS, home_types=HOME_TYPES, hazards=HAZARDS, countries=COUNTRIES,
                            regions=REGIONS, timezone_guess=TIMEZONE_GUESS,
@@ -147,7 +163,18 @@ def _save(form, mode: str):
     names = [form.get(f"name_{i}", "").strip() for i in range(1, NAME_SLOTS + 1)]
     names = [n for n in names if n]
     use_people_table = mode == "setup" and _people_table_ready() and not _existing_people(conn)
-    pets = _whole(form.get("pets"), 0, 50, "Number of pets", errors, "pets")
+    pets_info = _pets_info()
+    new_pets = []
+    if pets_info is not None:
+        kinds = {c.key for c in pets_info.table.columns["species"].choices}
+        if mode == "setup" and not _pet_count(conn):
+            for i in range(1, PET_SLOTS + 1):
+                name, kind = form.get(f"pet_{i}", "").strip(), form.get(f"pet_kind_{i}", "")
+                if name:
+                    new_pets.append({"name": name[:80], "species": kind if kind in kinds else "other"})
+        pets = None
+    else:
+        pets = _whole(form.get("pets"), 0, 50, "Number of pets", errors, "pets")
     storeys = _whole(form.get("storeys"), 1, 20, "Number of storeys", errors, "storeys")
     people = None
     if not use_people_table or not names:
@@ -168,6 +195,12 @@ def _save(form, mode: str):
         for name in names:
             store.create(PEOPLE_TABLE, {"name": name, "lives_here": True})
         people = len(names)
+    if new_pets:
+        store = records.Records(conn, current_app.config["REGISTRY_FOR_REQUEST"]())
+        for pet in new_pets:
+            store.create(PETS_TABLE, pet)
+    if pets is None:  # the Pets module counts the pets itself
+        pets = _pet_count(conn) if pets_info is not None else 0
     values = {"household.pets": pets or 0, "household.country": country,
               "household.region": region, "household.home_type": home_type,
               "household.storeys": storeys, "household.mobility_needs": bool(form.get("mobility_needs")),
@@ -211,7 +244,9 @@ def _form_values(form) -> dict:
             "region": form.get("region_other" if other else "region", ""), "country_is_other": other, "home_type": form.get("home_type", ""),
             "storeys": form.get("storeys"), "mobility_needs": bool(form.get("mobility_needs")),
             "hazards": form.getlist("hazards"), "second_copy": bool(form.get("second_copy")),
-            "names": [form.get(f"name_{i}", "") for i in range(1, NAME_SLOTS + 1)]}
+            "names": [form.get(f"name_{i}", "") for i in range(1, NAME_SLOTS + 1)],
+            "pet_names": [form.get(f"pet_{i}", "") for i in range(1, PET_SLOTS + 1)],
+            "pet_kinds": [form.get(f"pet_kind_{i}", "") for i in range(1, PET_SLOTS + 1)]}
 
 
 @setup_pages.get("/setup")

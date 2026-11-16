@@ -18,6 +18,8 @@ from dashboard.core.schema import table_name, target_table  # noqa: E402
 HOUSEHOLDS = ROOT / "examples" / "households"
 RELATIVE_DATE = re.compile(r"^today(?:([+-])(\d+))?$")
 PEOPLE_TABLE = "people__people"
+PETS_TABLE = "pets__pets"
+SETUP_TABLES = (PEOPLE_TABLE, PETS_TABLE)  # the setup page creates these; the file then fills them in
 
 
 class ExampleError(Exception):
@@ -87,11 +89,17 @@ def apply_setup(conn: sqlite3.Connection, registry: dict, module_names: list[str
                 store.create(PEOPLE_TABLE, {"name": name, "lives_here": True})
     else:
         settings.put(conn, "household.people", len(setup.get("people", [])))
-    for key in ("pets", "country", "region", "home_type", "storeys", "mobility_needs", "hazards"):
+    pets = setup.get("pets", [])
+    chosen = set(setup.get("modules", module_names))
+    if PETS_TABLE in registry and "pets" in chosen:
+        for pet in pets:
+            if _find(conn, registry[PETS_TABLE], pet["name"]) is None:
+                store.create(PETS_TABLE, {"name": pet["name"], "species": pet["kind"]})
+    settings.put(conn, "household.pets", len(pets))
+    for key in ("country", "region", "home_type", "storeys", "mobility_needs", "hazards"):
         if key in setup:
             settings.put(conn, f"household.{key}", setup[key])
     settings.put(conn, "backups.second_copy", False)
-    chosen = set(setup.get("modules", module_names))
     for module in module_names:
         settings.set_module_enabled(conn, module, module in chosen)
     settings.put(conn, "setup.done", True)
@@ -153,7 +161,7 @@ def load_records(conn: sqlite3.Connection, registry: dict, data: dict, today: da
                 if start < 0:
                     raise ExampleError(f"{name}: '{label}' would start below zero; raise its amount.")
                 values[quantity] = round(start, 3)
-            existing = _find(conn, info, label) if name == PEOPLE_TABLE else None
+            existing = _find(conn, info, label) if name in SETUP_TABLES else None
             if existing is not None:
                 store.update(name, existing, values)
             else:

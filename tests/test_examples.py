@@ -30,15 +30,16 @@ class ExampleHouseholdTests(TempDirTestCase):
         self.assertEqual((result["days"], result["need"]), (2.5, 14))  # 4 people x 3 L + 2 pets x 1 L
         self.assertEqual(result["low"], ["AA batteries", "Baked beans", "Dog food (Rex)", "Reliever puffer (Jack)",
                                          "Tinned tomatoes"])
-        self.assertEqual(result["expiring"], ["Muesli bars", "Long-life milk", "Sunscreen SPF 50",
-                                              "Adrenaline auto-injector (Emily)"])
+        self.assertEqual(result["expiring"], ["Muesli bars", "Monthly flea and tick chew", "Long-life milk",
+                                              "Sunscreen SPF 50", "Rex", "Adrenaline auto-injector (Emily)"])
         self.assertEqual(result["gaps"], 1)
 
     def test_garcia_household(self):
         result = self.summary("garcia")
         self.assertEqual((result["days"], result["need"]), (1.9, 13))
         self.assertIn("Metformin 500 mg (Rosa)", result["low"])
-        self.assertEqual(result["expiring"], ["Hand sanitizer", "Tortillas", "Blood glucose test strips"])
+        self.assertEqual(result["expiring"], ["Hand sanitizer", "Luna", "Kidney support tablets", "Tortillas",
+                                              "Blood glucose test strips"])
         self.assertEqual(result["gaps"], 1)
         self.assertTrue(settings.get(result["conn"], "household.mobility_needs"))
 
@@ -75,8 +76,9 @@ class ExampleHouseholdTests(TempDirTestCase):
         import make_screenshots
         gallery = (ROOT / "docs" / "EXAMPLES.md").read_text(encoding="utf-8")
         for household in make_screenshots.HOUSEHOLDS:
-            for name, title, _, _ in make_screenshots.STAGES:
-                if title:
+            uses = load_example.read(household)["setup"]["modules"]
+            for name, title, _, action in make_screenshots.STAGES:
+                if title and (not action.get("module") or action["module"] in uses):
                     self.assertIn(f"screenshots/{household}/{name}.png", gallery)
                     self.assertTrue((ROOT / "docs" / "screenshots" / household / f"{name}.png").exists(),
                                     f"{household}/{name}.png is missing; run tools/make_screenshots.py")

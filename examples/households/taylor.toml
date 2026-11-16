@@ -10,7 +10,7 @@ summary = "One person in a second-floor flat in England, just getting started. A
 
 [setup]
 people = ["Sam Taylor"]
-pets = 0
+pets = []
 country = "United Kingdom"
 region = "England"
 home_type = "apartment"

@@ -43,7 +43,7 @@ class WatchRulesTests(TempDirTestCase):
     def test_valid_watch_section_loads(self):
         module = modules.load_module(self.make_module(tables=TABLES, labels=None))
         rules = module.tables["items"].watch
-        self.assertEqual(rules["expiring"], {"date": "expires", "warn_days": 30})
+        self.assertEqual(rules["expiring"], {"date": "expires", "warn_days": 30, "wording": "expires", "what": ""})
         self.assertEqual(rules["supply"]["where"], {"category": "water"})
         self.assertEqual(rules["supply"]["per_pet_per_day"], 1)
 
@@ -51,6 +51,7 @@ class WatchRulesTests(TempDirTestCase):
         self.assertIn("Did you mean 'quantity'", self.problems('running_low = { quantity = "quantty", minimum = "minimum" }\n'))
         self.assertIn("must be a date column", self.problems('expiring = { date = "name" }\n'))
         self.assertIn("warn_days", self.problems('expiring = { date = "expires", warn_days = 0 }\n'))
+        self.assertIn("wording must be", self.problems('expiring = { date = "expires", wording = "soon" }\n'))
         self.assertIn("target_days", self.problems('supply = { quantity = "quantity", per_person_per_day = 3, target_days = 0 }\n'))
         self.assertIn("not one of the choices", self.problems(
             'supply = { quantity = "quantity", per_person_per_day = 3, target_days = 3, where = { category = "juice" } }\n'))
