@@ -15,3 +15,4 @@ Add a row here for each draft folder you create.
 | documents/ | Where important papers are, with renewal dates | reviewing document records |
 | home_care/ | Household checks and jobs with due-date history | reviewing home checks |
 | wine/ | A compact wine collection module | reviewing or promoting it |
+| restore_export/ | Household restore and export screen flows, checks and core needs | building M2 backup recovery and portable data |
