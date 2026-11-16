@@ -18,6 +18,12 @@ name = "Shelf 3"
 kind = "spot"
 parent = "Pantry"
 [[smith.home_layout.places]]
+name = "Upstairs hall"
+kind = "room_or_area"
+[[smith.home_layout.places]]
+name = "Front hall"
+kind = "room_or_area"
+[[smith.home_layout.places]]
 name = "Garage"
 kind = "room_or_area"
 [[smith.home_layout.places]]
@@ -28,7 +34,7 @@ parent = "Garage"
 [[smith.home_layout.exits]]
 name = "Front door"
 from_floor = "Ground floor"
-place = "Kitchen"
+place = "Front hall"
 route = "From the upstairs hall, use the main stairs and leave by the front door."
 
 [[smith.home_layout.shutoffs]]
@@ -40,7 +46,7 @@ how_to_find = "Beside the grey shelves."
 [[smith.home_layout.equipment]]
 name = "Hall smoke alarm"
 kind = "smoke_alarm"
-place = "Kitchen"
+place = "Upstairs hall"
 last_tested = "today-20"
 next_check = "today+10"
 
