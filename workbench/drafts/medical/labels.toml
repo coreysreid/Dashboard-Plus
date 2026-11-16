@@ -1,0 +1,11 @@
+[tables.kits]
+form = ["name", "place", "notes"]
+list = ["name", "place"]
+[tables.kit_checks]
+form = ["kit", "checked_on", "next_check", "checked_by", "notes"]
+list = ["kit", "checked_on", "next_check", "checked_by"]
+columns.next_check = { label = "Check again by" }
+[tables.training]
+form = ["person", "course", "provider", "completed_on", "renew_by", "notes"]
+list = ["person", "course", "completed_on", "renew_by"]
+columns.renew_by = { label = "Renew by" }

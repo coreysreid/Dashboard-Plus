@@ -1,0 +1,46 @@
+[tables.pets]
+title = "Pets"
+columns.name = { type = "text", required = true }
+columns.species = { type = "choice", required = true, choices = ["cat", "dog", "bird", "fish", "other"] }
+columns.birthday = { type = "date" }
+columns.owner = { type = "link", to = "people.people" }
+columns.vet = { type = "link", to = "people.people" }
+columns.notes = { type = "longtext" }
+
+[tables.weigh_ins]
+title = "Weigh-ins"
+columns.pet = { type = "link", to = "pets", required = true }
+columns.day = { type = "date", required = true }
+columns.weight = { type = "decimal", required = true, min = 0, unit = "kg" }
+columns.notes = { type = "text" }
+
+[tables.food]
+title = "Food given"
+columns.pet = { type = "link", to = "pets", required = true }
+columns.given_at = { type = "datetime", required = true }
+columns.food = { type = "text", required = true }
+columns.amount = { type = "decimal", min = 0 }
+columns.unit = { type = "choice", choices = ["g", "ml", "portions"] }
+columns.notes = { type = "text" }
+
+[tables.medications]
+title = "Pet medications"
+columns.pet = { type = "link", to = "pets", required = true }
+columns.name = { type = "text", required = true }
+columns.instructions = { type = "longtext" }
+columns.notes = { type = "text" }
+
+[tables.doses]
+title = "Medicine given"
+columns.medication = { type = "link", to = "medications", required = true }
+columns.given_at = { type = "datetime", required = true }
+columns.amount = { type = "text" }
+columns.notes = { type = "text" }
+
+[tables.vet_visits]
+title = "Vet visits"
+columns.pet = { type = "link", to = "pets", required = true }
+columns.day = { type = "date", required = true }
+columns.vet = { type = "link", to = "people.people" }
+columns.reason = { type = "text", required = true }
+columns.notes = { type = "longtext" }
