@@ -1,0 +1,70 @@
+country = "US"
+checked = "2026-11-16"
+review_by = "2027-02-16"
+local_prompt = "Check your local emergency authority for advice that applies to your address and current conditions."
+reuse = "US federal government works generally public domain under 17 U.S.C. 105; third-party content may differ. Links and paraphrases only."
+
+reuse_source = { url = "https://www.copyright.gov/title17/92chap1.html", checked = "2026-11-16" }
+local_prompt_source = { url = "https://www.usa.gov/state-emergency-management", checked = "2026-11-16" }
+
+[[emergency_number]]
+number = "911"
+service = "Emergency assistance"
+source = { url = "https://www.911.gov/", checked = "2026-11-16" }
+
+[[body]]
+name = "Federal Emergency Management Agency"
+scope = "national"
+source = { url = "https://www.usa.gov/agencies/federal-emergency-management-agency", checked = "2026-11-16" }
+
+[[body]]
+name = "National Weather Service"
+scope = "national"
+source = { url = "https://www.weather.gov/safety/", checked = "2026-11-16" }
+
+[water]
+amount_per_person_per_day = 1
+unit = "US gallon"
+scope = "CDC three-day emergency water supply starting amount"
+source = { url = "https://www.cdc.gov/water-emergency/about/how-to-create-and-store-an-emergency-water-supply.html", checked = "2026-11-16" }
+
+[[hazard]]
+name = "flood"
+scope = "National Weather Service safety topics"
+source = { url = "https://www.weather.gov/safety/", checked = "2026-11-16" }
+
+[[hazard]]
+name = "heat"
+scope = "National Weather Service safety topics"
+source = { url = "https://www.weather.gov/safety/", checked = "2026-11-16" }
+
+[[hazard]]
+name = "hurricane"
+scope = "National Weather Service safety topics"
+source = { url = "https://www.weather.gov/safety/", checked = "2026-11-16" }
+
+[[hazard]]
+name = "lightning"
+scope = "National Weather Service safety topics"
+source = { url = "https://www.weather.gov/safety/", checked = "2026-11-16" }
+
+[[hazard]]
+name = "tornado"
+scope = "National Weather Service safety topics"
+source = { url = "https://www.weather.gov/safety/", checked = "2026-11-16" }
+
+[[hazard]]
+name = "tsunami"
+scope = "National Weather Service safety topics"
+source = { url = "https://www.weather.gov/safety/", checked = "2026-11-16" }
+
+[[hazard]]
+name = "wildfire"
+scope = "National Weather Service safety topics"
+source = { url = "https://www.weather.gov/safety/", checked = "2026-11-16" }
+
+[[hazard]]
+name = "winter weather"
+scope = "National Weather Service safety topics"
+source = { url = "https://www.weather.gov/safety/", checked = "2026-11-16" }
+
