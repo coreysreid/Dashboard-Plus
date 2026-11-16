@@ -1,0 +1,25 @@
+[tables.kits]
+title = "First aid kits"
+columns.name = { type = "text", required = true }
+columns.place = { type = "link", to = "stock.places" }
+columns.notes = { type = "longtext" }
+
+[tables.kit_checks]
+title = "Kit checks"
+columns.kit = { type = "link", to = "kits", required = true }
+columns.checked_on = { type = "date", required = true }
+columns.next_check = { type = "date" }
+columns.checked_by = { type = "link", to = "people.people" }
+columns.notes = { type = "longtext" }
+
+[tables.training]
+title = "First aid training"
+columns.person = { type = "link", to = "people.people", required = true }
+columns.course = { type = "choice", required = true, choices = ["first_aid", "cpr", "other"] }
+columns.provider = { type = "text" }
+columns.completed_on = { type = "date", required = true }
+columns.renew_by = { type = "date" }
+columns.notes = { type = "text" }
+
+[tables.training.watch]
+expiring = { date = "renew_by", warn_days = 30 }

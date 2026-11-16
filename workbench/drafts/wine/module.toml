@@ -1,0 +1,8 @@
+name = "wine"
+title = "Wine collection"
+version = "1.0.0"
+description = "Keep a small list of wines, bottles and tasting notes."
+core_api = "1"
+kind = "declarative"
+requires = []
+outbound_hosts = []
