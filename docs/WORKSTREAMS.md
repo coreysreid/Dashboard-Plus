@@ -57,6 +57,22 @@ every draft automatically. You do not write tests in `tests/`.
 5. Lane B updates `workbench/STATUS.md` in the same pull request.
 6. No real names, places, numbers or data, anywhere.
 
+## Who merges (delegated by Corey on 16 November 2026)
+
+Lane A merges without waiting for Corey:
+- its own pull requests, and
+- Lane B's pull requests that change only `workbench/`, after checking them,
+
+once every check is green on the current head and there is no conflict. Lane A
+then tells Corey in plain words what was merged and what changed for a
+household. Corey reviews the result by using the program, not each pull
+request.
+
+**Still asks Corey first:** anything published outside the repository (a
+release, a public announcement), a change to the licence or the privacy and
+security rules, deleting or rewriting history, and any change that could lose
+or alter a household's existing records without a backup and a way back.
+
 ## Contracts between the lanes
 
 **Watch views:** the `watch` section in `tables.toml`, exactly as in
