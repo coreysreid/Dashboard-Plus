@@ -15,6 +15,8 @@ the "Requests" table of docs/WORKSTREAMS.md.
 
 | Catalogue round 1 | ready for a pull request: `lane-b/catalogue-round-1` | — | 150 goods and water-count decisions; type-ahead, local additions and accurate water totals need core support. USDA FoodKeeper download was blocked, so most shelf-life and all package-size suggestions remain open for later rounds. |
 
+| Example data for drafts | prepared on `lane-b/draft-examples`; awaiting draft merges before a pull request | — | Nine `example.toml` files with Smith, Garcia and Taylor rows. The examples need to be reviewed alongside the draft modules before promotion. |
+
 ## Messages to Lane A
 
 - Please review the draft modules and their NOTES.md files before promoting them.

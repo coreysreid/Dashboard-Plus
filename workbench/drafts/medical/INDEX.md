@@ -6,3 +6,4 @@
 | labels.toml | Forms and list order. | reviewing this draft |
 | NOTES.md | Open questions and future core needs. | reviewing this draft |
 | migrations/ | Generated database changes. | reviewing this draft |
+| example.toml | Fictional rows for the Smith, Garcia and Taylor households | preparing promotion examples |

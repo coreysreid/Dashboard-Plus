@@ -1,0 +1,40 @@
+# Fictional checks and dated work. No maintenance interval is implied.
+
+[[smith.home_care.jobs]]
+name = "Hall smoke alarm check"
+kind = "smoke_alarm"
+place = "Upstairs hall"
+last_done = "today-20"
+next_due = "today+10"
+
+[[smith.home_care.work_done]]
+job = "Hall smoke alarm check"
+done_on = "today-20"
+done_by = "John Smith"
+notes = "Recorded the test date."
+
+[[garcia.home_care.jobs]]
+name = "Apartment smoke alarm check"
+kind = "smoke_alarm"
+place = "Apartment hall"
+last_done = "today-25"
+next_due = "today+35"
+
+[[garcia.home_care.work_done]]
+job = "Apartment smoke alarm check"
+done_on = "today-25"
+done_by = "Carlos Garcia"
+notes = "Recorded the test date."
+
+[[taylor.home_care.jobs]]
+name = "Flat smoke alarm check"
+kind = "smoke_alarm"
+place = "Hall"
+last_done = "today-15"
+next_due = "today+45"
+
+[[taylor.home_care.work_done]]
+job = "Flat smoke alarm check"
+done_on = "today-15"
+done_by = "Sam Taylor"
+notes = "Recorded the test date."

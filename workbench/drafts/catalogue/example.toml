@@ -1,0 +1,48 @@
+# Illustrative catalogue choices for the three fictional households.
+# Each household block can become rows in examples/households/<name>.toml.
+# The catalogue picker and its provenance key still need core support.
+
+[[smith.catalogue.pick]]
+key = "kidney_beans"
+stock_name = "Kidney beans"
+category = "pantry"
+unit = "tins"
+place = "Kitchen › Pantry › Shelf 3"
+quantity = 13
+
+[[smith.catalogue.pick]]
+key = "bottled_drinking_water"
+stock_name = "Bottled drinking water"
+category = "water"
+unit = "litres"
+quantity = 24
+counts_as_drinking_water = true
+
+[[garcia.catalogue.pick]]
+key = "dry_cat_food"
+stock_name = "Dry cat food"
+category = "pet"
+unit = "bags"
+quantity = 2
+
+[[garcia.catalogue.pick]]
+key = "stored_non_drinking_water"
+stock_name = "Stored non-drinking water"
+category = "water"
+unit = "litres"
+quantity = 12
+counts_as_drinking_water = false
+
+[[taylor.catalogue.pick]]
+key = "tinned_soup"
+stock_name = "Tinned soup"
+category = "pantry"
+unit = "tins"
+quantity = 3
+
+[[taylor.catalogue.pick]]
+key = "torch"
+stock_name = "Torch"
+category = "power"
+unit = "each"
+quantity = 1

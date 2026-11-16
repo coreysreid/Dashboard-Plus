@@ -1,0 +1,17 @@
+# Example pack selections for the three fictional households.
+# Pack selection does not itself set local hazards or replace local advice.
+
+[[smith.country_packs.selection]]
+country = "AU"
+region = "New South Wales"
+reviewed_on = "today"
+
+[[garcia.country_packs.selection]]
+country = "US"
+region = "California"
+reviewed_on = "today"
+
+[[taylor.country_packs.selection]]
+country = "UK"
+region = "England"
+reviewed_on = "today"
