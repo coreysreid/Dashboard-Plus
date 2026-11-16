@@ -18,6 +18,7 @@ the "Requests" table of docs/WORKSTREAMS.md.
 
 | Stock lots design | ready for a pull request: `lane-b/stock-lots-design` | — | Screen-by-screen lot flows and exact core needs; includes a long-term phone or webcam scanning idea. |
 | Medical draft polish | ready for a pull request: `lane-b/medical-promotion` | — | First step, due watches, kit place gap and a printable sheet; an unfiltered no-kit gap needs core support. |
+| Readiness prompts | ready for a pull request: `lane-b/readiness-prompts` | — | 49 source-linked questions; prompt engine and exact record matching need core support. |
 
 ## Messages to Lane A
 
