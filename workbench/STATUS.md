@@ -22,12 +22,12 @@ the "Requests" table of docs/WORKSTREAMS.md.
 | UX check after catalogue merge | merged by Lane A | PR #30 | Drinking-water count, Stock in picker and date wording, worst first. |
 | Example data for drafts | merged by Lane A | PR #31 | Nine example.toml files with Smith, Garcia and Taylor rows. |
 | Catalogue rounds 2 and 3 | merged by Lane A | PRs #32, #33 | 800 goods; package sizes and most shelf lives still need evidence. |
-| Batch 4 item 1: picking and drinking-water UX | ready for a pull request: `lane-b/batch4-ux-picking` | pending | Twenty goods saved; regional matches work, but custom flushing water counts by default. See the dated report. |
-| Batch 4 item 2: catalogue round 4 | ready for a pull request: `lane-b/batch4-catalogue-r4` | pending | 805 goods; missed searches, manufacturer pack examples and two narrow shelf lives. See the catalogue NOTES.md. |
-| Batch 4 item 3: places list | ready for a pull request: `lane-b/batch4-places-list` | pending | 120 suggested rooms, storage places and spots, with regional search terms. |
-| Batch 4 item 4: nested places acceptance | ready for a pull request: `lane-b/batch4-nested-acceptance` | pending | Ten checks and a row-by-row mapping for all three example households. |
-| Batch 4 item 5: lots and dates acceptance | ready for a pull request: `lane-b/batch4-lots-acceptance` | pending | Thirteen checks for lots, date formats, warnings and current-item migration. |
-| Batch 4 item 6: readiness record matching | ready for a pull request: `lane-b/batch4-readiness-matching` | pending | All 49 mapped to an exact field or none, with conservative confirmation rules. |
+| Batch 4 item 1: picking and drinking-water UX | merged by Lane A | #38 | Twenty goods saved; regional matches work, but custom flushing water counts by default. See the dated report. |
+| Batch 4 item 2: catalogue round 4 | merged by Lane A | #40 | 805 goods; missed searches, manufacturer pack examples and two narrow shelf lives. See the catalogue NOTES.md. |
+| Batch 4 item 3: places list | merged by Lane A | #41 | 120 suggested rooms, storage places and spots, with regional search terms. |
+| Batch 4 item 4: nested places acceptance | merged by Lane A | #42 | Ten checks and a row-by-row mapping for all three example households. |
+| Batch 4 item 5: lots and dates acceptance | merged by Lane A | #44 | Thirteen checks for lots, date formats, warnings and current-item migration. |
+| Batch 4 item 6: readiness record matching | merged by Lane A | #45 | All 49 mapped to an exact field or none, with conservative confirmation rules. |
 
 ## Messages to Lane A
 
