@@ -1,0 +1,201 @@
+sample_receipt_line,region_hint,match_words,catalogue_key,review_if
+RICE,all,rice|white rice,rice,amount or unit unclear
+PASTA,all,pasta|generic pasta,pasta,amount or unit unclear
+OATS,all,oats|porridge oats|oatmeal,oats,amount or unit unclear
+PLAIN FLOUR,all,plain flour|all-purpose flour|all purpose flour,plain_flour,amount or unit unclear
+SELF-RAISING FLOUR,all,self-raising flour|self-rising flour,self_raising_flour,amount or unit unclear
+SUGAR,all,sugar|granulated sugar|white sugar,sugar,amount or unit unclear
+BROWN SUGAR,all,brown sugar,brown_sugar,amount or unit unclear
+SALT,all,salt|table salt,salt,amount or unit unclear
+BLACK PEPPER,all,black pepper|peppercorns,black_pepper,amount or unit unclear
+COOKING OIL,all,cooking oil|vegetable oil,cooking_oil,size or variant differs; amount unclear
+OLIVE OIL,all,olive oil,olive_oil,size or variant differs; amount unclear
+VINEGAR,all,vinegar|white vinegar,vinegar,amount or unit unclear
+SOY SAUCE,all,soy sauce,soy_sauce,amount or unit unclear
+TOMATO SAUCE,all,tomato sauce|ketchup,tomato_sauce,size or variant differs; amount unclear
+MUSTARD,all,mustard,mustard,amount or unit unclear
+MAYONNAISE,all,mayonnaise,mayonnaise,amount or unit unclear
+HONEY,all,honey,honey,amount or unit unclear
+PEANUT BUTTER,all,peanut butter,peanut_butter,amount or unit unclear
+JAM,all,jam|jelly|fruit spread,jam,amount or unit unclear
+BREAKFAST CEREAL,all,breakfast cereal|cereal,breakfast_cereal,amount or unit unclear
+WHLMEAL BREAD,all,bread|wholemeal bread|whole wheat bread,bread,size or variant differs; amount unclear
+CRACKERS,all,crackers|savoury biscuits,crackers,amount or unit unclear
+BISCUITS,all,biscuits|cookies,biscuits,amount or unit unclear
+TEA BAGS,all,tea bags|tea,tea_bags,amount or unit unclear
+GROUND COFFEE,all,ground coffee|coffee,ground_coffee,amount or unit unclear
+INSTANT COFFEE,all,instant coffee,instant_coffee,amount or unit unclear
+COCOA POWDER,all,cocoa powder|drinking chocolate,cocoa_powder,amount or unit unclear
+UHT MILK 1L,all,uht milk|long life milk|shelf stable milk,long_life_milk,size or variant differs; amount unclear
+POWDERED MILK,all,powdered milk|dry milk,powdered_milk,size or variant differs; amount unclear
+KIDNEY BEANS 400G,all,kidney beans|kid beans,kidney_beans,amount or unit unclear
+CHICKPEAS,all,chickpeas|garbanzo beans|tinned chickpeas|canned chickpeas,chickpeas,amount or unit unclear
+BLACK BEANS,all,black beans|tinned black beans|canned black beans,black_beans,amount or unit unclear
+BAKED BEANS,all,baked beans|tinned baked beans|canned baked beans,baked_beans,amount or unit unclear
+LENTILS,all,lentils|dried lentils|dry lentils,lentils,amount or unit unclear
+TOM TINNED 400G,AU|UK|NZ,tom tinned|tinned tomatoes|canned tomatoes|tomatoes canned,tinned_tomatoes,size or variant differs; amount unclear
+TOMATO PASTE,all,tomato paste|tomato purée,tomato_paste,size or variant differs; amount unclear
+SWEETCORN TIN,AU|UK|NZ,tinned corn|canned corn|sweetcorn,tinned_corn,amount or unit unclear
+PEAS,all,tinned peas|canned peas,tinned_peas,amount or unit unclear
+CARROTS,all,tinned carrots|canned carrots,tinned_carrots,amount or unit unclear
+TUNA CHUNKS 95G,all,tuna chunks|tinned tuna|canned tuna,tinned_tuna,amount or unit unclear
+SALMON,all,tinned salmon|canned salmon,tinned_salmon,amount or unit unclear
+SOUP CAN 400G,US|AU,canned soup|tinned soup|soup can,tinned_soup,amount or unit unclear
+STOCK CUBES,all,stock cubes|bouillon cubes|broth cubes,stock_cubes,amount or unit unclear
+NOODLES,all,dried noodles|instant noodles,dried_noodles,amount or unit unclear
+BEANS,all,dried beans|dry beans,dried_beans,amount or unit unclear
+FRUIT,all,dried fruit|raisins|sultanas,dried_fruit,amount or unit unclear
+NUTS,all,nuts|mixed nuts,nuts,amount or unit unclear
+SEEDS,all,seeds|sunflower seeds|pumpkin seeds,seeds,amount or unit unclear
+POTATOES LOOSE KG,all,fresh potatoes|loose potatoes,fresh_potatoes,amount or unit unclear
+ONIONS,all,onions,onions,amount or unit unclear
+GARLIC,all,garlic,garlic,amount or unit unclear
+CARROTS,all,carrots,carrots,amount or unit unclear
+APPLES,all,apples,apples,amount or unit unclear
+BANANAS 0.82KG,all,bananas|banana loose,bananas,amount or unit unclear
+ORANGES,all,oranges,oranges,amount or unit unclear
+CAPSICUM RED KG,AU|NZ,capsicum|bell pepper|sweet pepper,capsicum,amount or unit unclear
+EGGS,all,eggs,eggs,amount or unit unclear
+BUTTER,all,butter,butter,amount or unit unclear
+CHEESE,all,cheese,cheese,amount or unit unclear
+YOGHURT,all,yoghurt|yogurt,yoghurt,amount or unit unclear
+FROZEN VEGETABLES,all,frozen vegetables|frozen veg,frozen_vegetables,amount or unit unclear
+FROZEN PEAS,all,frozen peas,frozen_peas,amount or unit unclear
+CHICKEN,all,chicken,chicken,size or variant differs; amount unclear
+BEEF MINCE 500G,AU|UK|NZ,beef mince|ground beef,beef_mince,size or variant differs; amount unclear
+TOFU,all,tofu,tofu,amount or unit unclear
+COCONUT MILK,all,coconut milk,coconut_milk,size or variant differs; amount unclear
+BAKING POWDER,all,baking powder,baking_powder,amount or unit unclear
+BICARB SODA 500G,AU|UK|NZ,bicarbonate of soda|baking soda,bicarbonate_of_soda,amount or unit unclear
+YEAST,all,yeast|dry yeast,yeast,amount or unit unclear
+FRUIT,all,tinned fruit|canned fruit,tinned_fruit,amount or unit unclear
+FRUIT JUICE,all,fruit juice|juice,fruit_juice,amount or unit unclear
+SPORTS DRINK,all,sports drink|electrolyte drink,sports_drink,amount or unit unclear
+INFANT FORMULA,all,infant formula|baby formula,infant_formula,amount or unit unclear
+BABY FOOD,all,baby food|pouches,baby_food,amount or unit unclear
+T/ROLL 12PK,all,toilet paper|toilet roll|bath tissue,toilet_paper,size or variant differs; amount unclear
+SOAP,all,soap|bar soap,soap,amount or unit unclear
+SHAMPOO,all,shampoo,shampoo,amount or unit unclear
+CONDITIONER,all,conditioner,conditioner,amount or unit unclear
+TOOTHPASTE,all,toothpaste,toothpaste,amount or unit unclear
+TOOTHBRUSH,all,toothbrush|tooth brush,toothbrush,amount or unit unclear
+DENTAL FLOSS,all,dental floss|floss,dental_floss,amount or unit unclear
+DEODORANT,all,deodorant,deodorant,amount or unit unclear
+SUNSCREEN,all,sunscreen|sunblock,sunscreen,amount or unit unclear
+MENSTRUAL PADS,all,menstrual pads|sanitary pads|period pads,menstrual_pads,amount or unit unclear
+TAMPONS,all,tampons,tampons,amount or unit unclear
+NAPPIES SIZE 4,AU|UK|NZ,nappies|diapers,nappies,amount or unit unclear
+BABY WIPES,all,baby wipes|wet wipes,baby_wipes,amount or unit unclear
+TISSUES,all,tissues|facial tissues,tissues,amount or unit unclear
+SHAVING RAZORS,all,shaving razors|razors,shaving_razors,amount or unit unclear
+DISH LIQ 750ML,AU|NZ,dishwashing liquid|dish soap|washing up liquid,dishwashing_liquid,amount or unit unclear
+DISHWASHER TABLETS,all,dishwasher tablets|dishwasher pods,dishwasher_tablets,amount or unit unclear
+LAUNDRY DET 2L,all,laundry detergent|washing powder|washing liquid,laundry_detergent,amount or unit unclear
+BLEACH,all,bleach|chlorine bleach,bleach,amount or unit unclear
+DISINFECTANT SPRAY,all,disinfectant spray|surface sanitiser|surface sanitizer,disinfectant_spray,amount or unit unclear
+ALL-PURPOSE CLEANER,all,all-purpose cleaner|multi-purpose cleaner,all_purpose_cleaner,amount or unit unclear
+SPONGES,all,sponges|dish sponges,sponges,amount or unit unclear
+PAPER TOWELS,all,paper towels|kitchen roll,paper_towels,amount or unit unclear
+RUBBISH BAGS 20PK,AU|UK|NZ,rubbish bags|trash bags|garbage bags,rubbish_bags,amount or unit unclear
+CLING FILM,all,cling film|plastic wrap,cling_film,amount or unit unclear
+ALUMINIUM FOIL,all,aluminium foil|aluminum foil|tin foil,aluminium_foil,size or variant differs; amount unclear
+MUESLI BARS,all,muesli bars|granola bars,muesli_bars,amount or unit unclear
+TORTILLAS,all,tortillas|wraps,tortillas,amount or unit unclear
+GLUTEN-FREE PASTA,all,gluten-free pasta|gluten free pasta,gluten_free_pasta,amount or unit unclear
+OAT MILK,all,oat milk|oat drink|shelf-stable oat milk|shelf stable oat milk,oat_milk,size or variant differs; amount unclear
+ALMOND MILK,all,almond milk|almond drink,almond_milk,size or variant differs; amount unclear
+SOY MILK,all,soy milk|soya milk,soy_milk,size or variant differs; amount unclear
+COCONUT WATER,all,coconut water,coconut_water,amount or unit unclear
+LEMONADE,all,lemonade|lemon soda,lemonade,amount or unit unclear
+GROUND CUMIN,all,ground cumin|cumin,ground_cumin,amount or unit unclear
+PAPRIKA,all,paprika,paprika,amount or unit unclear
+CHILLI FLAKES,all,chilli flakes|chili flakes|red pepper flakes,chilli_flakes,amount or unit unclear
+CINNAMON,all,cinnamon,cinnamon,amount or unit unclear
+OREGANO,all,dried oregano,dried_oregano,amount or unit unclear
+BASIL,all,dried basil,dried_basil,amount or unit unclear
+CURRY POWDER,all,curry powder,curry_powder,amount or unit unclear
+TURMERIC,all,turmeric,turmeric,amount or unit unclear
+GINGER POWDER,all,ginger powder|ground ginger,ginger_powder,amount or unit unclear
+GARLIC POWDER,all,garlic powder,garlic_powder,amount or unit unclear
+ONION POWDER,all,onion powder,onion_powder,amount or unit unclear
+MIXED HERBS,all,mixed herbs|Italian seasoning,mixed_herbs,amount or unit unclear
+BAY LEAVES,all,bay leaves,bay_leaves,amount or unit unclear
+VANILLA EXTRACT,all,vanilla extract,vanilla_extract,amount or unit unclear
+MAPLE SYRUP,all,maple syrup,maple_syrup,amount or unit unclear
+CORNFLOUR,all,cornflour|cornstarch,cornflour,amount or unit unclear
+BREADCRUMBS,all,breadcrumbs,breadcrumbs,size or variant differs; amount unclear
+WHOLEMEAL FLOUR,all,wholemeal flour|whole wheat flour,wholemeal_flour,amount or unit unclear
+BREAD FLOUR,all,bread flour,bread_flour,size or variant differs; amount unclear
+GLUTEN-FREE FLOUR,all,gluten-free flour|gluten free flour,gluten_free_flour,amount or unit unclear
+ICING SUGAR,all,icing sugar|powdered sugar|confectioners sugar,icing_sugar,amount or unit unclear
+RAW SUGAR,all,raw sugar,raw_sugar,amount or unit unclear
+CHOCOLATE CHIPS,all,chocolate chips,chocolate_chips,amount or unit unclear
+DARK CHOCOLATE,all,dark chocolate,dark_chocolate,amount or unit unclear
+MILK CHOCOLATE,all,milk chocolate,milk_chocolate,size or variant differs; amount unclear
+POPCORN KERNELS,all,popcorn kernels,popcorn_kernels,amount or unit unclear
+MICROWAVE POPCORN,all,microwave popcorn,microwave_popcorn,amount or unit unclear
+CRISPS SEA SALT,AU|UK|NZ,potato crisps|potato chips|crisps,potato_crisps,amount or unit unclear
+CORN CHIPS,all,corn chips|tortilla chips,corn_chips,amount or unit unclear
+SALSA,all,salsa,salsa,amount or unit unclear
+HUMMUS,all,hummus,hummus,amount or unit unclear
+PINEAPPLE CANNED,US,canned pineapple|tinned pineapple,tinned_pineapple,amount or unit unclear
+PEACHES,all,tinned peaches|canned peaches,tinned_peaches,amount or unit unclear
+PEARS,all,tinned pears|canned pears,tinned_pears,amount or unit unclear
+GREEN BEANS,all,tinned green beans|canned green beans,tinned_green_beans,amount or unit unclear
+MUSHROOMS,all,tinned mushrooms|canned mushrooms,tinned_mushrooms,amount or unit unclear
+BEETROOT,all,tinned beetroot|canned beets,tinned_beetroot,amount or unit unclear
+POTATOES,all,tinned potatoes|canned potatoes,tinned_potatoes,amount or unit unclear
+PUMPKIN,all,tinned pumpkin|canned pumpkin,tinned_pumpkin,amount or unit unclear
+COCONUT CREAM,all,tinned coconut cream|canned coconut cream,tinned_coconut_cream,amount or unit unclear
+SARDINES,all,tinned sardines|canned sardines,tinned_sardines,amount or unit unclear
+CHICKEN,all,tinned chicken|canned chicken,tinned_chicken,size or variant differs; amount unclear
+BEEF,all,tinned beef|canned beef,tinned_beef,size or variant differs; amount unclear
+LENTILS,all,tinned lentils|canned lentils,tinned_lentils,amount or unit unclear
+BUTTER BEANS,all,tinned butter beans|canned lima beans,tinned_butter_beans,amount or unit unclear
+CANNELLINI BEANS,all,tinned cannellini beans|canned white kidney beans,tinned_cannellini_beans,amount or unit unclear
+CHICKPEAS,all,dried chickpeas|dry garbanzo beans,dried_chickpeas,amount or unit unclear
+KIDNEY BEANS,all,dried kidney beans|dry red beans,dried_kidney_beans,amount or unit unclear
+SPLIT PEAS,all,dried split peas,dried_split_peas,amount or unit unclear
+BLACK BEANS,all,dried black beans,dried_black_beans,amount or unit unclear
+RICE NOODLES,all,rice noodles,rice_noodles,amount or unit unclear
+UDON NOODLES,all,udon noodles,udon_noodles,amount or unit unclear
+EGG NOODLES,all,egg noodles,egg_noodles,amount or unit unclear
+RAMEN NOODLES,all,ramen noodles,ramen_noodles,amount or unit unclear
+LASAGNE SHEETS,all,lasagne sheets|lasagna sheets,lasagne_sheets,amount or unit unclear
+MACARONI,all,macaroni,macaroni,amount or unit unclear
+SPAGHETTI,all,spaghetti,spaghetti,amount or unit unclear
+BASMATI RICE,all,basmati rice,basmati_rice,amount or unit unclear
+BROWN RICE,all,brown rice,brown_rice,amount or unit unclear
+JASMINE RICE,all,jasmine rice,jasmine_rice,amount or unit unclear
+ARBORIO RICE,all,arborio rice|risotto rice,arborio_rice,amount or unit unclear
+INSTANT RICE,all,instant rice|microwave rice,instant_rice,amount or unit unclear
+FROZEN BERRIES,all,frozen berries,frozen_berries,amount or unit unclear
+FROZEN CHIPS 1KG,AU|UK|NZ,frozen chips|frozen fries,frozen_chips,amount or unit unclear
+FROZEN FISH,all,frozen fish,frozen_fish,amount or unit unclear
+FROZEN CHICKEN,all,frozen chicken,frozen_chicken,size or variant differs; amount unclear
+FROZEN MINCE,all,frozen mince|frozen ground meat,frozen_mince,amount or unit unclear
+LETTUCE,all,fresh lettuce,fresh_lettuce,amount or unit unclear
+TOMATOES LOOSE KG,all,fresh tomatoes|loose tomatoes,fresh_tomatoes,size or variant differs; amount unclear
+CUCUMBER,all,cucumber,cucumber,amount or unit unclear
+AVOCADO,all,avocado,avocado,amount or unit unclear
+LEMONS,all,lemons,lemons,amount or unit unclear
+LIMES,all,limes,limes,amount or unit unclear
+PEARS,all,pears,pears,amount or unit unclear
+GRAPES,all,grapes,grapes,amount or unit unclear
+BERRIES,all,berries,berries,amount or unit unclear
+SWEET POTATOES,all,sweet potatoes|kumara,sweet_potatoes,amount or unit unclear
+PUMPKIN,all,pumpkin,pumpkin,amount or unit unclear
+BROCCOLI,all,broccoli,broccoli,amount or unit unclear
+CAULIFLOWER,all,cauliflower,cauliflower,amount or unit unclear
+SPINACH,all,spinach,spinach,amount or unit unclear
+CABBAGE,all,cabbage,cabbage,amount or unit unclear
+CELERY,all,celery,celery,amount or unit unclear
+MUSHROOMS,all,mushrooms,mushrooms,amount or unit unclear
+ZUCCHINI KG,AU|US|NZ,zucchini|courgette,zucchini,amount or unit unclear
+EGGPLANT KG,AU|US,eggplant|aubergine,eggplant,amount or unit unclear
+GREEN BEANS,all,green beans|string beans,green_beans,amount or unit unclear
+MILK FULL CRM 2L,AU|NZ,milk|full cream milk|whole milk,milk,size or variant differs; amount unclear
+CREAM,all,cream,cream,amount or unit unclear
+SOUR CREAM,all,sour cream,sour_cream,amount or unit unclear
+COTTAGE CHEESE,all,cottage cheese,cottage_cheese,amount or unit unclear
+CREAM CHEESE,all,cream cheese,cream_cheese,amount or unit unclear
