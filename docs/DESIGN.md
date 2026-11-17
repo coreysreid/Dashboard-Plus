@@ -332,6 +332,54 @@ columns.inside = { type = "link", to = "places", on_delete = "restrict" }
 - With `on_delete = "restrict"`, a room cannot be deleted while places are
   still inside it.
 
+### 5.7 Batches: layered use-by dates
+
+An item's stock can be split into batches, each with its own amount, use-by
+date and place: 3 tins of kidney beans on Shelf 3 use by next month, 10 in the
+garage in six months (decision 0053). Declared in files:
+
+```toml
+[tables.lots]
+record_name = "{item}, {quantity}[ {item.unit}][ at {place}][, use by {expires}]"
+
+[tables.lots.total]            # batches add up into their item
+link = "item"
+amount = "quantity"
+into = "quantity"              # the item's amount is the sum of its batches
+earliest = { date = "expires", into = "expires" }   # its Use by: the earliest batch still holding some
+starts_from = ["quantity", "place", "expires"]      # an item typed in with these starts its first batch
+
+[tables.lots.watch]
+expiring = { date = "expires", warn_days = 30, only_positive = "quantity" }
+
+[tables.movements.adjusts]     # stock in and out changes one batch
+link = "lot"
+belongs_to = "item"
+new_batch = { expires = "expires", place = "place" }
+oldest_first = "expires"
+# plus quantity, amount, direction and adds as in 5.3
+```
+
+- The item's amount and Use by are worked out, never typed over: changing them
+  directly is refused with "is worked out from its batches". A stocktake
+  correction changes the batch, and the item follows, both in history.
+- Stock in with no batch chosen starts a new batch with the use-by date and
+  place given. Adding to an existing batch is an explicit choice of that batch.
+- Using some with no batch chosen takes from the batch with the earliest known
+  use-by date; an undated batch comes after dated ones. If that batch holds
+  too little, the person is asked to record it batch by batch (no silent
+  split); more than the item holds is refused with "only 13 left".
+- A chosen batch must belong to the movement's item.
+- Each batch that still holds something gets its own use-by warning, named by
+  `record_name` ("Kidney beans, 3 tins at Kitchen › Pantry › Shelf 3"); a part
+  in [square brackets] is left out when it is blank. A used-up batch stays as
+  history but never warns and is not printed.
+- Delete and restore keep amounts right: a deleted batch leaves the item's
+  total, and comes back into it when restored.
+- Upgrading: each item recorded before batches becomes one batch with its
+  amount, use-by date and place; earlier stock in and out is linked to it, not
+  replayed. A backup is made first (startup, decision 0050).
+
 ## 6. Modules
 
 A module is a folder:

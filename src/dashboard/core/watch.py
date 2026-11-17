@@ -7,7 +7,7 @@ from dataclasses import dataclass, field
 from datetime import date
 from urllib.parse import urlencode
 
-from dashboard.core import dates, schema, settings
+from dashboard.core import dates, naming, schema, settings
 from dashboard.core.records import TableInfo
 
 PEOPLE_TABLE = "people__people"
@@ -58,7 +58,9 @@ def _name_column(info: TableInfo) -> str | None:
     return chosen.name if chosen else None
 
 
-def _name(info: TableInfo, row) -> str:
+def _name(info: TableInfo, row, conn=None, registry=None, leave_out=()) -> str:
+    if conn is not None and info.table.record_name:
+        return naming.record_name(conn, registry, info, row, leave_out=leave_out)  # "Kidney beans, 3 tins"
     column = _name_column(info)
     value = row[column] if column else None
     return str(value) if value not in (None, "") else f"{info.table.title} #{row['id']}"
@@ -99,8 +101,9 @@ def expiring(conn: sqlite3.Connection, registry: dict[str, TableInfo], today: da
         if not rule:
             continue
         col, warn = rule["date"], rule["warn_days"]
+        positive = f" AND {rule['only_positive']} > 0" if rule.get("only_positive") else ""  # used up: no warning
         rows = conn.execute(f"SELECT * FROM {info.name} WHERE deleted_at IS NULL AND {col} IS NOT NULL "
-                            f"AND {col} != ''")
+                            f"AND {col} != ''{positive}")
         for row in rows:
             try:
                 when = date.fromisoformat(row[col])
@@ -110,7 +113,7 @@ def expiring(conn: sqlite3.Connection, registry: dict[str, TableInfo], today: da
             if days > warn:
                 continue
             detail = _due_words(rule.get("wording", "expires"), rule.get("what", ""), when, days, style)
-            items.append(WatchItem(info.name, row["id"], _name(info, row), detail, days))
+            items.append(WatchItem(info.name, row["id"], _name(info, row, conn, registry, (col,)), detail, days))
     return sorted(items, key=lambda i: (i.sort_key, i.name))
 
 
