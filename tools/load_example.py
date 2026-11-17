@@ -68,13 +68,17 @@ def _date(value, today: date):
     return value
 
 
-def _name_column(info) -> str:
+def _name_column(info) -> str | None:
+    """The column an example names a row by, or None for a history table with no short text
+    (such as kit checks, which are only links, dates and a note)."""
     texts = [c for c in info.table.columns.values() if c.type == "text"]
     required = [c for c in texts if c.required]
-    return (required or texts)[0].name
+    return (required or texts)[0].name if texts else None
 
 
 def _find(conn: sqlite3.Connection, info, name: str) -> int | None:
+    if _name_column(info) is None:
+        raise ExampleError(f"{info.name} has no name column, so other rows cannot link to it by name.")
     row = conn.execute(f"SELECT id FROM {info.name} WHERE deleted_at IS NULL AND {_name_column(info)} = ?",
                        (name,)).fetchone()
     return row["id"] if row else None
@@ -155,13 +159,14 @@ def load_records(conn: sqlite3.Connection, registry: dict, data: dict, today: da
                 elif col.type == "date":
                     value = _date(value, today)
                 values[column] = value
-            label = row.get(_name_column(info))
+            name_column = _name_column(info)
+            label = row.get(name_column) if name_column else None
             if quantity and (name, label) in changes:
                 start = float(values.get(quantity) or 0) - changes[(name, label)]
                 if start < 0:
                     raise ExampleError(f"{name}: '{label}' would start below zero; raise its amount.")
                 values[quantity] = round(start, 3)
-            existing = _find(conn, info, label) if name in SETUP_TABLES else None
+            existing = _find(conn, info, label) if name in SETUP_TABLES and label else None
             if existing is not None:
                 store.update(name, existing, values)
             else:

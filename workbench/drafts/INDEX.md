@@ -7,7 +7,6 @@ and made-up example rows. Add a row here for each draft folder you create.
 | catalogue/ | 800 common goods after round three, with water-count rules | reviewing stocktake choices |
 | home_layout/ | Nested places, exits, shut-offs and an Our home sheet | reviewing home layout |
 | stock_lots/ | Item lots (layered use-by dates), screen flows and core needs | planning layered stock dates |
-| medical/ | First aid kits, kit checks and training, with due dates and a sheet | reviewing or promoting it |
 | readiness/ | 49 source-linked "Have you thought about…?" questions | reviewing readiness prompts |
 | country-packs/ | Sourced AU, US, UK and NZ content | reviewing country packs |
 | documents/ | Where important papers are, with renewal dates | reviewing document records |

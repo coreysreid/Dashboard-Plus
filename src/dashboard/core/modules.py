@@ -532,7 +532,8 @@ def _check_gaps(file: str, table: Table, tables: dict[str, Table], raw, problems
             if fields:
                 problems.append(f"{g_where}: a 'none' message has no record to fill in, so it cannot use {{...}}.")
                 continue
-            if _check_where(f"{g_where}, none", gap["none"], table.columns, problems):
+            # An empty filter, none = {}, asks when the table has no records at all.
+            if gap["none"] == {} or _check_where(f"{g_where}, none", gap["none"], table.columns, problems):
                 gaps.append({"none": dict(gap["none"]), "message": message})
             continue
         missing = gap["missing"]

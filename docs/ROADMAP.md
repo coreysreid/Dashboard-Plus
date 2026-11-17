@@ -6,9 +6,9 @@ from people using the earlier ones; that is the point of shipping early.
 
 | Milestone | What a household can do | Status |
 |---|---|---|
-| **M1** | Unzip, run the wizard, record People, Stock and Pets, see running low, expiring soon and days of water, print the emergency sheet | **In progress** |
+| **M1** | Unzip, run the wizard, record People, Stock, Pets and first aid kits (Medical), see running low, expiring soon and days of water, print the emergency sheet | **In progress** |
 | M2 | Restore and export, review queue, inbox, Agent API, receipt entry | Planned |
-| M3 | Medical, Readiness prompts, first country pack, optional data-folder passphrase | Planned |
+| M3 | Readiness prompts (Medical moved into M1, decision 0051), first country pack, optional data-folder passphrase | Planned |
 | M4 | Graphing, Analysis, the question loop, the monthly outcomes screen | Planned |
 | M5 | Garden, Wine, API connector (Pets moved into M1, decision 0047) | Planned |
 

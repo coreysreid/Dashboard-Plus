@@ -13,10 +13,16 @@ CREATE TABLE medical__kits (
     deleted_at TEXT,
     name TEXT,
     place INTEGER REFERENCES stock__places(id) ON DELETE RESTRICT,
+    last_checked TEXT,
+    next_check TEXT,
     notes TEXT
 );
 
 CREATE INDEX medical__kits__place__idx ON medical__kits(place);
+
+CREATE INDEX medical__kits__last_checked__idx ON medical__kits(last_checked);
+
+CREATE INDEX medical__kits__next_check__idx ON medical__kits(next_check);
 
 -- Kit checks
 CREATE TABLE medical__kit_checks (

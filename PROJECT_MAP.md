@@ -102,6 +102,7 @@ marked Superseded. Each lists downsides, cost to undo, and the sign it was wrong
 | [0048](0048-pick-from-a-catalogue-while-typing.md) | Pick goods from a list while typing, with your own items first | Accepted |
 | [0049](0049-nested-places.md) | Places can sit inside other places, and show their full path | Accepted |
 | [0050](0050-restore-brings-back-what-went-with-it.md) | Restoring brings back what went with it; backups and counts made safer | Accepted |
+| [0051](0051-medical-promoted.md) | Medical readiness switched on from Lane B's draft; `none = {}` gaps | Accepted |
 | [0060](0060-garden-example-outside-installed-modules.md) | Keep the worked garden outside installed modules | Accepted |
 | [0061](0061-public-reporting-and-contribution-rules.md) | Public contribution and private security reporting routes | Accepted |
 | [TEMPLATE](TEMPLATE.md) | Blank record to copy for a new decision | recording a decision |
@@ -175,9 +176,26 @@ numbered migrations. See docs/DESIGN.md section 6 for the module contract.
 
 | Entry | What it is | Open it when |
 |---|---|---|
+| medical/ | First aid kits and where they are, kit checks, first aid training renewals; a first aid sheet | changing first aid records |
 | people/ | Who lives here, who to call, important details, emergency sheets | changing people, contacts or the emergency sheet |
 | pets/ | Pets, their vet, treatments and medicine with due dates, weigh-ins, vet visits; a pet details sheet | changing pets |
 | stock/ | Pantry, water, first aid, tools and hardware, with places, minimums and use-by dates | changing stock, running low or days of water |
+
+## modules/medical/  (summary: the Medical readiness module, files only; promoted from Lane B's draft)
+| Entry | What it is | Open it when |
+|---|---|---|
+| module.toml | Name, version, description; requires People and Stock (for who and where) | changing the module's details |
+| tables.toml | First aid kits, kit checks and first aid training, with due checks, renewals and gaps | adding a field or a gap question |
+| labels.toml | Friendly labels, help text, form and list order | changing wording or order |
+| sheets.toml | First aid at home sheet: where the kits are and who has trained | changing what prints |
+| migrations/ | Numbered database changes | after changing tables.toml |
+
+## modules/medical/migrations/  (summary: this module's numbered database changes; never edit a released one)
+Generate the next one with: python tools/make_migration.py medical --name <what_changed>
+
+| Entry | What it is | Open it when |
+|---|---|---|
+| 0001_first_tables.sql | The module's first tables, generated from tables.toml | checking how the tables are stored |
 
 ## modules/people/  (summary: the People module, files only)
 | Entry | What it is | Open it when |

@@ -259,7 +259,8 @@ message = "What is {person}'s phone number?"
 ```
 
 - Each gap uses either `none` (equality filters; asked when no row matches,
-  linking to a new-record form with the filters filled in) or `missing` (a
+  linking to a new-record form with the filters filled in; `none = {}` asks
+  when the table has no records at all) or `missing` (a
   column of this table, or `link.column` within the module; asked per row where
   it is blank, linking to the record that holds the blank). `missing` asks once
   per linked record, even when several rows point at it.

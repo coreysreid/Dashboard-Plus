@@ -16,7 +16,7 @@ home_type = "house"
 storeys = 2
 mobility_needs = false
 hazards = ["bushfire", "heat", "storm"]
-modules = ["people", "pets", "stock"]
+modules = ["medical", "people", "pets", "stock"]
 
 # ---- People -----------------------------------------------------------------
 
@@ -571,3 +571,25 @@ item = "Dog food (Rex)"
 reason = "used"
 amount = 2
 happened_on = "today-1"
+
+# ---- Medical readiness --------------------------------------------------------
+
+[[medical.kits]]
+name = "Car first aid kit"
+place = "Car boot"
+last_checked = "today-30"
+next_check = "today+60"
+
+[[medical.kit_checks]]
+kit = "Car first aid kit"
+checked_on = "today-30"
+next_check = "today+60"
+checked_by = "Jane Smith"
+notes = "Checked the list and updated Stock separately."
+
+[[medical.training]]
+person = "Jane Smith"
+course = "first_aid"
+provider = "Example Training Centre"
+completed_on = "today-300"
+renew_by = "today+65"
