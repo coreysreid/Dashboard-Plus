@@ -26,3 +26,4 @@ and made-up example rows. Add a row here for each draft folder you create.
 | question_loop/ | Twenty plausible analysis questions and forty rejected pairings | building M4 questions |
 | charts/ | Four household chart sketches with data and accessibility needs | building M4 graphing |
 | garden/ | Promotion draft of the vegetable-garden worked example | promoting the optional Garden module |
+| home_inventory/ | Private room-by-room belongings and claim-list draft | planning insurance inventory |

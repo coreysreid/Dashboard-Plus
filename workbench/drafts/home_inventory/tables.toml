@@ -1,0 +1,18 @@
+[tables.belongings]
+title = "Belongings"
+description = "Valuables and other belongings you choose to record for your own inventory."
+columns.name = { type = "text", required = true }
+columns.room = { type = "link", to = "stock.places", on_delete = "restrict" }
+columns.quantity = { type = "integer", min = 1, default = 1 }
+columns.make_model = { type = "text" }
+columns.serial = { type = "text", sensitive = true }
+columns.bought_on = { type = "date" }
+columns.paid = { type = "money", min = 0 }
+columns.receipt_kept = { type = "text" }
+columns.photos_kept = { type = "text" }
+columns.notes = { type = "longtext", sensitive = true }
+
+[tables.belongings.watch]
+[[tables.belongings.watch.gaps]]
+missing = "room"
+message = "Which room or place holds {name}? Add it so the claim list is easier to use."

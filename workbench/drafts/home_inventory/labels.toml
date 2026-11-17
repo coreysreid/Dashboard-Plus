@@ -1,0 +1,14 @@
+[tables.belongings]
+empty = "Add one belonging, starting with a room you know well."
+form = ["name", "room", "quantity", "make_model", "serial", "bought_on", "paid", "receipt_kept", "photos_kept", "notes"]
+list = ["room", "name", "quantity", "make_model", "paid", "receipt_kept", "photos_kept"]
+columns.name = { label = "Belonging", help = "Use a name you would recognise later, such as Laptop or Blue sofa." }
+columns.room = { label = "Where it is", help = "Choose the full room or storage path. This may be sensitive if someone else sees the list." }
+columns.quantity = { label = "How many", help = "Use one row per item when the serial numbers differ." }
+columns.make_model = { label = "Make or model" }
+columns.serial = { label = "Serial number", help = "Optional and private. Copy it from the item; it appears on the claim printout only when you choose Print." }
+columns.bought_on = { label = "Bought on", help = "Use the date on your receipt if you have it." }
+columns.paid = { label = "What you paid", help = "Optional, in your household currency. This is not its current value or an insurer's payment estimate." }
+columns.receipt_kept = { label = "Where the receipt is", help = "For example, paperwork folder or a broad digital folder name. Do not enter a password or account link." }
+columns.photos_kept = { label = "Where photos are", help = "For example, household backup folder. Photos are not stored in this module." }
+columns.notes = { help = "Private notes for your household. Avoid passwords and full account numbers." }
