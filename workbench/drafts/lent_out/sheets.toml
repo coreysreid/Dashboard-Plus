@@ -1,0 +1,11 @@
+[[sheet]]
+name = "still_out"
+title = "Things still lent out"
+intro = "A private household reminder. Confirm the item and return date with the borrower before relying on this copy."
+
+[[sheet.section]]
+title = "Still out"
+table = "loans"
+where = { status = "out" }
+columns = ["name", "borrower", "lent_on", "due_back"]
+order_by = "due_back"
