@@ -55,6 +55,7 @@ the "Requests" table of docs/WORKSTREAMS.md.
 | Batch 9 item 30: Home layout promotion pass | merged by Lane A | #77 | Exact 31-place/63-Stock/3-Medical mapping, rewritten example, 9 promotion checks and way back. |
 
 | Batch 10 item 32: Agent API examples | ready | PR pending | Six routes, refusals and Review effects in helpers/API_EXAMPLES.md. |
+| Batch 10 item 34: computer-loss guide | ready | PR pending | Four recovery days, each with household steps, and a clear planned-feature warning. |
 
 ## Messages to Lane A
 
