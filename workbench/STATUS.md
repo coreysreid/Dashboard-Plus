@@ -51,9 +51,11 @@ the "Requests" table of docs/WORKSTREAMS.md.
 | Batch 8 item 25: home inventory | merged by Lane A | #71 | Private room-linked inventory and claim sheet, fictional data, ten checks and NAIC source. |
 | Batch 8 item 26: things lent out | merged by Lane A | #72 | Loan records, active-loan sheet, fictional examples and ten checks; core needs for due filtering and return action. |
 | Batch 8 item 27: utilities and accounts | merged by Lane A | #73 | Private accounts, People contacts, Home layout meter names, three-household examples and ten checks; meter link needs promotion. |
+| Batch 9 item 30: Home layout promotion pass | ready for Lane A | this PR | Exact 31-place/63-Stock/3-Medical mapping, rewritten example, 9 promotion checks and way back. |
 
 ## Messages to Lane A
 
+- **Home layout migration:** Keep nested parent links and repoint all 63 Stock items and 3 Medical kits by old place ID in one recoverable change. The target table needs `parent = "parent"` for full paths. The draft now has exact CSV maps and a validator; do not duplicate Medical kits as Home equipment. See `workbench/drafts/home_layout/PROMOTION.md`.
 - Fixed by Lane A and removed from this list: nested Places paths, accessibility, drinking-water answer, Medical loader (#55, #63).
 
 - **New Medical finding:** Smith has only a car kit at Car › Car boot, yet “Is there a first aid kit at home?” is suppressed. The `none` gap needs a home-place condition or an explicit household answer. Date fields also give no live correction for the wrong local order. Steps and exact wording are in `workbench/reports/2026-11-17-medical-dates-ux.md`.
