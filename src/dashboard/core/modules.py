@@ -36,7 +36,8 @@ WATCH_KEYS = ("running_low", "expiring", "supply", "gaps")
 GAP_KEYS = ("missing", "none", "where", "message")
 COLUMN_KEYS = ("type", "required", "required_when", "default", "min", "max", "unit", "choices", "help", "sensitive",
                "to", "on_delete")
-LABEL_TABLE_KEYS = ("title", "columns", "form", "list", "empty")
+LABEL_TABLE_KEYS = ("title", "columns", "form", "list", "empty", "home")
+HOME_PLACES = ("main", "more")  # where a table sits on the home page: shown large, or in the line of links
 LABEL_COLUMN_KEYS = ("label", "help", "show_when", "suggest_from", "fills", "answers")
 
 
@@ -687,6 +688,9 @@ def _check_labels(data: dict, tables: dict[str, Table], problems: list[str]) -> 
         problems.extend(_unknown_keys(where, raw, LABEL_TABLE_KEYS))
         if "empty" in raw and (not isinstance(raw["empty"], str) or not raw["empty"].strip()):
             problems.append(f"{where}: 'empty' must be a short sentence, like \"Add a few things from the pantry.\"")
+        if "home" in raw and raw["home"] not in HOME_PLACES:
+            problems.append(f"{where}: 'home' must be \"main\" (shown large on the home page) or \"more\" "
+                            f"(in the line of other lists), not {raw['home']!r}.")
         known = tables[tname].columns
         for cname, craw in raw.get("columns", {}).items():
             if cname not in known:

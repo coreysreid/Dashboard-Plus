@@ -1,4 +1,5 @@
 [tables.exits]
+home = "main"
 empty = "Write down the ways out of your home."
 form = ["name", "floor", "place", "route", "notes"]
 list = ["name", "floor", "place", "route"]
@@ -9,6 +10,7 @@ columns.route = { label = "How to get there", help = "In your own words, includi
 columns.notes = { help = "Do not write down where a spare key is hidden or an alarm code." }
 
 [tables.shutoffs]
+home = "main"
 empty = "Write down where the water shut-off and power board are."
 form = ["name", "kind", "place", "how_to_find", "notes"]
 list = ["name", "kind", "place", "how_to_find"]

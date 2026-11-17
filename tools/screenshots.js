@@ -12,6 +12,7 @@ const { chromium } = require('playwright');
   const base = plan.base.replace(/\/$/, '');
   try {
     for (const step of plan.steps) {
+      if (step.viewport) await page.setViewportSize({ width: step.viewport, height: plan.height });
       if (step.goto) await page.goto(base + step.goto);
       if (step.fill) await page.fill(step.fill, String(step.value));
       if (step.type) { await page.type(step.type, String(step.value), { delay: 40 }); await page.waitForTimeout(700); }

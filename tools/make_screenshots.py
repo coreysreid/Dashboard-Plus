@@ -23,6 +23,7 @@ GALLERY = ROOT / "docs" / "EXAMPLES.md"
 HOUSEHOLDS = ["smith", "garcia", "taylor"]
 LONG_SHEETS: list[str] = []  # printable sheets that did not fit on one page
 WIDTH, HEIGHT = 1200, 800
+PHONE_WIDTH = 320  # the narrowest screen the pages must work on
 DATA_SHOWN_AS = "D:\\Dashboard Plus\\data"
 EXTRA_SHOWN_AS = "%LOCALAPPDATA%\\Dashboard Plus\\backups"
 
@@ -36,8 +37,10 @@ STAGES = [
     ("03-first-home", "The first home page", "Straight after setup: the household is in People, and the "
      "dashboard says what to do first.", {"submit_wizard": True}),
     ("load", None, None, None),
-    ("04-home", "Home, in everyday use", "Days of water, what needs attention, the printable sheets and "
-     "every list.", {"goto": "/"}),
+    ("04-home", "Home, in everyday use", "Days of water, what needs attention, then one card per area: its "
+     "main list, its other lists as links, and its sheets to print.", {"goto": "/"}),
+    ("04b-home-phone", "Home, on a phone", "The same page at 320 pixels wide: the cards stack in one column.",
+     {"goto": "/", "width": PHONE_WIDTH}),
     ("05-people", "People", "Everyone in or around the household.", {"goto": "/t/people__people"}),
     ("06-person", "One person's page", "Their details, what links to them, and the history of changes.",
      {"goto": "/t/people__people/{id:people__people:person}"}),
@@ -200,6 +203,7 @@ def make(household: str, work: Path, executable: str | None) -> list[tuple[str, 
                 for key, value in ids.items():
                     target = target.replace("{id:" + key + "}", str(value))
                 steps.append({"media": action.get("media", "screen")})
+                steps.append({"viewport": action.get("width", WIDTH)})
                 steps.append({"goto": target})
                 if action.get("media") == "print":
                     steps.append({"pages": target})

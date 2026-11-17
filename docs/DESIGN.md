@@ -440,6 +440,15 @@ table has no records, the home page shows it under *Start here* with a button to
 add one (the first such table wins, so the home page never shows a list of
 chores).
 
+The home page has one card per module (decision 0056). A table may say where
+it sits in that card: `home = "main"` shows it large with its count and an Add
+button; `home = "more"` puts it in the card's one line of links. With no
+`home` anywhere, the module's first table is the main one and the rest are
+links. Any other word is reported when the module loads. Cards come in the
+order People, Household stock, Home layout, Medical readiness, Pets, then
+other modules from A to Z; a module's printable sheets are linked from its
+card.
+
 ### Tier 2: code modules
 
 Add `sources.py` (and may add custom checks). Code modules run with the user's

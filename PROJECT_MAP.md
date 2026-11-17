@@ -107,6 +107,7 @@ marked Superseded. Each lists downsides, cost to undo, and the sign it was wrong
 | [0053](0053-batches-for-layered-use-by-dates.md) | Stock kept in batches, each with its own use-by date and place | Accepted |
 | [0054](0054-home-layout-uses-the-places-you-already-have.md) | Home layout switched on, using the places the household already has; no data moves | Accepted |
 | [0055](0055-modules-confined-and-security-review-fixes.md) | Modules confined to their own tables; security review fixes | Accepted |
+| [0056](0056-home-page-grouped-by-area.md) | Home page grouped by area: main lists large, other lists as links (`home` in labels.toml); forms save again in current browsers | Accepted |
 | [0060](0060-garden-example-outside-installed-modules.md) | Keep the worked garden outside installed modules | Accepted |
 | [0061](0061-public-reporting-and-contribution-rules.md) | Public contribution and private security reporting routes | Accepted |
 | [TEMPLATE](TEMPLATE.md) | Blank record to copy for a new decision | recording a decision |
@@ -321,6 +322,7 @@ Add a new file with the next number instead of changing an old one.
 | app.py | Build the Flask web application and its local-only protections. | changing sign-in, protections or reports |
 | pages.py | Pages built from module declarations: the record grid, add and edit forms, and history. | changing the grid or forms |
 | setup.py | The first-run wizard and the settings page: who lives here, the home, modules and backups. | changing setup questions or settings |
+| home.py | Group the home page by area: each module's main lists shown large, its other lists as one line of links. | changing how the home page is grouped or ordered |
 | sheets.py | One-page printable sheets declared by modules, such as the emergency sheet. | changing printable sheets |
 | display.py | Turn declared tables and stored values into friendly labels, form fields and text. | changing how values look |
 | templates/ | The HTML pages | changing what a page looks like |
@@ -375,6 +377,7 @@ How to run them is in AGENTS.md.
 | test_workbench_drafts.py | Check every draft module in workbench/drafts: it loads, its migrations match, and it starts cleanly. | a draft module fails |
 | test_web.py | Tests for the screens: sign-in by launch link, grid paging, forms, history and reports. | changing a screen |
 | test_main.py | Tests for the command-line entry point and its plain-language messages. | changing the command line |
+| test_home_page.py | Tests for the grouped home page: one group per area, main lists large, other lists as links, all reachable. | changing the home page or `home` in labels.toml |
 | test_build_portable.py | Tests for the portable Windows build, using a stand-in for the Python download. | changing the build |
 | test_lock_requirements.py | Tests for the requirements lock generator. | changing how libraries are locked |
 | test_repofiles.py | Tests for the shared list of repository files, including during a merge with conflicts. | a tool counts a file twice |
