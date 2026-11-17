@@ -1,32 +1,32 @@
 [[sheet]]
 name = "supplies"
 title = "Emergency supplies"
-intro = "Water, first aid, power and pantry food recorded here, and where they are kept. Other kinds of stock are not shown. Check use-by dates and amounts when you print a new copy."
+intro = "Water, first aid, power and pantry food recorded here, batch by batch, and where each is kept. Other kinds of stock are not shown. Check use-by dates and amounts when you print a new copy."
 
 [[sheet.section]]
 title = "Water (litres)"
-table = "items"
-where = { category = "water" }
-columns = ["name", "quantity", "place", "expires"]
+table = "lots"
+where = { "item.category" = "water" }
+columns = ["item", "quantity", "place", "expires"]
 order_by = "expires"
 
 [[sheet.section]]
 title = "First aid and medical"
-table = "items"
-where = { category = "first_aid" }
-columns = ["name", "quantity", "unit", "place", "expires"]
-order_by = "name"
+table = "lots"
+where = { "item.category" = "first_aid" }
+columns = ["item", "quantity", "item.unit", "place", "expires"]
+order_by = "expires"
 
 [[sheet.section]]
 title = "Batteries, torches and power"
-table = "items"
-where = { category = "power" }
-columns = ["name", "quantity", "unit", "place"]
-order_by = "name"
+table = "lots"
+where = { "item.category" = "power" }
+columns = ["item", "quantity", "item.unit", "place"]
+order_by = "expires"
 
 [[sheet.section]]
 title = "Food"
-table = "items"
-where = { category = "pantry" }
-columns = ["name", "quantity", "unit", "place", "expires"]
-order_by = "name"
+table = "lots"
+where = { "item.category" = "pantry" }
+columns = ["item", "quantity", "item.unit", "place", "expires"]
+order_by = "expires"

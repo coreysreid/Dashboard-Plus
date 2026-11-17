@@ -1,0 +1,1104 @@
+# Batch 9 target lots fixture. Fixed today = 2026-11-17. All records are invented.
+# Stock item quantity is derived from its lots; legacy movements are history only.
+
+# smith: 13 places, 27 items, 6 pre-lot movements.
+[[smith.stock.places]]
+name = "Kitchen"
+
+[[smith.stock.places]]
+name = "Laundry"
+
+[[smith.stock.places]]
+name = "Garage"
+
+[[smith.stock.places]]
+name = "Bathroom"
+
+[[smith.stock.places]]
+name = "Car"
+
+[[smith.stock.places]]
+name = "Backyard"
+
+[[smith.stock.places]]
+name = "Pantry"
+inside = "Kitchen"
+notes = "Kitchen, left of the fridge."
+
+[[smith.stock.places]]
+name = "Laundry cupboard"
+inside = "Laundry"
+
+[[smith.stock.places]]
+name = "Garage shelves"
+inside = "Garage"
+notes = "The grey steel shelves by the roller door."
+
+[[smith.stock.places]]
+name = "Bathroom cabinet"
+inside = "Bathroom"
+
+[[smith.stock.places]]
+name = "Car boot"
+inside = "Car"
+notes = "The family car."
+
+[[smith.stock.places]]
+name = "Garden shed"
+inside = "Backyard"
+
+[[smith.stock.places]]
+name = "Shelf 3"
+inside = "Pantry"
+notes = "Top shelf is 1."
+
+# Source item 1; migrated lot smith-001-01.
+[[smith.stock.items]]
+name = "Water casks (10 L)"
+category = "water"
+drinking = true
+unit = "litres"
+minimum = 20
+
+# lot_ref: smith-001-01; Garage › Garage shelves
+[[smith.stock.lots]]
+item = "Water casks (10 L)"
+quantity = 20
+use_by = "2027-09-13"
+place = "Garage shelves"
+
+# Source item 2; migrated lot smith-002-01.
+[[smith.stock.items]]
+name = "Water bottles (24 x 600 mL)"
+category = "water"
+drinking = true
+unit = "litres"
+
+# lot_ref: smith-002-01; Kitchen › Pantry
+[[smith.stock.lots]]
+item = "Water bottles (24 x 600 mL)"
+quantity = 14.4
+use_by = "2027-04-26"
+place = "Pantry"
+
+# Source item 3; migrated lot smith-003-01.
+[[smith.stock.items]]
+name = "Rice"
+category = "pantry"
+unit = "kg"
+minimum = 1
+
+# lot_ref: smith-003-01; Kitchen › Pantry
+[[smith.stock.lots]]
+item = "Rice"
+quantity = 3
+use_by = "2027-12-22"
+place = "Pantry"
+
+# Source item 4; migrated lot smith-004-01.
+[[smith.stock.items]]
+name = "Pasta"
+category = "pantry"
+unit = "packs"
+minimum = 2
+
+# lot_ref: smith-004-01; Kitchen › Pantry
+[[smith.stock.lots]]
+item = "Pasta"
+quantity = 4
+use_by = "2027-07-25"
+place = "Pantry"
+
+# Source item 5; migrated lot smith-005-01.
+[[smith.stock.items]]
+name = "Tinned tomatoes"
+category = "pantry"
+unit = "tins"
+minimum = 4
+
+# lot_ref: smith-005-01; Kitchen › Pantry
+[[smith.stock.lots]]
+item = "Tinned tomatoes"
+quantity = 1
+use_by = "2028-03-31"
+place = "Pantry"
+
+# Source item 6; migrated lot smith-006-01.
+[[smith.stock.items]]
+name = "Kidney beans"
+category = "pantry"
+unit = "tins"
+minimum = 4
+
+# lot_ref: smith-006-01; Kitchen › Pantry › Shelf 3
+[[smith.stock.lots]]
+item = "Kidney beans"
+quantity = 3
+use_by = "2026-12-20"
+place = "Shelf 3"
+
+# lot_ref: smith-006-02; Garage › Garage shelves
+[[smith.stock.lots]]
+item = "Kidney beans"
+quantity = 10
+use_by = "2027-05-20"
+place = "Garage shelves"
+
+# Source item 7; migrated lot smith-007-01.
+[[smith.stock.items]]
+name = "Tinned tuna"
+category = "pantry"
+unit = "tins"
+minimum = 4
+
+# lot_ref: smith-007-01; Kitchen › Pantry
+[[smith.stock.lots]]
+item = "Tinned tuna"
+quantity = 6
+use_by = "2028-07-09"
+place = "Pantry"
+
+# Source item 8; migrated lot smith-008-01.
+[[smith.stock.items]]
+name = "Baked beans"
+category = "pantry"
+unit = "tins"
+minimum = 4
+
+# lot_ref: smith-008-01; Kitchen › Pantry
+[[smith.stock.lots]]
+item = "Baked beans"
+quantity = 2
+use_by = "2028-01-11"
+place = "Pantry"
+
+# Source item 9; migrated lot smith-009-01.
+[[smith.stock.items]]
+name = "Long-life milk"
+category = "pantry"
+unit = "litres"
+minimum = 2
+
+# lot_ref: smith-009-01; Kitchen › Pantry
+[[smith.stock.lots]]
+item = "Long-life milk"
+quantity = 3
+use_by = "2026-11-26"
+place = "Pantry"
+
+# Source item 10; migrated lot smith-010-01.
+[[smith.stock.items]]
+name = "Muesli bars"
+category = "pantry"
+unit = "bars"
+notes = "Nut free, for school lunches."
+
+# lot_ref: smith-010-01; Kitchen › Pantry
+[[smith.stock.lots]]
+item = "Muesli bars"
+quantity = 5
+use_by = "2026-11-14"
+place = "Pantry"
+
+# Source item 11; migrated lot smith-011-01.
+[[smith.stock.items]]
+name = "Rolled oats"
+category = "pantry"
+unit = "kg"
+minimum = 1
+
+# lot_ref: smith-011-01; Kitchen › Pantry
+[[smith.stock.lots]]
+item = "Rolled oats"
+quantity = 1
+use_by = "2027-04-16"
+place = "Pantry"
+
+# Source item 12; migrated lot smith-012-01.
+[[smith.stock.items]]
+name = "Adrenaline auto-injector (Emily)"
+category = "first_aid"
+unit = "pens"
+minimum = 2
+notes = "One stays in Emily's school bag. Order the replacement before it expires."
+
+# lot_ref: smith-012-01; Bathroom › Bathroom cabinet
+[[smith.stock.lots]]
+item = "Adrenaline auto-injector (Emily)"
+quantity = 2
+use_by = "2026-12-12"
+place = "Bathroom cabinet"
+
+# Source item 13; migrated lot smith-013-01.
+[[smith.stock.items]]
+name = "Reliever puffer (Jack)"
+category = "first_aid"
+unit = "puffers"
+minimum = 2
+
+# lot_ref: smith-013-01; Bathroom › Bathroom cabinet
+[[smith.stock.lots]]
+item = "Reliever puffer (Jack)"
+quantity = 1
+use_by = "2027-06-15"
+place = "Bathroom cabinet"
+
+# Source item 14; migrated lot smith-014-01.
+[[smith.stock.items]]
+name = "First aid kit"
+category = "first_aid"
+unit = "kits"
+minimum = 1
+
+# lot_ref: smith-014-01; Car › Car boot
+[[smith.stock.lots]]
+item = "First aid kit"
+quantity = 1
+use_by = "2027-12-02"
+place = "Car boot"
+
+# Source item 15; migrated lot smith-015-01.
+[[smith.stock.items]]
+name = "Paracetamol"
+category = "first_aid"
+unit = "packs"
+minimum = 1
+
+# lot_ref: smith-015-01; Bathroom › Bathroom cabinet
+[[smith.stock.lots]]
+item = "Paracetamol"
+quantity = 2
+use_by = "2027-06-05"
+place = "Bathroom cabinet"
+
+# Source item 16; migrated lot smith-016-01.
+[[smith.stock.items]]
+name = "Sunscreen SPF 50"
+category = "toiletries"
+unit = "bottles"
+minimum = 1
+
+# lot_ref: smith-016-01; Laundry › Laundry cupboard
+[[smith.stock.lots]]
+item = "Sunscreen SPF 50"
+quantity = 1
+use_by = "2026-12-07"
+place = "Laundry cupboard"
+
+# Source item 17; migrated lot smith-017-01.
+[[smith.stock.items]]
+name = "Toilet paper"
+category = "toiletries"
+unit = "rolls"
+minimum = 12
+
+# lot_ref: smith-017-01; Laundry › Laundry cupboard
+[[smith.stock.lots]]
+item = "Toilet paper"
+quantity = 18
+place = "Laundry cupboard"
+
+# Source item 18; migrated lot smith-018-01.
+[[smith.stock.items]]
+name = "AA batteries"
+category = "power"
+unit = "batteries"
+minimum = 8
+
+# lot_ref: smith-018-01; Garage › Garage shelves
+[[smith.stock.lots]]
+item = "AA batteries"
+quantity = 4
+place = "Garage shelves"
+
+# Source item 19; migrated lot smith-019-01.
+[[smith.stock.items]]
+name = "Torches"
+category = "power"
+unit = "torches"
+minimum = 2
+
+# lot_ref: smith-019-01; Laundry › Laundry cupboard
+[[smith.stock.lots]]
+item = "Torches"
+quantity = 2
+place = "Laundry cupboard"
+
+# Source item 20; migrated lot smith-020-01.
+[[smith.stock.items]]
+name = "Power bank"
+category = "power"
+unit = "power banks"
+minimum = 1
+notes = "Charge it on the first of each month."
+
+# lot_ref: smith-020-01; Laundry › Laundry cupboard
+[[smith.stock.lots]]
+item = "Power bank"
+quantity = 1
+place = "Laundry cupboard"
+
+# Source item 21; migrated lot smith-021-01.
+[[smith.stock.items]]
+name = "Dog food (Rex)"
+category = "pet"
+unit = "kg"
+minimum = 5
+
+# lot_ref: smith-021-01; Laundry › Laundry cupboard
+[[smith.stock.lots]]
+item = "Dog food (Rex)"
+quantity = 3
+use_by = "2027-02-15"
+place = "Laundry cupboard"
+
+# Source item 22; migrated lot smith-022-01.
+[[smith.stock.items]]
+name = "Cat litter"
+category = "pet"
+unit = "bags"
+minimum = 1
+
+# lot_ref: smith-022-01; Laundry › Laundry cupboard
+[[smith.stock.lots]]
+item = "Cat litter"
+quantity = 1
+place = "Laundry cupboard"
+
+# Source item 23; migrated lot smith-023-01.
+[[smith.stock.items]]
+name = "Wood screws 40 mm"
+category = "hardware"
+unit = "boxes"
+
+# lot_ref: smith-023-01; Garage › Garage shelves
+[[smith.stock.lots]]
+item = "Wood screws 40 mm"
+quantity = 1
+place = "Garage shelves"
+
+# Source item 24; migrated lot smith-024-01.
+[[smith.stock.items]]
+name = "Wall plugs"
+category = "hardware"
+unit = "packs"
+
+# lot_ref: smith-024-01; Garage › Garage shelves
+[[smith.stock.lots]]
+item = "Wall plugs"
+quantity = 1
+place = "Garage shelves"
+
+# Source item 25; migrated lot smith-025-01.
+[[smith.stock.items]]
+name = "Cordless drill"
+category = "tools"
+unit = "drills"
+
+# lot_ref: smith-025-01; Garage › Garage shelves
+[[smith.stock.lots]]
+item = "Cordless drill"
+quantity = 1
+place = "Garage shelves"
+
+# Source item 26; migrated lot smith-026-01.
+[[smith.stock.items]]
+name = "Petrol for the mower"
+category = "fuel"
+unit = "litres"
+
+# lot_ref: smith-026-01; Backyard › Garden shed
+[[smith.stock.lots]]
+item = "Petrol for the mower"
+quantity = 5
+place = "Garden shed"
+
+# Source item 27; migrated lot smith-027-01.
+[[smith.stock.items]]
+name = "Dishwashing liquid"
+category = "cleaning"
+unit = "bottles"
+minimum = 1
+
+# lot_ref: smith-027-01; Laundry › Laundry cupboard
+[[smith.stock.lots]]
+item = "Dishwashing liquid"
+quantity = 1
+place = "Laundry cupboard"
+
+# Existing item-level history; do not replay or invent a lot link.
+[[smith.stock.legacy_movements]]
+item = "Water casks (10 L)"
+reason = "bought"
+amount = 10
+happened_on = "2026-11-05"
+notes = "Second cask for bushfire season."
+
+# Existing item-level history; do not replay or invent a lot link.
+[[smith.stock.legacy_movements]]
+item = "Rice"
+reason = "bought"
+amount = 2
+happened_on = "2026-11-11"
+notes = "Weekly shop."
+
+# Existing item-level history; do not replay or invent a lot link.
+[[smith.stock.legacy_movements]]
+item = "Pasta"
+reason = "bought"
+amount = 2
+happened_on = "2026-11-11"
+notes = "Weekly shop."
+
+# Existing item-level history; do not replay or invent a lot link.
+[[smith.stock.legacy_movements]]
+item = "Tinned tomatoes"
+reason = "used"
+amount = 3
+happened_on = "2026-11-13"
+notes = "Bolognese for the week."
+
+# Existing item-level history; do not replay or invent a lot link.
+[[smith.stock.legacy_movements]]
+item = "Long-life milk"
+reason = "thrown_away"
+amount = 1
+happened_on = "2026-11-15"
+notes = "Opened and left out overnight."
+
+# Existing item-level history; do not replay or invent a lot link.
+[[smith.stock.legacy_movements]]
+item = "Dog food (Rex)"
+reason = "used"
+amount = 2
+happened_on = "2026-11-16"
+
+# garcia: 11 places, 24 items, 6 pre-lot movements.
+[[garcia.stock.places]]
+name = "Kitchen"
+
+[[garcia.stock.places]]
+name = "Hallway"
+
+[[garcia.stock.places]]
+name = "Main bedroom"
+
+[[garcia.stock.places]]
+name = "Car"
+
+[[garcia.stock.places]]
+name = "Basement"
+
+[[garcia.stock.places]]
+name = "Kitchen cabinets"
+inside = "Kitchen"
+
+[[garcia.stock.places]]
+name = "Hall closet"
+inside = "Hallway"
+notes = "Earthquake go-bags live here, by the front door."
+
+[[garcia.stock.places]]
+name = "Under the bed"
+inside = "Main bedroom"
+notes = "Shoes and a flashlight under every bed."
+
+[[garcia.stock.places]]
+name = "Bathroom"
+
+[[garcia.stock.places]]
+name = "Car trunk"
+inside = "Car"
+
+[[garcia.stock.places]]
+name = "Storage locker"
+inside = "Basement"
+notes = "Basement locker 12."
+
+# Source item 1; migrated lot garcia-001-01.
+[[garcia.stock.items]]
+name = "Water jugs (1 gallon)"
+category = "water"
+drinking = true
+unit = "litres"
+minimum = 30
+notes = "Six jugs. A gallon is about 3.8 litres."
+
+# lot_ref: garcia-001-01; Basement › Storage locker
+[[garcia.stock.lots]]
+item = "Water jugs (1 gallon)"
+quantity = 22.7
+use_by = "2027-03-17"
+place = "Storage locker"
+
+# Source item 2; migrated lot garcia-002-01.
+[[garcia.stock.items]]
+name = "Emergency water pouches"
+category = "water"
+drinking = true
+unit = "litres"
+notes = "In the go-bags."
+
+# lot_ref: garcia-002-01; Hallway › Hall closet
+[[garcia.stock.lots]]
+item = "Emergency water pouches"
+quantity = 2
+use_by = "2029-05-05"
+place = "Hall closet"
+
+# Source item 3; migrated lot garcia-003-01.
+[[garcia.stock.items]]
+name = "Earthquake go-bag"
+category = "other"
+unit = "bags"
+minimum = 2
+notes = "Check twice a year: flashlight, radio, whistle, masks, cash, copies of IDs."
+
+# lot_ref: garcia-003-01; Hallway › Hall closet
+[[garcia.stock.lots]]
+item = "Earthquake go-bag"
+quantity = 2
+place = "Hall closet"
+
+# Source item 4; migrated lot garcia-004-01.
+[[garcia.stock.items]]
+name = "Black beans"
+category = "pantry"
+unit = "cans"
+minimum = 6
+
+# lot_ref: garcia-004-01; Kitchen › Kitchen cabinets
+[[garcia.stock.lots]]
+item = "Black beans"
+quantity = 8
+use_by = "2028-05-10"
+place = "Kitchen cabinets"
+
+# Source item 5; migrated lot garcia-005-01.
+[[garcia.stock.items]]
+name = "Rice"
+category = "pantry"
+unit = "lb"
+minimum = 2
+
+# lot_ref: garcia-005-01; Kitchen › Kitchen cabinets
+[[garcia.stock.lots]]
+item = "Rice"
+quantity = 5
+use_by = "2027-11-17"
+place = "Kitchen cabinets"
+
+# Source item 6; migrated lot garcia-006-01.
+[[garcia.stock.items]]
+name = "Canned soup"
+category = "pantry"
+unit = "cans"
+minimum = 6
+
+# lot_ref: garcia-006-01; Kitchen › Kitchen cabinets
+[[garcia.stock.lots]]
+item = "Canned soup"
+quantity = 2
+use_by = "2027-12-22"
+place = "Kitchen cabinets"
+
+# Source item 7; migrated lot garcia-007-01.
+[[garcia.stock.items]]
+name = "Tortillas"
+category = "pantry"
+unit = "packs"
+minimum = 1
+
+# lot_ref: garcia-007-01; Kitchen › Kitchen cabinets
+[[garcia.stock.lots]]
+item = "Tortillas"
+quantity = 1
+use_by = "2026-11-21"
+place = "Kitchen cabinets"
+
+# Source item 8; migrated lot garcia-008-01.
+[[garcia.stock.items]]
+name = "Peanut butter"
+category = "pantry"
+unit = "jars"
+minimum = 1
+
+# lot_ref: garcia-008-01; Kitchen › Kitchen cabinets
+[[garcia.stock.lots]]
+item = "Peanut butter"
+quantity = 2
+use_by = "2027-06-05"
+place = "Kitchen cabinets"
+
+# Source item 9; migrated lot garcia-009-01.
+[[garcia.stock.items]]
+name = "Metformin 500 mg (Rosa)"
+category = "first_aid"
+unit = "tablets"
+minimum = 30
+notes = "Two a day. Refill at 30 so a week's outage never runs it out."
+
+# lot_ref: garcia-009-01; Kitchen › Kitchen cabinets
+[[garcia.stock.lots]]
+item = "Metformin 500 mg (Rosa)"
+quantity = 20
+use_by = "2027-09-13"
+place = "Kitchen cabinets"
+
+# Source item 10; migrated lot garcia-010-01.
+[[garcia.stock.items]]
+name = "Lisinopril 10 mg (Rosa)"
+category = "first_aid"
+unit = "tablets"
+minimum = 14
+
+# lot_ref: garcia-010-01; Kitchen › Kitchen cabinets
+[[garcia.stock.lots]]
+item = "Lisinopril 10 mg (Rosa)"
+quantity = 25
+use_by = "2027-08-24"
+place = "Kitchen cabinets"
+
+# Source item 11; migrated lot garcia-011-01.
+[[garcia.stock.items]]
+name = "Blood glucose test strips"
+category = "first_aid"
+unit = "strips"
+minimum = 50
+
+# lot_ref: garcia-011-01; Bathroom
+[[garcia.stock.lots]]
+item = "Blood glucose test strips"
+quantity = 40
+use_by = "2026-12-05"
+place = "Bathroom"
+
+# Source item 12; migrated lot garcia-012-01.
+[[garcia.stock.items]]
+name = "First aid kit"
+category = "first_aid"
+unit = "kits"
+minimum = 1
+
+# lot_ref: garcia-012-01; Hallway › Hall closet
+[[garcia.stock.lots]]
+item = "First aid kit"
+quantity = 1
+use_by = "2028-01-01"
+place = "Hall closet"
+
+# Source item 13; migrated lot garcia-013-01.
+[[garcia.stock.items]]
+name = "N95 masks"
+category = "first_aid"
+unit = "masks"
+minimum = 8
+
+# lot_ref: garcia-013-01; Hallway › Hall closet
+[[garcia.stock.lots]]
+item = "N95 masks"
+quantity = 10
+place = "Hall closet"
+
+# Source item 14; migrated lot garcia-014-01.
+[[garcia.stock.items]]
+name = "Hand sanitizer"
+category = "toiletries"
+unit = "bottles"
+
+# lot_ref: garcia-014-01; Bathroom
+[[garcia.stock.lots]]
+item = "Hand sanitizer"
+quantity = 1
+use_by = "2026-11-07"
+place = "Bathroom"
+
+# Source item 15; migrated lot garcia-015-01.
+[[garcia.stock.items]]
+name = "Toilet paper"
+category = "toiletries"
+unit = "rolls"
+minimum = 12
+
+# lot_ref: garcia-015-01; Basement › Storage locker
+[[garcia.stock.lots]]
+item = "Toilet paper"
+quantity = 24
+place = "Storage locker"
+
+# Source item 16; migrated lot garcia-016-01.
+[[garcia.stock.items]]
+name = "Flashlights"
+category = "power"
+unit = "flashlights"
+minimum = 4
+
+# lot_ref: garcia-016-01; Main bedroom › Under the bed
+[[garcia.stock.lots]]
+item = "Flashlights"
+quantity = 4
+place = "Under the bed"
+
+# Source item 17; migrated lot garcia-017-01.
+[[garcia.stock.items]]
+name = "D batteries"
+category = "power"
+unit = "batteries"
+minimum = 6
+
+# lot_ref: garcia-017-01; Hallway › Hall closet
+[[garcia.stock.lots]]
+item = "D batteries"
+quantity = 2
+place = "Hall closet"
+
+# Source item 18; migrated lot garcia-018-01.
+[[garcia.stock.items]]
+name = "Portable power station"
+category = "power"
+unit = "units"
+minimum = 1
+notes = "Keeps Rosa's phone and a fan going. Charge monthly."
+
+# lot_ref: garcia-018-01; Hallway › Hall closet
+[[garcia.stock.lots]]
+item = "Portable power station"
+quantity = 1
+place = "Hall closet"
+
+# Source item 19; migrated lot garcia-019-01.
+[[garcia.stock.items]]
+name = "Hand-crank radio"
+category = "power"
+unit = "radios"
+minimum = 1
+
+# lot_ref: garcia-019-01; Hallway › Hall closet
+[[garcia.stock.lots]]
+item = "Hand-crank radio"
+quantity = 1
+place = "Hall closet"
+
+# Source item 20; migrated lot garcia-020-01.
+[[garcia.stock.items]]
+name = "Cat food (Luna)"
+category = "pet"
+unit = "cans"
+minimum = 12
+
+# lot_ref: garcia-020-01; Kitchen › Kitchen cabinets
+[[garcia.stock.lots]]
+item = "Cat food (Luna)"
+quantity = 4
+use_by = "2027-09-13"
+place = "Kitchen cabinets"
+
+# Source item 21; migrated lot garcia-021-01.
+[[garcia.stock.items]]
+name = "Cat litter"
+category = "pet"
+unit = "lb"
+minimum = 5
+
+# lot_ref: garcia-021-01; Basement › Storage locker
+[[garcia.stock.lots]]
+item = "Cat litter"
+quantity = 10
+place = "Storage locker"
+
+# Source item 22; migrated lot garcia-022-01.
+[[garcia.stock.items]]
+name = "Furniture straps"
+category = "hardware"
+unit = "packs"
+notes = "For the bookcase and the TV. Fit before the next quake season."
+
+# lot_ref: garcia-022-01; Basement › Storage locker
+[[garcia.stock.lots]]
+item = "Furniture straps"
+quantity = 2
+place = "Storage locker"
+
+# Source item 23; migrated lot garcia-023-01.
+[[garcia.stock.items]]
+name = "Adjustable wrench"
+category = "tools"
+unit = "wrenches"
+minimum = 1
+notes = "For the gas shut-off. Kept with the go-bags."
+
+# lot_ref: garcia-023-01; Hallway › Hall closet
+[[garcia.stock.lots]]
+item = "Adjustable wrench"
+quantity = 1
+place = "Hall closet"
+
+# Source item 24; migrated lot garcia-024-01.
+[[garcia.stock.items]]
+name = "Bleach"
+category = "cleaning"
+unit = "bottles"
+minimum = 1
+
+# lot_ref: garcia-024-01; Bathroom
+[[garcia.stock.lots]]
+item = "Bleach"
+quantity = 1
+place = "Bathroom"
+
+# Existing item-level history; do not replay or invent a lot link.
+[[garcia.stock.legacy_movements]]
+item = "Water jugs (1 gallon)"
+reason = "bought"
+amount = 7.6
+happened_on = "2026-10-28"
+notes = "Two more jugs."
+
+# Existing item-level history; do not replay or invent a lot link.
+[[garcia.stock.legacy_movements]]
+item = "Metformin 500 mg (Rosa)"
+reason = "bought"
+amount = 60
+happened_on = "2026-10-23"
+notes = "Monthly refill from Bayview Pharmacy."
+
+# Existing item-level history; do not replay or invent a lot link.
+[[garcia.stock.legacy_movements]]
+item = "Metformin 500 mg (Rosa)"
+reason = "used"
+amount = 40
+happened_on = "2026-11-12"
+notes = "Topped up the pill organiser."
+
+# Existing item-level history; do not replay or invent a lot link.
+[[garcia.stock.legacy_movements]]
+item = "Canned soup"
+reason = "used"
+amount = 4
+happened_on = "2026-11-14"
+
+# Existing item-level history; do not replay or invent a lot link.
+[[garcia.stock.legacy_movements]]
+item = "Cat food (Luna)"
+reason = "used"
+amount = 8
+happened_on = "2026-11-15"
+
+# Existing item-level history; do not replay or invent a lot link.
+[[garcia.stock.legacy_movements]]
+item = "Tortillas"
+reason = "bought"
+amount = 1
+happened_on = "2026-11-16"
+notes = "Weekly shop."
+
+# taylor: 7 places, 12 items, 3 pre-lot movements.
+[[taylor.stock.places]]
+name = "Kitchen"
+
+[[taylor.stock.places]]
+name = "Hall"
+
+[[taylor.stock.places]]
+name = "Outside"
+
+[[taylor.stock.places]]
+name = "Kitchen cupboard"
+inside = "Kitchen"
+
+[[taylor.stock.places]]
+name = "Under the sink"
+inside = "Kitchen"
+
+[[taylor.stock.places]]
+name = "Hall cupboard"
+inside = "Hall"
+notes = "Next to the boiler."
+
+[[taylor.stock.places]]
+name = "Bike shed"
+inside = "Outside"
+
+# Source item 1; migrated lot taylor-001-01.
+[[taylor.stock.items]]
+name = "Bottled water (6 x 2 L)"
+category = "water"
+drinking = true
+unit = "litres"
+minimum = 9
+
+# lot_ref: taylor-001-01; Hall › Hall cupboard
+[[taylor.stock.lots]]
+item = "Bottled water (6 x 2 L)"
+quantity = 12
+use_by = "2027-07-15"
+place = "Hall cupboard"
+
+# Source item 2; migrated lot taylor-002-01.
+[[taylor.stock.items]]
+name = "Distilled water (for the iron)"
+category = "water"
+drinking = false
+unit = "litres"
+notes = "For the steam iron. Not for drinking."
+
+# lot_ref: taylor-002-01; Kitchen › Under the sink
+[[taylor.stock.lots]]
+item = "Distilled water (for the iron)"
+quantity = 1
+place = "Under the sink"
+
+# Source item 3; migrated lot taylor-003-01.
+[[taylor.stock.items]]
+name = "Gluten-free pasta"
+category = "pantry"
+unit = "packs"
+minimum = 2
+
+# lot_ref: taylor-003-01; Kitchen › Kitchen cupboard
+[[taylor.stock.lots]]
+item = "Gluten-free pasta"
+quantity = 2
+use_by = "2027-05-16"
+place = "Kitchen cupboard"
+
+# Source item 4; migrated lot taylor-004-01.
+[[taylor.stock.items]]
+name = "Tinned soup"
+category = "pantry"
+unit = "tins"
+minimum = 4
+
+# lot_ref: taylor-004-01; Kitchen › Kitchen cupboard
+[[taylor.stock.lots]]
+item = "Tinned soup"
+quantity = 3
+use_by = "2027-10-03"
+place = "Kitchen cupboard"
+
+# Source item 5; migrated lot taylor-005-01.
+[[taylor.stock.items]]
+name = "Oat milk"
+category = "pantry"
+unit = "cartons"
+minimum = 1
+
+# lot_ref: taylor-005-01; Kitchen › Kitchen cupboard
+[[taylor.stock.lots]]
+item = "Oat milk"
+quantity = 2
+use_by = "2026-11-23"
+place = "Kitchen cupboard"
+
+# Source item 6; migrated lot taylor-006-01.
+[[taylor.stock.items]]
+name = "Paracetamol"
+category = "first_aid"
+unit = "packs"
+minimum = 1
+
+# lot_ref: taylor-006-01; Kitchen › Kitchen cupboard
+[[taylor.stock.lots]]
+item = "Paracetamol"
+quantity = 1
+use_by = "2027-04-16"
+place = "Kitchen cupboard"
+
+# Source item 7; migrated lot taylor-007-01.
+[[taylor.stock.items]]
+name = "Plasters"
+category = "first_aid"
+unit = "plasters"
+
+# lot_ref: taylor-007-01; Kitchen › Kitchen cupboard
+[[taylor.stock.lots]]
+item = "Plasters"
+quantity = 20
+place = "Kitchen cupboard"
+
+# Source item 8; migrated lot taylor-008-01.
+[[taylor.stock.items]]
+name = "Torch"
+category = "power"
+unit = "torches"
+minimum = 1
+
+# lot_ref: taylor-008-01; Hall › Hall cupboard
+[[taylor.stock.lots]]
+item = "Torch"
+quantity = 1
+place = "Hall cupboard"
+
+# Source item 9; migrated lot taylor-009-01.
+[[taylor.stock.items]]
+name = "AA batteries"
+category = "power"
+unit = "batteries"
+minimum = 4
+
+# lot_ref: taylor-009-01; Hall › Hall cupboard
+[[taylor.stock.lots]]
+item = "AA batteries"
+quantity = 2
+place = "Hall cupboard"
+
+# Source item 10; migrated lot taylor-010-01.
+[[taylor.stock.items]]
+name = "Washing-up liquid"
+category = "cleaning"
+unit = "bottles"
+minimum = 1
+
+# lot_ref: taylor-010-01; Kitchen › Under the sink
+[[taylor.stock.lots]]
+item = "Washing-up liquid"
+quantity = 1
+place = "Under the sink"
+
+# Source item 11; migrated lot taylor-011-01.
+[[taylor.stock.items]]
+name = "Bike inner tube"
+category = "other"
+unit = "tubes"
+minimum = 1
+
+# lot_ref: taylor-011-01; Outside › Bike shed
+[[taylor.stock.lots]]
+item = "Bike inner tube"
+quantity = 1
+place = "Bike shed"
+
+# Source item 12; migrated lot taylor-012-01.
+[[taylor.stock.items]]
+name = "Picture hooks"
+category = "hardware"
+unit = "packs"
+
+# lot_ref: taylor-012-01; Hall › Hall cupboard
+[[taylor.stock.lots]]
+item = "Picture hooks"
+quantity = 1
+place = "Hall cupboard"
+
+# Existing item-level history; do not replay or invent a lot link.
+[[taylor.stock.legacy_movements]]
+item = "Bottled water (6 x 2 L)"
+reason = "bought"
+amount = 12
+happened_on = "2026-11-09"
+notes = "After the storm warning on the news."
+
+# Existing item-level history; do not replay or invent a lot link.
+[[taylor.stock.legacy_movements]]
+item = "Tinned soup"
+reason = "used"
+amount = 1
+happened_on = "2026-11-14"
+
+# Existing item-level history; do not replay or invent a lot link.
+[[taylor.stock.legacy_movements]]
+item = "Oat milk"
+reason = "bought"
+amount = 2
+happened_on = "2026-11-16"
+

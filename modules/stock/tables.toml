@@ -33,11 +33,34 @@ columns.expires = { type = "date" }
 columns.notes = { type = "longtext" }
 
 [tables.items.watch]
+# "How many" and "Use by" on an item are worked out from its batches (see tables.lots.total).
+# Use-by warnings come from each batch, so 3 tins next month and 10 in six months are told apart.
 running_low = { quantity = "quantity", minimum = "minimum" }
-expiring = { date = "expires", warn_days = 30 }
 # Water: a commonly used starting figure is about 3 litres per person per day.
 # The page always says local advice comes first.
 supply = { quantity = "quantity", per_person_per_day = 3, per_pet_per_day = 1, target_days = 3, unit = "litres", label = "drinking water", where = { category = "water" }, counts_only = { drinking = true }, unit_from = "unit", unit_words = ["l", "litre", "liter", "liters"] }
+
+[tables.lots]
+title = "Batches"
+description = "Part of an item's stock with its own amount, use-by date and place: 3 tins at Kitchen › Pantry › Shelf 3, use by 20/05/27. The item's amount is the sum of its batches."
+record_name = "{item}, {quantity}[ {item.unit}][ at {place}][, use by {expires}]"
+columns.item = { type = "link", to = "items", required = true, on_delete = "cascade" }
+columns.quantity = { type = "decimal", required = true, min = 0 }
+columns.expires = { type = "date" }
+columns.place = { type = "link", to = "places", on_delete = "restrict" }
+columns.notes = { type = "text" }
+
+[tables.lots.total]
+# The item's amount is the sum of its batches, and its "Use by" the earliest date of a batch
+# that still holds something. An item added with an amount, place and use-by starts its first batch.
+link = "item"
+amount = "quantity"
+into = "quantity"
+earliest = { date = "expires", into = "expires" }
+starts_from = ["quantity", "place", "expires"]
+
+[tables.lots.watch]
+expiring = { date = "expires", warn_days = 30, only_positive = "quantity" }
 
 [tables.movements]
 title = "Stock in and out"
@@ -53,11 +76,19 @@ columns.reason = { type = "choice", required = true, default = "bought", choices
 columns.amount = { type = "decimal", required = true, min = 0 }
 columns.happened_on = { type = "date", required = true, default = "today" }
 columns.notes = { type = "text" }
+columns.lot = { type = "link", to = "lots", on_delete = "clear" }
+columns.expires = { type = "date" }
+columns.place = { type = "link", to = "places", on_delete = "clear" }
 
 [tables.movements.adjusts]
-# Each movement changes the item's "How many": "bought" adds, every other reason takes away.
-link = "item"
+# Each movement changes one batch, and so the item's amount: "bought" adds, every other reason takes away.
+# With no batch chosen, stock in starts a new batch (with its use-by date and place), and using some
+# takes from the batch with the earliest known use-by date.
+link = "lot"
 quantity = "quantity"
 amount = "amount"
 direction = "reason"
 adds = ["bought"]
+belongs_to = "item"
+new_batch = { expires = "expires", place = "place" }
+oldest_first = "expires"

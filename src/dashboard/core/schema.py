@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import sqlite3
+from pathlib import Path
 
 from dashboard.core import db
 from dashboard.core.modules import Column, Module, Table
@@ -87,6 +88,10 @@ def existing_schema(module: Module) -> dict[str, list[str]]:
     """Replay the module's committed migrations in memory and return {table: [columns]}."""
     conn = sqlite3.connect(":memory:")
     try:
+        # The core's own tables first: a module's data migration may write to its history (core__audit).
+        for path in sorted((Path(__file__).parent / "migrations").glob("*.sql")):
+            for statement in db.split_statements(path.read_text(encoding="utf-8")):
+                conn.execute(statement)
         for migration in module.migrations:
             for statement in db.split_statements(migration.sql):
                 conn.execute(statement)
