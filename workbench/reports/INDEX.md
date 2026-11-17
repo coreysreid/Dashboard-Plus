@@ -16,3 +16,5 @@ expected, actual, severity (blocker, important, minor), suggested change.
 | 2026-11-17-print-matrix.csv | Sixty route and PDF combinations, including four expected unavailable routes. | reproducing print results |
 | 2026-11-17-translation-readiness.md | Screen-grouped extraction plan for shipped template and module words. | preparing other languages |
 | 2026-11-17-translation-inventory.csv | 1,845 literal locations, picker names and search aliases. | extracting locale messages |
+| 2026-11-17-wording-consistency.md | Exact shipped-module wording replacements and term rules. | polishing module words |
+| 2026-11-17-wording-inventory.csv | All 310 authored or rendered module strings with exact proposals. | applying the wording table |

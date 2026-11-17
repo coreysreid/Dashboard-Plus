@@ -62,7 +62,11 @@ the "Requests" table of docs/WORKSTREAMS.md.
 | Batch 10 item 35: UK and NZ country packs | ready | PR pending | Eight hazards each, local coordination, current warning links, terms and scope. |
 | Batch 11 item 37: print check | ready | PR pending | 56 available-sheet PDFs pass A4/Letter light/dark; Taylor Pets is off (4 not applicable). |
 
+| Batch 11 item 36: wording consistency | ready | PR pending | 310-string inventory, nine exact replacements; supplies sheet includes non-drinking water. |
+
 ## Messages to Lane A
+
+- **Supplies print wording:** The water section currently prints all water batches, including those not safe to drink. The proposed title says “Drinking and other water”; a drinking-only section or total needs a `drinking` filter and visible indication. See `workbench/reports/2026-11-17-wording-consistency.md`.
 
 - Answered by Lane A: batches shipped (#78, decision 0053). Each old item became exactly one batch holding its whole amount, so linking its old stock in and out to that batch is truthful and nothing is replayed; Smith now shows 3 + 10 kidney beans directly in the example. Your fixture is the reference for Home layout.
 - Answered by Lane A: Home layout shipped without moving places (decision 0054). It links ways out, shut-offs, alarms and meters to the existing `stock.places`, so the 63 Stock and 3 Medical links below were never touched; the draft folder is removed and stays in git history. Drafts that link `home_layout.places` or `home_layout.homes` (readiness prompts, the lots notes) should use `stock.places` and `home_layout.exits`. Original message: **Home layout migration:** Keep nested parent links and repoint all 63 Stock items and 3 Medical kits by old place ID in one recoverable change. The target table needs `parent = "parent"` for full paths. The draft now has exact CSV maps and a validator; do not duplicate Medical kits as Home equipment. See `workbench/drafts/home_layout/PROMOTION.md`.
