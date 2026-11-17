@@ -297,10 +297,10 @@ class Records:
         before = current[rule["quantity"]] or 0
         after = Decimal(str(before)) + delta
         if after < 0:
-            column = target.table.columns[rule["quantity"]]
+            label = self._label(target, rule["quantity"])
             raise ValidationError({rule["amount"]: f"is more than there is: only {_plain_number(before)} "
                                    f"{'would remain' if undoing else 'left'}. If the count was wrong, correct "
-                                   f"{column.name.replace('_', ' ')} on the {target.table.title.lower()} record first."})
+                                   f"“{label}” on the {target.table.title.lower()} record first."})
         after = int(after) if target.table.columns[rule["quantity"]].type == "integer" else float(round(after, 6))
         assignments = {rule["quantity"]: after, "updated_at": self.clock()}
         if actor == "person":
@@ -379,7 +379,7 @@ class Records:
         cleaned = self.clean(info, values, creating=True)
         self._check_required_when(info, cleaned)
         self._check_nesting(info, None, cleaned)
-        self._choose_batch(info, cleaned, None, actor)
+        self._choose_batch(info, cleaned, None, actor, review_status, batch_id)
         stored = {k: v for k, v in cleaned.items() if info.table.columns[k].type != "links"}
         now = self.clock()
         fields = ["created_at", "updated_at", "source", "review_status", "batch_id"] + list(stored)
@@ -407,6 +407,21 @@ class Records:
             rule = other.table.total
             if rule and table_name(other.module.name, rule["target"]) == info.name:
                 yield other
+
+    def _has_movements(self, info: TableInfo, record_id: int) -> bool:
+        """True if any stock in or out (deleted or not) is recorded against this batch."""
+        for other in self.registry.values():
+            rule = other.table.adjusts
+            if rule and rule.get("belongs_to") and table_name(other.module.name, rule["target"]) == info.name:
+                if self.conn.execute(f"SELECT 1 FROM {other.name} WHERE {rule['link']} = ? LIMIT 1",
+                                     (record_id,)).fetchone():
+                    return True
+        return False
+
+    def _label(self, info: TableInfo, column: str) -> str:
+        """A column's friendly label from labels.toml, for messages."""
+        labels = info.module.labels.get("tables", {}).get(info.table.name, {}).get("columns", {})
+        return labels.get(column, {}).get("label") or column.replace("_", " ").capitalize()
 
     def _derived(self, info: TableInfo) -> set[str]:
         """Columns of `info` that are worked out from its batches, never typed in."""
@@ -445,7 +460,8 @@ class Records:
                           f"WHERE id = ?", list(changed.values()) + [self.clock(), owner_id])
         self._audit(actor, "update", target, owner_id, {k: current[k] for k in changed}, changed)
 
-    def _choose_batch(self, info: TableInfo, cleaned: dict, current: dict | None, actor: str) -> None:
+    def _choose_batch(self, info: TableInfo, cleaned: dict, current: dict | None, actor: str,
+                      review_status: str = "confirmed", batch_id: int | None = None) -> None:
         """For stock in and out: check the chosen batch is the item's, or choose one.
 
         Stock in with no batch chosen starts a new batch (with its use-by date and place).
@@ -473,7 +489,7 @@ class Records:
             new_values = {owner_col: owner, rule["quantity"]: 0}
             new_values.update({k: merged.get(v) for k, v in rule["new_batch"].items()
                                if merged.get(v) not in (None, "")})
-            cleaned[link] = self._create(batches, new_values, actor)
+            cleaned[link] = self._create(batches, new_values, actor, review_status, batch_id)
             return
         oldest = rule.get("oldest_first")
         order = f"{oldest} IS NULL OR {oldest} = '', {oldest}, id" if oldest else "id"
@@ -508,6 +524,11 @@ class Records:
             self._check_nesting(info, record_id, cleaned)
             self._choose_batch(info, cleaned, current, actor)
             changed = {k: v for k, v in cleaned.items() if current.get(k) != v}
+            total = info.table.total
+            if total and total["link"] in changed and self._has_movements(info, record_id):
+                raise ValidationError({total["link"]: "can't change once stock in or out is recorded for this "
+                                                      "batch. Record it as used or given away here, and as bought "
+                                                      "on the other item."})
             derived = self._derived(info) & set(changed)
             if derived:
                 raise ValidationError({c: "is worked out from its batches. Change a batch, or record stock in "
@@ -586,8 +607,9 @@ class Records:
             raise ValidationError({"delete": "cannot be done yet because " + " and ".join(blocking) +
                                    " still point at it. Change or delete those first."})
         rule = info.table.adjusts
-        kept = bool(rule and row.get(rule["link"]) is not None and
-                    (table_name(info.module.name, rule["target"]), row[rule["link"]]) in seen)
+        # Nothing to undo (its batch was deleted first and its link cleared): restoring must not add it again.
+        kept = bool(rule and (self._effect(info, row) is None or
+                              (table_name(info.module.name, rule["target"]), row[rule["link"]]) in seen))
         self._adjust(info, row, -1, actor, skip=seen)
         now = self.clock()
         self.conn.execute(f"UPDATE {info.name} SET deleted_at = ?, updated_at = ? WHERE id = ?", (now, now, record_id))
@@ -610,9 +632,9 @@ class Records:
                     linked = self.conn.execute(f"SELECT deleted_at FROM {target.name} WHERE id = ?",
                                                (row[column.name],)).fetchone() if target else None
                     if linked is not None and linked["deleted_at"]:
-                        raise ValidationError({"restore": f"needs its {column.name.replace('_', ' ')} back first: "
-                                               f"restore that {target.table.title.lower()} record, and this one "
-                                               f"comes back with it."})
+                        raise ValidationError({"restore": f"needs its “{self._label(info, column.name)}” back "
+                                               f"first: restore that record in {target.table.title}, and this "
+                                               f"one comes back with it."})
             self._restore_one(info, record_id, actor)
             key = f"{info.name}:{record_id}"
             for entry in self.conn.execute(

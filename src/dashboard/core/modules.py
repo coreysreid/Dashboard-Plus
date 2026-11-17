@@ -466,8 +466,11 @@ def _check_record_name(file: str, table: Table, tables: dict[str, Table], templa
     """Check `record_name`: a pattern like "{quantity} {item.unit} of {item}" naming a record."""
     where = f"In {file}, table '{table.name}', record_name"
     try:
-        fields = [f for _, f, _, _ in string.Formatter().parse(template.replace("[", "").replace("]", ""))
-                  if f is not None] if isinstance(template, str) else None
+        parsed = list(string.Formatter().parse(template.replace("[", "").replace("]", ""))) \
+            if isinstance(template, str) else []
+        fields = [f for _, f, _, _ in parsed if f is not None] or None
+        if any(spec or conversion for _, f, spec, conversion in parsed if f is not None):
+            fields = None  # {quantity:>5} and {item!r} are not filled in; plain {name} only
     except ValueError:
         fields = None
     if not fields:
@@ -480,6 +483,10 @@ def _check_record_name(file: str, table: Table, tables: dict[str, Table], templa
                                               or field_name not in tables.get(column.to, Table("", "", None, {})).columns)):
             problems.append(f"{where}: '{{{name}}}' must name a column of this table, or a link column and a "
                             f"column of the table it points at.")
+            return None
+        named = tables[column.to].columns[field_name] if field_name else column
+        if named.sensitive:  # a record's name shows on lists, pickers and sheets
+            problems.append(f"{where}: '{{{name}}}' is private, so it can't be part of a record's name.")
             return None
     return template
 

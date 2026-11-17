@@ -148,6 +148,48 @@ class BatchTests(TempDirTestCase):
         self.assertEqual(self.amount(item), 13)
         self.assertEqual([b[0] for b in self.batches(item)], [3, 10])
 
+    def test_deleting_a_batch_then_its_stock_in_and_restoring_both_counts_once(self):
+        """Independent review finding 3: restore order must not add the same stock twice."""
+        item = self.records.create("stock__items", {"name": "Rice", "unit": "kg", "quantity": 2})
+        bought = self.records.create("stock__movements", {"item": item, "reason": "bought", "amount": 5})
+        batch = self.records.get("stock__movements", bought)["lot"]
+        self.records.delete("stock__lots", batch)
+        self.records.delete("stock__movements", bought)
+        self.records.restore("stock__lots", batch)
+        self.records.restore("stock__movements", bought)
+        self.assertEqual(self.records.get("stock__lots", batch)["quantity"], 5)
+        self.assertEqual(self.amount(item), 7)
+
+    def test_a_batch_with_stock_in_or_out_cannot_move_to_another_item(self):
+        """Independent review finding 4: its stock in and out would be stranded on the old item."""
+        beans = self.beans()
+        rice = self.records.create("stock__items", {"name": "Rice", "quantity": 2})
+        garage = self.conn.execute("SELECT id FROM stock__lots WHERE item = ? ORDER BY id DESC", (beans,)).fetchone()[0]
+        with self.assertRaises(records.ValidationError) as caught:
+            self.records.update("stock__lots", garage, {"item": rice})
+        self.assertIn("can't change once stock in or out is recorded", caught.exception.problems["item"])
+
+    def test_a_batch_started_by_stock_in_waiting_for_review_waits_too(self):
+        """Independent review finding 6."""
+        item = self.records.create("stock__items", {"name": "Rice", "quantity": 2})
+        bought = self.records.create("stock__movements", {"item": item, "reason": "bought", "amount": 5},
+                                     review_status="needs_review")
+        batch = self.records.get("stock__movements", bought)["lot"]
+        self.assertEqual(self.records.get("stock__lots", batch)["review_status"], "needs_review")
+
+    def test_a_private_column_cannot_name_a_batch(self):
+        """Independent review finding 5: a batch's name shows on lists, pickers and sheets."""
+        from dashboard.core import modules
+        folder = self.tmp / "modules" / "stock"
+        text = (folder / "tables.toml").read_text(encoding="utf-8")
+        text = text.replace('columns.notes = { type = "longtext" }',
+                            'columns.notes = { type = "longtext" }\ncolumns.secret = { type = "text", sensitive = true }', 1)
+        text = text.replace('record_name = "{item}', 'record_name = "{item.secret} {item}')
+        (folder / "tables.toml").write_text(text, encoding="utf-8")
+        with self.assertRaises(modules.ModuleError) as caught:
+            modules.load_module(folder)
+        self.assertIn("is private", " ".join(caught.exception.problems))
+
     def test_pages_show_batches_and_the_sheet_lists_them(self):
         item = self.beans()
         self.records.create("stock__movements", {"item": item, "reason": "used", "amount": 3})  # May used up
@@ -214,3 +256,12 @@ class UpgradeTests(TempDirTestCase):
         self.assertEqual(store.get("stock__items", 1)["quantity"], 3)
         expiring = watch.expiring(conn, registry, date(2027, 5, 1))
         self.assertEqual([i.name for i in expiring], ["Kidney beans, 3 at Shelf 3"])
+        # Independent review finding 2: the item's old place no longer holds the place.
+        self.assertEqual(conn.execute("SELECT COUNT(*) FROM stock__items WHERE place IS NOT NULL").fetchone()[0], 0)
+        # Independent review finding 1: an item deleted before the update comes back with its stock.
+        store.restore("stock__items", 4)
+        self.assertEqual(store.get("stock__items", 4)["quantity"], 2)
+        self.assertEqual(conn.execute("SELECT quantity FROM stock__lots WHERE item = 4 AND deleted_at IS NULL")
+                         .fetchone()[0], 2)
+        store.create("stock__movements", {"item": 4, "reason": "used", "amount": 1})
+        self.assertEqual(store.get("stock__items", 4)["quantity"], 1)

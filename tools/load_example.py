@@ -154,7 +154,8 @@ def load_records(conn: sqlite3.Connection, registry: dict, data: dict, today: da
         for other, _ in tables:
             rule = registry[other].table.adjusts if other in registry else None
             if rule and _counted(registry, other, rule)[0] == name:
-                quantity = "quantity" if rule.get("belongs_to") else rule["quantity"]
+                batches = registry[table_name(registry[other].module.name, rule["target"])]
+                quantity = batches.table.total["into"] if rule.get("belongs_to") else rule["quantity"]
         for row in rows:
             values = {}
             for column, value in row.items():

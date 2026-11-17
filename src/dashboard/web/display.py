@@ -223,6 +223,8 @@ def build_fields(records: Records, info: TableInfo, values: dict, errors: dict, 
             target = formatter.target(info, column)
             name_col = name_column(target)
             rows = records.page(target.name, limit=OPTION_LIMIT, order_by=name_col.name if name_col else "id")
+            if target.table.total:  # a used-up batch is history, not something to choose
+                rows = [r for r in rows if r[target.table.total["amount"]] or str(r["id"]) == str(values.get(column.name))]
             current = values.get(column.name)
             if current not in (None, "") and str(current).isdigit() and \
                     int(current) not in {r["id"] for r in rows}:  # always offer the record already chosen

@@ -66,7 +66,7 @@ def show_sheet(module, name):
             clause += f" AND {info.table.total['amount']} > 0"
         rows = conn.execute(
             f"SELECT * FROM {info.name} WHERE deleted_at IS NULL{clause} "
-            f"ORDER BY {section['order_by']}, id LIMIT {ROW_LIMIT}",
+            f"ORDER BY {section['order_by']} IS NULL, {section['order_by']}, id LIMIT {ROW_LIMIT}",  # blanks last
             [_where_value(v) for v in section["where"].values()]).fetchall()
         linked: dict[tuple[str, int], dict] = {}
 

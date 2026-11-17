@@ -51,5 +51,16 @@ UPDATE stock__movements
 SET lot = (SELECT l.id FROM stock__lots l WHERE l.item = stock__movements.item)
 WHERE lot IS NULL;
 
+-- A batch made for an item that was already deleted is recorded as deleted along with that item,
+-- so restoring the item brings its stock back with it (decision 0050).
+INSERT INTO core__audit (at, actor, action, table_name, record_id, before, after)
+SELECT deleted_at, 'module:stock', 'delete', 'stock__lots', id, NULL,
+       json_object('with', 'stock__items:' || item, 'kept_effect', json('false'))
+FROM stock__lots WHERE deleted_at IS NOT NULL;
+
 -- An item with nothing left has no use-by date to warn about.
 UPDATE stock__items SET expires = NULL WHERE COALESCE(quantity, 0) <= 0;
+
+-- Where things are is now kept on each batch. The item's old place is cleared so it cannot
+-- quietly stop that place from being deleted later.
+UPDATE stock__items SET place = NULL;
