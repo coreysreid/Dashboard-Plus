@@ -16,7 +16,7 @@ home_type = "house"
 storeys = 2
 mobility_needs = false
 hazards = ["bushfire", "heat", "storm"]
-modules = ["medical", "people", "pets", "stock"]
+modules = ["home_layout", "medical", "people", "pets", "stock"]
 
 # ---- People -----------------------------------------------------------------
 
@@ -296,6 +296,12 @@ inside = "Backyard"
 name = "Shelf 3"
 inside = "Pantry"
 notes = "Top shelf is 1."
+
+[[stock.places]]
+name = "Front hall"
+
+[[stock.places]]
+name = "Upstairs hall"
 
 # Amounts are what is on hand today, after the stock in and out below.
 [[stock.items]]
@@ -603,3 +609,63 @@ course = "first_aid"
 provider = "Example Training Centre"
 completed_on = "today-300"
 renew_by = "today+65"
+
+# ---- Home layout --------------------------------------------------------------
+# Places are the Household stock places above.
+
+[[home_layout.exits]]
+name = "Front door"
+floor = "Ground floor"
+place = "Front hall"
+route = "From the upstairs bedrooms, down the main stairs; the door is straight ahead."
+
+[[home_layout.exits]]
+name = "Laundry back door"
+floor = "Ground floor"
+place = "Laundry"
+route = "Through the kitchen and the laundry, out to the backyard and the side gate."
+
+[[home_layout.shutoffs]]
+name = "Water main"
+kind = "water"
+place = "Garage"
+how_to_find = "On the wall beside the grey shelves, about knee height."
+
+[[home_layout.shutoffs]]
+name = "Power board"
+kind = "power"
+place = "Garage"
+how_to_find = "Grey box on the wall just inside the door from the house."
+
+[[home_layout.equipment]]
+name = "Upstairs hall smoke alarm"
+kind = "smoke_alarm"
+place = "Upstairs hall"
+last_tested = "today-20"
+battery_changed = "today-200"
+next_check = "today+10"
+
+[[home_layout.equipment]]
+name = "Kitchen smoke alarm"
+kind = "smoke_alarm"
+place = "Kitchen"
+last_tested = "today-20"
+next_check = "today+70"
+
+[[home_layout.equipment]]
+name = "Kitchen fire blanket"
+kind = "fire_blanket"
+place = "Kitchen"
+notes = "On the wall beside the pantry door."
+
+[[home_layout.equipment]]
+name = "Garage fire extinguisher"
+kind = "fire_extinguisher"
+place = "Garage shelves"
+next_check = "today+150"
+
+[[home_layout.meters]]
+name = "Electricity meter"
+kind = "electricity"
+place = "Garage"
+how_to_find = "Inside the power board."

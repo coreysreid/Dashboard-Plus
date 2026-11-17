@@ -68,6 +68,10 @@ STAGES = [
      {"goto": "/t/medical__kits", "module": "medical"}),
     ("18c-first-aid-sheet", "First aid at home sheet", "As it prints: the kits, their places and who has trained.",
      {"goto": "/sheet/medical/first_aid", "media": "print", "module": "medical"}),
+    ("18d-our-home", "Alarms and safety equipment", "Home layout: each smoke alarm, extinguisher or go-bag, "
+     "where it is and when the household plans to check it.", {"goto": "/t/home_layout__equipment", "module": "home_layout"}),
+    ("18e-our-home-sheet", "Our home sheet", "As it prints: the ways out, shut-offs, alarms and meters, each with "
+     "its full place.", {"goto": "/sheet/home_layout/our_home", "media": "print", "module": "home_layout"}),
     ("19-needs-attention", "Needs attention", "Days of water with the working shown, running low, use-by "
      "and due dates, and details worth filling in.", {"goto": "/attention"}),
     ("20-supplies-sheet", "Emergency supplies sheet", "As it prints: water, first aid, power and food, and "

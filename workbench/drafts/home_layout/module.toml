@@ -1,8 +1,0 @@
-name = "home_layout"
-title = "Home layout"
-version = "1.0.0"
-description = "Find places, exits, shut-offs and safety equipment around the home."
-core_api = "1"
-kind = "declarative"
-requires = []
-outbound_hosts = []

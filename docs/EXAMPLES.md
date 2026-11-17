@@ -7,7 +7,7 @@ they are taken on Linux, with folder names shown as they appear on Windows.
 
 - [The Smith family](#smith): Two parents, two young children, a dog and a cat in a two-storey house in Australia. Well organised, with one gap left to fill.
 - [The Garcia household](#garcia): Three generations and a cat in a third-floor apartment in California, getting ready for earthquakes. Grandmother Rosa has care needs and daily medication.
-- [Sam Taylor](#taylor): One person in a second-floor flat in England, just getting started. A few things recorded, and a couple of useful gaps still to fill in.
+- [Sam Taylor](#taylor): One person in a second-floor flat in England, just getting started. A few things recorded, and several useful details still to fill in, such as where the water shut-off is.
 
 <a id="smith"></a>
 ## The Smith family
@@ -139,6 +139,18 @@ Each kit, where it is kept and when it is next checked.
 As it prints: the kits, their places and who has trained.
 
 ![First aid at home sheet](screenshots/smith/18c-first-aid-sheet.png)
+
+### Alarms and safety equipment
+
+Home layout: each smoke alarm, extinguisher or go-bag, where it is and when the household plans to check it.
+
+![Alarms and safety equipment](screenshots/smith/18d-our-home.png)
+
+### Our home sheet
+
+As it prints: the ways out, shut-offs, alarms and meters, each with its full place.
+
+![Our home sheet](screenshots/smith/18e-our-home-sheet.png)
 
 ### Needs attention
 
@@ -302,6 +314,18 @@ As it prints: the kits, their places and who has trained.
 
 ![First aid at home sheet](screenshots/garcia/18c-first-aid-sheet.png)
 
+### Alarms and safety equipment
+
+Home layout: each smoke alarm, extinguisher or go-bag, where it is and when the household plans to check it.
+
+![Alarms and safety equipment](screenshots/garcia/18d-our-home.png)
+
+### Our home sheet
+
+As it prints: the ways out, shut-offs, alarms and meters, each with its full place.
+
+![Our home sheet](screenshots/garcia/18e-our-home-sheet.png)
+
 ### Needs attention
 
 Days of water with the working shown, running low, use-by and due dates, and details worth filling in.
@@ -336,7 +360,7 @@ Safe to unplug.
 <a id="taylor"></a>
 ## Sam Taylor
 
-One person in a second-floor flat in England, just getting started. A few things recorded, and a couple of useful gaps still to fill in.
+One person in a second-floor flat in England, just getting started. A few things recorded, and several useful details still to fill in, such as where the water shut-off is.
 
 ### First start: the welcome page
 
@@ -445,6 +469,18 @@ Each kit, where it is kept and when it is next checked.
 As it prints: the kits, their places and who has trained.
 
 ![First aid at home sheet](screenshots/taylor/18c-first-aid-sheet.png)
+
+### Alarms and safety equipment
+
+Home layout: each smoke alarm, extinguisher or go-bag, where it is and when the household plans to check it.
+
+![Alarms and safety equipment](screenshots/taylor/18d-our-home.png)
+
+### Our home sheet
+
+As it prints: the ways out, shut-offs, alarms and meters, each with its full place.
+
+![Our home sheet](screenshots/taylor/18e-our-home-sheet.png)
 
 ### Needs attention
 

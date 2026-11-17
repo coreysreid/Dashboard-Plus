@@ -57,6 +57,7 @@ marked Superseded. Each lists downsides, cost to undo, and the sign it was wrong
 | [0051](0051-medical-promoted.md) | Medical readiness switched on from Lane B's draft; `none = {}` gaps | Accepted |
 | [0052](0052-dates-the-households-way.md) | Dates typed and shown the household's way (20/05/27 or 05/20/27), stored as 2027-05-20 | Accepted |
 | [0053](0053-batches-for-layered-use-by-dates.md) | Stock kept in batches, each with its own use-by date and place | Accepted |
+| [0054](0054-home-layout-uses-the-places-you-already-have.md) | Home layout switched on, using the places the household already has; no data moves | Accepted |
 | [0055](0055-modules-confined-and-security-review-fixes.md) | Modules confined to their own tables; security review fixes | Accepted |
 | [0060](0060-garden-example-outside-installed-modules.md) | Keep the worked garden outside installed modules | Accepted |
 | [0061](0061-public-reporting-and-contribution-rules.md) | Public contribution and private security reporting routes | Accepted |

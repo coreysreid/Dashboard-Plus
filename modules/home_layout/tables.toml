@@ -1,0 +1,96 @@
+# Every "place" here is one of the household's own Places (Household stock), so a path such as
+# Kitchen › Pantry › Shelf 3 means the same everywhere and no records had to move (decision 0054).
+# No dates are worked out and no check interval is assumed: the household enters its own.
+
+[tables.exits]
+title = "Ways out"
+description = "Each way out of the home and how to reach it, including from upstairs."
+columns.name = { type = "text", required = true }
+columns.floor = { type = "text" }
+columns.place = { type = "link", to = "stock.places", on_delete = "restrict" }
+columns.route = { type = "longtext" }
+columns.notes = { type = "text" }
+
+[tables.exits.watch]
+[[tables.exits.watch.gaps]]
+none = {}
+message = "Which ways out of your home would you use? None is written down yet."
+
+[[tables.exits.watch.gaps]]
+missing = "place"
+message = "Which place is {name} in? Choose where to find it."
+
+[tables.shutoffs]
+title = "Shut-offs and power board"
+description = "Where to turn off the water, power or gas."
+columns.name = { type = "text", required = true }
+columns.kind = { type = "choice", required = true, choices = [
+  { key = "water", label = "Water shut-off" },
+  { key = "power", label = "Power board, switchboard or fuse box" },
+  { key = "gas", label = "Gas shut-off" },
+  "other",
+] }
+columns.place = { type = "link", to = "stock.places", on_delete = "restrict" }
+columns.how_to_find = { type = "longtext" }
+columns.notes = { type = "text" }
+
+[tables.shutoffs.watch]
+# Water and power are asked about because nearly every home has them. Gas is not: many homes have none.
+[[tables.shutoffs.watch.gaps]]
+none = { kind = "water" }
+message = "Where is the water shut-off? It is not written down yet."
+
+[[tables.shutoffs.watch.gaps]]
+none = { kind = "power" }
+message = "Where is the power board (switchboard or fuse box)? It is not written down yet."
+
+[[tables.shutoffs.watch.gaps]]
+missing = "place"
+message = "Which place is {name} in? Choose where to find it."
+
+[tables.equipment]
+title = "Alarms and safety equipment"
+description = "Where the smoke alarms, fire extinguishers and other safety equipment are, and when you plan to check them."
+columns.name = { type = "text", required = true }
+columns.kind = { type = "choice", required = true, choices = [
+  { key = "smoke_alarm", label = "Smoke alarm" },
+  { key = "co_alarm", label = "Carbon monoxide alarm" },
+  { key = "fire_extinguisher", label = "Fire extinguisher" },
+  { key = "fire_blanket", label = "Fire blanket" },
+  { key = "go_bag", label = "Go-bag" },
+  "other",
+] }
+columns.place = { type = "link", to = "stock.places", on_delete = "restrict" }
+columns.last_tested = { type = "date" }
+columns.battery_changed = { type = "date" }
+columns.next_check = { type = "date" }
+columns.notes = { type = "text" }
+
+[tables.equipment.watch]
+expiring = { date = "next_check", warn_days = 30, wording = "due", what = "check" }
+
+[[tables.equipment.watch.gaps]]
+none = { kind = "smoke_alarm" }
+message = "Where are your smoke alarms? None is written down yet."
+
+[[tables.equipment.watch.gaps]]
+missing = "place"
+message = "Which place is {name} in? Choose where to find it."
+
+[[tables.equipment.watch.gaps]]
+missing = "next_check"
+where = { kind = "smoke_alarm" }
+message = "When do you plan to test {name} again?"
+
+[tables.meters]
+title = "Meters"
+description = "Where the electricity, gas or water meter is, if you have one to read."
+columns.name = { type = "text", required = true }
+columns.kind = { type = "choice", required = true, choices = ["electricity", "gas", "water", "other"] }
+columns.place = { type = "link", to = "stock.places", on_delete = "restrict" }
+columns.how_to_find = { type = "text" }
+
+[tables.meters.watch]
+[[tables.meters.watch.gaps]]
+missing = "place"
+message = "Which place is {name} in? Choose where to find it."
