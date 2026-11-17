@@ -41,18 +41,35 @@
   </div>
 </div>
 {% endif %}
-{% if sheets %}
-<div class="actions">{% for s in sheets %}<a class="button quiet" href="/sheet/{{ s.module }}/{{ s.name }}">Print: {{ s.title }}</a>{% endfor %}</div>
-{% endif %}
-{% if tables %}
-<div class="tables">
-  {% for t in tables %}
-  <div class="card">
-    <div class="muted">{{ t.module }}</div>
-    <h2 style="margin-top:.2rem"><a href="/t/{{ t.name }}">{{ t.title }}</a></h2>
-    <p class="muted">{{ t.count }} record{{ "" if t.count == 1 else "s" }}</p>
-    <a class="button quiet" href="/t/{{ t.name }}/new">Add</a>
-  </div>
+{% if groups %}
+<div class="areas">
+  {% for g in groups %}
+  <section class="card area" aria-labelledby="area-{{ g.name }}">
+    <h2 id="area-{{ g.name }}">{{ g.title }}</h2>
+    {% if g.main %}
+    <ul class="main-lists">
+      {% for t in g.main %}
+      <li>
+        <span><a class="list-name" href="/t/{{ t.name }}">{{ t.title }}</a>
+        <span class="muted">{{ t.count }} record{{ "" if t.count == 1 else "s" }}</span></span>
+        <a class="button quiet" href="/t/{{ t.name }}/new" aria-label="Add to {{ t.title }}">Add</a>
+      </li>
+      {% endfor %}
+    </ul>
+    {% endif %}
+    {% if g.more %}
+    <ul class="more-lists" aria-label="More lists in {{ g.title }}">
+      {% for t in g.more %}<li><a href="/t/{{ t.name }}">{{ t.title }}</a> <span class="muted">{{ t.count }}</span></li>
+      {% endfor %}
+    </ul>
+    {% endif %}
+    {% if g.sheets %}
+    <ul class="more-lists sheets" aria-label="Sheets to print for {{ g.title }}">
+      {% for s in g.sheets %}<li><a href="/sheet/{{ s.module }}/{{ s.name }}">Print: {{ s.title }}</a></li>
+      {% endfor %}
+    </ul>
+    {% endif %}
+  </section>
   {% endfor %}
 </div>
 {% else %}
@@ -64,7 +81,7 @@
 {% if backup and backup.second_state == "failed" %}<p class="problem" role="alert">The second backup copy on this computer could not be made. Your data folder copy is fine. <a href="/settings#backup-status">See Settings</a>.</p>{% endif %}
 {% if report %}
 <p class="muted">Your data file is ready{% if report.version %} (version {{ report.version }}){% endif %}.
-{% if report.modules %}Modules in use: {{ report.modules | join(", ") }}.{% else %}No modules are installed yet.{% endif %}</p>
+{% if groups %}You are tracking: {{ groups | map(attribute="title") | join(", ") }}.{% elif not report.modules %}Nothing to track is installed yet.{% endif %}</p>
 {% endif %}
 {% if report and report.module_problems %}
 <div class="card">

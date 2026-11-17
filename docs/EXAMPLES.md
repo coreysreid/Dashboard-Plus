@@ -34,9 +34,15 @@ Straight after setup: the household is in People, and the dashboard says what to
 
 ### Home, in everyday use
 
-Days of water, what needs attention, the printable sheets and every list.
+Days of water, what needs attention, then one card per area: its main list, its other lists as links, and its sheets to print.
 
 ![Home, in everyday use](screenshots/smith/04-home.png)
+
+### Home, on a phone
+
+The same page at 320 pixels wide: the cards stack in one column.
+
+![Home, on a phone](screenshots/smith/04b-home-phone.png)
 
 ### People
 
@@ -208,9 +214,15 @@ Straight after setup: the household is in People, and the dashboard says what to
 
 ### Home, in everyday use
 
-Days of water, what needs attention, the printable sheets and every list.
+Days of water, what needs attention, then one card per area: its main list, its other lists as links, and its sheets to print.
 
 ![Home, in everyday use](screenshots/garcia/04-home.png)
+
+### Home, on a phone
+
+The same page at 320 pixels wide: the cards stack in one column.
+
+![Home, on a phone](screenshots/garcia/04b-home-phone.png)
 
 ### People
 
@@ -382,9 +394,15 @@ Straight after setup: the household is in People, and the dashboard says what to
 
 ### Home, in everyday use
 
-Days of water, what needs attention, the printable sheets and every list.
+Days of water, what needs attention, then one card per area: its main list, its other lists as links, and its sheets to print.
 
 ![Home, in everyday use](screenshots/taylor/04-home.png)
+
+### Home, on a phone
+
+The same page at 320 pixels wide: the cards stack in one column.
+
+![Home, on a phone](screenshots/taylor/04b-home-phone.png)
 
 ### People
 

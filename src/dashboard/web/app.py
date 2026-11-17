@@ -124,25 +124,21 @@ def create_app(shutdown_token: str, on_shutdown: Callable[[], None], report=None
 
     @app.get("/")
     def home():
-        tables, attention, last_backup, sheets = [], None, None, []
+        groups, attention, last_backup = [], None, None
         if app.config["DATA_DIR"] is not None:
             last_backup = backups.latest(app.config["DATA_DIR"])
         if app.config["DATA_DIR"] is not None and registry():
-            from dashboard.web.display import empty_hint, table_title
+            from dashboard.web.home import home_groups
+            from dashboard.web.sheets import available_sheets
             conn = connection()
-            store = records.Records(conn, registry())
-            for name, info in registry().items():
-                tables.append({"name": name, "title": table_title(info), "module": info.module.title,
-                               "count": store.count(name), "empty": empty_hint(info)})
+            groups = home_groups(registry(), records.Records(conn, registry()).count, available_sheets(registry()))
             attention = {"low": watch.running_low(conn, registry()), "expiring": watch.expiring(conn, registry()),
                          "supplies": watch.supplies(conn, registry()),
                          "gaps": watch.gaps(conn, registry())}
-            from dashboard.web.sheets import available_sheets
-            sheets = available_sheets(registry())
         from dashboard.web.setup import backup_report
-        return render_template("home.html", report=report, tables=tables, attention=attention,
-                               last_backup=last_backup, sheets=sheets,
-                               backup=backup_report(app.config["DATA_DIR"]))
+        tables = [t for group in groups for t in group["main"] + group["more"]]
+        return render_template("home.html", report=report, groups=groups, tables=tables, attention=attention,
+                               last_backup=last_backup, backup=backup_report(app.config["DATA_DIR"]))
 
     @app.get("/attention")
     def attention_page():
@@ -199,7 +195,9 @@ def create_app(shutdown_token: str, on_shutdown: Callable[[], None], report=None
         response.headers.setdefault("Cache-Control", "no-store")
         response.headers.setdefault("X-Frame-Options", "DENY")
         response.headers.setdefault("X-Content-Type-Options", "nosniff")
-        response.headers.setdefault("Referrer-Policy", "no-referrer")
+        # "same-origin" tells other sites nothing about where a link came from, yet lets our own forms say
+        # they came from here. With "no-referrer" current browsers send "Origin: null" and every save is refused.
+        response.headers.setdefault("Referrer-Policy", "same-origin")
         return response
 
     @app.errorhandler(HTTPException)

@@ -5,6 +5,7 @@ list = ["name", "inside", "notes"]
 columns.inside = { label = "Inside", help = "Leave blank for a room or area. For a shelf, choose the cupboard it's in: the full path, like Kitchen › Pantry › Shelf 3, then shows everywhere." }
 
 [tables.items]
+home = "main"
 columns.name = { help = "Start typing to pick from common goods, or type your own.", suggest_from = "catalogue.csv", fills = { category = "category", unit = "unit", drinking = "counts_as_drinking_water" } }
 empty = "Add a few things from the pantry."
 form = ["name", "category", "drinking", "quantity", "unit", "minimum", "place", "expires", "notes"]
