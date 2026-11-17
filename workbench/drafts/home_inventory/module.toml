@@ -1,0 +1,8 @@
+name = "home_inventory"
+title = "Home inventory"
+version = "1.0.0"
+description = "Keep a private room-by-room list of belongings and where purchase evidence is kept."
+core_api = "1"
+kind = "declarative"
+requires = ["stock"]
+outbound_hosts = []

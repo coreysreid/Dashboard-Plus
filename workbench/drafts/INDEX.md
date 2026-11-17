@@ -21,3 +21,4 @@ and made-up example rows. Add a row here for each draft folder you create.
 | shopping_list/ | Trip list from the household's own low-stock thresholds, with Stock-in checks | building M2 shopping lists |
 | csv_import/ | CSV column mapping, dry run and atomic Stock import checks | building M2 spreadsheet import |
 | helpers/ | Household permission and review flow for helper proposals | building M2 Agent API review |
+| home_inventory/ | Private room-by-room belongings and claim-list draft | planning insurance inventory |

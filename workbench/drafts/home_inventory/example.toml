@@ -1,0 +1,42 @@
+# Fictional valuables and evidence locations. DEMO serials are not real identifiers.
+
+[[smith.home_inventory.belongings]]
+name = "Family laptop"
+room = "Garage shelves"
+quantity = 1
+make_model = "ExampleBook 14"
+serial = "DEMO-SMITH-LAPTOP-01"
+bought_on = "today-500"
+paid = 820
+receipt_kept = "Household paperwork folder"
+photos_kept = "Household backup folder"
+
+[[smith.home_inventory.belongings]]
+name = "Blue sofa"
+room = "Pantry"
+quantity = 1
+paid = 650
+receipt_kept = "Household paperwork folder"
+photos_kept = "Household backup folder"
+
+[[garcia.home_inventory.belongings]]
+name = "Apartment laptop"
+room = "Main bedroom"
+quantity = 1
+make_model = "ExampleBook Air"
+serial = "DEMO-GARCIA-LAPTOP-01"
+bought_on = "today-400"
+paid = 760
+receipt_kept = "Insurance paperwork folder"
+photos_kept = "Household backup folder"
+
+[[taylor.home_inventory.belongings]]
+name = "Camera"
+room = "Hall cupboard"
+quantity = 1
+make_model = "Example Camera C1"
+serial = "DEMO-TAYLOR-CAMERA-01"
+bought_on = "today-200"
+paid = 320
+receipt_kept = "Paper receipt envelope"
+photos_kept = "Household backup folder"

@@ -41,9 +41,11 @@ the "Requests" table of docs/WORKSTREAMS.md.
 | Batch 6 item 17: readiness screens | merged by Lane A | #59 | Four-answer screen flow, honest coverage and 12 checks tied to all 49 prompts. |
 | Batch 6 item 18: country packs round 2 | merged by Lane A | #60 | 38 jurisdictions, 52 live official links, scope and reuse limits in NOTES.md. |
 | Batch 6 item 19: seasonal checklists | merged by Lane A | #61 | Five source-linked sets, 25 questions tied to Stock and Home layout; eight checks. |
+| Batch 8 item 25: home inventory | ready for Lane A | this PR | Private room-linked inventory and claim sheet, fictional data, ten checks and NAIC source. |
 
 ## Messages to Lane A
 
+- **Inventory privacy:** The claim sheet contains room paths and serials. The core needs explicit print access and consistent sensitive-field protection in sheets, exports, helper views and backups before promotion. See `workbench/drafts/home_inventory/NOTES.md`.
 - **New nested Places finding:** With more than 500 places, the item form can show a child without its parent path and cannot find that child by the parent's name. The normal Places list also splits the path between Name and Inside. Steps and exact wording are in `workbench/reports/2026-11-17-nested-places-ux.md`.
 - **Accessibility:** The Stock Name suggestion's highlighted choice is not linked to the focused combobox for screen readers, and normal input borders measure below the WCAG 2.2 non-text contrast threshold in both themes. The emergency sheet also overflows a 320px viewport. See `workbench/reports/2026-11-17-accessibility.md` for steps and exact fixes.
 - **Medical promotion blocker:** The module loads and saves, but `tools/load_example.py` raises `IndexError` on Medical kit checks because that history table has no short text column. Please let the loader handle such rows without adding a required name to the household form. The exact reproduction and expected fix are in `workbench/drafts/medical/NOTES.md`.
