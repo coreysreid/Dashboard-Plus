@@ -38,7 +38,7 @@ COLUMN_KEYS = ("type", "required", "required_when", "default", "min", "max", "un
                "to", "on_delete")
 LABEL_TABLE_KEYS = ("title", "columns", "form", "list", "empty", "home")
 HOME_PLACES = ("main", "more")  # where a table sits on the home page: shown large, or in the line of links
-LABEL_COLUMN_KEYS = ("label", "help", "show_when", "suggest_from", "fills", "answers")
+LABEL_COLUMN_KEYS = ("label", "help", "show_when", "suggest_from", "fills", "answers", "blank")
 
 
 class ModuleError(PlainError):
@@ -697,6 +697,16 @@ def _check_labels(data: dict, tables: dict[str, Table], problems: list[str]) -> 
                 problems.append(f"{where}: there is no column '{cname}'.{_suggest(cname, list(known))}")
             elif isinstance(craw, dict):
                 problems.extend(_unknown_keys(f"{where}, column '{cname}'", craw, LABEL_COLUMN_KEYS))
+                if "blank" in craw:  # the words for leaving "Which batch" blank (DESIGN.md 5.7)
+                    blank = craw["blank"]
+                    rule = tables[tname].adjusts or {}
+                    if not isinstance(blank, dict) or not blank or set(blank) - {"adds", "takes"} or \
+                            any(not isinstance(v, str) or not v.strip() for v in blank.values()):
+                        problems.append(f"{where}, column '{cname}': blank gives the words for leaving it blank, "
+                                        f"like {{ adds = \"Start a new batch\", takes = \"Use the oldest batch\" }}.")
+                    elif rule.get("link") != cname or not rule.get("belongs_to"):
+                        problems.append(f"{where}, column '{cname}': blank only applies to the batch link of a "
+                                        f"table whose 'adjusts' has 'belongs_to'.")
                 if "show_when" in craw:
                     shown = craw["show_when"]
                     if not isinstance(shown, dict) or len(shown) != 1:

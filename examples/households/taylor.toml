@@ -17,7 +17,7 @@ home_type = "apartment"
 storeys = 1
 mobility_needs = false
 hazards = ["flood", "snow", "storm"]
-modules = ["home_layout", "medical", "people", "stock"]
+modules = ["home_layout", "medical", "people", "stock", "vehicles"]
 
 # ---- People -----------------------------------------------------------------
 
@@ -263,3 +263,17 @@ name = "Flat door"
 floor = "Second floor"
 place = "Hall"
 route = "Out of the flat door and down the shared stairs to the street door."
+
+# ---- Vehicles -----------------------------------------------------------------
+# Sam has added the car and one date. Nobody is chosen to call if it breaks down, so the dashboard asks.
+
+[[vehicles.vehicles]]
+name = "Small car"
+registration_due = "today+110"
+notes = "Parked on the street outside the flats."
+
+[[vehicles.services]]
+vehicle = "Small car"
+name = "MOT test"
+last_done = "today-345"
+next_due = "today+20"

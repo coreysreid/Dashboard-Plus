@@ -108,6 +108,8 @@ marked Superseded. Each lists downsides, cost to undo, and the sign it was wrong
 | [0054](0054-home-layout-uses-the-places-you-already-have.md) | Home layout switched on, using the places the household already has; no data moves | Accepted |
 | [0055](0055-modules-confined-and-security-review-fixes.md) | Modules confined to their own tables; security review fixes | Accepted |
 | [0056](0056-home-page-grouped-by-area.md) | Home page grouped by area: main lists large, other lists as links (`home` in labels.toml); forms save again in current browsers | Accepted |
+| [0057](0057-batch-picker-follows-the-item.md) | "Which batch" lists only the chosen item's batches and says what leaving it blank does | Accepted |
+| [0058](0058-vehicles-promoted.md) | Vehicles switched on from Lane B's draft, linking to People and Household stock; a roadside assistance role | Accepted |
 | [0060](0060-garden-example-outside-installed-modules.md) | Keep the worked garden outside installed modules | Accepted |
 | [0061](0061-public-reporting-and-contribution-rules.md) | Public contribution and private security reporting routes | Accepted |
 | [TEMPLATE](TEMPLATE.md) | Blank record to copy for a new decision | recording a decision |
@@ -186,6 +188,7 @@ numbered migrations. See docs/DESIGN.md section 6 for the module contract.
 | people/ | Who lives here, who to call, important details, emergency sheets | changing people, contacts or the emergency sheet |
 | pets/ | Pets, their vet, treatments and medicine with due dates, weigh-ins, vet visits; a pet details sheet | changing pets |
 | stock/ | Pantry, water, first aid, tools and hardware, with places, minimums and use-by dates | changing stock, running low or days of water |
+| vehicles/ | Each vehicle, who to call if it breaks down, registration, insurance and service dates; a Vehicles sheet | changing vehicle records |
 
 ## modules/home_layout/  (summary: the Home layout module, files only; built on Lane B's draft, using Household stock's places)
 | Entry | What it is | Open it when |
@@ -273,6 +276,22 @@ Generate the next one with: python tools/make_migration.py stock --name <what_ch
 | 0004_places_inside_places.sql | Places can sit inside other places ("Inside") | checking how nested places are stored |
 | 0003_drinking_water.sql | "Safe to drink" on items; existing water stays counted | checking how drinking water is stored |
 | 0005_batches.sql | Batches: an item's stock split by use-by date and place; each existing item becomes one batch | checking how the tables are stored |
+
+## modules/vehicles/  (summary: the Vehicles module, files only; built on Lane B's draft, linking to People and Household stock)
+| Entry | What it is | Open it when |
+|---|---|---|
+| module.toml | Name, version, description; requires People (who to call) and Household stock (places, car kit) | changing the module's details |
+| tables.toml | Vehicles, insurance renewals, services and checks, with due dates and one gap question | adding a field or a gap question |
+| labels.toml | Friendly labels, help text, form and list order | changing wording or order |
+| sheets.toml | Vehicles sheet: who to call, where each is kept and the dates, with no private numbers | changing what prints |
+| migrations/ | Numbered database changes | after changing tables.toml |
+
+## modules/vehicles/migrations/  (summary: this module's numbered database changes; never edit a released one)
+Generate the next one with: python tools/make_migration.py vehicles --name <what_changed>
+
+| Entry | What it is | Open it when |
+|---|---|---|
+| 0001_first_tables.sql | The module's first tables, generated from tables.toml | checking how the tables are stored |
 
 ## src/  (summary: the program's Python code)
 | Entry | What it is | Open it when |

@@ -1,0 +1,47 @@
+# Who to call is one of the household's People, so the number is kept in one place; the usual place and
+# the car kit are the household's own Places and Stock items (decision 0058). No renewal or service
+# interval is assumed: every date here is typed by the household from its own notice, policy or schedule.
+
+[tables.vehicles]
+title = "Vehicles"
+description = "Each car, motorbike, trailer or other vehicle, when its registration is due and who to call if it breaks down."
+columns.name = { type = "text", required = true }
+columns.registration = { type = "text", sensitive = true }
+columns.registration_due = { type = "date" }
+columns.roadside_contact = { type = "link", to = "people.people", on_delete = "clear" }
+columns.parked_at = { type = "link", to = "stock.places", on_delete = "restrict" }
+columns.emergency_kit = { type = "link", to = "stock.items", on_delete = "clear" }
+columns.notes = { type = "longtext" }
+
+[tables.vehicles.watch]
+expiring = { date = "registration_due", warn_days = 30, wording = "due", what = "registration or vehicle tax" }
+
+# Asked for each vehicle written down, never "do you have a vehicle?": many households have none.
+[[tables.vehicles.watch.gaps]]
+missing = "roadside_contact"
+message = "Who would you call if {name} broke down? It can be a roadside service, a garage or someone you know."
+
+[tables.insurance]
+title = "Vehicle insurance"
+description = "When each vehicle's insurance is due for renewal. The policy itself stays with your own papers."
+record_name = "{vehicle}: {name}"
+columns.vehicle = { type = "link", to = "vehicles", required = true, on_delete = "cascade" }
+columns.name = { type = "text", required = true }
+columns.renew_by = { type = "date" }
+columns.notes = { type = "text" }
+
+[tables.insurance.watch]
+expiring = { date = "renew_by", warn_days = 30, wording = "due", what = "insurance" }
+
+[tables.services]
+title = "Vehicle services and checks"
+description = "Services, inspections and other checks for each vehicle, on the dates you choose."
+record_name = "{vehicle}: {name}"
+columns.vehicle = { type = "link", to = "vehicles", required = true, on_delete = "cascade" }
+columns.name = { type = "text", required = true }
+columns.last_done = { type = "date" }
+columns.next_due = { type = "date" }
+columns.notes = { type = "text" }
+
+[tables.services.watch]
+expiring = { date = "next_due", warn_days = 30, wording = "due", what = "service or check" }

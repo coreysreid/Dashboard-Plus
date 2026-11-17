@@ -15,7 +15,7 @@ CREATE TABLE vehicles__vehicles (
     registration TEXT,
     registration_due TEXT,
     roadside_contact INTEGER REFERENCES people__people(id) ON DELETE SET NULL,
-    parked_at INTEGER REFERENCES stock__places(id) ON DELETE SET NULL,
+    parked_at INTEGER REFERENCES stock__places(id) ON DELETE RESTRICT,
     emergency_kit INTEGER REFERENCES stock__items(id) ON DELETE SET NULL,
     notes TEXT
 );
@@ -38,7 +38,7 @@ CREATE TABLE vehicles__insurance (
     batch_id INTEGER,
     edited_by_person INTEGER NOT NULL DEFAULT 0,
     deleted_at TEXT,
-    vehicle INTEGER REFERENCES vehicles__vehicles(id) ON DELETE RESTRICT,
+    vehicle INTEGER REFERENCES vehicles__vehicles(id) ON DELETE CASCADE,
     name TEXT,
     renew_by TEXT,
     notes TEXT
@@ -48,7 +48,7 @@ CREATE INDEX vehicles__insurance__vehicle__idx ON vehicles__insurance(vehicle);
 
 CREATE INDEX vehicles__insurance__renew_by__idx ON vehicles__insurance(renew_by);
 
--- Vehicle services
+-- Vehicle services and checks
 CREATE TABLE vehicles__services (
     id INTEGER PRIMARY KEY,
     created_at TEXT NOT NULL,
@@ -58,7 +58,7 @@ CREATE TABLE vehicles__services (
     batch_id INTEGER,
     edited_by_person INTEGER NOT NULL DEFAULT 0,
     deleted_at TEXT,
-    vehicle INTEGER REFERENCES vehicles__vehicles(id) ON DELETE RESTRICT,
+    vehicle INTEGER REFERENCES vehicles__vehicles(id) ON DELETE CASCADE,
     name TEXT,
     last_done TEXT,
     next_due TEXT,

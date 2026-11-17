@@ -158,6 +158,18 @@ As it prints: the ways out, shut-offs, alarms and meters, each with its full pla
 
 ![Our home sheet](screenshots/smith/18e-our-home-sheet.png)
 
+### Vehicles
+
+Each vehicle, when its registration is due, who to call if it breaks down, where it is kept and its car kit.
+
+![Vehicles](screenshots/smith/18f-vehicles.png)
+
+### Vehicles sheet
+
+As it prints: the vehicles and the dates the household chose, with no plate or policy numbers.
+
+![Vehicles sheet](screenshots/smith/18g-vehicle-sheet.png)
+
 ### Needs attention
 
 Days of water with the working shown, running low, use-by and due dates, and details worth filling in.
@@ -338,6 +350,18 @@ As it prints: the ways out, shut-offs, alarms and meters, each with its full pla
 
 ![Our home sheet](screenshots/garcia/18e-our-home-sheet.png)
 
+### Vehicles
+
+Each vehicle, when its registration is due, who to call if it breaks down, where it is kept and its car kit.
+
+![Vehicles](screenshots/garcia/18f-vehicles.png)
+
+### Vehicles sheet
+
+As it prints: the vehicles and the dates the household chose, with no plate or policy numbers.
+
+![Vehicles sheet](screenshots/garcia/18g-vehicle-sheet.png)
+
 ### Needs attention
 
 Days of water with the working shown, running low, use-by and due dates, and details worth filling in.
@@ -499,6 +523,18 @@ Home layout: each smoke alarm, extinguisher or go-bag, where it is and when the 
 As it prints: the ways out, shut-offs, alarms and meters, each with its full place.
 
 ![Our home sheet](screenshots/taylor/18e-our-home-sheet.png)
+
+### Vehicles
+
+Each vehicle, when its registration is due, who to call if it breaks down, where it is kept and its car kit.
+
+![Vehicles](screenshots/taylor/18f-vehicles.png)
+
+### Vehicles sheet
+
+As it prints: the vehicles and the dates the household chose, with no plate or policy numbers.
+
+![Vehicles sheet](screenshots/taylor/18g-vehicle-sheet.png)
 
 ### Needs attention
 

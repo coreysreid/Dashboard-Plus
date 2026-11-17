@@ -370,6 +370,14 @@ oldest_first = "expires"
   too little, the person is asked to record it batch by batch (no silent
   split); more than the item holds is refused with "only 13 left".
 - A chosen batch must belong to the movement's item.
+- On the form, the batch list follows the item (decision 0057): a link whose
+  table has a `total` rule is tied to the other link on the form that points
+  at the same table, each choice carries `data-owner`, and a few lines of
+  script show only the chosen item's batches. The blank choice is worded from
+  the `adjusts` rule ("Start a new batch" for reasons in `adds`, otherwise
+  "Use the batch with the earliest use-by date"); labels.toml can reword it
+  with `blank = { adds = "…", takes = "…" }`. The `new_batch` boxes are
+  hidden once a batch is chosen. Saving checks again, scripts or not.
 - Each batch that still holds something gets its own use-by warning, named by
   `record_name` ("Kidney beans, 3 tins at Kitchen › Pantry › Shelf 3"); a part
   in [square brackets] is left out when it is blank. A used-up batch stays as
@@ -508,7 +516,8 @@ number and the core can load both for a transition period.
   - *people*: name, preferred name, lives here (yes/no), relationship, birthday,
     phone, email, address, notes.
   - *roles*: a person and a role (emergency contact, family, neighbour, doctor,
-    dentist, vet, tradesperson, school, workplace, key holder, other) with a
+    dentist, vet, tradesperson, roadside assistance, school, workplace, key
+    holder, other) with a
     priority order, so "who do I call first" has an answer.
   - *important_info*: a person and a kind (allergy, condition, medication,
     care or mobility need, dietary, access instructions, other) with detail.
@@ -545,6 +554,16 @@ number and the core can load both for a transition period.
   gas, which many homes lack); a check is *due* on the date the household
   chose, never one worked out for it; an **Our home** sheet prints everything
   with full place paths and no notes.
+- **Vehicles** (declarative; requires People and Household stock; shipped,
+  decision 0058). Tables: vehicles (registration or plate number, marked
+  `sensitive`; registration or vehicle tax due; who to call if it breaks
+  down, a link to `people.people`; where it is usually kept, a link to
+  `stock.places`; its car emergency kit, a link to `stock.items`), insurance
+  renewals and services and checks. Behaviour: each date is *due* on the day
+  the household chose, never one worked out from the last; one gap asks, per
+  vehicle, "Who would you call if it broke down?"; a household with no
+  vehicle is asked nothing; a **Vehicles** sheet prints the vehicles and
+  dates without plate or policy numbers.
 - **Readiness** (declarative; the home of the prompts in section 10.5).
   Tables: plans (a situation the household has thought through: what we would
   do, who does what, the answer to "could we get down from upstairs?"), drills

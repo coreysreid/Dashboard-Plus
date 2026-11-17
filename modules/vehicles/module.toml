@@ -1,7 +1,7 @@
 name = "vehicles"
 title = "Vehicles"
 version = "1.0.0"
-description = "Keep vehicle details, where its kit is, and dates that need attention."
+description = "Each vehicle, who to call if it breaks down, and the registration, insurance and service dates you choose to be reminded of."
 core_api = "1"
 kind = "declarative"
 requires = ["people", "stock"]

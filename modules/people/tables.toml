@@ -24,6 +24,7 @@ columns.role = { type = "choice", required = true, choices = [
   "vet",
   "pharmacist",
   "tradesperson",
+  { key = "roadside_assistance", label = "Roadside assistance" },
   "school",
   "workplace",
   { key = "key_holder", label = "Key holder" },
