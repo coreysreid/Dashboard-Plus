@@ -1,5 +1,9 @@
 # Home layout design and integration notes
 
+## Utility meters, batch 8 item 27
+
+`meters` adds a named electricity, gas or water meter, linked to a full-path Home layout place, with an optional landmark. The location is a household observation, not a utility instruction. It appears on the Our home print sheet without an account number or access code. The Utilities draft links to this meter record and keeps providers and fault contacts in People. This is an additive table and migration; existing Home layout rows are not altered. Checked against this draft and `docs/DESIGN.md` section 6 on **2026-11-17**. The Smith, Garcia and Taylor meter locations are invented.
+
 ## Place suggestions, batch 4 item 3
 
 `places.csv` has 120 editable suggestions: 35 starting areas (`room`), 45 containers or storage areas (`storage`), and 40 finer locations (`spot`). The names and `also_called` terms are search vocabulary, including cupboard/closet, wardrobe/closet, laundry/utility room, car boot/trunk and bench/counter. `typical_in` uses `house`, `apartment` and `townhouse`, separated by `|` when a suggestion suits more than one. These are hints for sorting suggestions, never a rule that forbids a household from using a place. A household's own place names should always be offered first, then these suggestions; picking one creates a local editable place, and a household can type any other name. Places are not pre-created on setup.

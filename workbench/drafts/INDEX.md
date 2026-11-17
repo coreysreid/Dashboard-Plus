@@ -28,3 +28,4 @@ and made-up example rows. Add a row here for each draft folder you create.
 | garden/ | Promotion draft of the vegetable-garden worked example | promoting the optional Garden module |
 | home_inventory/ | Private room-by-room belongings and claim-list draft | planning insurance inventory |
 | lent_out/ | Borrower, due-back and return-history draft | planning household loans |
+| utilities/ | Private accounts, People fault contacts and Home layout meter links | planning household utilities |

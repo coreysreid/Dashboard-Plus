@@ -50,6 +50,12 @@ place = "Upstairs hall"
 last_tested = "today-20"
 next_check = "today+10"
 
+[[smith.home_layout.meters]]
+name = "Electricity meter"
+kind = "electricity"
+place = "Garage"
+how_to_find = "On the wall beside the door."
+
 [[garcia.home_layout.homes]]
 name = "Garcia apartment"
 storeys = 1
@@ -66,6 +72,10 @@ parent = "Apartment"
 name = "Go-bag shelf"
 kind = "spot"
 parent = "Entry cupboard"
+[[garcia.home_layout.places]]
+name = "Meter cupboard"
+kind = "storage"
+parent = "Apartment"
 
 [[garcia.home_layout.exits]]
 name = "Apartment door"
@@ -77,6 +87,12 @@ route = "Leave by the apartment door; check the building's current route before 
 name = "Family go-bags"
 kind = "go_bag"
 place = "Go-bag shelf"
+
+[[garcia.home_layout.meters]]
+name = "Apartment electricity meter"
+kind = "electricity"
+place = "Meter cupboard"
+how_to_find = "Shared cupboard by the apartment entry."
 
 [[taylor.home_layout.homes]]
 name = "Sam's flat"
@@ -104,3 +120,9 @@ route = "Leave by the hall door and follow the building's posted route."
 name = "Small first aid kit"
 kind = "first_aid_kit"
 place = "Cupboard"
+
+[[taylor.home_layout.meters]]
+name = "Flat water meter"
+kind = "water"
+place = "Hall"
+how_to_find = "Near the hall cupboard."
