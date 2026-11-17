@@ -16,6 +16,23 @@ class DatabaseError(PlainError):
     """The database could not be opened or used safely."""
 
 
+def keep_private(*paths: Path) -> None:
+    """On Mac and Linux, let only this computer account read the household's files: folders 0700,
+    files 0600. Another account on a shared computer could otherwise read medical details or the
+    session key (security review, decision 0055). Windows keeps each user's files private already."""
+    if os.name != "posix":
+        return
+    for path in paths:
+        try:
+            path = Path(path)
+            if path.is_dir():
+                path.chmod(0o700)
+            elif path.exists():
+                path.chmod(0o600)
+        except OSError:
+            pass  # a drive that doesn't keep permissions (such as a FAT USB stick) is left as it is
+
+
 def connect(path: Path) -> sqlite3.Connection:
     """Open the database file with the removable-drive settings from decision 0009.
 
@@ -26,11 +43,13 @@ def connect(path: Path) -> sqlite3.Connection:
     """
     path = Path(path)
     path.parent.mkdir(parents=True, exist_ok=True)
+    keep_private(path.parent)
     try:
         conn = sqlite3.connect(path, isolation_level=None, timeout=BUSY_TIMEOUT_MS / 1000)
     except sqlite3.Error as error:
         raise DatabaseError(f"The data file could not be opened ({path.name}). Is the drive still plugged in?") from error
     conn.row_factory = sqlite3.Row
+    keep_private(path)
     try:
         mode = conn.execute("PRAGMA journal_mode=DELETE").fetchone()[0]
         if str(mode).lower() != "delete":
@@ -89,8 +108,10 @@ def backup_to(conn: sqlite3.Connection, destination: Path) -> Path:
     check, so a failed or interrupted backup never leaves a file that looks like a good one."""
     destination = Path(destination)
     destination.parent.mkdir(parents=True, exist_ok=True)
+    keep_private(destination.parent)
     partial = destination.with_name(destination.name + ".partial")
     target = sqlite3.connect(partial)
+    keep_private(partial)
     try:
         conn.backup(target)
         ok = integrity_ok(target)

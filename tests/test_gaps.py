@@ -131,3 +131,16 @@ class EmptyFilterGapTests(TempDirTestCase):
         self.assertEqual([(g.message, g.fix) for g in gaps], [("Who is in the household?", "/t/demo__people/new")])
         records.Records(self.conn, self.registry).create("demo__people", {"name": "Alex", "lives_here": False})
         self.assertEqual(watch.gaps(self.conn, self.registry), [])
+
+
+class PrivateGapTests(TempDirTestCase):
+    """Security review finding 3: a question shows on the home page, so it can't print a private detail."""
+
+    def test_a_private_column_cannot_be_part_of_a_question(self):
+        tables = TABLES.replace('columns.notes = { type = "text" }',
+                                'columns.notes = { type = "text", sensitive = true }')
+        folder = self.make_module(tables=tables + '\n[[tables.roles.watch.gaps]]\nmissing = "person.phone"\n'
+                                  'message = "Phone for {notes}?"\n', labels=None)
+        with self.assertRaises(modules.ModuleError) as caught:
+            modules.load_module(folder)
+        self.assertIn("'{notes}' is private", " ".join(caught.exception.problems))

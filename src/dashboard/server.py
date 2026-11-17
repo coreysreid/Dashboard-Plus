@@ -14,7 +14,7 @@ from pathlib import Path
 
 from waitress import create_server
 
-from dashboard.core import backups, startup
+from dashboard.core import backups, db, startup
 from dashboard.web.app import create_app
 
 HOST = "127.0.0.1"
@@ -142,8 +142,11 @@ def _serve(data_dir: Path, open_browser: bool, ready: threading.Event | None,
 
     path = state_file(data_dir)
     path.parent.mkdir(parents=True, exist_ok=True)
-    path.write_text(json.dumps({"port": port, "token": token, "pid": state.pid, "session": session}),
-                    encoding="utf-8")
+    # Holds the session key and the shutdown token: readable by this computer account only.
+    descriptor = os.open(path, os.O_WRONLY | os.O_CREAT | os.O_TRUNC, 0o600)
+    with os.fdopen(descriptor, "w", encoding="utf-8") as handle:
+        handle.write(json.dumps({"port": port, "token": token, "pid": state.pid, "session": session}))
+    db.keep_private(path.parent, path)
     log.info("Dashboard started on %s", state.url)
 
     print("Dashboard Plus is running.")

@@ -226,7 +226,7 @@ def build_fields(records: Records, info: TableInfo, values: dict, errors: dict, 
             if target.table.total:  # a used-up batch is history, not something to choose
                 rows = [r for r in rows if r[target.table.total["amount"]] or str(r["id"]) == str(values.get(column.name))]
             current = values.get(column.name)
-            if current not in (None, "") and str(current).isdigit() and \
+            if current not in (None, "") and str(current).isdecimal() and str(current).isascii() and \
                     int(current) not in {r["id"] for r in rows}:  # always offer the record already chosen
                 try:
                     rows = list(rows) + [records.get(target.name, int(current), include_deleted=True)]
