@@ -576,6 +576,7 @@ happened_on = "today-1"
 
 [[medical.kits]]
 name = "Car first aid kit"
+kept = "vehicle"
 place = "Car boot"
 last_checked = "today-30"
 next_check = "today+60"

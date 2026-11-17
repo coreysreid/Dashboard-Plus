@@ -144,6 +144,7 @@ session can finish; Lane A keeps it stocked.
 | A | B | Start batch 3 below: drafting heavy lifting for Lane A to polish and integrate. | done (#22, #24 to #33) |
 | A | B | Start batch 4 below: check the new picking, fill the catalogue from evidence, a places list, acceptance checks for nested places and lots, tie readiness questions to records, Collections and Vehicles drafts, a getting-started guide. | done (#38 to #50) |
 | B | A | Medical promotion blocker: the example loader failed on kit checks (no name column); also `none = {}` for "Is there a first aid kit?". | both fixed; Medical ships (decision 0051). Batches 5 and 6 merged (#62). Dates your way shipped (decision 0052); lots are next for Lane A. Lane B: carry on with batch 6 item 20, then batches 7 and 8. |
+| A | B | Batches 5 to 8 merged (#62, #65 to #73). Your Medical and dates UX findings are fixed: kits now say whether they are kept at home, in a vehicle or elsewhere, and a wrong-order date shows "Use DD/MM/YY, for example 20/05/27." Start batch 9 below. | open |
 | B | A | Module wording (`workbench/reports/2026-11-09-module-wording.md`). | adopted, lightly changed: sheet titles keep "Emergency sheet" ("fridge copy" and "with private medical details"), supplies sheet is "Emergency supplies"; the rest as suggested |
 
 ## Brief for Lane B, batch 4
@@ -298,6 +299,59 @@ Lane A" and carry on.
 26. **Tools and things lent out**: who borrowed what and when it's due back.
 27. **Utilities and household accounts**: providers, account numbers kept
     private, outage and fault lines in People, meter locations in Home layout.
+
+### Batch 9: ready for Corey's hands-on round (M1)
+
+Batches 5 to 8 are done and merged (#62, #65 to #73). Since then Medical and
+dates your way have shipped (decisions 0051, 0052); layered use-by dates
+(lots) are Lane A's next build.
+
+28. **Corey's test session script.** A one-hour guided session Corey can run
+    alone on his own computer: ten tasks from download to Save and exit
+    (stocktake twenty goods with places and dates, a first aid kit, a pet, the
+    emergency sheet), what to notice, and a short form whose answers drop
+    straight into `docs/BACKLOG.md`. Plain words; no jargon.
+29. **Lots example data.** Rewrite the Stock rows of all three example
+    households as they will look with lots (Smith's kidney beans: 3 tins at
+    Kitchen › Pantry › Shelf 3 use by next month, 10 in the garage in six
+    months), plus the item-to-lot mapping the migration must produce. Lane A
+    uses it as the migration's test fixture.
+30. **Home layout promotion pass.** Stock places now nest. Update the Home
+    layout draft so it takes over Stock's places (and Medical's kit places)
+    with an exact old-to-new mapping for all three households, exits,
+    shut-offs and the Our home sheet; acceptance checks like Medical's.
+31. **Sensitive-detail audit.** Read the shipped code and screens (do not edit
+    them) and list every way a sensitive column could appear where it should
+    not: sheets, suggestions, history, search, backups, future exports and
+    helper views. Steps, worst first, with the fix you suggest.
+
+### Batch 10: helpers, backups and the inbox (M2)
+
+32. **Agent API by example.** For every route in DESIGN section 9, a made-up
+    request and response, every refusal with its plain-language message, and
+    what the household sees in the review queue afterwards.
+33. **Review queue and inbox wording.** Exact screen words for approving,
+    changing and refusing a helper's proposal, empty states, and the count on
+    the home page.
+34. **"My computer died" guide.** Household steps for the four bad days: lost
+    USB stick, dead computer, deleted record, a backup that will not open.
+    Match the restore design from batch 5 item 11.
+35. **Country packs round 3: UK and New Zealand.** Bring them to the depth of
+    Australia and the US, with live official links and reuse terms.
+
+### Batch 11: polish and scale (M1 to M3)
+
+36. **Wording consistency.** Every label, help line, gap question and sheet
+    title across shipped modules: one word for one idea ("use by", "kept",
+    "check again by"), with an exact replacement table.
+37. **Print check.** Every printable sheet for all three households on A4 and
+    Letter, light and dark settings: overflow, page breaks, missing paths.
+38. **A big made-up household** for speed testing: 2,000 stock items, 600
+    places nested five deep, 60 people, 10 pets, 3 years of stock in and out,
+    as a loadable example file in `workbench/`.
+39. **Ready for other languages.** List every visible string in templates and
+    module files that would need translating, grouped by screen. Do not
+    translate anything yet.
 
 ## Brief for Lane B, batch 3 (done)
 

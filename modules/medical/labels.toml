@@ -1,7 +1,8 @@
 [tables.kits]
 empty = "Add a first aid kit and where to find it."
-form = ["name", "place", "last_checked", "next_check", "notes"]
-list = ["name", "place", "last_checked", "next_check"]
+form = ["name", "kept", "place", "last_checked", "next_check", "notes"]
+list = ["name", "kept", "place", "last_checked", "next_check"]
+columns.kept = { label = "Usually kept", help = "A kit in the car is not there when the car is out." }
 columns.place = { label = "Where it is", help = "Choose a place recorded in Household stock. Keep first aid supplies in Stock too." }
 columns.last_checked = { label = "Last checked", help = "The date someone checked this kit's contents." }
 columns.next_check = { label = "Check again by", help = "Choose a date from your household plan or kit guidance. The dashboard will remind you a month before." }

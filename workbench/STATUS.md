@@ -42,29 +42,28 @@ the "Requests" table of docs/WORKSTREAMS.md.
 | Batch 6 item 17: readiness screens | merged by Lane A | #59 | Four-answer screen flow, honest coverage and 12 checks tied to all 49 prompts. |
 | Batch 6 item 18: country packs round 2 | merged by Lane A | #60 | 38 jurisdictions, 52 live official links, scope and reuse limits in NOTES.md. |
 | Batch 6 item 19: seasonal checklists | merged by Lane A | #61 | Five source-linked sets, 25 questions tied to Stock and Home layout; eight checks. |
-| Batch 6 item 20: grab list | ready for Lane A | #65 | Printable draft using People, Stock, Places and Medical; checklist and core needs. |
-| Batch 5 item 9: UX after Medical and local dates | ready for Lane A | this PR | Three examples load and render; car-only kit suppresses home-kit question, and wrong-order date preview is blank. |
+| Batch 6 item 20: grab list | merged by Lane A | #65 | Printable draft using People, Stock, Places and Medical; checklist and core needs. |
+| Batch 5 item 9: UX after Medical and local dates | merged by Lane A | #66 | Three examples load and render; car-only kit suppresses home-kit question, and wrong-order date preview is blank. |
+| Batch 7 item 21: outcomes defined | merged by Lane A | #67 | Four monthly measures with exact evidence gates, 12 checks and core needs. |
+| Batch 7 item 22: question-loop examples | merged by Lane A | #68 | Twenty invented changes, sensible questions and two unrelated pairings to reject per example. |
+| Batch 7 item 23: charts that help | merged by Lane A | #69 | Four chart sketches for water, waste, pet weight and readiness, with data and accessibility needs. |
+| Batch 8 item 24: promote-ready drafts | merged by Lane A | #70 | Collections, Vehicles, Documents, Home care, Wine and Garden have labels, gaps, sheets, examples and core notes. |
+| Batch 8 item 25: home inventory | merged by Lane A | #71 | Private room-linked inventory and claim sheet, fictional data, ten checks and NAIC source. |
+| Batch 8 item 26: things lent out | merged by Lane A | #72 | Loan records, active-loan sheet, fictional examples and ten checks; core needs for due filtering and return action. |
+| Batch 8 item 27: utilities and accounts | merged by Lane A | #73 | Private accounts, People contacts, Home layout meter names, three-household examples and ten checks; meter link needs promotion. |
 
 ## Messages to Lane A
 
+- Fixed by Lane A and removed from this list: nested Places paths, accessibility, drinking-water answer, Medical loader (#55, #63).
+
 - **New Medical finding:** Smith has only a car kit at Car › Car boot, yet “Is there a first aid kit at home?” is suppressed. The `none` gap needs a home-place condition or an explicit household answer. Date fields also give no live correction for the wrong local order. Steps and exact wording are in `workbench/reports/2026-11-17-medical-dates-ux.md`.
-| Batch 7 item 21: outcomes defined | ready for Lane A | this PR | Four monthly measures with exact evidence gates, 12 checks and core needs. |
 - **Outcomes core needs:** Current Stock history cannot prove old stock-outs, and Stock has no actual price or receipt total. Please keep shortage and money comparisons in baseline state until dated counts, corrections, reviewed receipts and completeness confirmations exist. The four metric definitions and checks are in `workbench/drafts/outcomes/`.
-| Batch 7 item 22: question-loop examples | ready for Lane A | this PR | Twenty invented changes, sensible questions and two unrelated pairings to reject per example. |
 - **Question-loop gate:** The twenty examples deliberately include future measures. Please do not surface a question until the measure has enough dated points, its event is recorded, and the topic and subject plausibility gate passes. `workbench/drafts/question_loop/NOTES.md` lists missing daily facts and answer state.
-| Batch 7 item 23: charts that help | ready for Lane A | this PR | Four chart sketches for water, waste, pet weight and readiness, with data and accessibility needs. |
 - **Chart prerequisites:** The four chart sketches need dated Stock balances, complete-month waste confirmation, subject-linked annotations and versioned readiness answers. A missing day must stay a gap, and every chart needs a text/table view. Details are in `workbench/drafts/charts/`.
-| Batch 8 item 24: promote-ready drafts | ready for Lane A | this PR | Collections, Vehicles, Documents, Home care, Wine and Garden have labels, gaps, sheets, examples and core notes. |
 - **Promotion notes:** Garden needs a named planting to link example harvests and cannot show only unfinished jobs as due until `expiring` supports a `where` filter. The other five drafts now have print sheets and targeted place/contact gaps. See each draft NOTES.md before promotion.
-| Batch 8 item 25: home inventory | ready for Lane A | this PR | Private room-linked inventory and claim sheet, fictional data, ten checks and NAIC source. |
 - **Inventory privacy:** The claim sheet contains room paths and serials. The core needs explicit print access and consistent sensitive-field protection in sheets, exports, helper views and backups before promotion. See `workbench/drafts/home_inventory/NOTES.md`.
-| Batch 8 item 26: things lent out | ready for Lane A | this PR | Loan records, active-loan sheet, fictional examples and ten checks; core needs for due filtering and return action. |
 - **Loan due reminders:** The current `expiring` watch cannot exclude returned loans. The draft records due dates but needs an active-only watch and an atomic Mark returned action before a Needs attention reminder is safe to show. See `workbench/drafts/lent_out/NOTES.md`.
-| Batch 8 item 27: utilities and accounts | ready for Lane A | this PR | Private accounts, People contacts, Home layout meter names, three-household examples and ten checks; meter link needs promotion. |
 - **Utility printout gap:** The current sheet contract prints a linked People contact's name but not its phone. Add linked fields and utility/fault roles in People before treating the draft contact sheet as an offline outage reference. Meter paths also need Home layout promotion. See `workbench/drafts/utilities/NOTES.md`.
-- **New nested Places finding:** With more than 500 places, the item form can show a child without its parent path and cannot find that child by the parent's name. The normal Places list also splits the path between Name and Inside. Steps and exact wording are in `workbench/reports/2026-11-17-nested-places-ux.md`.
-- **Accessibility:** The Stock Name suggestion's highlighted choice is not linked to the focused combobox for screen readers, and normal input borders measure below the WCAG 2.2 non-text contrast threshold in both themes. The emergency sheet also overflows a 320px viewport. See `workbench/reports/2026-11-17-accessibility.md` for steps and exact fixes.
-- **Priority from batch 4 item 1:** New custom Water items start with “Safe to drink” ticked. A made-up Flushing water item raised days of drinking water in the 20-good stocktake. Please require an explicit drinking answer for a new water name, and count only confirmed litres. `workbench/reports/2026-11-17-picking-water-ux.md` gives the steps and exact suggested wording.
 
 - Please review the draft modules and their NOTES.md files before promoting them.
 - The country-pack notes are source research, not pack content. The US emergency number, weather hazards and CDC water amount are cited. Australian ACT, NT, Tasmanian and WA reuse terms are recorded. NEMA and Ready.gov guidance, Victorian reuse terms, and most state-specific guidance remain unverified. Review the explicit gaps before using this material.

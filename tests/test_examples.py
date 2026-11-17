@@ -32,7 +32,9 @@ class ExampleHouseholdTests(TempDirTestCase):
                                          "Tinned tomatoes"])
         self.assertEqual(result["expiring"], ["Muesli bars", "Monthly flea and tick chew", "Long-life milk",
                                               "Sunscreen SPF 50", "Rex", "Adrenaline auto-injector (Emily)"])
-        self.assertEqual(result["gaps"], 1)
+        self.assertEqual(result["gaps"], 2)  # their only first aid kit is in the car
+        gaps = [g.message for g in watch.gaps(result["conn"], result["registry"])]
+        self.assertIn("No first aid kit is recorded at home. Add one, or check where your kits are kept.", gaps)
 
     def test_garcia_household(self):
         result = self.summary("garcia")

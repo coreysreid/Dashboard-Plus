@@ -541,6 +541,7 @@ notes = "Weekly shop."
 
 [[medical.kits]]
 name = "Apartment first aid kit"
+kept = "home"
 place = "Hall closet"
 last_checked = "today-40"
 next_check = "today+20"

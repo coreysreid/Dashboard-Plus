@@ -245,6 +245,7 @@ happened_on = "today-1"
 
 [[medical.kits]]
 name = "Small first aid kit"
+kept = "home"
 place = "Kitchen cupboard"
 last_checked = "today-20"
 

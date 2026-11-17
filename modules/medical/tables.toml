@@ -2,6 +2,7 @@
 title = "First aid kits"
 columns.name = { type = "text", required = true }
 columns.place = { type = "link", to = "stock.places" }
+columns.kept = { type = "choice", required = true, choices = [{ key = "home", label = "At home" }, { key = "vehicle", label = "In a car or other vehicle" }, { key = "elsewhere", label = "Somewhere else, such as work" }] }
 columns.last_checked = { type = "date" }
 columns.next_check = { type = "date" }
 columns.notes = { type = "longtext" }
@@ -10,12 +11,16 @@ columns.notes = { type = "longtext" }
 expiring = { date = "next_check", warn_days = 30, wording = "due", what = "kit check" }
 
 [[tables.kits.watch.gaps]]
-none = {}
-message = "Is there a first aid kit at home? Add it and where to find it."
+none = { kept = "home" }
+message = "No first aid kit is recorded at home. Add one, or check where your kits are kept."
+
+[[tables.kits.watch.gaps]]
+missing = "kept"
+message = "Is {name} kept at home, in a vehicle or somewhere else?"
 
 [[tables.kits.watch.gaps]]
 missing = "place"
-message = "Where is {name} kept?"
+message = "Which place is {name} in? Choose where to find it."
 
 [[tables.kits.watch.gaps]]
 missing = "next_check"
