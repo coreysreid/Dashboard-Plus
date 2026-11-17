@@ -8,13 +8,13 @@ sessions read this page first. Newest at the top of each section.
 
 | Date | Feedback | Plan |
 |---|---|---|
-| 2026-11-16 | Stocktake should be: pick "Kidney beans" from a list (type a new one only if missing), location Kitchen › Pantry › Shelf 3, quantity 5, use by 20/05/27. | Lane B batch 3, tasks 1 and 2: a catalogue of common goods (with care over drinking, filtered and distilled water) and a Home layout module with nested places; Lane A then builds type-ahead picking and nested places. |
 | 2026-11-16 | "There is still a lot to add and update, manage." | Lane B batch 3 (docs/WORKSTREAMS.md) drafts the next modules and content; Lane A polishes and integrates; then a UX round with Corey. |
 
 ## Done
 
 | Date | Feedback | What changed | Pull request |
 |---|---|---|---|
+| 2026-11-16 | Stocktake should be: pick "Kidney beans" from a list (type a new one only if missing), location Kitchen › Pantry › Shelf 3, quantity 5, use by 20/05/27. | All of it works: type-ahead from 805 common goods, nested places with full paths, the amount, and a use-by date typed your way; a second purchase becomes its own batch with its own date and place (decisions 0048, 0049, 0052, 0053). | Pick from a list, nested places, dates your way, batches |
 | 2026-11-17 | (Lane B print check) The emergency supplies sheet listed all water, including water not safe to drink. | Its water section is now "Drinking water" and lists only water answered as safe to drink. | Drinking water only on the sheet |
 | 2026-11-17 | (Lane B privacy audit) Private details were hidden behind Show but still written into the page; opening a record or the private sheet showed them straight away. | A private detail is now only fetched when you press Show, in lists and on a record's page; the private medical sheet asks first (decision 0059). | Private details only when asked |
 | 2026-11-17 | (Lane A) Home page had about 20 tiles, one per list, and was too long to scan. | Home now has one card per area, in the same order every day: People, Household stock, Home layout, Medical readiness, Pets. Each card shows its main list with an Add button, its other lists as one line of links with counts, and its sheets to print. Every list is still one click away. The last line names what you track in plain words. Also fixed: forms could not be saved in a current Chromium browser (decision 0056). | Grouped home page |
