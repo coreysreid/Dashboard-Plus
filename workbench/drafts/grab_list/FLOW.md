@@ -16,5 +16,5 @@ After a person changes a Pet's keeper, moves a kit, or edits a document location
 
 ## References
 
-- [Shipped People](../../../modules/people/tables.toml), [Pets](../../../modules/pets/tables.toml) and [Stock](../../../modules/stock/tables.toml), and draft [Medical](../medical/tables.toml), [Documents](../documents/tables.toml) and [Home layout](../home_layout/tables.toml), checked 17 November 2026 for exact fields and link targets.
+- [Shipped People](../../../modules/people/tables.toml), [Pets](../../../modules/pets/tables.toml), [Stock](../../../modules/stock/tables.toml) and [Medical](../../../modules/medical/tables.toml), and draft [Documents](../documents/tables.toml) and [Home layout](../home_layout/tables.toml), checked 17 November 2026 for exact fields and link targets.
 - [Get Ready household plan](https://getready.govt.nz/prepared/household/make-a-plan) and [CDC personal needs](https://www.cdc.gov/prepare-your-health/take-action/personal-needs.html), checked 17 November 2026. The list is a way to record the household's choice, not a substitute for the authorities' current advice.
