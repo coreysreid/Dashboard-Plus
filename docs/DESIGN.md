@@ -527,6 +527,15 @@ number and the core can load both for a transition period.
     first aid kit?" and "Does anyone here know how to use it?". The module does
     not give medical instruction or diagnose; it records what the household has
     and links to guidance from recognised first aid and health bodies.
+- **Home layout** (declarative; requires Household stock; shipped, decision
+  0054). Tables: ways out (floor, place, how to get there), shut-offs and power
+  board, alarms and safety equipment (last tested, battery changed, test or
+  check again by), and meters. Every "where it is" links to `stock.places`, so
+  the household's places are shared and none were moved. Behaviour: gaps ask
+  for a way out, the water shut-off, the power board and a smoke alarm (not
+  gas, which many homes lack); a check is *due* on the date the household
+  chose, never one worked out for it; an **Our home** sheet prints everything
+  with full place paths and no notes.
 - **Readiness** (declarative; the home of the prompts in section 10.5).
   Tables: plans (a situation the household has thought through: what we would
   do, who does what, the answer to "could we get down from upstairs?"), drills

@@ -17,7 +17,7 @@ home_type = "apartment"
 storeys = 1
 mobility_needs = false
 hazards = ["flood", "snow", "storm"]
-modules = ["medical", "people", "stock"]
+modules = ["home_layout", "medical", "people", "stock"]
 
 # ---- People -----------------------------------------------------------------
 
@@ -254,3 +254,12 @@ kit = "Small first aid kit"
 checked_on = "today-20"
 checked_by = "Sam Taylor"
 notes = "Checked supplies; next check date not chosen yet."
+
+# ---- Home layout --------------------------------------------------------------
+# Sam has only just started: one way out is written down, and the dashboard asks about the rest.
+
+[[home_layout.exits]]
+name = "Flat door"
+floor = "Second floor"
+place = "Hall"
+route = "Out of the flat door and down the shared stairs to the street door."

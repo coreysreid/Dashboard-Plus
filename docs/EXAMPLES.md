@@ -140,6 +140,18 @@ As it prints: the kits, their places and who has trained.
 
 ![First aid at home sheet](screenshots/smith/18c-first-aid-sheet.png)
 
+### Alarms and safety equipment
+
+Home layout: each smoke alarm, extinguisher or go-bag, where it is and when the household plans to check it.
+
+![Alarms and safety equipment](screenshots/smith/18d-our-home.png)
+
+### Our home sheet
+
+As it prints: the ways out, shut-offs, alarms and meters, each with its full place.
+
+![Our home sheet](screenshots/smith/18e-our-home-sheet.png)
+
 ### Needs attention
 
 Days of water with the working shown, running low, use-by and due dates, and details worth filling in.
@@ -302,6 +314,18 @@ As it prints: the kits, their places and who has trained.
 
 ![First aid at home sheet](screenshots/garcia/18c-first-aid-sheet.png)
 
+### Alarms and safety equipment
+
+Home layout: each smoke alarm, extinguisher or go-bag, where it is and when the household plans to check it.
+
+![Alarms and safety equipment](screenshots/garcia/18d-our-home.png)
+
+### Our home sheet
+
+As it prints: the ways out, shut-offs, alarms and meters, each with its full place.
+
+![Our home sheet](screenshots/garcia/18e-our-home-sheet.png)
+
 ### Needs attention
 
 Days of water with the working shown, running low, use-by and due dates, and details worth filling in.
@@ -445,6 +469,18 @@ Each kit, where it is kept and when it is next checked.
 As it prints: the kits, their places and who has trained.
 
 ![First aid at home sheet](screenshots/taylor/18c-first-aid-sheet.png)
+
+### Alarms and safety equipment
+
+Home layout: each smoke alarm, extinguisher or go-bag, where it is and when the household plans to check it.
+
+![Alarms and safety equipment](screenshots/taylor/18d-our-home.png)
+
+### Our home sheet
+
+As it prints: the ways out, shut-offs, alarms and meters, each with its full place.
+
+![Our home sheet](screenshots/taylor/18e-our-home-sheet.png)
 
 ### Needs attention
 

@@ -1,0 +1,28 @@
+[[sheet]]
+name = "our_home"
+title = "Our home"
+intro = "Where the ways out, shut-offs, alarms and meters are. First aid kits are on the First aid at home sheet. Check that each place and route is still right before sharing this sheet. In an emergency, follow local emergency advice."
+
+[[sheet.section]]
+title = "Ways out"
+table = "exits"
+columns = ["name", "floor", "place", "route"]
+order_by = "name"
+
+[[sheet.section]]
+title = "Shut-offs and power board"
+table = "shutoffs"
+columns = ["name", "kind", "place", "how_to_find"]
+order_by = "kind"
+
+[[sheet.section]]
+title = "Alarms and safety equipment"
+table = "equipment"
+columns = ["name", "kind", "place", "next_check"]
+order_by = "kind"
+
+[[sheet.section]]
+title = "Meters"
+table = "meters"
+columns = ["name", "kind", "place", "how_to_find"]
+order_by = "kind"

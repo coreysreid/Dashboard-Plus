@@ -4,6 +4,7 @@ numbered migrations. See docs/DESIGN.md section 6 for the module contract.
 
 | Entry | What it is | Open it when |
 |---|---|---|
+| home_layout/ | Ways out, shut-offs, smoke alarms and safety equipment, meters, each at one of your places; an Our home sheet | changing home layout records |
 | medical/ | First aid kits and where they are, kit checks, first aid training renewals; a first aid sheet | changing first aid records |
 | people/ | Who lives here, who to call, important details, emergency sheets | changing people, contacts or the emergency sheet |
 | pets/ | Pets, their vet, treatments and medicine with due dates, weigh-ins, vet visits; a pet details sheet | changing pets |
