@@ -90,3 +90,50 @@ class ModuleLoadingTests(TempDirTestCase):
         found, failures = modules.discover(self.tmp / "modules")
         self.assertEqual(found, [])
         self.assertIn("loop", " ".join(failures["a"] + failures["b"]))
+
+
+class BatchRuleTests(TempDirTestCase):
+    """`total`, `record_name` and batch picking in `adjusts` are checked with plain messages (DESIGN.md 5.7)."""
+
+    TABLES = '''[tables.items]
+title = "Items"
+columns.name = { type = "text", required = true }
+columns.amount = { type = "decimal" }
+
+[tables.batches]
+title = "Batches"
+columns.item = { type = "link", to = "items", required = true }
+columns.amount = { type = "decimal" }
+columns.use_by = { type = "date" }
+'''
+
+    def problems(self, extra):
+        folder = self.make_module(tables=self.TABLES + extra, labels=None)
+        with self.assertRaises(modules.ModuleError) as caught:
+            modules.load_module(folder)
+        return " | ".join(caught.exception.problems)
+
+    def test_a_valid_total_and_name_load(self):
+        extra = '''record_name = "{item}, {amount}[, use by {use_by}]"
+[tables.batches.total]
+link = "item"
+amount = "amount"
+into = "amount"
+earliest = { date = "use_by", into = "use_by" }
+'''
+        with self.assertRaises(modules.ModuleError) as caught:  # items has no use_by column to fill in
+            modules.load_module(self.make_module(tables=self.TABLES + extra, labels=None))
+        self.assertIn("'earliest' must be like", " ".join(caught.exception.problems))
+        module = modules.load_module(self.make_module(
+            name="ok", tables=self.TABLES + extra.replace('earliest = { date = "use_by", into = "use_by" }\n', ""),
+            labels=None))
+        self.assertEqual(module.tables["batches"].total["target"], "items")
+        self.assertEqual(module.tables["batches"].record_name, "{item}, {amount}[, use by {use_by}]")
+
+    def test_mistakes_are_explained(self):
+        self.assertIn("'link' must name a link column",
+                      self.problems('[tables.batches.total]\nlink = "amount"\namount = "amount"\ninto = "amount"\n'))
+        self.assertIn("'{item.colour}' must name a column", self.problems('record_name = "{item.colour}"\n'))
+        self.assertIn("'starts_from' lists columns",
+                      self.problems('[tables.batches.total]\nlink = "item"\namount = "amount"\ninto = "amount"\n'
+                                    'starts_from = ["use_by"]\n'))

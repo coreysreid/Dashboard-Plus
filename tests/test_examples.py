@@ -22,7 +22,7 @@ class ExampleHouseholdTests(TempDirTestCase):
         supply = watch.supplies(conn, registry)[0]
         return {"added": added, "days": round(supply.days, 1), "need": supply.daily_need,
                 "low": sorted(i.name for i in watch.running_low(conn, registry)),
-                "expiring": [i.name for i in watch.expiring(conn, registry, TODAY)],
+                "expiring": [i.name.partition(", ")[0] for i in watch.expiring(conn, registry, TODAY)],  # the item, not the batch detail
                 "gaps": len(watch.gaps(conn, registry)), "conn": conn, "registry": registry}
 
     def test_smith_family(self):
@@ -31,7 +31,10 @@ class ExampleHouseholdTests(TempDirTestCase):
         self.assertEqual(result["low"], ["AA batteries", "Baked beans", "Dog food (Rex)", "Reliever puffer (Jack)",
                                          "Tinned tomatoes"])
         self.assertEqual(result["expiring"], ["Muesli bars", "Monthly flea and tick chew", "Long-life milk",
-                                              "Sunscreen SPF 50", "Rex", "Adrenaline auto-injector (Emily)"])
+                                              "Sunscreen SPF 50", "Rex", "Adrenaline auto-injector (Emily)",
+                                              "Kidney beans"])  # the 3 tins on Shelf 3, not the 10 in the garage
+        beans = result["conn"].execute("SELECT quantity FROM stock__items WHERE name = 'Kidney beans'").fetchone()
+        self.assertEqual(beans[0], 13)
         self.assertEqual(result["gaps"], 2)  # their only first aid kit is in the car
         gaps = [g.message for g in watch.gaps(result["conn"], result["registry"])]
         self.assertIn("No first aid kit is recorded at home. Add one, or check where your kits are kept.", gaps)

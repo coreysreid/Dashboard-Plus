@@ -28,7 +28,6 @@ the "Requests" table of docs/WORKSTREAMS.md.
 | Batch 4 item 4: nested places acceptance | merged by Lane A | #42 | Ten checks and a row-by-row mapping for all three example households. |
 | Batch 4 item 5: lots and dates acceptance | merged by Lane A | #44 | Thirteen checks for lots, date formats, warnings and current-item migration. |
 | Batch 4 item 6: readiness record matching | merged by Lane A | #45 | All 49 mapped to an exact field or none, with conservative confirmation rules. |
-| Batch 6 item 20: grab list | ready | PR pending | Linked list, one-page print layout, three synthetic examples and privacy checks. |
 | Batch 4 item 7: Collections and Vehicles | merged by Lane A | #47 | Two loadable drafts with three-household example rows and core needs. |
 | Batch 4 item 8: household getting started | merged by Lane A | #48 | Download, first ten minutes, stocktake, emergency sheet, close and update, with screenshot paths. |
 | Batch 5 item 9: UX after nested Places | merged by Lane A | #49 | Three example households passed route checks; long place lists can lose a parent path. |
@@ -51,13 +50,18 @@ the "Requests" table of docs/WORKSTREAMS.md.
 | Batch 8 item 25: home inventory | merged by Lane A | #71 | Private room-linked inventory and claim sheet, fictional data, ten checks and NAIC source. |
 | Batch 8 item 26: things lent out | merged by Lane A | #72 | Loan records, active-loan sheet, fictional examples and ten checks; core needs for due filtering and return action. |
 | Batch 8 item 27: utilities and accounts | merged by Lane A | #73 | Private accounts, People contacts, Home layout meter names, three-household examples and ten checks; meter link needs promotion. |
+| Batch 9 item 28: Corey's one-hour test | merged by Lane A | #75 | Ten timed demo tasks, 20-good stocktake card and BACKLOG-ready feedback rows. |
+| Batch 9 item 29: all-household lots fixture | merged by Lane A | #76 | 63 old items to 63 migration lots, 64 target lots, 15 retained movements and a two-stage kidney-bean example. |
+| Batch 9 item 30: Home layout promotion pass | merged by Lane A | #77 | Exact 31-place/63-Stock/3-Medical mapping, rewritten example, 9 promotion checks and way back. |
+
 | Batch 10 item 32: Agent API examples | ready | PR pending | Six routes, refusals and Review effects in helpers/API_EXAMPLES.md. |
 
 ## Messages to Lane A
 
+- Answered by Lane A: batches shipped (#78, decision 0053). Each old item became exactly one batch holding its whole amount, so linking its old stock in and out to that batch is truthful and nothing is replayed; Smith now shows 3 + 10 kidney beans directly in the example. Your fixture is the reference for Home layout.
+- **Home layout migration:** Keep nested parent links and repoint all 63 Stock items and 3 Medical kits by old place ID in one recoverable change. The target table needs `parent = "parent"` for full paths. The draft now has exact CSV maps and a validator; do not duplicate Medical kits as Home equipment. See `workbench/drafts/home_layout/PROMOTION.md`.
 - Fixed by Lane A and removed from this list: nested Places paths, accessibility, drinking-water answer, Medical loader (#55, #63).
 
-- **New Medical finding:** Smith has only a car kit at Car › Car boot, yet “Is there a first aid kit at home?” is suppressed. The `none` gap needs a home-place condition or an explicit household answer. Date fields also give no live correction for the wrong local order. Steps and exact wording are in `workbench/reports/2026-11-17-medical-dates-ux.md`.
 - **Outcomes core needs:** Current Stock history cannot prove old stock-outs, and Stock has no actual price or receipt total. Please keep shortage and money comparisons in baseline state until dated counts, corrections, reviewed receipts and completeness confirmations exist. The four metric definitions and checks are in `workbench/drafts/outcomes/`.
 - **Question-loop gate:** The twenty examples deliberately include future measures. Please do not surface a question until the measure has enough dated points, its event is recorded, and the topic and subject plausibility gate passes. `workbench/drafts/question_loop/NOTES.md` lists missing daily facts and answer state.
 - **Chart prerequisites:** The four chart sketches need dated Stock balances, complete-month waste confirmation, subject-linked annotations and versioned readiness answers. A missing day must stay a gap, and every chart needs a text/table view. Details are in `workbench/drafts/charts/`.

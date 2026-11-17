@@ -1,7 +1,7 @@
 [[sheet]]
 name = "our_home"
 title = "Our home"
-intro = "A quick guide to exits, shut-offs and safety things. Check that each place still matches the home before printing."
+intro = "A quick guide to exits, shut-offs, meters and safety things. First aid kits are on the separate First aid at home sheet. Check each full place path and route before printing a new copy."
 
 [[sheet.section]]
 title = "Home and upstairs route"
