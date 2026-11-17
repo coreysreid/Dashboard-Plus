@@ -120,12 +120,23 @@ def _starting_amounts(registry: dict, tables: list[tuple[str, list[dict]]]) -> d
         rule = registry[name].table.adjusts if name in registry else None
         if not rule:
             continue
-        target = table_name(registry[name].module.name, rule["target"])
+        target, link = _counted(registry, name, rule)
         for row in rows:
             sign = 1 if row.get(rule["direction"]) in rule["adds"] else -1
-            key = (target, row[rule["link"]])
+            key = (target, row[link])
             changes[key] = changes.get(key, 0) + sign * float(row[rule["amount"]])
     return changes
+
+
+def _counted(registry: dict, name: str, rule: dict) -> tuple[str, str]:
+    """The table whose amount stock in and out changes, and the column naming it in the file.
+
+    With batches, the file names the item; its amount is the sum of its batches (DESIGN 5.7)."""
+    module = registry[name].module.name
+    if rule.get("belongs_to"):
+        owner = registry[name].table.columns[rule["belongs_to"]]
+        return table_name(module, owner.to), rule["belongs_to"]
+    return table_name(module, rule["target"]), rule["link"]
 
 
 def load_records(conn: sqlite3.Connection, registry: dict, data: dict, today: date | None = None) -> int:
@@ -142,8 +153,8 @@ def load_records(conn: sqlite3.Connection, registry: dict, data: dict, today: da
         quantity = None
         for other, _ in tables:
             rule = registry[other].table.adjusts if other in registry else None
-            if rule and table_name(registry[other].module.name, rule["target"]) == name:
-                quantity = rule["quantity"]
+            if rule and _counted(registry, other, rule)[0] == name:
+                quantity = "quantity" if rule.get("belongs_to") else rule["quantity"]
         for row in rows:
             values = {}
             for column, value in row.items():
@@ -166,6 +177,16 @@ def load_records(conn: sqlite3.Connection, registry: dict, data: dict, today: da
                 if start < 0:
                     raise ExampleError(f"{name}: '{label}' would start below zero; raise its amount.")
                 values[quantity] = round(start, 3)
+            rule = info.table.adjusts
+            if rule and rule.get("belongs_to") and values.get(rule["link"]) is None \
+                    and values.get(rule["belongs_to"]) is not None:
+                # Stock in and out in the file belongs to the item's first batch unless it says otherwise.
+                batches = registry[table_name(info.module.name, rule["target"])]
+                first = conn.execute(f"SELECT id FROM {batches.name} WHERE deleted_at IS NULL AND "
+                                     f"{rule['belongs_to']} = ? ORDER BY id LIMIT 1",
+                                     (values[rule["belongs_to"]],)).fetchone()
+                if first is not None:
+                    values[rule["link"]] = first["id"]
             existing = _find(conn, info, label) if name in SETUP_TABLES and label else None
             if existing is not None:
                 store.update(name, existing, values)

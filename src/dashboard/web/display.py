@@ -4,7 +4,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 from decimal import Decimal
 
-from dashboard.core import dates
+from dashboard.core import dates, naming
 from dashboard.core.modules import Column
 from dashboard.core.records import Records, TableInfo
 from dashboard.core.schema import target_table
@@ -38,8 +38,8 @@ def column_help(info: TableInfo, column: Column) -> str | None:
     return _labels(info).get("columns", {}).get(column.name, {}).get("help") or column.help
 
 
-def form_columns(info: TableInfo) -> list[Column]:
-    """Columns in the order the form should show them.
+def form_columns(info: TableInfo, hide=()) -> list[Column]:
+    """Columns in the order the form should show them, leaving out `hide`.
 
     labels.toml's `form` sets the order; any required column it leaves out is
     added at the end, so a form can never be impossible to save.
@@ -47,10 +47,19 @@ def form_columns(info: TableInfo) -> list[Column]:
     columns = info.table.columns
     order = _labels(info).get("form")
     if not order:
-        return list(columns.values())
+        return [c for c in columns.values() if c.name not in hide]
     chosen = [columns[name] for name in order if name in columns]
     chosen += [c for c in columns.values() if c.required and c not in chosen]
-    return chosen
+    return [c for c in chosen if c.name not in hide]
+
+
+def batch_columns(records: Records, info: TableInfo) -> set[str]:
+    """Columns an item's form shows only when it is first added: its amount, use-by date and place
+    start its first batch; afterwards they belong to its batches (DESIGN.md 5.7)."""
+    hide = set(records._derived(info))
+    for other in records._totals_into(info):
+        hide |= set(other.table.total["starts_from"])
+    return hide
 
 
 def list_columns(info: TableInfo) -> list[Column]:
@@ -84,8 +93,10 @@ def path_name(info: TableInfo, rows_by_id: dict, row: dict) -> str:
     return PATH_SEPARATOR.join(reversed(names))
 
 
-def display_name(info: TableInfo, row: dict) -> str:
+def display_name(info: TableInfo, row: dict, records: Records | None = None) -> str:
     """A short human name for a record, used wherever another record links to it."""
+    if info.table.record_name and records is not None:
+        return naming.record_name(records.conn, records.registry, info, row)  # "3 tins of Kidney beans"
     column = name_column(info)
     value = row.get(column.name) if column else None
     return str(value) if value not in (None, "") else f"{table_title(info)} #{row['id']}"
@@ -127,7 +138,7 @@ class Formatter:
                     chain = self.records.ancestors(target, int(record_id))
                     name = path_name(target, {r["id"]: r for r in chain}, chain[-1]) if chain else display_name(target, row)
                 else:
-                    name = display_name(target, row)
+                    name = display_name(target, row, self.records)
                 self._names[key] = name + (" (deleted)" if row.get("deleted_at") else "")
             except Exception:  # noqa: BLE001 - a missing link should never break a page
                 self._names[key] = "(missing)"
@@ -199,11 +210,12 @@ def input_value(column: Column, value):
     return value
 
 
-def build_fields(records: Records, info: TableInfo, values: dict, errors: dict, from_form: bool) -> list[Field]:
+def build_fields(records: Records, info: TableInfo, values: dict, errors: dict, from_form: bool,
+                 editing: bool = False) -> list[Field]:
     """Fields for a form. `values` are stored values, or raw form text when `from_form`."""
     formatter = Formatter(records)
     fields = []
-    for column in form_columns(info):
+    for column in form_columns(info, batch_columns(records, info) if editing else ()):
         options: list[tuple[str, str]] = []
         if column.type == "choice":
             options = [(c.key, c.label) for c in column.choices]
@@ -228,7 +240,7 @@ def build_fields(records: Records, info: TableInfo, values: dict, errors: dict, 
                 options = sorted(((str(r["id"]), path_name(target, by_id, dict(r))) for r in rows),
                                  key=lambda option: option[1].lower())
             else:
-                options = [(str(r["id"]), display_name(target, r)) for r in rows]
+                options = [(str(r["id"]), display_name(target, r, records)) for r in rows]
         raw = values.get(column.name)
         value = raw if from_form else input_value(column, raw)
         help_text = column_help(info, column)
@@ -257,12 +269,12 @@ def build_fields(records: Records, info: TableInfo, values: dict, errors: dict, 
     return fields
 
 
-def values_from_form(info: TableInfo, form, date_style: str = dates.DAY_FIRST) -> tuple[dict, dict]:
+def values_from_form(info: TableInfo, form, date_style: str = dates.DAY_FIRST, hide=()) -> tuple[dict, dict]:
     """Read the submitted form into values for the record service, and any dates that could not be read.
 
     Dates are typed the household's way (20/05/27) and handed on as 2027-05-20."""
     values, problems = {}, {}
-    for column in form_columns(info):
+    for column in form_columns(info, hide):
         if column.type == "date" and form.get(column.name, "").strip():
             try:
                 values[column.name] = dates.parse(form.get(column.name), date_style)

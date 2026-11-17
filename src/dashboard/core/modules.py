@@ -27,8 +27,11 @@ SYSTEM_COLUMNS = ("id", "created_at", "updated_at", "review_status", "source", "
 
 MODULE_KEYS = ("name", "title", "version", "description", "core_api", "kind", "requires", "outbound_hosts")
 MODULE_REQUIRED = ("name", "title", "version", "description", "core_api", "kind")
-TABLE_KEYS = ("title", "description", "columns", "watch", "adjusts", "parent")
+TABLE_KEYS = ("title", "description", "columns", "watch", "adjusts", "parent", "total", "record_name")
 ADJUST_KEYS = ("link", "quantity", "amount", "direction", "adds")
+# Optional, for batches (DESIGN.md 5.7): the record a batch belongs to, and how to pick or start one.
+ADJUST_BATCH_KEYS = ("belongs_to", "new_batch", "oldest_first")
+TOTAL_KEYS = ("link", "amount", "into", "earliest", "starts_from")
 WATCH_KEYS = ("running_low", "expiring", "supply", "gaps")
 GAP_KEYS = ("missing", "none", "where", "message")
 COLUMN_KEYS = ("type", "required", "required_when", "default", "min", "max", "unit", "choices", "help", "sensitive",
@@ -78,6 +81,8 @@ class Table:
     watch: dict = field(default_factory=dict)  # checked `watch` section (DESIGN.md 5.1)
     adjusts: dict = field(default_factory=dict)  # checked `adjusts` section (DESIGN.md 5.3)
     parent: str | None = None  # a link to this same table that nests records (DESIGN.md 5.6)
+    total: dict = field(default_factory=dict)  # checked `total` section: batches add up into a record (5.7)
+    record_name: str | None = None  # how to name a record with no name of its own, like "{quantity} {item.unit} of {item}"
 
 
 @dataclass
@@ -270,7 +275,8 @@ def _check_watch(file: str, table: str, raw, columns: dict[str, Column], problem
         if not isinstance(expiring, dict):
             problems.append(f"{where}, expiring: write it like {{ date = \"expires\", warn_days = 30 }}.")
         else:
-            problems.extend(_unknown_keys(f"{where}, expiring", expiring, ("date", "warn_days", "wording", "what")))
+            problems.extend(_unknown_keys(f"{where}, expiring", expiring,
+                                          ("date", "warn_days", "wording", "what", "only_positive")))
             days = expiring.get("warn_days", 30)
             wording = expiring.get("wording", "expires")
             what = expiring.get("what", "")
@@ -281,8 +287,12 @@ def _check_watch(file: str, table: str, raw, columns: dict[str, Column], problem
                                 f"(things to do by a date).")
             elif not isinstance(what, str):
                 problems.append(f"{where}, expiring: 'what' must be a few words, like \"vaccinations\".")
-            elif column("expiring", "date", expiring.get("date"), ("date",)):
+            elif column("expiring", "date", expiring.get("date"), ("date",)) and (
+                    "only_positive" not in expiring
+                    or column("expiring", "only_positive", expiring["only_positive"], numbers)):
                 watch["expiring"] = {"date": expiring["date"], "warn_days": days, "wording": wording, "what": what}
+                if "only_positive" in expiring:  # a batch that is used up has nothing left to warn about
+                    watch["expiring"]["only_positive"] = expiring["only_positive"]
 
     supply = raw.get("supply")
     if supply is not None:
@@ -352,7 +362,7 @@ def _check_adjusts(file: str, table: Table, tables: dict[str, Table], problems: 
     if not isinstance(raw, dict):
         problems.append(f"{where}: describe it as settings (link, quantity, amount, direction, adds).")
         return {}
-    problems.extend(_unknown_keys(where, raw, ADJUST_KEYS))
+    problems.extend(_unknown_keys(where, raw, ADJUST_KEYS + ADJUST_BATCH_KEYS))
     for key in ADJUST_KEYS:
         if key not in raw:
             problems.append(f"{where}: '{key}' is missing.")
@@ -385,8 +395,93 @@ def _check_adjusts(file: str, table: Table, tables: dict[str, Table], problems: 
         problems.append(f"{where}: 'adds' must list choices of '{raw['direction']}' that add to the quantity; "
                         f"not choices: {', '.join(map(str, unknown)) or raw['adds']}. Allowed: {', '.join(keys)}.")
         return {}
-    return {"link": raw["link"], "target": link.to, "quantity": raw["quantity"], "amount": raw["amount"],
+    rule = {"link": raw["link"], "target": link.to, "quantity": raw["quantity"], "amount": raw["amount"],
             "direction": raw["direction"], "adds": list(adds)}
+    if "belongs_to" in raw:  # records here change batches (DESIGN.md 5.7)
+        owner = columns.get(raw["belongs_to"])
+        batch_owner = target.columns.get(raw["belongs_to"])
+        if owner is None or owner.type != "link" or batch_owner is None or batch_owner.type != "link" \
+                or owner.to != batch_owner.to:
+            problems.append(f"{where}: 'belongs_to' must name a link column that both this table and "
+                            f"'{link.to}' have, pointing at the same table (such as \"item\").")
+            return {}
+        rule["belongs_to"] = raw["belongs_to"]
+        new_batch = raw.get("new_batch", {})
+        if not isinstance(new_batch, dict) or any(
+                k not in target.columns or v not in columns for k, v in new_batch.items()):
+            problems.append(f"{where}: 'new_batch' maps columns of '{link.to}' to columns of this table, "
+                            f"like {{ expires = \"expires\" }}.")
+            return {}
+        rule["new_batch"] = dict(new_batch)
+        oldest = raw.get("oldest_first")
+        if oldest is not None and (oldest not in target.columns or target.columns[oldest].type != "date"):
+            problems.append(f"{where}: 'oldest_first' must name a date column of '{link.to}'.")
+            return {}
+        rule["oldest_first"] = oldest
+    elif any(k in raw for k in ("new_batch", "oldest_first")):
+        problems.append(f"{where}: 'new_batch' and 'oldest_first' need 'belongs_to'.")
+        return {}
+    return rule
+
+
+def _check_total(file: str, table: Table, tables: dict[str, Table], raw, problems: list[str]) -> dict:
+    """Check a `total` section: these records (batches) add up into a column of the record they belong to."""
+    where = f"In {file}, table '{table.name}', total"
+    if not isinstance(raw, dict):
+        problems.append(f"{where}: describe it as settings (link, amount, into).")
+        return {}
+    problems.extend(_unknown_keys(where, raw, TOTAL_KEYS))
+    numbers = ("integer", "decimal", "measure")
+    link = table.columns.get(raw.get("link"))
+    if link is None or link.type != "link" or "." in (link.to or "") or link.to not in tables:
+        problems.append(f"{where}: 'link' must name a link column to another table of this module.")
+        return {}
+    target = tables[link.to]
+    amount, into = table.columns.get(raw.get("amount")), target.columns.get(raw.get("into"))
+    if amount is None or amount.type not in numbers or into is None or into.type not in numbers:
+        problems.append(f"{where}: 'amount' must name a number column of this table and 'into' a number "
+                        f"column of '{link.to}'.")
+        return {}
+    rule = {"link": raw["link"], "target": link.to, "amount": raw["amount"], "into": raw["into"],
+            "earliest": None, "starts_from": []}
+    earliest = raw.get("earliest")
+    if earliest is not None:
+        ok = isinstance(earliest, dict) and set(earliest) == {"date", "into"}
+        here = table.columns.get(earliest.get("date")) if ok else None
+        there = target.columns.get(earliest.get("into")) if ok else None
+        if not ok or here is None or here.type != "date" or there is None or there.type != "date":
+            problems.append(f"{where}: 'earliest' must be like {{ date = \"expires\", into = \"expires\" }}, "
+                            f"naming date columns here and in '{link.to}'.")
+            return {}
+        rule["earliest"] = dict(earliest)
+    starts = raw.get("starts_from", [])
+    if not isinstance(starts, list) or any(c not in table.columns or c not in target.columns for c in starts):
+        problems.append(f"{where}: 'starts_from' lists columns that both this table and '{link.to}' have.")
+        return {}
+    rule["starts_from"] = list(starts)
+    return rule
+
+
+def _check_record_name(file: str, table: Table, tables: dict[str, Table], template, problems: list[str]) -> str | None:
+    """Check `record_name`: a pattern like "{quantity} {item.unit} of {item}" naming a record."""
+    where = f"In {file}, table '{table.name}', record_name"
+    try:
+        fields = [f for _, f, _, _ in string.Formatter().parse(template.replace("[", "").replace("]", ""))
+                  if f is not None] if isinstance(template, str) else None
+    except ValueError:
+        fields = None
+    if not fields:
+        problems.append(f"{where}: write it like \"{{quantity}} {{item.unit}} of {{item}}\".")
+        return None
+    for name in fields:
+        link, _, field_name = name.partition(".")
+        column = table.columns.get(link)
+        if column is None or (field_name and (column.type != "link" or "." in (column.to or "")
+                                              or field_name not in tables.get(column.to, Table("", "", None, {})).columns)):
+            problems.append(f"{where}: '{{{name}}}' must name a column of this table, or a link column and a "
+                            f"column of the table it points at.")
+            return None
+    return template
 
 
 def _check_tables(module: str, data: dict, requires: list[str], problems: list[str]) -> dict[str, Table]:
@@ -439,6 +534,13 @@ def _check_tables(module: str, data: dict, requires: list[str], problems: list[s
     for table in tables.values():
         if table.adjusts:
             table.adjusts = _check_adjusts(file, table, tables, problems)
+    for tname, raw in raw_tables.items():
+        if isinstance(raw, dict) and tname in tables:
+            if "total" in raw:
+                tables[tname].total = _check_total(file, tables[tname], tables, raw["total"], problems)
+            if "record_name" in raw:
+                tables[tname].record_name = _check_record_name(file, tables[tname], tables, raw["record_name"],
+                                                               problems)
     for table in tables.values():
         for column in table.columns.values():
             if column.type in ("link", "links") and column.to:
@@ -670,7 +772,14 @@ def _check_sheets(data: dict, tables: dict[str, Table], problems: list[str]) -> 
                 problems.append(f"{s_where}: 'where' must be settings like {{ lives_here = true }}.")
                 filters = {}
             for c in filters:
-                if c not in columns:
+                link, _, field_name = c.partition(".")
+                if field_name:  # a column of the linked record, e.g. "item.category"
+                    target = columns.get(link)
+                    if target is None or target.type != "link" or target.to not in tables \
+                            or field_name not in tables[target.to].columns:
+                        problems.append(f"{s_where}: 'where' names '{c}', which must be a link column and a "
+                                        f"column of the table it points at.")
+                elif c not in columns:
                     problems.append(f"{s_where}: 'where' names a column '{c}' that does not exist.{_suggest(c, list(columns))}")
             order_by = section.get("order_by", "id")
             if order_by != "id" and order_by not in columns:
