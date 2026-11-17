@@ -7,7 +7,7 @@ from dataclasses import dataclass, field
 from datetime import date
 from urllib.parse import urlencode
 
-from dashboard.core import schema, settings
+from dashboard.core import dates, schema, settings
 from dashboard.core.records import TableInfo
 
 PEOPLE_TABLE = "people__people"
@@ -92,6 +92,7 @@ def running_low(conn: sqlite3.Connection, registry: dict[str, TableInfo]) -> lis
 def expiring(conn: sqlite3.Connection, registry: dict[str, TableInfo], today: date | None = None) -> list[WatchItem]:
     """Records whose date is past or within the warning window, soonest first."""
     today = today or date.today()
+    style = dates.household_style(conn)
     items = []
     for info in registry.values():
         rule = info.table.watch.get("expiring")
@@ -108,27 +109,27 @@ def expiring(conn: sqlite3.Connection, registry: dict[str, TableInfo], today: da
             days = (when - today).days
             if days > warn:
                 continue
-            detail = _due_words(rule.get("wording", "expires"), rule.get("what", ""), when, days)
+            detail = _due_words(rule.get("wording", "expires"), rule.get("what", ""), when, days, style)
             items.append(WatchItem(info.name, row["id"], _name(info, row), detail, days))
     return sorted(items, key=lambda i: (i.sort_key, i.name))
 
 
-def _due_words(wording: str, what: str, when: date, days: int) -> str:
+def _due_words(wording: str, what: str, when: date, days: int, style: str = dates.DAY_FIRST) -> str:
     """How a date reads under Needs attention: "expires …" for use-by dates, "due …" for things to do."""
     plural = lambda n: f"{n} day{'s' if n != 1 else ''}"  # noqa: E731
     if wording == "due":
         if days < 0:
-            words = f"overdue since {when.isoformat()} ({plural(-days)} ago)"
+            words = f"overdue since {dates.show(when, style)} ({plural(-days)} ago)"
         elif days == 0:
             words = "due today"
         else:
-            words = f"due {when.isoformat()} (in {plural(days)})"
+            words = f"due {dates.show(when, style)} (in {plural(days)})"
     elif days < 0:
-        words = f"expired {when.isoformat()} ({plural(-days)} ago)"
+        words = f"expired {dates.show(when, style)} ({plural(-days)} ago)"
     elif days == 0:
         words = "expires today"
     else:
-        words = f"expires {when.isoformat()} (in {plural(days)})"
+        words = f"expires {dates.show(when, style)} (in {plural(days)})"
     return f"{what} {words}" if what else words
 
 

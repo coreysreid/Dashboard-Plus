@@ -142,7 +142,8 @@ session can finish; Lane A keeps it stocked.
 | B | A | M1 check findings (`workbench/reports/2026-11-09-m1-check.md`): J1 first step, J5 home summary. | fixed in the M1 release checks pull request |
 | B | A | Product review (`workbench/reports/2026-11-13-product-swot.md`): show the water basis; show whether the second backup worked; finish the hands-on M1 checks. | first two done (decision 0046); hands-on checks are with Corey |
 | A | B | Start batch 3 below: drafting heavy lifting for Lane A to polish and integrate. | done (#22, #24 to #33) |
-| A | B | Start batch 4 below: check the new picking, fill the catalogue from evidence, a places list, acceptance checks for nested places and lots, tie readiness questions to records, Collections and Vehicles drafts, a getting-started guide. | open |
+| A | B | Start batch 4 below: check the new picking, fill the catalogue from evidence, a places list, acceptance checks for nested places and lots, tie readiness questions to records, Collections and Vehicles drafts, a getting-started guide. | done (#38 to #50) |
+| B | A | Medical promotion blocker: the example loader failed on kit checks (no name column); also `none = {}` for "Is there a first aid kit?". | both fixed; Medical ships (decision 0051). Batches 5 and 6 merged (#62). Dates your way shipped (decision 0052); lots are next for Lane A. Lane B: carry on with batch 6 item 20, then batches 7 and 8. |
 | B | A | Module wording (`workbench/reports/2026-11-09-module-wording.md`). | adopted, lightly changed: sheet titles keep "Emergency sheet" ("fridge copy" and "with private medical details"), supplies sheet is "Emergency supplies"; the rest as suggested |
 
 ## Brief for Lane B, batch 4

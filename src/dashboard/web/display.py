@@ -4,6 +4,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 from decimal import Decimal
 
+from dashboard.core import dates
 from dashboard.core.modules import Column
 from dashboard.core.records import Records, TableInfo
 from dashboard.core.schema import target_table
@@ -106,6 +107,13 @@ class Formatter:
     def __init__(self, records: Records):
         self.records = records
         self._names: dict[tuple[str, int], str] = {}
+        self._date_style: str | None = None
+
+    @property
+    def date_style(self) -> str:
+        if self._date_style is None:
+            self._date_style = dates.household_style(self.records.conn)
+        return self._date_style
 
     def target(self, info: TableInfo, column: Column) -> TableInfo:
         return self.records.registry[target_table(info.module.name, column)]
@@ -139,6 +147,8 @@ class Formatter:
         if kind in ("measure", "decimal", "integer"):
             text = _number_text(value)
             return f"{text} {column.unit}" if column.unit else text
+        if kind == "date":
+            return dates.show(value, self.date_style)
         if kind == "datetime":
             return str(value).replace("T", " ")[:16]
         if kind == "link":
@@ -163,6 +173,7 @@ class Field:
     add_new: str | None = None  # for a link: where to add a new record, with the typed name appended
     search: str | None = None  # for a long link list: where to look past the first OPTION_LIMIT records
     help_answers: list | None = None  # the words for yes and no, for a yes/no that must be answered
+    date_style: str | None = None  # for a date: dmy, mdy or ymd, the household's way of writing dates
 
     @property
     def name(self) -> str:
@@ -220,6 +231,12 @@ def build_fields(records: Records, info: TableInfo, values: dict, errors: dict, 
                 options = [(str(r["id"]), display_name(target, r)) for r in rows]
         raw = values.get(column.name)
         value = raw if from_form else input_value(column, raw)
+        help_text = column_help(info, column)
+        if column.type == "date":
+            if value and dates.is_stored(str(value)):  # a stored or default date, not what was typed
+                value = dates.show(value, formatter.date_style)
+            hint = dates.HINTS[formatter.date_style] + "."
+            help_text = f"{hint} {help_text}" if help_text else hint
         if column.type == "link" and value not in (None, ""):
             value = str(value)
         shown = _labels(info).get("columns", {}).get(column.name, {}).get("show_when")
@@ -231,19 +248,27 @@ def build_fields(records: Records, info: TableInfo, values: dict, errors: dict, 
                 add_new = f"/t/{target.name}/new?{name_col.name}="
                 if len(options) >= OPTION_LIMIT:
                     search = f"/t/{target.name}/suggest?column={name_col.name}"
-        fields.append(Field(column, column_label(info, column), column_help(info, column),
+        fields.append(Field(column, column_label(info, column), help_text,
                             value, errors.get(column.name), options,
                             next(iter(shown.items())) if shown else None,
                             (info.table.name, column.name) in info.module.catalogues, add_new, search,
-                            _labels(info).get("columns", {}).get(column.name, {}).get("answers")))
+                            _labels(info).get("columns", {}).get(column.name, {}).get("answers"),
+                            formatter.date_style if column.type == "date" else None))
     return fields
 
 
-def values_from_form(info: TableInfo, form) -> dict:
-    """Read the submitted form into values for the record service."""
-    values = {}
+def values_from_form(info: TableInfo, form, date_style: str = dates.DAY_FIRST) -> tuple[dict, dict]:
+    """Read the submitted form into values for the record service, and any dates that could not be read.
+
+    Dates are typed the household's way (20/05/27) and handed on as 2027-05-20."""
+    values, problems = {}, {}
     for column in form_columns(info):
-        if column.type == "links":
+        if column.type == "date" and form.get(column.name, "").strip():
+            try:
+                values[column.name] = dates.parse(form.get(column.name), date_style)
+            except ValueError as error:
+                problems[column.name] = str(error)
+        elif column.type == "links":
             values[column.name] = form.getlist(column.name)
         elif column.type == "boolean" and column.required_when:
             values[column.name] = form.get(column.name, "")  # an explicit yes or no, or no answer yet
@@ -251,7 +276,7 @@ def values_from_form(info: TableInfo, form) -> dict:
             values[column.name] = "yes" if form.get(column.name) else "no"
         else:
             values[column.name] = form.get(column.name, "")
-    return values
+    return values, problems
 
 
 def actor_text(actor: str) -> str:

@@ -3,7 +3,7 @@ from __future__ import annotations
 
 from flask import Blueprint, abort, current_app, jsonify, redirect, render_template, request, url_for
 
-from dashboard.core import records, schema, suggest
+from dashboard.core import dates, records, schema, suggest
 from dashboard.web import display
 
 pages = Blueprint("pages", __name__)
@@ -153,6 +153,20 @@ def _raw_form(info):
     return raw
 
 
+def _form_values(info, store, creating: bool) -> dict:
+    """The submitted values, with dates read the household's way. A date that cannot be read is
+    reported together with every other problem in the form, and nothing is saved."""
+    values, date_problems = display.values_from_form(info, request.form, dates.household_style(store.conn))
+    if date_problems:
+        problems = dict(date_problems)
+        try:
+            store.clean(info, values, creating)
+        except records.ValidationError as error:
+            problems = {**error.problems, **date_problems}
+        raise records.ValidationError(problems)
+    return values
+
+
 @pages.get("/t/<table>/new")
 def new_record(table):
     """An empty form; values in the address (for example ?item=3) are filled in."""
@@ -173,9 +187,8 @@ def new_record(table):
 @pages.post("/t/<table>/new")
 def create_record(table):
     info, store = _info(table), _store()
-    values = display.values_from_form(info, request.form)
     try:
-        record_id = store.create(table, values)
+        record_id = store.create(table, _form_values(info, store, creating=True))
     except records.ValidationError as error:
         back = request.form.get("back") if request.form.get("back", "").startswith("/t/") else None
         return _render_form(info, store, _raw_form(info), error.problems, True, status=422, back=back)
@@ -204,9 +217,8 @@ def update_record(table, record_id):
         record = store.get(table, record_id)
     except records.RecordNotFound:
         abort(404)
-    values = display.values_from_form(info, request.form)
     try:
-        store.update(table, record_id, values)
+        store.update(table, record_id, _form_values(info, store, creating=False))
     except records.ValidationError as error:
         return _render_form(info, store, _raw_form(info), error.problems, True, record=record, status=422)
     return redirect(url_for("pages.edit_record", table=table, record_id=record_id, saved="1"))

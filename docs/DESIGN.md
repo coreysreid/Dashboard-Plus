@@ -130,6 +130,15 @@ Time is first-class because the question loop depends on it.
 
 - **Dates and times.** Stored as ISO 8601 text. A household has one configured
   time zone; "a day" always means a local calendar day.
+- **Dates the household's way** (decision 0052). People type and read dates in
+  their country's order: 20/05/27 in Australia, the UK, New Zealand and most
+  places; 05/20/27 in the United States; 2027-05-20 in Canada. 2027-05-20 is
+  understood everywhere. Two-digit years mean 2000 to 2099. Impossible dates
+  (31/04/27) are refused, never rolled over. One parser and formatter
+  (`core/dates.py`) serves forms, lists, *Needs attention* and sheets; the
+  form previews the date in words ("1 February 2027") while typing. Changing
+  the country changes how dates look, never what is stored. The record
+  service and the Agent API take only 2027-05-20.
 - **Events.** A core `core__events` table: a title, a start date (and optional
   end date), an optional recurrence, an optional "about" link, and a kind
   (`note`, `milestone`, `appointment`, `annotation`, `external`). Events are

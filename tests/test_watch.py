@@ -99,7 +99,7 @@ class WatchResultsTests(TempDirTestCase):
         self.add(name="Tins", expires="2027-06-01")
         items = watch.expiring(self.conn, self.registry, today)
         self.assertEqual([i.name for i in items], ["Old milk", "Bread", "Cheese"])
-        self.assertEqual(items[0].detail, "expired 2026-05-30 (2 days ago)")
+        self.assertEqual(items[0].detail, "expired 30/05/26 (2 days ago)")
         self.assertEqual(items[1].detail, "expires today")
         self.assertIn("in 19 days", items[2].detail)
 
