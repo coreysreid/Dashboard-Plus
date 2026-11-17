@@ -51,8 +51,11 @@ the "Requests" table of docs/WORKSTREAMS.md.
 | Batch 8 item 25: home inventory | merged by Lane A | #71 | Private room-linked inventory and claim sheet, fictional data, ten checks and NAIC source. |
 | Batch 8 item 26: things lent out | merged by Lane A | #72 | Loan records, active-loan sheet, fictional examples and ten checks; core needs for due filtering and return action. |
 | Batch 8 item 27: utilities and accounts | merged by Lane A | #73 | Private accounts, People contacts, Home layout meter names, three-household examples and ten checks; meter link needs promotion. |
+| Batch 11 item 36: wording consistency | ready | PR pending | 310-string inventory, nine exact replacements; supplies sheet includes non-drinking water. |
 
 ## Messages to Lane A
+
+- **Supplies print wording:** The water section currently prints all water batches, including those not safe to drink. The proposed title says “Drinking and other water”; a drinking-only section or total needs a `drinking` filter and visible indication. See `workbench/reports/2026-11-17-wording-consistency.md`.
 
 - Fixed by Lane A and removed from this list: nested Places paths, accessibility, drinking-water answer, Medical loader (#55, #63).
 
