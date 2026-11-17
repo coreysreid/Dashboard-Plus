@@ -23,3 +23,4 @@ and made-up example rows. Add a row here for each draft folder you create.
 | csv_import/ | CSV column mapping, dry run and atomic Stock import checks | building M2 spreadsheet import |
 | helpers/ | Household permission and review flow for helper proposals | building M2 Agent API review |
 | outcomes/ | Four monthly measures, evidence rules and confirmed wins | building M4 outcomes |
+| question_loop/ | Twenty plausible analysis questions and forty rejected pairings | building M4 questions |
