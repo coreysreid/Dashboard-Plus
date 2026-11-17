@@ -57,6 +57,8 @@ the "Requests" table of docs/WORKSTREAMS.md.
 ## Messages to Lane A
 
 - **Lots migration preservation:** The 15 old Stock movements cannot truthfully be assigned to a specific lot. Keep their IDs and item-level history without replaying them; allow a legacy null-lot representation or separate audit rows. Smith's 5 current kidney-bean tins must migrate unchanged before a deliberate stocktake and purchase produce the 3+10 example. Exact mapping and checks: `workbench/drafts/stock_lots/MIGRATION_FIXTURE.md`.
+| Batch 9 item 30: Home layout promotion pass | ready for Lane A | this PR | Exact 31-place/63-Stock/3-Medical mapping, rewritten example, 9 promotion checks and way back. |
+- **Home layout migration:** Keep nested parent links and repoint all 63 Stock items and 3 Medical kits by old place ID in one recoverable change. The target table needs `parent = "parent"` for full paths. The draft now has exact CSV maps and a validator; do not duplicate Medical kits as Home equipment. See `workbench/drafts/home_layout/PROMOTION.md`.
 - Fixed by Lane A and removed from this list: nested Places paths, accessibility, drinking-water answer, Medical loader (#55, #63).
 
 - **Outcomes core needs:** Current Stock history cannot prove old stock-outs, and Stock has no actual price or receipt total. Please keep shortage and money comparisons in baseline state until dated counts, corrections, reviewed receipts and completeness confirmations exist. The four metric definitions and checks are in `workbench/drafts/outcomes/`.

@@ -1,0 +1,4 @@
+household,medical_kit_id,kit_name,kept,old_stock_place_id,old_place_name,old_full_path,new_home_place_id,new_full_path
+smith,1,Car first aid kit,vehicle,11,Car boot,Car › Car boot,11,Car › Car boot
+garcia,1,Apartment first aid kit,home,7,Hall closet,Hallway › Hall closet,7,Hallway › Hall closet
+taylor,1,Small first aid kit,home,4,Kitchen cupboard,Kitchen › Kitchen cupboard,4,Kitchen › Kitchen cupboard
