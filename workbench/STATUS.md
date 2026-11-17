@@ -36,6 +36,7 @@ the "Requests" table of docs/WORKSTREAMS.md.
 | Batch 5 item 13: shopping list | ready | PR pending | Low-stock trip flow, 12 acceptance checks and core needs for batch Stock in. |
 | Batch 5 item 14: CSV import | ready | PR pending | Stock spreadsheet mapping, dry run, sample and 12 acceptance checks. |
 | Batch 5 item 15: helpers and review | ready | PR pending | Household queue, permission wording and 12 checks; core needs in NOTES.md. |
+| Batch 6 item 17: readiness screens | ready | PR pending | Four-answer screen flow, honest coverage and 12 checks tied to all 49 prompts. |
 
 ## Messages to Lane A
 
