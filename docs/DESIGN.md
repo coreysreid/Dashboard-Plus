@@ -499,7 +499,8 @@ number and the core can load both for a transition period.
   - *people*: name, preferred name, lives here (yes/no), relationship, birthday,
     phone, email, address, notes.
   - *roles*: a person and a role (emergency contact, family, neighbour, doctor,
-    dentist, vet, tradesperson, school, workplace, key holder, other) with a
+    dentist, vet, tradesperson, roadside assistance, school, workplace, key
+    holder, other) with a
     priority order, so "who do I call first" has an answer.
   - *important_info*: a person and a kind (allergy, condition, medication,
     care or mobility need, dietary, access instructions, other) with detail.
@@ -536,6 +537,16 @@ number and the core can load both for a transition period.
   gas, which many homes lack); a check is *due* on the date the household
   chose, never one worked out for it; an **Our home** sheet prints everything
   with full place paths and no notes.
+- **Vehicles** (declarative; requires People and Household stock; shipped,
+  decision 0058). Tables: vehicles (registration or plate number, marked
+  `sensitive`; registration or vehicle tax due; who to call if it breaks
+  down, a link to `people.people`; where it is usually kept, a link to
+  `stock.places`; its car emergency kit, a link to `stock.items`), insurance
+  renewals and services and checks. Behaviour: each date is *due* on the day
+  the household chose, never one worked out from the last; one gap asks, per
+  vehicle, "Who would you call if it broke down?"; a household with no
+  vehicle is asked nothing; a **Vehicles** sheet prints the vehicles and
+  dates without plate or policy numbers.
 - **Readiness** (declarative; the home of the prompts in section 10.5).
   Tables: plans (a situation the household has thought through: what we would
   do, who does what, the answer to "could we get down from upstairs?"), drills

@@ -16,7 +16,7 @@ home_type = "apartment"
 storeys = 1
 mobility_needs = true
 hazards = ["earthquake", "heat", "power"]
-modules = ["home_layout", "medical", "people", "pets", "stock"]
+modules = ["home_layout", "medical", "people", "pets", "stock", "vehicles"]
 
 # ---- People -----------------------------------------------------------------
 
@@ -106,6 +106,17 @@ name = "Building manager"
 phone = "(415) 555-0180"
 relationship = "professional"
 notes = "Gas and water shut-off for the building. Elevator problems."
+
+[[people.people]]
+name = "Example Roadside Service"
+phone = "(800) 555-0199"
+relationship = "professional"
+notes = "Roadside help for the household car."
+
+[[people.roles]]
+person = "Example Roadside Service"
+role = "roadside_assistance"
+priority = 9
 
 [[people.roles]]
 person = "Luis Garcia"
@@ -537,6 +548,14 @@ amount = 1
 happened_on = "today-1"
 notes = "Weekly shop."
 
+[[stock.items]]
+name = "Car emergency kit"
+category = "tools"
+quantity = 1
+unit = "kits"
+place = "Car trunk"
+notes = "Jumper cables, a flashlight, a warning triangle and a blanket."
+
 # ---- Medical readiness --------------------------------------------------------
 
 [[medical.kits]]
@@ -612,3 +631,25 @@ notes = "One bag each, plus Luna's carrier."
 name = "Kitchen fire extinguisher"
 kind = "fire_extinguisher"
 place = "Kitchen cabinets"
+
+# ---- Vehicles -----------------------------------------------------------------
+# Every date is one the household typed from its own notice, policy or service schedule. The plate is made up.
+
+[[vehicles.vehicles]]
+name = "Household car"
+registration = "DEMO-US-001"
+registration_due = "today+120"
+roadside_contact = "Example Roadside Service"
+emergency_kit = "Car emergency kit"
+notes = "Parked in the building's lot. Carlos and Maria both drive it."
+
+[[vehicles.insurance]]
+vehicle = "Household car"
+name = "Auto insurance"
+renew_by = "today+22"
+
+[[vehicles.services]]
+vehicle = "Household car"
+name = "Oil change and inspection"
+last_done = "today-100"
+next_due = "today+75"

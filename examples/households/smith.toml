@@ -16,7 +16,7 @@ home_type = "house"
 storeys = 2
 mobility_needs = false
 hazards = ["bushfire", "heat", "storm"]
-modules = ["home_layout", "medical", "people", "pets", "stock"]
+modules = ["home_layout", "medical", "people", "pets", "stock", "vehicles"]
 
 # ---- People -----------------------------------------------------------------
 
@@ -133,6 +133,17 @@ priority = 7
 person = "Dave Wilson"
 role = "tradesperson"
 priority = 8
+
+[[people.people]]
+name = "Example Roadside Assist"
+phone = "1800 975 707"
+relationship = "professional"
+notes = "Roadside help for the family car, day or night."
+
+[[people.roles]]
+person = "Example Roadside Assist"
+role = "roadside_assistance"
+priority = 9
 
 [[people.important_info]]
 person = "Emily Smith"
@@ -587,6 +598,14 @@ reason = "used"
 amount = 2
 happened_on = "today-1"
 
+[[stock.items]]
+name = "Car emergency kit"
+category = "tools"
+quantity = 1
+unit = "kits"
+place = "Car boot"
+notes = "Jump leads, a torch, a warning triangle and a blanket."
+
 # ---- Medical readiness --------------------------------------------------------
 
 [[medical.kits]]
@@ -669,3 +688,26 @@ name = "Electricity meter"
 kind = "electricity"
 place = "Garage"
 how_to_find = "Inside the power board."
+
+# ---- Vehicles -----------------------------------------------------------------
+# Every date is one the family typed from its own notice, policy or service book. The plate is made up.
+
+[[vehicles.vehicles]]
+name = "Family car"
+registration = "DEMO-AU-001"
+registration_due = "today+100"
+roadside_contact = "Example Roadside Assist"
+parked_at = "Garage"
+emergency_kit = "Car emergency kit"
+notes = "Service book and papers are in the glovebox."
+
+[[vehicles.insurance]]
+vehicle = "Family car"
+name = "Comprehensive cover"
+renew_by = "today+80"
+
+[[vehicles.services]]
+vehicle = "Family car"
+name = "Routine service"
+last_done = "today-170"
+next_due = "today+12"
