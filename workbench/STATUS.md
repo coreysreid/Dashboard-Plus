@@ -32,6 +32,7 @@ the "Requests" table of docs/WORKSTREAMS.md.
 | Batch 4 item 8: household getting started | merged by Lane A | #48 | Download, first ten minutes, stocktake, emergency sheet, close and update, with screenshot paths. |
 | Batch 5 item 9: UX after nested Places | merged by Lane A | #49 | Three example households passed route checks; long place lists can lose a parent path. |
 | Batch 5 item 11: restore and export | ready | PR pending | Household screen flow and 12 acceptance checks; core gaps in the draft NOTES.md. |
+| Batch 5 item 12: receipt entry | ready | PR pending | 200 invented matching lines, four-region research, review screen and core needs. |
 
 ## Messages to Lane A
 

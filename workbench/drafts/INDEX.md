@@ -19,3 +19,4 @@ Add a row here for each draft folder you create.
 | vehicles/ | Vehicle reminders, roadside contacts and Stock car kits | reviewing or promoting it |
 | guide/ | A plain first-use guide with screenshot links | helping new households |
 | restore_export/ | Household restore and export screen flows, checks and core needs | building M2 backup recovery and portable data |
+| receipt_entry/ | Synthetic 200-line receipt matching vocabulary and review flow | building M2 receipt entry |
