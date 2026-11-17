@@ -21,3 +21,4 @@ Add a row here for each draft folder you create.
 | restore_export/ | Household restore and export screen flows, checks and core needs | building M2 backup recovery and portable data |
 | receipt_entry/ | Synthetic 200-line receipt matching vocabulary and review flow | building M2 receipt entry |
 | shopping_list/ | Trip list from the household's own low-stock thresholds, with Stock-in checks | building M2 shopping lists |
+| csv_import/ | CSV column mapping, dry run and atomic Stock import checks | building M2 spreadsheet import |

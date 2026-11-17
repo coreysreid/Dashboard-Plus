@@ -1,0 +1,5 @@
+name,category,amount_on_hand,unit,keep_at_least,place,use_by,safe_to_drink,notes
+TOM TINNED 400G,pantry,4,tins,8,Kitchen › Pantry › Top shelf,20/05/27,,Made-up stocktake row
+Rice,pantry,1.5,kg,3,Garage › Top shelf,,,Another Top shelf in a different room
+Flushing water,water,12,litres,12,Garage › Top shelf,,,Not for drinking; answer explicitly in review
+Kidney beans,pantry,2,tins,6,Kitchen › Pantry › Top shelf,1/2/27,,Ambiguous date needs review
