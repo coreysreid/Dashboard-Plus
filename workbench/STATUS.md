@@ -52,9 +52,11 @@ the "Requests" table of docs/WORKSTREAMS.md.
 | Batch 8 item 26: things lent out | merged by Lane A | #72 | Loan records, active-loan sheet, fictional examples and ten checks; core needs for due filtering and return action. |
 | Batch 8 item 27: utilities and accounts | merged by Lane A | #73 | Private accounts, People contacts, Home layout meter names, three-household examples and ten checks; meter link needs promotion. |
 | Batch 9 item 28: Corey's one-hour test | ready for Lane A | this PR | Ten timed demo tasks, 20-good stocktake card and BACKLOG-ready feedback rows. |
+| Batch 9 item 29: all-household lots fixture | ready for Lane A | this PR | 63 old items to 63 migration lots, 64 target lots, 15 retained movements and a two-stage kidney-bean example. |
 
 ## Messages to Lane A
 
+- **Lots migration preservation:** The 15 old Stock movements cannot truthfully be assigned to a specific lot. Keep their IDs and item-level history without replaying them; allow a legacy null-lot representation or separate audit rows. Smith's 5 current kidney-bean tins must migrate unchanged before a deliberate stocktake and purchase produce the 3+10 example. Exact mapping and checks: `workbench/drafts/stock_lots/MIGRATION_FIXTURE.md`.
 - Fixed by Lane A and removed from this list: nested Places paths, accessibility, drinking-water answer, Medical loader (#55, #63).
 
 - **Outcomes core needs:** Current Stock history cannot prove old stock-outs, and Stock has no actual price or receipt total. Please keep shortage and money comparisons in baseline state until dated counts, corrections, reviewed receipts and completeness confirmations exist. The four metric definitions and checks are in `workbench/drafts/outcomes/`.
