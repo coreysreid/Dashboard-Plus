@@ -9,7 +9,7 @@ Created and checked 17 November 2026. [large_household.toml](large_household.tom
 | Places | 600 | 20 top level, 40 at depth 2, 80 at depth 3, 160 at depth 4, 300 at depth 5. Names are globally unique so the example loader resolves parent links without guessing. |
 | Stock items | 2,000 | Example supply 0001–2000, spread across the 300 deepest places; amount 20 packs, minimum 5. |
 | Stock batches | 2,000 after load | The current core creates one batch per new item from its starting amount, place and use-by date. No duplicate batch rows in the input. |
-| Stock movements | 3,600 | 100 invented one-pack uses per month for 36 months, 1 Dec 2023–17 Nov 2026; each item has enough starting stock. |
+| Stock movements | 3,600 | 1,800 one-pack uses and 1,800 one-pack purchases, alternating by month across 36 months, 1 Dec 2023–17 Nov 2026; each item has enough starting stock. |
 
 Load into a **new empty temporary folder** with:
 
