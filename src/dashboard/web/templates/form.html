@@ -41,8 +41,15 @@
       <label><input type="checkbox" id="{{ fid }}" name="{{ f.name }}" value="yes"{{ aria }} {% if f.value in (1, "1", "yes", True) %}checked{% endif %}> {{ f.label }}</label>
     {% else %}
       <label for="{{ fid }}">{{ f.label }}{% if f.column.required %} <span class="required" title="required">*</span>{% endif %}{% if f.column.unit %} <span class="muted">({{ f.column.unit }})</span>{% endif %}</label>
+      {% if f.kept_private %}
+        <div class="private-closed" id="{{ fid }}-closed">
+          <p class="help" style="margin-top:0">Private detail saved. Show to read or change it.</p>
+          <input type="hidden" name="_keep_private" value="{{ f.name }}" id="{{ fid }}-keep">
+          <button type="button" class="quiet" data-reveal-field="/t/{{ info.name }}/{{ record.id }}/reveal?column={{ f.name }}" data-field="{{ fid }}">Show private detail</button>
+        </div>
+      {% endif %}
       {% if f.kind == "longtext" %}
-        <textarea id="{{ fid }}" name="{{ f.name }}"{{ aria }}>{{ f.value or "" }}</textarea>
+        <textarea id="{{ fid }}" name="{{ f.name }}"{{ aria }}{% if f.kept_private %} hidden{% endif %}>{{ f.value or "" }}</textarea>
       {% elif f.kind in ("choice", "link") %}
         {% if f.kind == "link" and (f.options | length > 8 or f.search) %}
         <input type="search" class="find" data-find-for="{{ fid }}" data-add-new="{{ f.add_new or '' }}" data-search="{{ f.search or '' }}" placeholder="Type to find…" aria-label="Find {{ f.label | lower }}" autocomplete="off">
@@ -66,12 +73,12 @@
       {% elif f.kind in ("integer", "decimal", "measure", "money") %}
         <input type="text" inputmode="decimal" id="{{ fid }}" name="{{ f.name }}"{{ aria }} value="{{ f.value if f.value is not none else '' }}">
       {% else %}
-        <div class="suggest-box"><input type="text" id="{{ fid }}" name="{{ f.name }}" value="{{ f.value or '' }}"{{ aria }} {% if loop.first and not errors %}autofocus{% endif %}{% if f.suggest %} data-suggest="/t/{{ info.name }}/suggest?column={{ f.name }}" autocomplete="off" role="combobox" aria-autocomplete="list" aria-expanded="false" aria-controls="{{ fid }}-list"{% endif %}></div>
+        <div class="suggest-box"{% if f.kept_private %} hidden id="{{ fid }}-box"{% endif %}><input type="text" id="{{ fid }}" name="{{ f.name }}" value="{{ f.value or '' }}"{{ aria }} {% if loop.first and not errors and not f.kept_private %}autofocus{% endif %}{% if f.suggest %} data-suggest="/t/{{ info.name }}/suggest?column={{ f.name }}" autocomplete="off" role="combobox" aria-autocomplete="list" aria-expanded="false" aria-controls="{{ fid }}-list"{% endif %}></div>
       {% endif %}
     {% endif %}
     {% if f.error %}<p class="error" id="{{ fid }}-error">{% if f.error[:1].isupper() %}{{ f.error }}{% else %}{{ f.label }} {{ f.error }}{% endif %}</p>{% endif %}
     {% if f.help %}<p class="help" id="{{ fid }}-help">{{ f.help }}</p>{% endif %}
-    {% if f.column.sensitive %}<p class="help">Private: hidden in lists until you choose to show it.</p>{% endif %}
+    {% if f.column.sensitive %}<p class="help">Private: not shown in lists, or when this page opens, until you choose to show it.</p>{% endif %}
   </div>
   {% endfor %}
   <div class="actions">

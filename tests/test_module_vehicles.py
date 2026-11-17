@@ -132,7 +132,10 @@ class VehiclesModuleTests(TempDirTestCase):
             self.assertIn(shown, sheet)
         for private in ("Papers are in the desk", "Excess is high"):
             self.assertNotIn(private, sheet)
-        self.assertIn(PLATE, client.get(f"/t/vehicles__vehicles/{car}", base_url=BASE).get_data(as_text=True))
+        page = client.get(f"/t/vehicles__vehicles/{car}", base_url=BASE).get_data(as_text=True)
+        self.assertNotIn(PLATE, page)  # even its own page shows the plate only when asked (privacy audit)
+        shown = client.get(f"/t/vehicles__vehicles/{car}/reveal?column=registration", base_url=BASE).get_json()
+        self.assertEqual(shown["value"], PLATE)
 
     def test_sheet_shows_who_to_call_the_full_place_and_the_kit(self):
         garage = self.records.create("stock__places", {"name": "Garage"})

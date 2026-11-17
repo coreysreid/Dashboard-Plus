@@ -110,6 +110,7 @@ marked Superseded. Each lists downsides, cost to undo, and the sign it was wrong
 | [0056](0056-home-page-grouped-by-area.md) | Home page grouped by area: main lists large, other lists as links (`home` in labels.toml); forms save again in current browsers | Accepted |
 | [0057](0057-batch-picker-follows-the-item.md) | "Which batch" lists only the chosen item's batches and says what leaving it blank does | Accepted |
 | [0058](0058-vehicles-promoted.md) | Vehicles switched on from Lane B's draft, linking to People and Household stock; a roadside assistance role | Accepted |
+| [0059](0059-private-details-only-when-asked.md) | Private details sent to the screen only when the person asks (lists, records, private sheets) | Accepted |
 | [0060](0060-garden-example-outside-installed-modules.md) | Keep the worked garden outside installed modules | Accepted |
 | [0061](0061-public-reporting-and-contribution-rules.md) | Public contribution and private security reporting routes | Accepted |
 | [TEMPLATE](TEMPLATE.md) | Blank record to copy for a new decision | recording a decision |
@@ -362,6 +363,7 @@ Add a new file with the next number instead of changing an old one.
 | close.html | The "Save and exit" page | changing how closing works |
 | closed.html | Shown after a safe close | changing that message |
 | error.html | Plain-language error page with "Save a report" | changing error wording |
+| private_sheet.html | The step before a sheet with private details: show it only when you mean to print or share it | changing how private sheets open |
 
 ## tests/  (summary: automatic tests; synthetic data only)
 How to run them is in AGENTS.md.

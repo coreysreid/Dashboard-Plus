@@ -1,0 +1,13 @@
+{% extends "base.html" %}
+{% block title %}{{ sheet.title }} · Dashboard Plus{% endblock %}
+{% block body %}
+<p class="muted"><a href="/">Home</a></p>
+<h1>{{ sheet.title }}</h1>
+<div class="card">
+  <p>This sheet includes private health and care details. Show it only when you mean to print or share it.</p>
+  <div class="actions">
+    <a class="button" href="/sheet/{{ module }}/{{ name }}?show=1">Show private sheet</a>
+    <a class="button quiet" href="/">Back to Home</a>
+  </div>
+</div>
+{% endblock %}

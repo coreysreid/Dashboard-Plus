@@ -75,5 +75,27 @@
     {% block body %}{% endblock %}
   </main>
   <footer>Runs on this computer only. Nothing is sent anywhere. Version {{ version }}.</footer>
+<script>
+  // Private details are never in the page; "Show" fetches just the one asked for (privacy audit, decision 0059).
+  document.addEventListener("click", function (event) {
+    var button = event.target.closest("[data-reveal], [data-reveal-field]");
+    if (!button) return;
+    var url = button.dataset.reveal || button.dataset.revealField;
+    fetch(url, {credentials: "same-origin"}).then(function (r) { return r.ok ? r.json() : null; }).then(function (found) {
+      if (!found) return;
+      if (button.dataset.reveal) {
+        var span = document.createElement("span"); span.textContent = found.text;
+        button.replaceWith(span);
+        return;
+      }
+      var id = button.dataset.field, field = document.getElementById(id);
+      field.value = found.value; field.hidden = false;
+      var box = document.getElementById(id + "-box"); if (box) box.hidden = false;
+      var keep = document.getElementById(id + "-keep"); if (keep) keep.remove();
+      document.getElementById(id + "-closed").remove();
+      field.focus();
+    });
+  });
+</script>
 </body>
 </html>
