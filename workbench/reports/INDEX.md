@@ -18,3 +18,4 @@ expected, actual, severity (blocker, important, minor), suggested change.
 | 2026-11-17-translation-inventory.csv | 1,845 literal locations, picker names and search aliases. | extracting locale messages |
 | 2026-11-17-wording-consistency.md | Exact shipped-module wording replacements and term rules. | polishing module words |
 | 2026-11-17-wording-inventory.csv | All 310 authored or rendered module strings with exact proposals. | applying the wording table |
+| 2026-11-17-sensitive-detail-audit.md | Read-only audit of private fields in shipped screens, history and backups. | tightening privacy before M2 helpers and export |
