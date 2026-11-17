@@ -51,12 +51,12 @@ the "Requests" table of docs/WORKSTREAMS.md.
 | Batch 8 item 25: home inventory | merged by Lane A | #71 | Private room-linked inventory and claim sheet, fictional data, ten checks and NAIC source. |
 | Batch 8 item 26: things lent out | merged by Lane A | #72 | Loan records, active-loan sheet, fictional examples and ten checks; core needs for due filtering and return action. |
 | Batch 8 item 27: utilities and accounts | merged by Lane A | #73 | Private accounts, People contacts, Home layout meter names, three-household examples and ten checks; meter link needs promotion. |
+| Batch 9 item 28: Corey's one-hour test | ready for Lane A | this PR | Ten timed demo tasks, 20-good stocktake card and BACKLOG-ready feedback rows. |
 
 ## Messages to Lane A
 
 - Fixed by Lane A and removed from this list: nested Places paths, accessibility, drinking-water answer, Medical loader (#55, #63).
 
-- **New Medical finding:** Smith has only a car kit at Car › Car boot, yet “Is there a first aid kit at home?” is suppressed. The `none` gap needs a home-place condition or an explicit household answer. Date fields also give no live correction for the wrong local order. Steps and exact wording are in `workbench/reports/2026-11-17-medical-dates-ux.md`.
 - **Outcomes core needs:** Current Stock history cannot prove old stock-outs, and Stock has no actual price or receipt total. Please keep shortage and money comparisons in baseline state until dated counts, corrections, reviewed receipts and completeness confirmations exist. The four metric definitions and checks are in `workbench/drafts/outcomes/`.
 - **Question-loop gate:** The twenty examples deliberately include future measures. Please do not surface a question until the measure has enough dated points, its event is recorded, and the topic and subject plausibility gate passes. `workbench/drafts/question_loop/NOTES.md` lists missing daily facts and answer state.
 - **Chart prerequisites:** The four chart sketches need dated Stock balances, complete-month waste confirmation, subject-linked annotations and versioned readiness answers. A missing day must stay a gap, and every chart needs a text/table view. Details are in `workbench/drafts/charts/`.
