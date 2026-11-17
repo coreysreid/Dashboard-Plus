@@ -27,6 +27,16 @@ name = "Local Resilience Forums"
 scope = "local coordination in England and Wales"
 source = { url = "https://beready.campaign.gov.uk/about-this-website-and-uk-resilience/", checked = "2026-11-16" }
 
+[[body]]
+name = "Scottish Resilience Partnership and local partnerships"
+scope = "Scotland; find local advice before selecting a hazard"
+source = { url = "https://ready.campaign.gov.scot/publications/2026/march/foundations-emergency-management-scotland/pages/lesson-3-who-responds-scotland", checked = "2026-11-17" }
+
+[[body]]
+name = "Civil Contingencies Group (Northern Ireland)"
+scope = "Northern Ireland"
+source = { url = "https://www.executiveoffice-ni.gov.uk/articles/civil-contingencies", checked = "2026-11-17" }
+
 [water]
 amount_per_person_per_day = 3
 unit = "litres"
@@ -52,4 +62,24 @@ source = { url = "https://beready.campaign.gov.uk/be-informed-about-hazards/", c
 name = "flooding"
 scope = "UK Be Ready hazard topics"
 source = { url = "https://beready.campaign.gov.uk/be-informed-about-hazards/", checked = "2026-11-16" }
+
+[[hazard]]
+name = "cold weather"
+scope = "UK Be Ready hazard topics, not an address-level risk"
+source = { url = "https://beready.campaign.gov.uk/be-informed-about-hazards/", checked = "2026-11-17" }
+
+[[hazard]]
+name = "water supply interruption"
+scope = "UK Be Ready hazard topics, not an address-level risk"
+source = { url = "https://beready.campaign.gov.uk/be-informed-about-hazards/water-supply-interruptions-or-outages/", checked = "2026-11-17" }
+
+[[hazard]]
+name = "wildfires"
+scope = "UK Be Ready hazard topics, not an address-level risk"
+source = { url = "https://beready.campaign.gov.uk/be-informed-about-hazards/", checked = "2026-11-17" }
+
+[[hazard]]
+name = "disease outbreaks"
+scope = "UK Be Ready hazard topics, not an address-level risk"
+source = { url = "https://beready.campaign.gov.uk/be-informed-about-hazards/", checked = "2026-11-17" }
 
