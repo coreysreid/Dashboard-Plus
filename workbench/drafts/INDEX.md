@@ -14,7 +14,6 @@ and made-up example rows. Add a row here for each draft folder you create.
 | grab_list/ | Household leave-in-a-hurry list and one-page print design | building M3 grab lists |
 | seasonal_checklists/ | Source-linked bushfire, cyclone, winter, heat and hurricane questions | building M3 seasonal reviews |
 | collections/ | Hobby collection items, places, costs and household value estimates | reviewing or promoting it |
-| vehicles/ | Vehicle reminders, roadside contacts and Stock car kits | reviewing or promoting it |
 | guide/ | A plain first-use guide with screenshot links | helping new households |
 | restore_export/ | Household restore and export screen flows, checks and core needs | building M2 backup recovery and portable data |
 | receipt_entry/ | Synthetic 200-line receipt matching vocabulary and review flow | building M2 receipt entry |

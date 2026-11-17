@@ -75,6 +75,10 @@ STAGES = [
      "where it is and when the household plans to check it.", {"goto": "/t/home_layout__equipment", "module": "home_layout"}),
     ("18e-our-home-sheet", "Our home sheet", "As it prints: the ways out, shut-offs, alarms and meters, each with "
      "its full place.", {"goto": "/sheet/home_layout/our_home", "media": "print", "module": "home_layout"}),
+    ("18f-vehicles", "Vehicles", "Each vehicle, when its registration is due, who to call if it breaks down, "
+     "where it is kept and its car kit.", {"goto": "/t/vehicles__vehicles", "module": "vehicles"}),
+    ("18g-vehicle-sheet", "Vehicles sheet", "As it prints: the vehicles and the dates the household chose, with "
+     "no plate or policy numbers.", {"goto": "/sheet/vehicles/vehicles", "media": "print", "module": "vehicles"}),
     ("19-needs-attention", "Needs attention", "Days of water with the working shown, running low, use-by "
      "and due dates, and details worth filling in.", {"goto": "/attention"}),
     ("20-supplies-sheet", "Emergency supplies sheet", "As it prints: water, first aid, power and food, and "
