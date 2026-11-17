@@ -354,6 +354,40 @@ dates your way have shipped (decisions 0051, 0052); layered use-by dates
     module files that would need translating, grouped by screen. Do not
     translate anything yet.
 
+### Batch 12: after the 17 November build day (M1 polish, M2, M3)
+
+Batches 9 to 11 are merged (#83, #93). Since then these shipped: batches
+(0053), Home layout (0054), modules confined (0055), home page grouped
+(0056), batch picker (0057), Vehicles (0058) and private details only when
+asked (0059). Work down this list, one pull request per item, as before.
+
+40. **UX check of today's build.** Run all three example households through
+    the grouped home page, batches and the batch picker, Home layout,
+    Vehicles and the private-detail Show buttons (lists, records, the private
+    sheet). Worst first, exact words, screenshots; include a 320px phone pass.
+41. **Update Corey's one-hour test** (`workbench/drafts/corey_test/`) for
+    batches, Home layout, Vehicles and the private Show steps; keep it to 60
+    minutes.
+42. **Documents, final promotion pass.** Bring `workbench/drafts/documents/`
+    up to the standard of Medical's final draft: shipped contracts only,
+    places link `stock.places`, private fields marked, no private column in a
+    question or name, examples matching the three households, acceptance
+    checks. Lane A promotes it next.
+43. **Home care, final promotion pass.** The same for
+    `workbench/drafts/home_care/`, including how a repeating job's next date
+    is entered by the household (no invented intervals).
+44. **Stocktake corrections, designed.** Your batch follow-up noted a count
+    change has no correction movement. Design the "You counted 5; 3 recorded
+    here. Update this batch?" flow, the movement it records, and checks.
+45. **Erasing a private detail, designed.** What "permanently erase" must
+    cover (current value, change history, backups), what it can't, the exact
+    warnings, and a way back. Design only; no code.
+46. **An optional passphrase for the data folder (M3), researched.** Options
+    for a portable Windows app, what happens if the passphrase is forgotten,
+    backup and USB implications, and plain wording. Cite sources.
+47. **Shopping list with batches.** Update the shopping list design for
+    batches: buying adds a batch with its use-by date and place in one pass.
+
 ## Brief for Lane B, batch 3 (done)
 
 > You are Lane B, the checker and drafter. You have full internet access for
