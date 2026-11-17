@@ -8,6 +8,7 @@ columns.next_check = { label = "Check again by", help = "Choose a date from your
 columns.notes = { help = "For example, what needs replacing. Keep medicine and care details in People." }
 
 [tables.kit_checks]
+empty = "Log a check after you look through a kit. Update Stock separately for anything missing or expired."
 form = ["kit", "checked_on", "next_check", "checked_by", "notes"]
 list = ["checked_on", "kit", "next_check", "checked_by", "notes"]
 columns.checked_on = { label = "Checked on" }
@@ -16,6 +17,7 @@ columns.checked_by = { label = "Checked by" }
 columns.notes = { label = "What you found", help = "Record missing or expired supplies here; update their amounts and dates in Household stock." }
 
 [tables.training]
+empty = "Add first aid or CPR training if someone has completed it."
 form = ["person", "course", "provider", "completed_on", "renew_by", "notes"]
 list = ["person", "course", "provider", "renew_by"]
 columns.person = { label = "Who trained" }

@@ -128,6 +128,18 @@ As it prints: for a sitter, a kennel or an evacuation centre.
 
 ![Pet details sheet](screenshots/smith/18-pet-sheet.png)
 
+### First aid kits
+
+Each kit, where it is kept and when it is next checked.
+
+![First aid kits](screenshots/smith/18b-first-aid.png)
+
+### First aid at home sheet
+
+As it prints: the kits, their places and who has trained.
+
+![First aid at home sheet](screenshots/smith/18c-first-aid-sheet.png)
+
 ### Needs attention
 
 Days of water with the working shown, running low, use-by and due dates, and details worth filling in.
@@ -278,6 +290,18 @@ As it prints: for a sitter, a kennel or an evacuation centre.
 
 ![Pet details sheet](screenshots/garcia/18-pet-sheet.png)
 
+### First aid kits
+
+Each kit, where it is kept and when it is next checked.
+
+![First aid kits](screenshots/garcia/18b-first-aid.png)
+
+### First aid at home sheet
+
+As it prints: the kits, their places and who has trained.
+
+![First aid at home sheet](screenshots/garcia/18c-first-aid-sheet.png)
+
 ### Needs attention
 
 Days of water with the working shown, running low, use-by and due dates, and details worth filling in.
@@ -409,6 +433,18 @@ Opened from the item's page: the item, the reason and today's date are already f
 Everything bought, used, expired or thrown away.
 
 ![Stock in and out](screenshots/taylor/15-stock-in-and-out.png)
+
+### First aid kits
+
+Each kit, where it is kept and when it is next checked.
+
+![First aid kits](screenshots/taylor/18b-first-aid.png)
+
+### First aid at home sheet
+
+As it prints: the kits, their places and who has trained.
+
+![First aid at home sheet](screenshots/taylor/18c-first-aid-sheet.png)
 
 ### Needs attention
 

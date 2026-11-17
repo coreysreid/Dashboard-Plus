@@ -58,7 +58,8 @@
           {% if not f.options %}<p class="help">There is nothing to choose yet.</p>{% endif %}
         </div>
       {% elif f.kind == "date" %}
-        <input type="date" id="{{ fid }}" name="{{ f.name }}"{{ aria }} value="{{ f.value or '' }}">
+        <input type="text" id="{{ fid }}" name="{{ f.name }}"{{ aria }} value="{{ f.value or '' }}" inputmode="numeric" autocomplete="off" size="12" data-date-style="{{ f.date_style }}">
+        <span class="date-preview help" id="{{ fid }}-preview" aria-live="polite"></span>
       {% elif f.kind == "datetime" %}
         <input type="datetime-local" id="{{ fid }}" name="{{ f.name }}"{{ aria }} value="{{ f.value or '' }}">
       {% elif f.kind in ("integer", "decimal", "measure", "money") %}
@@ -229,6 +230,34 @@
           add.href = find.dataset.addNew + encodeURIComponent(find.value.trim());
         }
       });
+    });
+  })();
+  // Dates are typed the household's way (20/05/27); the date in words shows there is no mix-up.
+  // The same rules as dashboard/core/dates.py; the server checks again when saving.
+  (function () {
+    var MONTHS = ["January", "February", "March", "April", "May", "June", "July", "August", "September",
+                  "October", "November", "December"];
+    function read(text, style) {
+      var m = /^(\d{4})-(\d{1,2})-(\d{1,2})$/.exec(text), y, mo, d;
+      if (m) { y = +m[1]; mo = +m[2]; d = +m[3]; }
+      else {
+        m = /^(\d{1,2})\s*[\/.\-]\s*(\d{1,2})\s*[\/.\-]\s*(\d{2}|\d{4})$/.exec(text);
+        if (!m || style === "ymd") return null;
+        d = style === "mdy" ? +m[2] : +m[1]; mo = style === "mdy" ? +m[1] : +m[2];
+        y = +m[3] + (m[3].length === 2 ? 2000 : 0);
+      }
+      var when = new Date(Date.UTC(y, mo - 1, d));
+      if (when.getUTCFullYear() !== y || when.getUTCMonth() !== mo - 1 || when.getUTCDate() !== d) return false;
+      return style === "mdy" ? MONTHS[mo - 1] + " " + d + ", " + y : d + " " + MONTHS[mo - 1] + " " + y;
+    }
+    document.querySelectorAll("[data-date-style]").forEach(function (input) {
+      var preview = document.getElementById(input.id + "-preview");
+      function update() {
+        var text = input.value.trim(), words = text ? read(text, input.dataset.dateStyle) : null;
+        preview.textContent = words ? "\u2192 " + words : (text && words === false ? "Not a real date" : "");
+      }
+      input.addEventListener("input", update);
+      update();
     });
   })();
   // After a refused save, move to the list of answers to check.

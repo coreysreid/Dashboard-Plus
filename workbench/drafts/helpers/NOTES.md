@@ -1,0 +1,7 @@
+# Current support and core work
+
+Checked 17 November 2026. `src/dashboard/core/records.py` stores `review_status`, `source`, `batch_id` and `edited_by_person`, and `docs/DESIGN.md` sets the intended Agent API rules. The shipped web app has no Review/Inbox screens or `/api/propose`, token issue/revoke and grant UI. A row labelled “needs review” in a grid is not a usable review queue.
+
+Lane A needs token lifecycle and table-scoped authorization, private-field grants, locally bound API routes, idempotent request keys with retention, per-helper limits, validation against module declarations, and a staged batch store. The review service must show source, reason and before/after effects, revalidate at decision time, apply accepted changes atomically through core services, and keep rejected proposals in audit history. Person edits must set a durable lock so an agent amendment or undo is refused. Batch undo needs conflict checks against later person edits; revocation must not erase history.
+
+The roadmap points to “DESIGN 7” for this item, but the current document numbers migrations as 7, Review and inbox as 8, and Agent API as 9. Use sections 8 and 9 for helper behavior and keep section 7's migration rules for new core tables. A proposal to add a Stock movement must not adjust the live item amount until accepted; the current `adjusts` behavior will need staging or a proposal table to ensure that.

@@ -110,3 +110,24 @@ class GapResultsTests(TempDirTestCase):
         self.assertEqual(self.messages(), [])
         self.records.delete("demo__people", friend)
         self.assertEqual(self.messages(), ["Who would you call first?"])
+
+
+class EmptyFilterGapTests(TempDirTestCase):
+    """none = {} asks when a table has nothing in it at all, like "Is there a first aid kit?" (Medical)."""
+
+    def setUp(self):
+        super().setUp()
+        rule = '\n[[tables.people.watch.gaps]]\nnone = {}\nmessage = "Who is in the household?"\n'
+        make_migration.make(self.make_module(tables=TABLES + rule, labels=None), "first_tables")
+        startup.prepare(self.tmp / "data", self.tmp / "modules")
+        self.conn = db.connect(self.tmp / "data" / "dashboard.db")
+        self.addCleanup(self.conn.close)
+        found, failures = modules.discover(self.tmp / "modules")
+        self.assertEqual(failures, {})
+        self.registry = records.build_registry(found)
+
+    def test_asked_only_while_the_table_is_empty(self):
+        gaps = watch.gaps(self.conn, self.registry)
+        self.assertEqual([(g.message, g.fix) for g in gaps], [("Who is in the household?", "/t/demo__people/new")])
+        records.Records(self.conn, self.registry).create("demo__people", {"name": "Alex", "lives_here": False})
+        self.assertEqual(watch.gaps(self.conn, self.registry), [])

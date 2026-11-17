@@ -15,7 +15,7 @@ the "Requests" table of docs/WORKSTREAMS.md.
 | Catalogue round 1 | merged | PR #22 | 150 goods and water-count decisions. |
 | Home layout draft | merged by Lane A | PR #24 | Full paths, Stock migration and cycle checks need core support. |
 | Stock lots design | merged by Lane A | PR #25 | Includes a long-term phone or webcam scanning idea. |
-| Medical draft polish | merged by Lane A | PR #26 | An unfiltered no-kit gap needs core support. |
+| Medical draft polish | merged by Lane A; Medical promoted | PR #26 | An unfiltered no-kit gap needs core support. |
 | Readiness prompts | merged by Lane A | PR #27 | Prompt engine and record matching need core support. |
 | Country pack content | merged by Lane A | PR #28 | Local hazard checks and pack loader need core support. |
 | Documents, Home care and Wine | merged by Lane A | PR #29 | Repeat jobs and shared places need core support. |
@@ -32,12 +32,22 @@ the "Requests" table of docs/WORKSTREAMS.md.
 | Batch 4 item 7: Collections and Vehicles | merged by Lane A | #47 | Two loadable drafts with three-household example rows and core needs. |
 | Batch 4 item 8: household getting started | merged by Lane A | #48 | Download, first ten minutes, stocktake, emergency sheet, close and update, with screenshot paths. |
 | Batch 5 item 9: UX after nested Places | merged by Lane A | #49 | Three example households passed route checks; long place lists can lose a parent path. |
+| Batch 5 item 10: accessibility review | merged by Lane A | #50 | Reviewed all 69 example screenshots and live shared screens; six findings, worst first. |
+| Batch 5 item 11: restore and export | merged by Lane A | #52 | Household screen flow and 12 acceptance checks; core gaps in the draft NOTES.md. |
+| Batch 5 item 12: receipt entry | merged by Lane A | #53 | 200 invented matching lines, four-region research, review screen and core needs. |
+| Batch 5 item 13: shopping list | merged by Lane A | #54 | Low-stock trip flow, 12 acceptance checks and core needs for batch Stock in. |
+| Batch 5 item 14: CSV import | merged by Lane A | #56 | Stock spreadsheet mapping, dry run, sample and 12 acceptance checks. |
+| Batch 5 item 15: helpers and review | merged by Lane A | #57 | Household queue, permission wording and 12 checks; core needs in NOTES.md. |
+| Batch 6 item 16: Medical final | merged by Lane A | #58 | Kit-check gap, empty wording, aligned examples and promotion checks; example-loader core gap in NOTES.md. |
+| Batch 6 item 17: readiness screens | merged by Lane A | #59 | Four-answer screen flow, honest coverage and 12 checks tied to all 49 prompts. |
+| Batch 6 item 18: country packs round 2 | merged by Lane A | #60 | 38 jurisdictions, 52 live official links, scope and reuse limits in NOTES.md. |
+| Batch 6 item 19: seasonal checklists | merged by Lane A | #61 | Five source-linked sets, 25 questions tied to Stock and Home layout; eight checks. |
 
 ## Messages to Lane A
 
 - **New nested Places finding:** With more than 500 places, the item form can show a child without its parent path and cannot find that child by the parent's name. The normal Places list also splits the path between Name and Inside. Steps and exact wording are in `workbench/reports/2026-11-17-nested-places-ux.md`.
-| Batch 5 item 10: accessibility review | merged by Lane A | #50 | Reviewed all 69 example screenshots and live shared screens; six findings, worst first. |
 - **Accessibility:** The Stock Name suggestion's highlighted choice is not linked to the focused combobox for screen readers, and normal input borders measure below the WCAG 2.2 non-text contrast threshold in both themes. The emergency sheet also overflows a 320px viewport. See `workbench/reports/2026-11-17-accessibility.md` for steps and exact fixes.
+- **Medical promotion blocker:** The module loads and saves, but `tools/load_example.py` raises `IndexError` on Medical kit checks because that history table has no short text column. Please let the loader handle such rows without adding a required name to the household form. The exact reproduction and expected fix are in `workbench/drafts/medical/NOTES.md`.
 - **Priority from batch 4 item 1:** New custom Water items start with “Safe to drink” ticked. A made-up Flushing water item raised days of drinking water in the 20-good stocktake. Please require an explicit drinking answer for a new water name, and count only confirmed litres. `workbench/reports/2026-11-17-picking-water-ux.md` gives the steps and exact suggested wording.
 
 - Please review the draft modules and their NOTES.md files before promoting them.

@@ -16,7 +16,7 @@ home_type = "apartment"
 storeys = 1
 mobility_needs = true
 hazards = ["earthquake", "heat", "power"]
-modules = ["people", "pets", "stock"]
+modules = ["medical", "people", "pets", "stock"]
 
 # ---- People -----------------------------------------------------------------
 
@@ -536,3 +536,25 @@ reason = "bought"
 amount = 1
 happened_on = "today-1"
 notes = "Weekly shop."
+
+# ---- Medical readiness --------------------------------------------------------
+
+[[medical.kits]]
+name = "Apartment first aid kit"
+place = "Hall closet"
+last_checked = "today-40"
+next_check = "today+20"
+
+[[medical.kit_checks]]
+kit = "Apartment first aid kit"
+checked_on = "today-40"
+next_check = "today+20"
+checked_by = "Maria Garcia"
+notes = "Checked contents and wrote replacement needs in Stock."
+
+[[medical.training]]
+person = "Carlos Garcia"
+course = "cpr"
+provider = "Example Training Centre"
+completed_on = "today-350"
+renew_by = "today+40"

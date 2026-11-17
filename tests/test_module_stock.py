@@ -89,7 +89,7 @@ class StockModuleTests(TempDirTestCase):
         form = client.get(f"/t/stock__movements/new?item={rice}", base_url=BASE).get_data(as_text=True)
         self.assertRegex(form, rf'<option value="{rice}"\s+selected>Rice</option>')
         self.assertRegex(form, r'<option value="bought"\s+selected>Bought or added</option>')
-        self.assertIn(f'value="{date.today().isoformat()}"', form)
+        self.assertIn(f'value="{date.today():%d/%m/%y}"', form)  # the household's way; no country means day first
         response = client.post("/t/stock__movements/new", base_url=BASE, data={
             "_csrf": app.config["CSRF_TOKEN"], "item": str(rice), "reason": "bought", "amount": "3",
             "happened_on": "2026-11-09", "then": "back", "back": f"/t/stock__items/{rice}"})
