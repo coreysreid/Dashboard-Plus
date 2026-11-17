@@ -1,0 +1,64 @@
+household,source_item_ordinal,item_name,source_amount,unit,minimum,source_place_path,source_use_by_iso,migration_lot_ref,migration_amount,target_lot_refs,target_lot_amounts,target_total,post_migration_change
+smith,1,Water casks (10 L),20,litres,20,Garage › Garage shelves,2027-09-13,smith-001-01,20,smith-001-01,20,20,none; one unchanged migrated lot
+smith,2,Water bottles (24 x 600 mL),14.4,litres,,Kitchen › Pantry,2027-04-26,smith-002-01,14.4,smith-002-01,14.4,14.4,none; one unchanged migrated lot
+smith,3,Rice,3,kg,1,Kitchen › Pantry,2027-12-22,smith-003-01,3,smith-003-01,3,3,none; one unchanged migrated lot
+smith,4,Pasta,4,packs,2,Kitchen › Pantry,2027-07-25,smith-004-01,4,smith-004-01,4,4,none; one unchanged migrated lot
+smith,5,Tinned tomatoes,1,tins,4,Kitchen › Pantry,2028-03-31,smith-005-01,1,smith-005-01,1,1,none; one unchanged migrated lot
+smith,6,Kidney beans,5,tins,4,Kitchen › Pantry › Shelf 3,2027-05-26,smith-006-01,5,smith-006-01|smith-006-02,3|10,13,After exact 5-tin migration: change first lot date; stocktake correction -2; buy 10 tins into second lot.
+smith,7,Tinned tuna,6,tins,4,Kitchen › Pantry,2028-07-09,smith-007-01,6,smith-007-01,6,6,none; one unchanged migrated lot
+smith,8,Baked beans,2,tins,4,Kitchen › Pantry,2028-01-11,smith-008-01,2,smith-008-01,2,2,none; one unchanged migrated lot
+smith,9,Long-life milk,3,litres,2,Kitchen › Pantry,2026-11-26,smith-009-01,3,smith-009-01,3,3,none; one unchanged migrated lot
+smith,10,Muesli bars,5,bars,,Kitchen › Pantry,2026-11-14,smith-010-01,5,smith-010-01,5,5,none; one unchanged migrated lot
+smith,11,Rolled oats,1,kg,1,Kitchen › Pantry,2027-04-16,smith-011-01,1,smith-011-01,1,1,none; one unchanged migrated lot
+smith,12,Adrenaline auto-injector (Emily),2,pens,2,Bathroom › Bathroom cabinet,2026-12-12,smith-012-01,2,smith-012-01,2,2,none; one unchanged migrated lot
+smith,13,Reliever puffer (Jack),1,puffers,2,Bathroom › Bathroom cabinet,2027-06-15,smith-013-01,1,smith-013-01,1,1,none; one unchanged migrated lot
+smith,14,First aid kit,1,kits,1,Car › Car boot,2027-12-02,smith-014-01,1,smith-014-01,1,1,none; one unchanged migrated lot
+smith,15,Paracetamol,2,packs,1,Bathroom › Bathroom cabinet,2027-06-05,smith-015-01,2,smith-015-01,2,2,none; one unchanged migrated lot
+smith,16,Sunscreen SPF 50,1,bottles,1,Laundry › Laundry cupboard,2026-12-07,smith-016-01,1,smith-016-01,1,1,none; one unchanged migrated lot
+smith,17,Toilet paper,18,rolls,12,Laundry › Laundry cupboard,,smith-017-01,18,smith-017-01,18,18,none; one unchanged migrated lot
+smith,18,AA batteries,4,batteries,8,Garage › Garage shelves,,smith-018-01,4,smith-018-01,4,4,none; one unchanged migrated lot
+smith,19,Torches,2,torches,2,Laundry › Laundry cupboard,,smith-019-01,2,smith-019-01,2,2,none; one unchanged migrated lot
+smith,20,Power bank,1,power banks,1,Laundry › Laundry cupboard,,smith-020-01,1,smith-020-01,1,1,none; one unchanged migrated lot
+smith,21,Dog food (Rex),3,kg,5,Laundry › Laundry cupboard,2027-02-15,smith-021-01,3,smith-021-01,3,3,none; one unchanged migrated lot
+smith,22,Cat litter,1,bags,1,Laundry › Laundry cupboard,,smith-022-01,1,smith-022-01,1,1,none; one unchanged migrated lot
+smith,23,Wood screws 40 mm,1,boxes,,Garage › Garage shelves,,smith-023-01,1,smith-023-01,1,1,none; one unchanged migrated lot
+smith,24,Wall plugs,1,packs,,Garage › Garage shelves,,smith-024-01,1,smith-024-01,1,1,none; one unchanged migrated lot
+smith,25,Cordless drill,1,drills,,Garage › Garage shelves,,smith-025-01,1,smith-025-01,1,1,none; one unchanged migrated lot
+smith,26,Petrol for the mower,5,litres,,Backyard › Garden shed,,smith-026-01,5,smith-026-01,5,5,none; one unchanged migrated lot
+smith,27,Dishwashing liquid,1,bottles,1,Laundry › Laundry cupboard,,smith-027-01,1,smith-027-01,1,1,none; one unchanged migrated lot
+garcia,1,Water jugs (1 gallon),22.7,litres,30,Basement › Storage locker,2027-03-17,garcia-001-01,22.7,garcia-001-01,22.7,22.7,none; one unchanged migrated lot
+garcia,2,Emergency water pouches,2,litres,,Hallway › Hall closet,2029-05-05,garcia-002-01,2,garcia-002-01,2,2,none; one unchanged migrated lot
+garcia,3,Earthquake go-bag,2,bags,2,Hallway › Hall closet,,garcia-003-01,2,garcia-003-01,2,2,none; one unchanged migrated lot
+garcia,4,Black beans,8,cans,6,Kitchen › Kitchen cabinets,2028-05-10,garcia-004-01,8,garcia-004-01,8,8,none; one unchanged migrated lot
+garcia,5,Rice,5,lb,2,Kitchen › Kitchen cabinets,2027-11-17,garcia-005-01,5,garcia-005-01,5,5,none; one unchanged migrated lot
+garcia,6,Canned soup,2,cans,6,Kitchen › Kitchen cabinets,2027-12-22,garcia-006-01,2,garcia-006-01,2,2,none; one unchanged migrated lot
+garcia,7,Tortillas,1,packs,1,Kitchen › Kitchen cabinets,2026-11-21,garcia-007-01,1,garcia-007-01,1,1,none; one unchanged migrated lot
+garcia,8,Peanut butter,2,jars,1,Kitchen › Kitchen cabinets,2027-06-05,garcia-008-01,2,garcia-008-01,2,2,none; one unchanged migrated lot
+garcia,9,Metformin 500 mg (Rosa),20,tablets,30,Kitchen › Kitchen cabinets,2027-09-13,garcia-009-01,20,garcia-009-01,20,20,none; one unchanged migrated lot
+garcia,10,Lisinopril 10 mg (Rosa),25,tablets,14,Kitchen › Kitchen cabinets,2027-08-24,garcia-010-01,25,garcia-010-01,25,25,none; one unchanged migrated lot
+garcia,11,Blood glucose test strips,40,strips,50,Bathroom,2026-12-05,garcia-011-01,40,garcia-011-01,40,40,none; one unchanged migrated lot
+garcia,12,First aid kit,1,kits,1,Hallway › Hall closet,2028-01-01,garcia-012-01,1,garcia-012-01,1,1,none; one unchanged migrated lot
+garcia,13,N95 masks,10,masks,8,Hallway › Hall closet,,garcia-013-01,10,garcia-013-01,10,10,none; one unchanged migrated lot
+garcia,14,Hand sanitizer,1,bottles,,Bathroom,2026-11-07,garcia-014-01,1,garcia-014-01,1,1,none; one unchanged migrated lot
+garcia,15,Toilet paper,24,rolls,12,Basement › Storage locker,,garcia-015-01,24,garcia-015-01,24,24,none; one unchanged migrated lot
+garcia,16,Flashlights,4,flashlights,4,Main bedroom › Under the bed,,garcia-016-01,4,garcia-016-01,4,4,none; one unchanged migrated lot
+garcia,17,D batteries,2,batteries,6,Hallway › Hall closet,,garcia-017-01,2,garcia-017-01,2,2,none; one unchanged migrated lot
+garcia,18,Portable power station,1,units,1,Hallway › Hall closet,,garcia-018-01,1,garcia-018-01,1,1,none; one unchanged migrated lot
+garcia,19,Hand-crank radio,1,radios,1,Hallway › Hall closet,,garcia-019-01,1,garcia-019-01,1,1,none; one unchanged migrated lot
+garcia,20,Cat food (Luna),4,cans,12,Kitchen › Kitchen cabinets,2027-09-13,garcia-020-01,4,garcia-020-01,4,4,none; one unchanged migrated lot
+garcia,21,Cat litter,10,lb,5,Basement › Storage locker,,garcia-021-01,10,garcia-021-01,10,10,none; one unchanged migrated lot
+garcia,22,Furniture straps,2,packs,,Basement › Storage locker,,garcia-022-01,2,garcia-022-01,2,2,none; one unchanged migrated lot
+garcia,23,Adjustable wrench,1,wrenches,1,Hallway › Hall closet,,garcia-023-01,1,garcia-023-01,1,1,none; one unchanged migrated lot
+garcia,24,Bleach,1,bottles,1,Bathroom,,garcia-024-01,1,garcia-024-01,1,1,none; one unchanged migrated lot
+taylor,1,Bottled water (6 x 2 L),12,litres,9,Hall › Hall cupboard,2027-07-15,taylor-001-01,12,taylor-001-01,12,12,none; one unchanged migrated lot
+taylor,2,Distilled water (for the iron),1,litres,,Kitchen › Under the sink,,taylor-002-01,1,taylor-002-01,1,1,none; one unchanged migrated lot
+taylor,3,Gluten-free pasta,2,packs,2,Kitchen › Kitchen cupboard,2027-05-16,taylor-003-01,2,taylor-003-01,2,2,none; one unchanged migrated lot
+taylor,4,Tinned soup,3,tins,4,Kitchen › Kitchen cupboard,2027-10-03,taylor-004-01,3,taylor-004-01,3,3,none; one unchanged migrated lot
+taylor,5,Oat milk,2,cartons,1,Kitchen › Kitchen cupboard,2026-11-23,taylor-005-01,2,taylor-005-01,2,2,none; one unchanged migrated lot
+taylor,6,Paracetamol,1,packs,1,Kitchen › Kitchen cupboard,2027-04-16,taylor-006-01,1,taylor-006-01,1,1,none; one unchanged migrated lot
+taylor,7,Plasters,20,plasters,,Kitchen › Kitchen cupboard,,taylor-007-01,20,taylor-007-01,20,20,none; one unchanged migrated lot
+taylor,8,Torch,1,torches,1,Hall › Hall cupboard,,taylor-008-01,1,taylor-008-01,1,1,none; one unchanged migrated lot
+taylor,9,AA batteries,2,batteries,4,Hall › Hall cupboard,,taylor-009-01,2,taylor-009-01,2,2,none; one unchanged migrated lot
+taylor,10,Washing-up liquid,1,bottles,1,Kitchen › Under the sink,,taylor-010-01,1,taylor-010-01,1,1,none; one unchanged migrated lot
+taylor,11,Bike inner tube,1,tubes,1,Outside › Bike shed,,taylor-011-01,1,taylor-011-01,1,1,none; one unchanged migrated lot
+taylor,12,Picture hooks,1,packs,,Hall › Hall cupboard,,taylor-012-01,1,taylor-012-01,1,1,none; one unchanged migrated lot

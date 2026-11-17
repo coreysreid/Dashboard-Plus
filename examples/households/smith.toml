@@ -347,11 +347,12 @@ expires = "today+500"
 [[stock.items]]
 name = "Kidney beans"
 category = "pantry"
-quantity = 5
+quantity = 3
 unit = "tins"
 minimum = 4
 place = "Shelf 3"
-expires = "today+190"
+expires = "today+25"
+notes = "Three tins in the pantry to use first; a box of ten in the garage (see its batches)."
 
 [[stock.items]]
 name = "Tinned tuna"
@@ -529,6 +530,14 @@ quantity = 1
 unit = "bottles"
 minimum = 1
 place = "Laundry cupboard"
+
+# Batches: the same item kept in more than one place, or with more than one use-by date.
+# An item's first batch comes from its own amount, place and use-by above.
+[[stock.lots]]
+item = "Kidney beans"
+quantity = 10
+place = "Garage shelves"
+expires = "today+190"
 
 # Stock in and out: the history behind today's amounts, oldest first.
 [[stock.movements]]

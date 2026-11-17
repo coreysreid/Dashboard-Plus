@@ -10,7 +10,7 @@ from datetime import date, datetime, timezone
 from decimal import Decimal, InvalidOperation
 from typing import Callable
 
-from dashboard.core import db
+from dashboard.core import dates, db
 from dashboard.core.modules import Column, Module, Table
 from dashboard.core.schema import join_table_name, table_name, target_table
 from dashboard.errors import PlainError
@@ -297,10 +297,10 @@ class Records:
         before = current[rule["quantity"]] or 0
         after = Decimal(str(before)) + delta
         if after < 0:
-            column = target.table.columns[rule["quantity"]]
+            label = self._label(target, rule["quantity"])
             raise ValidationError({rule["amount"]: f"is more than there is: only {_plain_number(before)} "
                                    f"{'would remain' if undoing else 'left'}. If the count was wrong, correct "
-                                   f"{column.name.replace('_', ' ')} on the {target.table.title.lower()} record first."})
+                                   f"“{label}” on the {target.table.title.lower()} record first."})
         after = int(after) if target.table.columns[rule["quantity"]].type == "integer" else float(round(after, 6))
         assignments = {rule["quantity"]: after, "updated_at": self.clock()}
         if actor == "person":
@@ -308,6 +308,10 @@ class Records:
         self.conn.execute(f"UPDATE {target.name} SET {', '.join(f'{k} = ?' for k in assignments)} WHERE id = ?",
                           list(assignments.values()) + [target_id])
         self._audit(actor, "update", target, target_id, {rule["quantity"]: before}, {rule["quantity"]: after})
+        if target.table.total:
+            owner = self.conn.execute(f"SELECT {target.table.total['link']} FROM {target.name} WHERE id = ?",
+                                      (target_id,)).fetchone()[0]
+            self._retotal(target, owner, actor)
 
     MAX_DEPTH = 8  # how deep nested records (Kitchen › Pantry › Shelf 3 › Box) may go
 
@@ -359,20 +363,155 @@ class Records:
         self._check_actor(actor)
         info = self.info(name)
         with db.transaction(self.conn):
-            cleaned = self.clean(info, values, creating=True)
-            self._check_required_when(info, cleaned)
-            self._check_nesting(info, None, cleaned)
-            stored = {k: v for k, v in cleaned.items() if info.table.columns[k].type != "links"}
-            now = self.clock()
-            fields = ["created_at", "updated_at", "source", "review_status", "batch_id"] + list(stored)
-            params = [now, now, actor, review_status, batch_id] + list(stored.values())
-            cursor = self.conn.execute(
-                f"INSERT INTO {info.name} ({', '.join(fields)}) VALUES ({', '.join('?' * len(fields))})", params)
-            record_id = cursor.lastrowid
-            self._write_links(info, record_id, cleaned)
-            self._audit(actor, "create", info, record_id, None, cleaned, batch_id)
-            self._adjust(info, self._row(info, record_id), +1, actor)
+            return self._create(info, values, actor, review_status, batch_id)
+
+    def _create(self, info: TableInfo, values: dict, actor: str, review_status: str = "confirmed",
+                batch_id: int | None = None) -> int:
+        values = dict(values)
+        first_batch = None
+        for rule_info in self._totals_into(info):  # an item typed in with an amount starts its first batch
+            start = {c: values.pop(c) for c in rule_info.table.total["starts_from"]
+                     if c in values and values[c] not in (None, "")}
+            if start:
+                first_batch = (rule_info, start)
+        for column in self._derived(info):
+            values.pop(column, None)  # worked out from the batches
+        cleaned = self.clean(info, values, creating=True)
+        self._check_required_when(info, cleaned)
+        self._check_nesting(info, None, cleaned)
+        self._choose_batch(info, cleaned, None, actor, review_status, batch_id)
+        stored = {k: v for k, v in cleaned.items() if info.table.columns[k].type != "links"}
+        now = self.clock()
+        fields = ["created_at", "updated_at", "source", "review_status", "batch_id"] + list(stored)
+        params = [now, now, actor, review_status, batch_id] + list(stored.values())
+        cursor = self.conn.execute(
+            f"INSERT INTO {info.name} ({', '.join(fields)}) VALUES ({', '.join('?' * len(fields))})", params)
+        record_id = cursor.lastrowid
+        self._write_links(info, record_id, cleaned)
+        self._audit(actor, "create", info, record_id, None, cleaned, batch_id)
+        self._adjust(info, self._row(info, record_id), +1, actor)
+        self._retotal(info, cleaned.get(info.table.total.get("link")) if info.table.total else None, actor)
+        if first_batch:
+            batch_info, start = first_batch
+            rule = batch_info.table.total
+            batch_values = dict(start, **{rule["link"]: record_id})
+            batch_values.setdefault(rule["amount"], 0)
+            self._create(batch_info, batch_values, actor, review_status, batch_id)
         return record_id
+
+    # ----- batches: an item's amount is the sum of its batches (DESIGN.md 5.7) --------------
+
+    def _totals_into(self, info: TableInfo):
+        """Tables whose records (batches) add up into `info` (such as stock items)."""
+        for other in self.registry.values():
+            rule = other.table.total
+            if rule and table_name(other.module.name, rule["target"]) == info.name:
+                yield other
+
+    def _has_movements(self, info: TableInfo, record_id: int) -> bool:
+        """True if any stock in or out (deleted or not) is recorded against this batch."""
+        for other in self.registry.values():
+            rule = other.table.adjusts
+            if rule and rule.get("belongs_to") and table_name(other.module.name, rule["target"]) == info.name:
+                if self.conn.execute(f"SELECT 1 FROM {other.name} WHERE {rule['link']} = ? LIMIT 1",
+                                     (record_id,)).fetchone():
+                    return True
+        return False
+
+    def _label(self, info: TableInfo, column: str) -> str:
+        """A column's friendly label from labels.toml, for messages."""
+        labels = info.module.labels.get("tables", {}).get(info.table.name, {}).get("columns", {})
+        return labels.get(column, {}).get("label") or column.replace("_", " ").capitalize()
+
+    def _derived(self, info: TableInfo) -> set[str]:
+        """Columns of `info` that are worked out from its batches, never typed in."""
+        derived = set()
+        for other in self._totals_into(info):
+            rule = other.table.total
+            derived.add(rule["into"])
+            if rule["earliest"]:
+                derived.add(rule["earliest"]["into"])
+        return derived
+
+    def _retotal(self, info: TableInfo, owner_id, actor: str) -> None:
+        """Work out the owner's amount (and earliest date) again from its batches."""
+        rule = info.table.total
+        if not rule or owner_id in (None, ""):
+            return
+        target = self.registry[table_name(info.module.name, rule["target"])]
+        current = self.conn.execute(f"SELECT * FROM {target.name} WHERE id = ?", (owner_id,)).fetchone()
+        if current is None or current["deleted_at"]:
+            return
+        amounts = [Decimal(str(r[0])) for r in self.conn.execute(
+            f"SELECT {rule['amount']} FROM {info.name} WHERE deleted_at IS NULL AND {rule['link']} = ? "
+            f"AND {rule['amount']} IS NOT NULL", (owner_id,))]
+        total = sum(amounts, Decimal(0))
+        into = target.table.columns[rule["into"]]
+        new = {rule["into"]: int(total) if into.type == "integer" else float(round(total, 6))}
+        if rule["earliest"]:
+            date_col = rule["earliest"]["date"]
+            new[rule["earliest"]["into"]] = self.conn.execute(
+                f"SELECT MIN({date_col}) FROM {info.name} WHERE deleted_at IS NULL AND {rule['link']} = ? "
+                f"AND {rule['amount']} > 0 AND {date_col} IS NOT NULL AND {date_col} != ''", (owner_id,)).fetchone()[0]
+        changed = {k: v for k, v in new.items() if current[k] != v}
+        if not changed:
+            return
+        self.conn.execute(f"UPDATE {target.name} SET {', '.join(f'{k} = ?' for k in changed)}, updated_at = ? "
+                          f"WHERE id = ?", list(changed.values()) + [self.clock(), owner_id])
+        self._audit(actor, "update", target, owner_id, {k: current[k] for k in changed}, changed)
+
+    def _choose_batch(self, info: TableInfo, cleaned: dict, current: dict | None, actor: str,
+                      review_status: str = "confirmed", batch_id: int | None = None) -> None:
+        """For stock in and out: check the chosen batch is the item's, or choose one.
+
+        Stock in with no batch chosen starts a new batch (with its use-by date and place).
+        Using some with no batch chosen takes from the batch with the earliest known use-by date;
+        if that batch holds too little, the person is asked to record it batch by batch."""
+        rule = info.table.adjusts
+        if not rule or not rule.get("belongs_to"):
+            return
+        link, owner_col = rule["link"], rule["belongs_to"]
+        batches = self.registry[table_name(info.module.name, rule["target"])]
+        merged = dict(current or {}, **cleaned)
+        if current is not None and link in cleaned and cleaned[link] is None:
+            cleaned[link] = merged[link] = current.get(link)  # left blank when editing: keep the batch it had
+        owner = merged.get(owner_col)
+        if merged.get(link) is not None:
+            batch = self.conn.execute(f"SELECT {owner_col} FROM {batches.name} WHERE id = ?",
+                                      (merged[link],)).fetchone()
+            if batch is not None and owner is not None and batch[owner_col] != owner:
+                raise ValidationError({link: "is a batch of a different item. Choose one of this item's batches, "
+                                             "or leave it blank."})
+            return
+        if current is not None or owner is None:
+            return
+        if merged.get(rule["direction"]) in rule["adds"]:
+            new_values = {owner_col: owner, rule["quantity"]: 0}
+            new_values.update({k: merged.get(v) for k, v in rule["new_batch"].items()
+                               if merged.get(v) not in (None, "")})
+            cleaned[link] = self._create(batches, new_values, actor, review_status, batch_id)
+            return
+        oldest = rule.get("oldest_first")
+        order = f"{oldest} IS NULL OR {oldest} = '', {oldest}, id" if oldest else "id"
+        found = self.conn.execute(
+            f"SELECT * FROM {batches.name} WHERE deleted_at IS NULL AND {owner_col} = ? "
+            f"AND {rule['quantity']} > 0 ORDER BY {order} LIMIT 1", (owner,)).fetchone()
+        if found is None:
+            raise ValidationError({rule["amount"]: "is more than there is: none of this item is recorded. "
+                                                   "Record what you have first."})
+        amount = merged.get(rule["amount"])
+        held = sum((Decimal(str(r[0])) for r in self.conn.execute(
+            f"SELECT {rule['quantity']} FROM {batches.name} WHERE deleted_at IS NULL AND {owner_col} = ? "
+            f"AND {rule['quantity']} > 0", (owner,))), Decimal(0))
+        if amount is not None and Decimal(str(amount)) > held:
+            raise ValidationError({rule["amount"]: f"is more than there is: only {_plain_number(held)} left."})
+        if amount is not None and Decimal(str(amount)) > Decimal(str(found[rule["quantity"]])):
+            when = f", use by {dates.show(found[oldest], dates.household_style(self.conn))}" \
+                if oldest and found[oldest] else ""
+            raise ValidationError({rule["amount"]: f"is more than the batch to use first holds "
+                                   f"({_plain_number(found[rule['quantity']])}{when}). Record that batch first, "
+                                   f"then the rest from the next one, or choose a batch."})
+        cleaned[link] = found["id"]
 
     def update(self, name: str, record_id: int, values: dict, actor: str = "person") -> dict:
         """Change some fields of a record; return what changed as {field: [before, after]}."""
@@ -383,7 +522,17 @@ class Records:
             cleaned = self.clean(info, values, creating=False)
             self._check_required_when(info, dict(current, **cleaned))
             self._check_nesting(info, record_id, cleaned)
+            self._choose_batch(info, cleaned, current, actor)
             changed = {k: v for k, v in cleaned.items() if current.get(k) != v}
+            total = info.table.total
+            if total and total["link"] in changed and self._has_movements(info, record_id):
+                raise ValidationError({total["link"]: "can't change once stock in or out is recorded for this "
+                                                      "batch. Record it as used or given away here, and as bought "
+                                                      "on the other item."})
+            derived = self._derived(info) & set(changed)
+            if derived:
+                raise ValidationError({c: "is worked out from its batches. Change a batch, or record stock in "
+                                          "or out." for c in derived})
             if not changed:
                 return {}
             stored = {k: v for k, v in changed.items() if info.table.columns[k].type != "links"}
@@ -403,6 +552,11 @@ class Records:
                 else:
                     self._adjust(info, current, -1, actor)
                     self._adjust(info, self._row(info, record_id), +1, actor)
+            if info.table.total:
+                link = info.table.total["link"]
+                self._retotal(info, current.get(link), actor)
+                if changed.get(link, current.get(link)) != current.get(link):
+                    self._retotal(info, changed[link], actor)
         return {k: [current.get(k), v] for k, v in changed.items()}
 
     def _dependents(self, info: TableInfo):
@@ -453,13 +607,16 @@ class Records:
             raise ValidationError({"delete": "cannot be done yet because " + " and ".join(blocking) +
                                    " still point at it. Change or delete those first."})
         rule = info.table.adjusts
-        kept = bool(rule and row.get(rule["link"]) is not None and
-                    (table_name(info.module.name, rule["target"]), row[rule["link"]]) in seen)
+        # Nothing to undo (its batch was deleted first and its link cleared): restoring must not add it again.
+        kept = bool(rule and (self._effect(info, row) is None or
+                              (table_name(info.module.name, rule["target"]), row[rule["link"]]) in seen))
         self._adjust(info, row, -1, actor, skip=seen)
         now = self.clock()
         self.conn.execute(f"UPDATE {info.name} SET deleted_at = ?, updated_at = ? WHERE id = ?", (now, now, record_id))
         # kept_effect: a stock movement deleted with its item still counts in the item's amount.
         self._audit(actor, "delete", info, record_id, None, {"with": root, "kept_effect": kept})
+        if info.table.total:
+            self._retotal(info, row.get(info.table.total["link"]), actor)
 
     def restore(self, name: str, record_id: int, actor: str = "person") -> None:
         """Bring back a deleted record, with everything that was deleted or cleared along with it."""
@@ -475,9 +632,9 @@ class Records:
                     linked = self.conn.execute(f"SELECT deleted_at FROM {target.name} WHERE id = ?",
                                                (row[column.name],)).fetchone() if target else None
                     if linked is not None and linked["deleted_at"]:
-                        raise ValidationError({"restore": f"needs its {column.name.replace('_', ' ')} back first: "
-                                               f"restore that {target.table.title.lower()} record, and this one "
-                                               f"comes back with it."})
+                        raise ValidationError({"restore": f"needs its “{self._label(info, column.name)}” back "
+                                               f"first: restore that record in {target.table.title}, and this "
+                                               f"one comes back with it."})
             self._restore_one(info, record_id, actor)
             key = f"{info.name}:{record_id}"
             for entry in self.conn.execute(
@@ -511,3 +668,5 @@ class Records:
         self._audit(actor, "restore", info, record_id, None, None)
         if not kept:
             self._adjust(info, self._row(info, record_id), +1, actor)
+        if info.table.total:
+            self._retotal(info, row[info.table.total["link"]], actor)
