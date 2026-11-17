@@ -1,0 +1,49 @@
+# Invented providers and fault contacts; phone numbers use fiction-reserved ranges.
+
+[[smith.people.people]]
+name = "Example Energy AU"
+phone = "0491 570 161"
+
+[[smith.people.people]]
+name = "Example Energy Faults AU"
+phone = "0491 570 162"
+
+[[smith.utilities.services]]
+name = "Home electricity"
+kind = "electricity"
+provider = "Example Energy AU"
+fault_contact = "Example Energy Faults AU"
+account_number = "DEMO-AU-ACCOUNT-01"
+meter = "Electricity meter"
+
+[[garcia.people.people]]
+name = "Example Power US"
+phone = "(415) 555-0111"
+
+[[garcia.people.people]]
+name = "Example Power Faults US"
+phone = "(415) 555-0112"
+
+[[garcia.utilities.services]]
+name = "Apartment electricity"
+kind = "electricity"
+provider = "Example Power US"
+fault_contact = "Example Power Faults US"
+account_number = "DEMO-US-ACCOUNT-01"
+meter = "Apartment electricity meter"
+
+[[taylor.people.people]]
+name = "Example Water UK"
+phone = "07700 900790"
+
+[[taylor.people.people]]
+name = "Example Water Faults UK"
+phone = "07700 900791"
+
+[[taylor.utilities.services]]
+name = "Flat water"
+kind = "water"
+provider = "Example Water UK"
+fault_contact = "Example Water Faults UK"
+account_number = "DEMO-UK-ACCOUNT-01"
+meter = "Flat water meter"
