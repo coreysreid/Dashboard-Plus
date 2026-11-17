@@ -10,6 +10,7 @@ from pathlib import Path
 from typing import Callable
 
 from flask import Flask, abort, g, jsonify, redirect, render_template, request
+from werkzeug.exceptions import HTTPException
 
 from dashboard import __version__
 from dashboard.core import backups, db, records, watch
@@ -68,7 +69,9 @@ def create_app(shutdown_token: str, on_shutdown: Callable[[], None], report=None
         cookie = request.cookies.get(SESSION_COOKIE, "")
         if not hmac.compare_digest(cookie, app.config["SESSION_KEY"]):
             return redirect("/start")
-        if request.method == "POST" and not request.path.startswith("/api/"):
+        # Every write needs this page's own token. (The Agent API, when it is built, will check its own
+        # tokens; until then nothing is exempt — security review.)
+        if request.method == "POST":
             supplied = request.form.get("_csrf", "")
             if not hmac.compare_digest(supplied, app.config["CSRF_TOKEN"]):
                 abort(400)
@@ -189,6 +192,20 @@ def create_app(shutdown_token: str, on_shutdown: Callable[[], None], report=None
     @app.errorhandler(404)
     def not_found(_error):
         return render_template("error.html", message="That page does not exist."), 404
+
+    @app.after_request
+    def private_pages(response):
+        # Household pages are private: never kept in the browser's cache, never shown inside another site.
+        response.headers.setdefault("Cache-Control", "no-store")
+        response.headers.setdefault("X-Frame-Options", "DENY")
+        response.headers.setdefault("X-Content-Type-Options", "nosniff")
+        response.headers.setdefault("Referrer-Policy", "no-referrer")
+        return response
+
+    @app.errorhandler(HTTPException)
+    def refused(error):
+        # Ordinary refusals (wrong method, bad request) are not crashes: no error report, the right code.
+        return render_template("error.html", message=error.description or "That request was refused."), error.code
 
     @app.errorhandler(Exception)
     def unexpected(error):

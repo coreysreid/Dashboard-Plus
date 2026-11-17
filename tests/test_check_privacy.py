@@ -37,7 +37,17 @@ class PrivacyCheckTests(unittest.TestCase):
     def test_data_and_secrets_folders_are_flagged(self):
         self.assertTrue(scan_files({"data/notes.txt": "hello"}))
         self.assertTrue(scan_files({"secrets/x.txt": "hello"}))
-        self.assertEqual(scan_files({"tests/data/notes.txt": "hello"}), [])
+        # At any depth too: running from src/ would make src/data/ (security review, finding 5).
+        self.assertTrue(scan_files({"src/data/notes.txt": "hello"}))
+        self.assertTrue(scan_files({"x/backups/daily-2026-06-01.txt": "hello"}))
+
+    def test_a_database_is_found_by_its_contents_whatever_its_name(self):
+        self.assertTrue(scan_files({"export.bin": b"SQLite format 3\0" + b"\0" * 100}))
+        self.assertTrue(scan_files({"backup.db.partial": "x"}))
+
+    def test_a_big_file_is_checked_not_skipped(self):
+        token = "ghp_" + "a1B2c3D4e5" * 4
+        self.assertTrue(scan_files({"export.csv": token + "\n" + "row\n" * 600_000}))
 
     def test_token_is_flagged_and_not_echoed(self):
         token = "ghp_" + "a1B2c3D4e5" * 4

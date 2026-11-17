@@ -103,6 +103,43 @@ def plan(conn: sqlite3.Connection, tracks: dict[str, list[Migration]]) -> list[M
     return todo
 
 
+# SQLite's own bookkeeping tables, written by CREATE, ALTER and DROP statements.
+_SCHEMA_TABLES = {"sqlite_master", "sqlite_schema", "sqlite_temp_master", "sqlite_sequence"}
+
+
+def _confined_to(module: str):
+    """A guard for a module's migrations (decision 0055): they may create, change and fill only that
+    module's own tables, and add entries to the change history. Anything else is refused: reading or
+    writing other modules' or the core's tables, triggers and views (which would act later, unguarded),
+    attaching other files, settings (PRAGMA), and committing or vacuuming part-way through."""
+    prefix = f"{module}__"
+    own = lambda name: bool(name) and name.startswith(prefix)  # noqa: E731
+    ok, no = sqlite3.SQLITE_OK, sqlite3.SQLITE_DENY
+
+    def check(action, first, second, database, inner):
+        if database not in (None, "main"):
+            return no
+        if action in (sqlite3.SQLITE_CREATE_TABLE, sqlite3.SQLITE_DROP_TABLE, sqlite3.SQLITE_ANALYZE,
+                      sqlite3.SQLITE_REINDEX):
+            return ok if own(first) else no
+        if action in (sqlite3.SQLITE_CREATE_INDEX, sqlite3.SQLITE_DROP_INDEX):
+            automatic = (first or "").startswith(f"sqlite_autoindex_{prefix}")  # made by SQLite for a key
+            return ok if (own(first) or automatic) and own(second) else no
+        if action == sqlite3.SQLITE_ALTER_TABLE:
+            return ok if own(second) else no
+        if action in (sqlite3.SQLITE_INSERT, sqlite3.SQLITE_UPDATE, sqlite3.SQLITE_DELETE):
+            if own(first) or first in _SCHEMA_TABLES:
+                return ok
+            return ok if action == sqlite3.SQLITE_INSERT and first == "core__audit" else no
+        if action == sqlite3.SQLITE_READ:
+            return ok if own(first) or first in _SCHEMA_TABLES else no
+        if action in (sqlite3.SQLITE_SELECT, sqlite3.SQLITE_FUNCTION, sqlite3.SQLITE_RECURSIVE):
+            return ok
+        return no  # triggers, views, ATTACH, PRAGMA, transactions, VACUUM and anything new
+
+    return check
+
+
 def migrate(conn: sqlite3.Connection, tracks: dict[str, list[Migration]],
             backup_dir: Path | None = None) -> list[Migration]:
     """Bring the database up to date. Core runs first, then tracks in the order given.
@@ -122,8 +159,13 @@ def migrate(conn: sqlite3.Connection, tracks: dict[str, list[Migration]],
     for migration in todo:
         try:
             with db.transaction(conn):
-                for statement in db.split_statements(migration.sql):
-                    conn.execute(statement)
+                if migration.track != CORE_TRACK:
+                    conn.set_authorizer(_confined_to(migration.track))
+                try:
+                    for statement in db.split_statements(migration.sql):
+                        conn.execute(statement)
+                finally:
+                    conn.set_authorizer(None)
                 conn.execute(
                     "INSERT INTO core__migrations (track, number, name, checksum, applied_at) VALUES (?, ?, ?, ?, ?)",
                     (migration.track, migration.number, migration.name, migration.checksum,
@@ -131,6 +173,16 @@ def migrate(conn: sqlite3.Connection, tracks: dict[str, list[Migration]],
                 )
                 if migration.track == CORE_TRACK:
                     conn.execute(f"PRAGMA user_version = {int(migration.number)}")
+        except sqlite3.DatabaseError as error:
+            if "not authorized" in str(error) or "prohibited" in str(error):
+                raise MigrationError(
+                    f"The database change {migration.label} tried to read or change something outside the "
+                    f"'{migration.track}' module's own tables, which modules are not allowed to do, so it was "
+                    f"not made. Details: {error}") from error
+            raise MigrationError(
+                f"The database change {migration.label} could not be applied, so that change was not made. "
+                f"Details: {error}"
+            ) from error
         except sqlite3.Error as error:
             raise MigrationError(
                 f"The database change {migration.label} could not be applied, so that change was not made. "

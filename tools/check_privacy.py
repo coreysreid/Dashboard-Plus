@@ -11,11 +11,12 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 from repofiles import repo_files  # noqa: E402
 
 FORBIDDEN_SUFFIXES = (
-    ".db", ".sqlite", ".sqlite3", ".db-wal", ".db-shm", ".db-journal",
+    ".db", ".sqlite", ".sqlite3", ".db-wal", ".db-shm", ".db-journal", ".partial",
     ".pem", ".key", ".pfx", ".p12",
 )
+SQLITE_MAGIC = b"SQLite format 3\0"  # a database by its contents, whatever its name
 FORBIDDEN_NAMES = {"config.toml"}
-FORBIDDEN_TOP_FOLDERS = {"data", "secrets"}
+FORBIDDEN_FOLDERS = {"data", "secrets", "backups"}  # at any depth, such as src/data/ made by running from src
 MAX_SCAN_BYTES = 2_000_000
 
 # Words that are clearly placeholders when they appear as a user folder name.
@@ -48,6 +49,8 @@ SECRET_ASSIGNMENT = re.compile(
 WINDOWS_PATH = re.compile(r"""(?i)\b[a-z]:[\\/]+users[\\/]+([^\\/\s"'<>*:]+)""")
 MAC_PATH = re.compile(r"""(?<![\w.])/Us""" + r"""ers/([^/\s"'<>*]+)""")
 LINUX_PATH = re.compile(r"""(?<![\w.])/ho""" + r"""me/([^/\s"'<>*]+)""")
+WSL_PATH = re.compile(r"""(?i)(?<![\w.])/mnt/[a-z]/us""" + r"""ers/([^/\s"'<>*]+)""")
+MEDIA_PATH = re.compile(r"""(?<![\w.])/(?:media|run/media)/([^/\s"'<>*]+)/""")
 EMAIL = re.compile(r"[A-Za-z0-9._%+-]+@([A-Za-z0-9-]+(?:\.[A-Za-z0-9-]+)+)")
 
 
@@ -80,7 +83,7 @@ def check_name(path: str) -> list[Finding]:
         problems.append("real config file (only config.example.toml may be committed)")
     if name.startswith(".env") and name != ".env.example":
         problems.append("environment file")
-    if len(parts) > 1 and parts[0].lower() in FORBIDDEN_TOP_FOLDERS:
+    if any(part.lower() in FORBIDDEN_FOLDERS for part in parts[:-1]):
         problems.append("belongs in the data folder, which is never committed")
     return [Finding(path, 0, p) for p in problems]
 
@@ -109,6 +112,8 @@ def check_text(path: str, text: str) -> list[Finding]:
             ("Windows user folder", WINDOWS_PATH),
             ("Mac user folder", MAC_PATH),
             ("Linux home folder", LINUX_PATH),
+            ("Windows user folder seen from Linux", WSL_PATH),
+            ("removable drive of a named user", MEDIA_PATH),
         ):
             for match in pattern.finditer(line):
                 if match.group(1).lower() not in PLACEHOLDER_USERS:
@@ -127,10 +132,12 @@ def scan(root: Path) -> list[Finding]:
         problems.extend(check_name(path))
         full = root / path
         try:
-            if full.stat().st_size > MAX_SCAN_BYTES:
-                continue
-            data = full.read_bytes()
+            with full.open("rb") as handle:
+                data = handle.read(MAX_SCAN_BYTES)  # a big file is checked as far as this, not skipped
         except OSError:
+            continue
+        if data.startswith(SQLITE_MAGIC):
+            problems.append(Finding(path, 0, "a database file (its contents say so, whatever its name)"))
             continue
         if b"\0" in data[:8000]:
             continue

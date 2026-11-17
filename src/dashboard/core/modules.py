@@ -325,8 +325,10 @@ def _check_watch(file: str, table: str, raw, columns: dict[str, Column], problem
                         problems.append(f"{where}, supply: '{value}' is not one of the choices for '{name}'.")
                         ok = False
             unit_from = supply.get("unit_from")
-            if unit_from is not None and (unit_from not in columns or columns[unit_from].type != "text"):
-                problems.append(f"{where}, supply: 'unit_from' must name a text column holding each row's unit.")
+            if unit_from is not None and (unit_from not in columns or columns[unit_from].type != "text"
+                                          or columns[unit_from].sensitive):
+                problems.append(f"{where}, supply: 'unit_from' must name a text column holding each row's unit, "
+                                f"not a private one.")
                 ok = False
             words = supply.get("unit_words", [])
             if not isinstance(words, list) or not all(isinstance(w, str) for w in words):
@@ -662,6 +664,10 @@ def _check_gaps(file: str, table: Table, tables: dict[str, Table], raw, problems
         if bad:
             problems.append(f"{g_where}: 'message' can only fill in columns of this table, like {{name}}; "
                             f"not {', '.join('{' + b + '}' for b in bad)}.{_suggest(bad[0], list(table.columns))}")
+            continue
+        private = [f for f in fields if table.columns[f].sensitive]
+        if private:  # the question shows on the home page and Needs attention
+            problems.append(f"{g_where}: '{{{private[0]}}}' is private, so it can't be part of a question.")
             continue
         gaps.append({"missing": missing, "where": dict(filters), "message": message})
     return gaps

@@ -199,7 +199,7 @@ def new_record(table):
     back = None
     for name, value in from_address.items():
         column = info.table.columns[name]
-        if column.type == "link" and value.isdigit():
+        if column.type == "link" and value.isdecimal() and value.isascii():
             back = f"/t/{schema.target_table(info.module.name, column)}/{value}"
     return _render_form(info, store, prefill, {}, True, saved=request.args.get("saved"), back=back)
 

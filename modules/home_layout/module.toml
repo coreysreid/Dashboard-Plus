@@ -1,0 +1,8 @@
+name = "home_layout"
+title = "Home layout"
+version = "1.0.0"
+description = "Where the ways out, shut-offs, meters, smoke alarms and fire equipment are, on one printable page."
+core_api = "1"
+kind = "declarative"
+requires = ["stock"]
+outbound_hosts = []

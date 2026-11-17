@@ -123,3 +123,36 @@ class ShippedModuleTests(TempDirTestCase):
         self.assertIn("Nothing was saved. Check these answers:", page)
         self.assertIn('<a href="#f-name">Name</a>', page)
         self.assertRegex(page, r'id="f-name"[^>]*aria-invalid="true"[^>]*aria-describedby="f-name-error f-name-help"')
+
+
+class SecurityReviewWebTests(TempDirTestCase):
+    """Security review findings 6 and 7: odd input is refused politely and pages are kept private."""
+
+    def setUp(self):
+        super().setUp()
+        import shutil
+        from dashboard.core import db, settings, startup
+        from dashboard.web.app import create_app
+        from support import ROOT
+        shutil.copytree(ROOT / "modules" / "people", self.tmp / "modules" / "people")
+        report = startup.prepare(self.tmp / "data", self.tmp / "modules")
+        conn = db.connect(self.tmp / "data" / "dashboard.db")
+        settings.put(conn, "setup.done", True)
+        conn.close()
+        app = create_app("t", lambda: None, report, data_dir=self.tmp / "data", session_key="k")
+        app.config["PORT"] = 5132
+        self.base = "http://127.0.0.1:5132"
+        self.client = app.test_client()
+        self.client.get("/?key=k", base_url=self.base)
+
+    def test_an_unusual_digit_in_the_address_does_not_crash_the_page(self):
+        page = self.client.get("/t/people__roles/new?person=²", base_url=self.base)
+        self.assertEqual(page.status_code, 200)
+
+    def test_a_wrong_method_is_refused_not_reported_as_a_crash(self):
+        self.assertEqual(self.client.put("/", base_url=self.base).status_code, 405)
+
+    def test_pages_are_not_cached_or_framed(self):
+        page = self.client.get("/", base_url=self.base)
+        self.assertEqual(page.headers["Cache-Control"], "no-store")
+        self.assertEqual(page.headers["X-Frame-Options"], "DENY")

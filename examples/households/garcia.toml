@@ -16,7 +16,7 @@ home_type = "apartment"
 storeys = 1
 mobility_needs = true
 hazards = ["earthquake", "heat", "power"]
-modules = ["medical", "people", "pets", "stock"]
+modules = ["home_layout", "medical", "people", "pets", "stock"]
 
 # ---- People -----------------------------------------------------------------
 
@@ -559,3 +559,56 @@ course = "cpr"
 provider = "Example Training Centre"
 completed_on = "today-350"
 renew_by = "today+40"
+
+# ---- Home layout --------------------------------------------------------------
+# Places are the Household stock places above.
+
+[[home_layout.exits]]
+name = "Apartment door"
+floor = "Third floor"
+place = "Hallway"
+route = "Out of the door, turn left; the stairwell is at the end of the corridor. Rosa needs someone with her on the stairs."
+
+[[home_layout.shutoffs]]
+name = "Apartment water valve"
+kind = "water"
+place = "Kitchen cabinets"
+how_to_find = "Under the kitchen sink, at the back on the left."
+
+[[home_layout.shutoffs]]
+name = "Breaker panel"
+kind = "power"
+place = "Hall closet"
+how_to_find = "Behind the coats, on the right-hand wall."
+
+[[home_layout.shutoffs]]
+name = "Gas valve for the stove"
+kind = "gas"
+place = "Kitchen"
+how_to_find = "Behind the stove, low on the wall."
+
+[[home_layout.equipment]]
+name = "Hallway smoke alarm"
+kind = "smoke_alarm"
+place = "Hallway"
+last_tested = "today-25"
+next_check = "today+65"
+
+[[home_layout.equipment]]
+name = "Bedroom smoke alarm"
+kind = "smoke_alarm"
+place = "Main bedroom"
+last_tested = "today-25"
+next_check = "today+65"
+
+[[home_layout.equipment]]
+name = "Earthquake go-bags"
+kind = "go_bag"
+place = "Hall closet"
+next_check = "today+25"
+notes = "One bag each, plus Luna's carrier."
+
+[[home_layout.equipment]]
+name = "Kitchen fire extinguisher"
+kind = "fire_extinguisher"
+place = "Kitchen cabinets"

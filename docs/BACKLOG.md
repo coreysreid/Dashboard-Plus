@@ -9,13 +9,13 @@ sessions read this page first. Newest at the top of each section.
 | Date | Feedback | Plan |
 |---|---|---|
 | 2026-11-16 | Stocktake should be: pick "Kidney beans" from a list (type a new one only if missing), location Kitchen › Pantry › Shelf 3, quantity 5, use by 20/05/27. | Lane B batch 3, tasks 1 and 2: a catalogue of common goods (with care over drinking, filtered and distilled water) and a Home layout module with nested places; Lane A then builds type-ahead picking and nested places. |
-| 2026-11-16 | A Home layout module is needed. | Lane B batch 3, task 2 (rooms, storage and spots; exits, shut-offs and safety equipment; an "Our home" sheet). |
 | 2026-11-16 | "There is still a lot to add and update, manage." | Lane B batch 3 (docs/WORKSTREAMS.md) drafts the next modules and content; Lane A polishes and integrates; then a UX round with Corey. |
 
 ## Done
 
 | Date | Feedback | What changed | Pull request |
 |---|---|---|---|
+| 2026-11-16 | A Home layout module is needed. | Home layout is switched on: ways out, the water shut-off, power board and gas shut-off, smoke alarms, extinguishers and go-bags, and meters, each at one of your places (Garage › Garage shelves), with a one-page "Our home" sheet. It asks "Where is the water shut-off?" until answered and reminds you of checks on the dates you choose. Your existing places are used as they are; nothing was moved (decision 0054). | Home layout |
 | 2026-11-16 | Layered use-by dates: 3 tins expire in a month, 10 in six months. | Stock is kept in batches, each with its own amount, use-by and place. The item adds them up; stock in starts a new batch; using some takes the earliest use-by first; Needs attention warns about each batch. Existing items became one batch each, after a backup (decision 0053). | Batches |
 | 2026-11-17 | (Lane B UX check) A first aid kit in the car stopped the question "Is there a first aid kit at home?"; a date typed in the other country's order gave no hint. | Each kit now says whether it is kept at home, in a vehicle or somewhere else; the question stays until a kit is kept at home. A date typed the other way shows "Use DD/MM/YY, for example 20/05/27." | Kit at home, date hint |
 | 2026-11-16 | Use by typed as 20/05/27. | Dates are typed and shown your country's way: 20/05/27 in Australia, 05/20/27 in the US, saved the same either way. The form shows the date in words while you type, and impossible dates like 31/04/27 are refused (decision 0052). Layered use-by dates are next. | Dates your way |

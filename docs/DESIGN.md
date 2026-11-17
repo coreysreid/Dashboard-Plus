@@ -527,6 +527,15 @@ number and the core can load both for a transition period.
     first aid kit?" and "Does anyone here know how to use it?". The module does
     not give medical instruction or diagnose; it records what the household has
     and links to guidance from recognised first aid and health bodies.
+- **Home layout** (declarative; requires Household stock; shipped, decision
+  0054). Tables: ways out (floor, place, how to get there), shut-offs and power
+  board, alarms and safety equipment (last tested, battery changed, test or
+  check again by), and meters. Every "where it is" links to `stock.places`, so
+  the household's places are shared and none were moved. Behaviour: gaps ask
+  for a way out, the water shut-off, the power board and a smoke alarm (not
+  gas, which many homes lack); a check is *due* on the date the household
+  chose, never one worked out for it; an **Our home** sheet prints everything
+  with full place paths and no notes.
 - **Readiness** (declarative; the home of the prompts in section 10.5).
   Tables: plans (a situation the household has thought through: what we would
   do, who does what, the answer to "could we get down from upstairs?"), drills
@@ -1006,6 +1015,20 @@ only to choose which pack applies; nothing is looked up online.
   person chooses.
 - **Code modules** run with the user's permissions and are labelled as such
   (section 6).
+- **Declarative modules are confined** (decision 0055). Their numbered
+  database changes run under a guard that allows only creating, changing and
+  filling the module's own tables, and adding entries to the change history.
+  Reading or changing another module's or the core's tables, triggers, views,
+  attaching files, settings (PRAGMA), committing part-way and copying the
+  database elsewhere are refused; the module is left out and nothing changes.
+  A module's names for records, questions (gaps) and units may not use a
+  private column.
+- **Files on a shared computer.** On Mac and Linux the data folder, database,
+  backups and the running-state file (which holds the session key) are
+  readable by the person's own account only. The second backup copy's folder
+  name must be one the program made, so it cannot be pointed elsewhere.
+- **Private pages.** Every page is sent with `Cache-Control: no-store` and may
+  not be shown inside another site (`X-Frame-Options: DENY`).
 - **Dependencies** are few, pinned to exact versions, and bundled.
 - **Privacy in the repository.** No real names, personal data, tokens, `.db`
   files or personal paths. Tests and demos use synthetic data. CI enforces this

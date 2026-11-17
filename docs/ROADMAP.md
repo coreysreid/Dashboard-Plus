@@ -6,7 +6,7 @@ from people using the earlier ones; that is the point of shipping early.
 
 | Milestone | What a household can do | Status |
 |---|---|---|
-| **M1** | Unzip, run the wizard, record People, Stock, Pets and first aid kits (Medical), see running low, expiring soon and days of water, print the emergency sheet | **In progress** |
+| **M1** | Unzip, run the wizard, record People, Stock, Pets, first aid kits (Medical) and where the ways out and shut-offs are (Home layout, decision 0054), see running low, expiring soon and days of water, print the emergency sheet | **In progress** |
 | M2 | Restore and export, review queue, inbox, Agent API, receipt entry | Planned |
 | M3 | Readiness prompts (Medical moved into M1, decision 0051), first country pack, optional data-folder passphrase | Planned |
 | M4 | Graphing, Analysis, the question loop, the monthly outcomes screen | Planned |

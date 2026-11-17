@@ -99,6 +99,22 @@ class BackupSafetyTests(TempDirTestCase):
         copies = sorted(p.relative_to(self.extra).parts[0] for p in self.extra.glob("*/daily-2026-06-01.db"))
         self.assertEqual(len(set(copies)), 2)
 
+    def test_a_tampered_backup_folder_name_cannot_send_the_copy_elsewhere(self):
+        """Security review finding 2: the second copy's folder name comes from the database."""
+        data = self.folder("data")
+        elsewhere = self.tmp / "synced"
+        for day, bad in enumerate(("../synced", str(elsewhere), "", 42), start=1):
+            conn = db.connect(data / "dashboard.db")
+            settings.put(conn, "backups.folder_id", bad)
+            conn.close()
+            backups.daily(data, self.extra, today=date(2026, 6, day))  # one daily backup a day
+            self.assertFalse(elsewhere.exists(), bad)
+            conn = db.connect(data / "dashboard.db")
+            fresh = settings.get(conn, "backups.folder_id")
+            conn.close()
+            self.assertRegex(fresh, r"^[0-9a-f]{12}$")
+            self.assertTrue((self.extra / fresh / f"daily-2026-06-0{day}.db").exists())
+
     def test_a_backup_that_fails_its_check_leaves_nothing_behind_and_is_tried_again(self):
         data = self.folder("data")
         with mock.patch.object(db, "integrity_ok", return_value=False):
@@ -116,3 +132,23 @@ class BackupSafetyTests(TempDirTestCase):
         made = backups.daily(data, self.extra, today=date(2026, 6, 1))
         self.assertEqual(len(made), 2)
         self.assertEqual(backups.status(data)["second"]["state"], "ok")
+
+
+class PrivateFilesTests(TempDirTestCase):
+    """Security review finding 4: on a shared Mac or Linux computer, other accounts can't read the data."""
+
+    def test_the_data_and_its_backups_are_for_this_account_only(self):
+        import os
+        import stat
+        import unittest
+        if os.name != "posix":
+            raise unittest.SkipTest("Windows keeps each user's files private already")
+        data = self.tmp / "data"
+        startup.prepare(data, self.tmp / "modules")
+        backups.daily(data, self.tmp / "computer-copy", today=date(2026, 6, 1))
+        files = [data / "dashboard.db", *data.glob("backups/*.db"), *(self.tmp / "computer-copy").glob("*/*.db")]
+        self.assertTrue(len(files) >= 3)
+        for path in files:
+            self.assertEqual(stat.S_IMODE(path.stat().st_mode) & 0o077, 0, path.name)
+        for folder in (data, data / "backups"):
+            self.assertEqual(stat.S_IMODE(folder.stat().st_mode) & 0o077, 0, folder.name)

@@ -4,6 +4,7 @@ from __future__ import annotations
 import json
 import logging
 import os
+import re
 import secrets
 import sys
 from datetime import date, datetime
@@ -30,6 +31,9 @@ def backup_dirs(data_dir: Path, extra_dir: Path | None) -> list[Path]:
     return dirs
 
 
+FOLDER_ID = re.compile(r"[0-9a-f]{12}")
+
+
 def _write(data_dir: Path, extra_dir: Path | None, filename: str) -> list[Path]:
     """Copy the database into every backup folder; a failing second copy is logged, not fatal.
 
@@ -47,7 +51,9 @@ def _write(data_dir: Path, extra_dir: Path | None, filename: str) -> list[Path]:
             # Each data folder keeps its second copies in its own sub-folder, so two copies of the
             # program on one computer never overwrite each other's backups.
             folder_id = settings.get(conn, "backups.folder_id")
-            if not folder_id:
+            if not isinstance(folder_id, str) or not FOLDER_ID.fullmatch(folder_id):
+                # Only a name this program made: anything else (such as "../" or a full path) could
+                # send the backup, and the clearing out of old ones, somewhere else (security review).
                 folder_id = secrets.token_hex(6)
                 settings.put(conn, "backups.folder_id", folder_id)
             extra_dir = Path(extra_dir) / folder_id
@@ -59,7 +65,7 @@ def _write(data_dir: Path, extra_dir: Path | None, filename: str) -> list[Path]:
             except Exception as error:  # noqa: BLE001 - the main copy must not depend on the second
                 if i == 0:
                     raise
-                log.warning("The second backup copy could not be written to %s", folder)
+                log.warning("The second backup copy could not be written (%s)", _reason(error))
                 second = {"state": "failed", "folder": str(folder), "reason": _reason(error)}
     finally:
         conn.close()
