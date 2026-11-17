@@ -2,13 +2,13 @@
 # Put each household block into examples/households/<name>.toml after promotion.
 
 [[smith.medical.kits]]
-name = "Family first aid kit"
-place = "Bathroom cabinet"
+name = "Car first aid kit"
+place = "Car boot"
 last_checked = "today-30"
 next_check = "today+60"
 
 [[smith.medical.kit_checks]]
-kit = "Family first aid kit"
+kit = "Car first aid kit"
 checked_on = "today-30"
 next_check = "today+60"
 checked_by = "Jane Smith"
@@ -45,11 +45,9 @@ renew_by = "today+40"
 name = "Small first aid kit"
 place = "Kitchen cupboard"
 last_checked = "today-20"
-next_check = "today+100"
 
 [[taylor.medical.kit_checks]]
 kit = "Small first aid kit"
 checked_on = "today-20"
-next_check = "today+100"
 checked_by = "Sam Taylor"
-notes = "Checked supplies."
+notes = "Checked supplies; next check date not chosen yet."
