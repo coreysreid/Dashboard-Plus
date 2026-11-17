@@ -1,0 +1,56 @@
+# Fictional illustrative references; this is not a loadable module seed yet.
+
+[[smith.grab_list.entries]]
+name = "Rex and lead"
+pet = "Rex"
+carrier = "John Smith"
+place = "Car boot"
+group = "people_pets"
+take_first = true
+
+[[smith.grab_list.entries]]
+name = "Family passports"
+document = "Family passports"
+carrier = "Jane Smith"
+place = "Study folder"
+group = "documents"
+print_place = false
+
+[[garcia.grab_list.entries]]
+name = "Apartment first aid kit"
+medical_kit = "Apartment first aid kit"
+carrier = "Maria Garcia"
+place = "Hall closet"
+group = "health_kits"
+take_first = true
+
+[[garcia.grab_list.entries]]
+name = "Luna and carrier"
+pet = "Luna"
+carrier = "Carlos Garcia"
+place = "Under the bed"
+group = "people_pets"
+take_first = true
+
+[[garcia.grab_list.entries]]
+name = "Apartment insurance policy"
+document = "Apartment insurance policy"
+carrier = "Maria Garcia"
+place = "Entry cupboard"
+group = "documents"
+print_place = false
+
+[[taylor.grab_list.entries]]
+name = "Tenancy agreement"
+document = "Tenancy agreement"
+carrier = "Sam Taylor"
+place = "Desk folder"
+group = "documents"
+print_place = false
+
+[[taylor.grab_list.entries]]
+name = "Small first aid kit"
+medical_kit = "Small first aid kit"
+carrier = "Sam Taylor"
+place = "Kitchen cupboard"
+group = "health_kits"
