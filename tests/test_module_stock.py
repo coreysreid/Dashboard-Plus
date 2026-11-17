@@ -67,13 +67,15 @@ class StockModuleTests(TempDirTestCase):
         shelf = self.records.create("stock__places", {"name": "Garage shelf"})
         self.item(name="Bottled water", category="water", quantity=20, place=shelf, drinking=True)
         self.item(name="Antiseptic cream", category="first_aid", quantity=1, unit="tube")
+        self.item(name="Flushing water", category="water", quantity=40, drinking=False)  # Lane B print check
         app = create_app("t", lambda: None, self.report, data_dir=self.data, session_key="k")
         app.config["PORT"] = PORT
         client = app.test_client()
         client.get("/?key=k", base_url=BASE)
         page = client.get("/sheet/stock/supplies", base_url=BASE).get_data(as_text=True)
-        self.assertIn("Water (litres)", page)
+        self.assertIn("Drinking water (litres)", page)
         self.assertIn("Garage shelf", page)
+        self.assertNotIn("Flushing water", page)  # not safe to drink, so not on the emergency list
         self.assertIn("Antiseptic cream", page)
 
     def test_stock_in_and_out_from_the_item_page(self):
