@@ -9,3 +9,6 @@
 | ITEM_TO_LOT.csv | Exact old item to migration and target-lot mapping | checking totals and IDs |
 | validate_fixture.py | Check the three fixed-date lots fixtures against the shipped example Stock rows. | reviewing migration data |
 | MIGRATION_FIXTURE.md | Two-stage migration and exact preservation checks | building the lots migration |
+| SHIPPED_FOLLOWUP.md | Shipped acceptance differences and Garcia/Taylor second batches | reviewing lots after release |
+| garcia_with_second_batches.toml | Full fictional Garcia example with two more batches | adopting Garcia test data |
+| taylor_with_second_batches.toml | Full fictional Taylor example with two more batches | adopting Taylor test data |

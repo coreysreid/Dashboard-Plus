@@ -1,6 +1,6 @@
 # Layered use-by dates: interaction and core contract
 
-The complete three-household fixture and exact old-item mapping are now in [`MIGRATION_FIXTURE.md`](MIGRATION_FIXTURE.md), [`example_lots.toml`](example_lots.toml) and [`ITEM_TO_LOT.csv`](ITEM_TO_LOT.csv). Smith's current five kidney-bean tins first migrate unchanged; the requested 3+10 target is a later correction and purchase. Existing item-level movements have no known lot provenance and must stay as legacy history, not be replayed or assigned a guessed lot.
+The original pre-shipping fixture and exact old-item mapping are in [`MIGRATION_FIXTURE.md`](MIGRATION_FIXTURE.md), [`example_lots.toml`](example_lots.toml) and [`ITEM_TO_LOT.csv`](ITEM_TO_LOT.csv). Batches now ship; see [`SHIPPED_FOLLOWUP.md`](SHIPPED_FOLLOWUP.md) for actual behavior and the two loadable household copies. The paragraphs below preserve the earlier design proposal for comparison.
 
 This is a **design draft**, not a loadable module. The target schema in `tables.toml` shows the new items, lots and movements after Lane A integrates them into Household stock and Home layout. The current core cannot maintain a derived item amount or show a shared full-path place, so shipping a fake standalone module would hide the gap.
 
