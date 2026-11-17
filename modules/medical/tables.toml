@@ -10,6 +10,10 @@ columns.notes = { type = "longtext" }
 expiring = { date = "next_check", warn_days = 30, wording = "due", what = "kit check" }
 
 [[tables.kits.watch.gaps]]
+none = {}
+message = "Is there a first aid kit at home? Add it and where to find it."
+
+[[tables.kits.watch.gaps]]
 missing = "place"
 message = "Where is {name} kept?"
 

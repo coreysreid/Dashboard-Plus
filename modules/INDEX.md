@@ -4,6 +4,7 @@ numbered migrations. See docs/DESIGN.md section 6 for the module contract.
 
 | Entry | What it is | Open it when |
 |---|---|---|
+| medical/ | First aid kits and where they are, kit checks, first aid training renewals; a first aid sheet | changing first aid records |
 | people/ | Who lives here, who to call, important details, emergency sheets | changing people, contacts or the emergency sheet |
 | pets/ | Pets, their vet, treatments and medicine with due dates, weigh-ins, vet visits; a pet details sheet | changing pets |
 | stock/ | Pantry, water, first aid, tools and hardware, with places, minimums and use-by dates | changing stock, running low or days of water |

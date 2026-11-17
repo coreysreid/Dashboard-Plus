@@ -17,7 +17,7 @@ home_type = "apartment"
 storeys = 1
 mobility_needs = false
 hazards = ["flood", "snow", "storm"]
-modules = ["people", "stock"]
+modules = ["medical", "people", "stock"]
 
 # ---- People -----------------------------------------------------------------
 
@@ -240,3 +240,16 @@ item = "Oat milk"
 reason = "bought"
 amount = 2
 happened_on = "today-1"
+
+# ---- Medical readiness --------------------------------------------------------
+
+[[medical.kits]]
+name = "Small first aid kit"
+place = "Kitchen cupboard"
+last_checked = "today-20"
+
+[[medical.kit_checks]]
+kit = "Small first aid kit"
+checked_on = "today-20"
+checked_by = "Sam Taylor"
+notes = "Checked supplies; next check date not chosen yet."

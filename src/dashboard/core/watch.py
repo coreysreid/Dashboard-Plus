@@ -266,7 +266,8 @@ def gaps(conn: sqlite3.Connection, registry: dict[str, TableInfo]) -> list[Gap]:
                                       [_filter_value(v) for v in filters.values()]).fetchone()
                 if not exists:
                     prefill = urlencode({k: ("yes" if v is True else "" if v is False else v) for k, v in filters.items()})
-                    found.append(Gap(info.name, None, rule["message"], f"/t/{info.name}/new?{prefill}"))
+                    found.append(Gap(info.name, None, rule["message"],
+                                     f"/t/{info.name}/new" + (f"?{prefill}" if prefill else "")))
                 continue
             filters = rule["where"]
             clause = "".join(f" AND {name} = ?" for name in filters)

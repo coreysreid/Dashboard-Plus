@@ -39,7 +39,7 @@ class ExampleHouseholdTests(TempDirTestCase):
         self.assertEqual((result["days"], result["need"]), (1.9, 13))
         self.assertIn("Metformin 500 mg (Rosa)", result["low"])
         self.assertEqual(result["expiring"], ["Hand sanitizer", "Luna", "Kidney support tablets", "Tortillas",
-                                              "Blood glucose test strips"])
+                                              "Blood glucose test strips", "Apartment first aid kit"])
         self.assertEqual(result["gaps"], 1)
         self.assertTrue(settings.get(result["conn"], "household.mobility_needs"))
 
@@ -47,7 +47,9 @@ class ExampleHouseholdTests(TempDirTestCase):
         result = self.summary("taylor")
         self.assertEqual((result["days"], result["need"]), (4.0, 3))
         self.assertEqual(result["low"], ["AA batteries", "Tinned soup"])
-        self.assertEqual(result["gaps"], 2)
+        self.assertEqual(result["gaps"], 3)
+        gaps = [g.message for g in watch.gaps(result["conn"], result["registry"])]
+        self.assertIn("When do you plan to check Small first aid kit again?", gaps)
 
     def test_amounts_end_where_the_file_says_after_stock_in_and_out(self):
         _, conn, _ = self.open("garcia")
@@ -82,3 +84,39 @@ class ExampleHouseholdTests(TempDirTestCase):
                     self.assertIn(f"screenshots/{household}/{name}.png", gallery)
                     self.assertTrue((ROOT / "docs" / "screenshots" / household / f"{name}.png").exists(),
                                     f"{household}/{name}.png is missing; run tools/make_screenshots.py")
+
+
+class NamelessHistoryTableTests(TempDirTestCase):
+    """A history table with no short text column (like Medical's kit checks) still loads (Lane B, medical NOTES)."""
+
+    TABLES = '''[tables.kits]
+title = "Kits"
+columns.name = { type = "text", required = true }
+
+[tables.checks]
+title = "Checks"
+columns.kit = { type = "link", to = "kits", on_delete = "cascade" }
+columns.checked_on = { type = "date", required = true }
+'''
+
+    def setUp(self):
+        super().setUp()
+        import make_migration
+        from dashboard.core import startup
+        make_migration.make(self.make_module(tables=self.TABLES, labels=None), "first_tables")
+        startup.prepare(self.tmp / "data", self.tmp / "modules")
+        self.conn = db.connect(self.tmp / "data" / "dashboard.db")
+        self.addCleanup(self.conn.close)
+        found, _ = modules.discover(self.tmp / "modules")
+        self.registry = records.build_registry(found)
+
+    def test_rows_load_and_link_by_the_kit_name(self):
+        data = {"demo": {"kits": [{"name": "Car kit"}], "checks": [{"kit": "Car kit", "checked_on": "today-3"}]}}
+        self.assertEqual(load_example.load_records(self.conn, self.registry, data, today=TODAY), 2)
+        row = self.conn.execute("SELECT checked_on FROM demo__checks").fetchone()
+        self.assertEqual(row["checked_on"], "2026-05-29")
+
+    def test_linking_to_a_nameless_table_says_why_it_cannot(self):
+        with self.assertRaises(load_example.ExampleError) as caught:
+            load_example._find(self.conn, self.registry["demo__checks"], "anything")
+        self.assertIn("no name column", str(caught.exception))

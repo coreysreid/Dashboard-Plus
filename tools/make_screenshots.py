@@ -64,6 +64,10 @@ STAGES = [
      {"goto": "/t/pets__pets/{id:pets__pets:pet}", "module": "pets"}),
     ("18-pet-sheet", "Pet details sheet", "As it prints: for a sitter, a kennel or an evacuation centre.",
      {"goto": "/sheet/pets/pets", "media": "print", "module": "pets"}),
+    ("18b-first-aid", "First aid kits", "Each kit, where it is kept and when it is next checked.",
+     {"goto": "/t/medical__kits", "module": "medical"}),
+    ("18c-first-aid-sheet", "First aid at home sheet", "As it prints: the kits, their places and who has trained.",
+     {"goto": "/sheet/medical/first_aid", "media": "print", "module": "medical"}),
     ("19-needs-attention", "Needs attention", "Days of water with the working shown, running low, use-by "
      "and due dates, and details worth filling in.", {"goto": "/attention"}),
     ("20-supplies-sheet", "Emergency supplies sheet", "As it prints: water, first aid, power and food, and "
