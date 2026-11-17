@@ -1,0 +1,32 @@
+# Invented loans. Borrowers are fictional People contacts already in the example households.
+
+[[smith.lent_out.loans]]
+name = "Cordless drill"
+stock_item = "Cordless drill"
+borrower = "Dave Wilson"
+lent_on = "today-5"
+due_back = "today+9"
+status = "out"
+notes = "Loan includes the charger."
+
+[[smith.lent_out.loans]]
+name = "Garden trowel"
+borrower = "Dave Wilson"
+lent_on = "today-30"
+due_back = "today-20"
+status = "returned"
+returned_on = "today-18"
+
+[[garcia.lent_out.loans]]
+name = "Folding trolley"
+borrower = "Luis Garcia"
+lent_on = "today-3"
+due_back = "today+7"
+status = "out"
+
+[[taylor.lent_out.loans]]
+name = "Spare bike pump"
+borrower = "Chris Taylor"
+lent_on = "today-2"
+due_back = "today+12"
+status = "out"
