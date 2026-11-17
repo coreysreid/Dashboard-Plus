@@ -46,7 +46,7 @@ def _rows(store, info, offset, sort, desc):
         rows = store.page(info.name, offset=offset, limit=PAGE_SIZE, order_by=sort, descending=desc)
     out = []
     for r in rows:
-        label = paths.get(r["id"]) or display.display_name(info, dict(r))
+        label = paths.get(r["id"]) or display.display_name(info, dict(r), store)
         cells = []
         for c in columns:
             text = paths[r["id"]] if paths and name_col is not None and c.name == name_col.name \
@@ -106,7 +106,7 @@ def suggest_names(table):
 
 
 def _render_form(info, store, values, errors, from_form, record=None, status=200, saved=None, back=None):
-    fields = display.build_fields(store, info, values, errors, from_form)
+    fields = display.build_fields(store, info, values, errors, from_form, editing=record is not None)
     history = []
     if record:
         formatter = display.Formatter(store)
@@ -122,10 +122,29 @@ def _render_form(info, store, values, errors, from_form, record=None, status=200
                                     "sensitive": columns[name].sensitive})
             history.append({"at": entry["at"].replace("T", " ")[:16], "who": display.actor_text(entry["actor"]),
                             "action": display.ACTION_TEXT.get(entry["action"], entry["action"]), "changes": changes})
-    record_name = display.display_name(info, record) if record else None
+    record_name = display.display_name(info, record, store) if record else None
     if record and info.table.parent:
         chain = store.ancestors(info, record["id"])
         record_name = display.path_name(info, {r["id"]: r for r in chain}, chain[-1]) if chain else record_name
+    batches = []  # an item's batches, each with its amount, use-by date and place (DESIGN.md 5.7)
+    if record:
+        for other in store._totals_into(info):
+            rule = other.table.total
+            rows = store.conn.execute(
+                f"SELECT * FROM {other.name} WHERE deleted_at IS NULL AND {rule['link']} = ? "
+                f"ORDER BY {rule['amount']} = 0, "
+                + (f"{rule['earliest']['date']} IS NULL, {rule['earliest']['date']}, " if rule["earliest"] else "")
+                + "id", (record["id"],)).fetchall()
+            into = info.table.columns[rule["into"]]
+            amount = display.Formatter(store).text(info, into, record.get(rule["into"])) or "0"
+            unit = record.get("unit") if "unit" in info.table.columns else None
+            held = sum(1 for r in rows if r[rule["amount"]])
+            summary = (f"{display.column_label(info, into)}: {amount}{' ' + unit if unit else ''}, "
+                       f"in {held} batch{'es' if held != 1 else ''}")
+            batches.append({"title": display.table_title(other), "table": other.name, "summary": summary,
+                            "add": f"/t/{other.name}/new?{rule['link']}={record['id']}",
+                            "rows": [{"href": f"/t/{other.name}/{r['id']}",
+                                      "name": display.display_name(other, dict(r), store)} for r in rows]})
     related = []
     if record and not record.get("deleted_at"):
         for other, column in store._dependents(info):
@@ -133,7 +152,7 @@ def _render_form(info, store, values, errors, from_form, record=None, status=200
                             "label": display.table_title(other)})
     return render_template("form.html", info=info, title=display.table_title(info), fields=fields, record=record,
                            record_name=record_name, errors=errors, history=history, saved=saved,
-                           related=related, back=back), status
+                           related=related, back=back, batches=batches), status
 
 
 def _default_text(column) -> str:
@@ -156,7 +175,8 @@ def _raw_form(info):
 def _form_values(info, store, creating: bool) -> dict:
     """The submitted values, with dates read the household's way. A date that cannot be read is
     reported together with every other problem in the form, and nothing is saved."""
-    values, date_problems = display.values_from_form(info, request.form, dates.household_style(store.conn))
+    values, date_problems = display.values_from_form(info, request.form, dates.household_style(store.conn),
+                                                     () if creating else display.batch_columns(store, info))
     if date_problems:
         problems = dict(date_problems)
         try:
@@ -194,7 +214,7 @@ def create_record(table):
         return _render_form(info, store, _raw_form(info), error.problems, True, status=422, back=back)
     if request.form.get("then") == "another":
         return redirect(url_for("pages.new_record", table=table, saved=display.display_name(
-            info, store.get(table, record_id))))
+            info, store.get(table, record_id), store)))
     if request.form.get("then") == "back" and request.form.get("back", "").startswith("/t/"):
         return redirect(request.form["back"])
     return redirect(url_for("pages.grid", table=table))

@@ -311,11 +311,11 @@ dates your way have shipped (decisions 0051, 0052); layered use-by dates
     (stocktake twenty goods with places and dates, a first aid kit, a pet, the
     emergency sheet), what to notice, and a short form whose answers drop
     straight into `docs/BACKLOG.md`. Plain words; no jargon.
-29. **Lots example data.** Rewrite the Stock rows of all three example
-    households as they will look with lots (Smith's kidney beans: 3 tins at
-    Kitchen › Pantry › Shelf 3 use by next month, 10 in the garage in six
-    months), plus the item-to-lot mapping the migration must produce. Lane A
-    uses it as the migration's test fixture.
+29. **Batches, checked and filled out.** Batches have shipped (decision
+    0053, DESIGN 5.7; Smith's kidney beans already have two). Check them
+    against your lots acceptance checks and report what differs, then add
+    realistic second batches to the Garcia and Taylor examples
+    (`[[stock.lots]]` rows) in a workbench copy for Lane A to adopt.
 30. **Home layout promotion pass.** Stock places now nest. Update the Home
     layout draft so it takes over Stock's places (and Medical's kit places)
     with an exact old-to-new mapping for all three households, exits,

@@ -88,6 +88,12 @@
     <a href="/t/{{ info.name }}">Cancel</a>
   </div>
 </form>
+{% for b in batches %}
+<h2>{{ b.title }}</h2>
+<p><strong>{{ b.summary }}</strong></p>
+{% if b.rows %}<ul>{% for r in b.rows %}<li><a href="{{ r.href }}">{{ r.name }}</a></li>{% endfor %}</ul>
+{% else %}<p class="muted">None recorded yet.</p>{% endif %}
+{% endfor %}
 {% if related %}
 <div class="actions">{% for r in related %}<a class="button quiet" href="{{ r.href }}">Add to {{ r.label | lower }}</a>{% endfor %}</div>
 {% endif %}
