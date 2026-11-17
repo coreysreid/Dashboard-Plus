@@ -11,12 +11,14 @@ columns.emergency_kit = { label = "Car emergency kit", help = "Add this kit as a
 columns.notes = { help = "For example, where vehicle papers are kept. Avoid private account or policy numbers." }
 
 [tables.insurance]
+empty = "Add an insurance renewal if you want a reminder."
 form = ["vehicle", "name", "renew_by", "notes"]
 list = ["vehicle", "name", "renew_by"]
 columns.name = { label = "Insurer or reminder name", help = "Use the name you recognise; keep the policy itself with your papers." }
 columns.renew_by = { label = "Insurance due", help = "Use the date on your own policy or renewal notice." }
 
 [tables.services]
+empty = "Add a service or check from your vehicle's own schedule."
 form = ["vehicle", "name", "last_done", "next_due", "notes"]
 list = ["vehicle", "name", "last_done", "next_due"]
 columns.name = { label = "Service or check", help = "For example, Routine service. Follow your vehicle's own schedule." }

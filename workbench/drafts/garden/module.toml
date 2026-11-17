@@ -1,0 +1,8 @@
+name = "garden"
+title = "Vegetable garden"
+version = "1.0.0"
+description = "Keep track of beds, crops, plantings, harvests and jobs in the garden."
+core_api = "1"
+kind = "declarative"
+requires = []
+outbound_hosts = []

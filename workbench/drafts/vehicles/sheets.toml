@@ -1,0 +1,22 @@
+[[sheet]]
+name = "vehicle_reminders"
+title = "Vehicle reminders"
+intro = "Check your own notices and service schedule. Registration and policy numbers are not printed."
+
+[[sheet.section]]
+title = "Vehicles"
+table = "vehicles"
+columns = ["name", "registration_due", "roadside_contact", "parked_at", "emergency_kit"]
+order_by = "name"
+
+[[sheet.section]]
+title = "Insurance renewals"
+table = "insurance"
+columns = ["vehicle", "name", "renew_by"]
+order_by = "renew_by"
+
+[[sheet.section]]
+title = "Services"
+table = "services"
+columns = ["vehicle", "name", "last_done", "next_due"]
+order_by = "next_due"

@@ -1,0 +1,10 @@
+[[sheet]]
+name = "document_review"
+title = "Document review dates"
+intro = "A reminder list only. Storage locations, private notes and document numbers are not printed. Check issuer advice for renewals."
+
+[[sheet.section]]
+title = "Documents to review"
+table = "documents"
+columns = ["name", "kind", "renew_by"]
+order_by = "renew_by"

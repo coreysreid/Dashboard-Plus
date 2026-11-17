@@ -10,3 +10,7 @@ columns.notes = { type = "longtext" }
 
 [tables.documents.watch]
 expiring = { date = "renew_by", warn_days = 30, wording = "due", what = "document review or renewal" }
+
+[[tables.documents.watch.gaps]]
+missing = "place"
+message = "Where is {name} kept? Add a broad location without a document number."
