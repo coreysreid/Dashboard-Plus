@@ -1,8 +1,6 @@
 # workbench/drafts/  (summary: draft modules and content, one folder each, not switched on for anyone)
-Each draft is a module folder (module.toml, tables.toml, labels.toml, migrations/)
-or a content folder, with a NOTES.md listing open questions and the core features it
-needs, and an example.toml with made-up rows for the three example households.
-Add a row here for each draft folder you create.
+Each draft is a module or content folder with a NOTES.md (open questions, core needs)
+and made-up example rows. Add a row here for each draft folder you create.
 
 | Entry | What it is | Open it when |
 |---|---|---|
