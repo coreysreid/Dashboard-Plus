@@ -11,3 +11,4 @@ expected, actual, severity (blocker, important, minor), suggested change.
 | 2026-11-17-nested-places-ux.md | J1–J5 screen check after nested Places, including a long-list path failure. | improving Places UX |
 | 2026-11-17-picking-water-ux.md | Batch 4 stock picking and drinking-water check in four temporary households. | reviewing picker and water defaults |
 | 2026-11-17-accessibility.md | WCAG 2.2 review of all example screens, with live keyboard and narrow-view checks. | fixing screen access and reflow |
+| 2026-11-17-medical-dates-ux.md | J1–J5 check after Medical and local dates, including a car-only kit gap. | refining Medical and date entry |
