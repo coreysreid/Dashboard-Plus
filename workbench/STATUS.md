@@ -50,11 +50,25 @@ the "Requests" table of docs/WORKSTREAMS.md.
 | Batch 8 item 25: home inventory | merged by Lane A | #71 | Private room-linked inventory and claim sheet, fictional data, ten checks and NAIC source. |
 | Batch 8 item 26: things lent out | merged by Lane A | #72 | Loan records, active-loan sheet, fictional examples and ten checks; core needs for due filtering and return action. |
 | Batch 8 item 27: utilities and accounts | merged by Lane A | #73 | Private accounts, People contacts, Home layout meter names, three-household examples and ten checks; meter link needs promotion. |
+| Batch 11 item 39: translation readiness | merged by Lane A | batch 9-11 combined PR | 1,845 template/module/picker source locations grouped by screen; no translations. |
 | Batch 9 item 28: Corey's one-hour test | merged by Lane A | #75 | Ten timed demo tasks, 20-good stocktake card and BACKLOG-ready feedback rows. |
 | Batch 9 item 29: all-household lots fixture | merged by Lane A | #76 | 63 old items to 63 migration lots, 64 target lots, 15 retained movements and a two-stage kidney-bean example. |
 | Batch 9 item 30: Home layout promotion pass | merged by Lane A | #77 | Exact 31-place/63-Stock/3-Medical mapping, rewritten example, 9 promotion checks and way back. |
+| Batch 11 item 38: large speed fixture | merged by Lane A | batch 9-11 combined PR | Loadable 6,270-record example with 2,000 items, 600 five-deep places, 60 people, 10 pets and 36 months of movements. |
+| Batch 10 item 32: Agent API examples | merged by Lane A | batch 9-11 combined PR | Six routes, refusals and Review effects in helpers/API_EXAMPLES.md. |
+| Batch 10 item 34: computer-loss guide | merged by Lane A | batch 9-11 combined PR | Four recovery days, each with household steps, and a clear planned-feature warning. |
+| Batch 10 item 33: Review and Inbox wording | merged by Lane A | batch 9-11 combined PR | Exact buttons, confirmations, empty states, separate Home counts and decision aftermath. |
+| Batch 10 item 35: UK and NZ country packs | merged by Lane A | batch 9-11 combined PR | Eight hazards each, local coordination, current warning links, terms and scope. |
+| Batch 11 item 37: print check | merged by Lane A | batch 9-11 combined PR | 56 available-sheet PDFs pass A4/Letter light/dark; Taylor Pets is off (4 not applicable). |
+| Batch 11 item 36: wording consistency | merged by Lane A | batch 9-11 combined PR | 310-string inventory, nine exact replacements; supplies sheet includes non-drinking water. |
+| Batch 9 item 31: sensitive-detail audit | merged by Lane A | batch 9-11 combined PR | Five findings, worst first, with reproduced list, form, sheet and backup behaviour. |
+| Batch 9 item 29 follow-up: shipped batches | merged by Lane A | batch 9-11 combined PR | Acceptance differences and loadable Garcia/Taylor copies with two second batches each. |
 
 ## Messages to Lane A
+
+- **Supplies print wording:** The water section currently prints all water batches, including those not safe to drink. The proposed title says “Drinking and other water”; a drinking-only section or total needs a `drinking` filter and visible indication. See `workbench/reports/2026-11-17-wording-consistency.md`.
+- **Shipped batch follow-up:** A batch quantity edit updates the total and history but has no distinct stocktake correction movement or count-confirmation flow. Stock out across batches requires separate entries. The Garcia and Taylor second-batch copies load and preserve totals. See `workbench/drafts/stock_lots/SHIPPED_FOLLOWUP.md`.
+- **Private list response contains the detail:** Important details shows a collapsed “Show” cell, but the full sensitive value is already in the grid and paged HTML. The opened edit form and private medical sheet also reveal it immediately, and audit/backups retain old values. Reproduction, limits and exact wording are in `workbench/reports/2026-11-17-sensitive-detail-audit.md`. This is the highest-priority finding from batch 9.
 
 - Answered by Lane A: batches shipped (#78, decision 0053). Each old item became exactly one batch holding its whole amount, so linking its old stock in and out to that batch is truthful and nothing is replayed; Smith now shows 3 + 10 kidney beans directly in the example. Your fixture is the reference for Home layout.
 - Answered by Lane A: Home layout shipped without moving places (decision 0054). It links ways out, shut-offs, alarms and meters to the existing `stock.places`, so the 63 Stock and 3 Medical links below were never touched; the draft folder is removed and stays in git history. Drafts that link `home_layout.places` or `home_layout.homes` (readiness prompts, the lots notes) should use `stock.places` and `home_layout.exits`. Original message: **Home layout migration:** Keep nested parent links and repoint all 63 Stock items and 3 Medical kits by old place ID in one recoverable change. The target table needs `parent = "parent"` for full paths. The draft now has exact CSV maps and a validator; do not duplicate Medical kits as Home equipment. See `workbench/drafts/home_layout/PROMOTION.md`.

@@ -1,0 +1,27 @@
+# Visible words to prepare for other languages
+
+Checked 17 November 2026 against all **13 shipped web templates** and the four shipped modules (People, Household stock, Pets, Medical) on main `8cac37c`. [The screen-grouped inventory](2026-11-17-translation-inventory.csv) gives source file, line or TOML path, string and context. No translations or shipped code changes are in this pass.
+
+| Screen group | Source and what needs extracting |
+|---|---|
+| Shared navigation and lifecycle | `base.html`, `start.html`, `close.html`, `closed.html`: page titles, buttons, footer, opening and closing help. |
+| Home | `home.html`, module titles/descriptions: first-step prompts, days-of-cover explanation, backup state and module cards. |
+| First-run setup | `setup.html`: questions, choice help, progress, household counts, region picker and client-side “(choose)”. |
+| Needs attention | `attention.html` and module `watch.gaps.message`, labels and wording: low stock, due dates, water calculations and missing-detail questions. |
+| Record lists and forms | `grid.html`, `form.html`, `rows.html`, all module table titles/descriptions, column labels/help, choices, empty states and answers. Client-side picker and date messages are included. |
+| Print sheets | `sheet.html` and all module `sheets.toml`: titles, intros, section headings, print action and privacy line. |
+| Error and system report | `error.html`, `report.html`: failure, report and return messages. |
+| Picker vocabulary | Stock `catalogue.csv` and `places.csv`: **925 displayed names** plus **437 aliases** used to find them. Aliases are marked “Search alias; not displayed” in the inventory. |
+
+The CSV contains **1,845 source-location rows**: 211 template strings, 272 module TOML strings and 1,362 picker names/aliases. Counts include repeated words where they occur in distinct screens; the job is to extract each source occurrence, not translate a deduplicated word list. The template inventory marks inserted data as `□`. It includes HTML text and accessibility attributes, plus client-side picker, confirmation, month and date-format messages. Fallback field names and choice labels produced from schema keys are listed too, because they will otherwise remain English after authored labels are translated.
+
+## Extraction needs before translation
+
+1. **Sentence units and plurals.** Templates currently join fragments such as `record` + `s`, `day` + `s`, “person lives” versus “people live”, and “To reach □ days...”. Give translators whole messages with named placeholders and plural forms. Do not translate HTML or split sentences word by word. `attention.html`, `home.html`, `grid.html` and `setup.html` show the cases.
+2. **Dates and units.** `form.html` builds month names, “Not a real date” and country-order examples in JavaScript. Keep locale-specific date parsing/display rules alongside their messages; a translated month alone does not change the input order. The household's existing AU/UK/NZ versus US format choice remains in force.
+3. **Schema and records.** Module `labels.toml`, `tables.toml` and `sheets.toml` mix visible wording with stable keys. Extract title, description, labels, help, answers, empty states, gap questions, rendered choice names and print words; never translate stored table/field keys, choice keys, migration names or catalogue keys. `record_name` has placeholders that must stay bound to fields.
+4. **Picker search.** Display names need localized versions. Search aliases need locale-aware matching even though they are not shown. Keep the stable catalogue key; a translated name or alias must not create a new household item accidentally.
+5. **Accessibility and print.** Translate `aria-label`, placeholders, title attributes, private-detail notices and printable sheet intros along with visible buttons. Set `<html lang>` from the chosen locale; it is hard-coded `en` today.
+6. **Client-side words.** `form.html` assembles “Keep … as you typed it”, “No match …”, “Not on the list …” and date errors; `setup.html` adds “(choose)”. These need message entries with placeholders and escaping, not literal English in scripts.
+
+**Scope limit:** This is every identified literal in the requested template/module files, including their picker CSVs. Core Python also creates user-facing validation, backup and date messages; those are outside this item's requested file scope and need a separate extraction before another language can ship. Runtime data entered by a household is not translated. The inventory is a preparation list, not a claim that a localization system exists. Source: shipped files named in the CSV and `src/dashboard/web/display.py` fallback-label rule, checked 17 November 2026.

@@ -1,0 +1,311 @@
+module,file,path,kind,current,proposed,reason
+people,module.toml,title,title,People,People,Keep; already uses the chosen term or is a distinct idea.
+people,module.toml,description,description,"Who lives here, who to call, and the important details to keep on hand.","Who lives here, who to call, and the important details to keep on hand.",Keep; already uses the chosen term or is a distinct idea.
+people,module.toml,name,name,people,people,Keep; already uses the chosen term or is a distinct idea.
+people,tables.toml,tables.people.title,title,People,People,Keep; already uses the chosen term or is a distinct idea.
+people,tables.toml,tables.people.description,description,"Everyone in or around the household: who lives here, family, neighbours, the doctor, the vet.","Everyone in or around the household: who lives here, family, neighbours, the doctor, the vet.",Keep; already uses the chosen term or is a distinct idea.
+people,tables.toml,tables.people.watch.gaps[0].message,gap,Who lives here? Nobody is marked as living here yet.,Who lives here? Nobody is marked as living here yet.,Keep; already uses the chosen term or is a distinct idea.
+people,tables.toml,tables.roles.title,title,Who to call,Who to call,Keep; already uses the chosen term or is a distinct idea.
+people,tables.toml,tables.roles.description,description,"The part someone plays for the household, in the order to call them.","The part someone plays for the household, in the order to call them.",Keep; already uses the chosen term or is a distinct idea.
+people,tables.toml,tables.roles.columns.role.choices[0].label,choice,Emergency contact,Emergency contact,Keep; already uses the chosen term or is a distinct idea.
+people,tables.toml,tables.roles.columns.role.choices[10].label,choice,Key holder,Key holder,Keep; already uses the chosen term or is a distinct idea.
+people,tables.toml,tables.roles.watch.gaps[0].message,gap,Who would you call first in an emergency? Nobody is listed as an emergency contact yet.,Who would you call first in an emergency? Nobody is listed as an emergency contact yet.,Keep; already uses the chosen term or is a distinct idea.
+people,tables.toml,tables.roles.watch.gaps[1].message,gap,Is there a doctor or medical centre you would call? None is listed in Who to call yet.,Is there a doctor or medical centre you would call? None is listed in Who to call yet.,Keep; already uses the chosen term or is a distinct idea.
+people,tables.toml,tables.roles.watch.gaps[2].message,gap,"What is {person}'s phone number? They are in Who to call ({role}), but no number is saved.","What is {person}'s phone number? They are in Who to call ({role}), but no number is saved.",Keep; already uses the chosen term or is a distinct idea.
+people,tables.toml,tables.important_info.title,title,Important details,Important details,Keep; already uses the chosen term or is a distinct idea.
+people,tables.toml,tables.important_info.description,description,"Allergies, conditions, medications, care needs and access instructions.","Allergies, conditions, medications, care needs and access instructions.",Keep; already uses the chosen term or is a distinct idea.
+people,tables.toml,tables.important_info.columns.kind.choices[3].label,choice,Care or mobility need,Care or mobility need,Keep; already uses the chosen term or is a distinct idea.
+people,tables.toml,tables.important_info.columns.kind.choices[5].label,choice,Access instructions,Access instructions,Keep; already uses the chosen term or is a distinct idea.
+people,labels.toml,tables.people.columns.lives_here.label,label,Lives here,Lives here,Keep; already uses the chosen term or is a distinct idea.
+people,labels.toml,tables.people.columns.other_phone.label,label,Other phone,Other phone,Keep; already uses the chosen term or is a distinct idea.
+people,labels.toml,tables.people.columns.phone.help,help,The number to call first.,The number to call first.,Keep; already uses the chosen term or is a distinct idea.
+people,labels.toml,tables.roles.columns.priority.label,label,Call order,Call order,Keep; already uses the chosen term or is a distinct idea.
+people,labels.toml,tables.roles.columns.priority.help,help,"Enter 1 for the first person to call, 2 for the next, and so on.","Enter 1 for the first person to call, 2 for the next, and so on.",Keep; already uses the chosen term or is a distinct idea.
+people,labels.toml,tables.important_info.columns.kind.label,label,What kind,What kind,Keep; already uses the chosen term or is a distinct idea.
+people,labels.toml,tables.important_info.columns.detail.help,help,"For example: ""Allergic to penicillin"" or ""Spare key with the neighbour"". Hidden in lists until you choose to show it.","For example: ""Allergic to penicillin"" or ""Spare key with the neighbour"". Hidden in lists until you choose to show it.",Keep; already uses the chosen term or is a distinct idea.
+people,sheets.toml,sheet[0].title,sheet title,Emergency sheet (fridge copy),Emergency sheet (fridge copy),Keep; already uses the chosen term or is a distinct idea.
+people,sheets.toml,sheet[0].intro,sheet intro,"Keep a printed copy on the fridge. In an emergency, call your local emergency number first.","Keep a printed copy on the fridge. In an emergency, call your local emergency number first.",Keep; already uses the chosen term or is a distinct idea.
+people,sheets.toml,sheet[0].section[0].title,sheet section,Who lives here,Who lives here,Keep; already uses the chosen term or is a distinct idea.
+people,sheets.toml,sheet[0].section[1].title,sheet section,Who to call,Who to call,Keep; already uses the chosen term or is a distinct idea.
+people,sheets.toml,sheet[1].title,sheet title,Emergency sheet with private medical details,Emergency sheet with private medical details,Keep; already uses the chosen term or is a distinct idea.
+people,sheets.toml,sheet[1].intro,sheet intro,Contains private health and care details. Print only when needed and keep it out of public view. For emergency responders and carers.,Contains private health and care details. Print only when needed and keep it out of public view. For emergency responders and carers.,Keep; already uses the chosen term or is a distinct idea.
+people,sheets.toml,sheet[1].section[0].title,sheet section,Who lives here,Who lives here,Keep; already uses the chosen term or is a distinct idea.
+people,sheets.toml,sheet[1].section[1].title,sheet section,Who to call,Who to call,Keep; already uses the chosen term or is a distinct idea.
+people,sheets.toml,sheet[1].section[2].title,sheet section,Important details,Important details,Keep; already uses the chosen term or is a distinct idea.
+stock,module.toml,title,title,Household stock,Household stock,Keep; already uses the chosen term or is a distinct idea.
+stock,module.toml,description,description,"Pantry, emergency water, first aid, tools and hardware: what you have, where it is, and when it runs out.","Pantry, emergency water, first aid, tools and hardware: what you have, where it is, and when it runs out.",Keep; already uses the chosen term or is a distinct idea.
+stock,module.toml,name,name,stock,stock,Keep; already uses the chosen term or is a distinct idea.
+stock,tables.toml,tables.places.title,title,Places,Places,Keep; already uses the chosen term or is a distinct idea.
+stock,tables.toml,tables.places.description,description,"Where things are kept: a room, a cupboard in it, a shelf in that (Kitchen › Pantry › Shelf 3).","Where things are kept: a room, a cupboard in it, a shelf in that (Kitchen › Pantry › Shelf 3).",Keep; already uses the chosen term or is a distinct idea.
+stock,tables.toml,tables.items.title,title,Stock items,Stock items,Keep; already uses the chosen term or is a distinct idea.
+stock,tables.toml,tables.items.description,description,"Everything worth keeping track of, with how many you have and how many to keep.","Everything worth keeping track of, with how many you have and how many to keep.",Keep; already uses the chosen term or is a distinct idea.
+stock,tables.toml,tables.items.columns.category.choices[2].label,choice,First aid and medical,First aid and medical,Keep; already uses the chosen term or is a distinct idea.
+stock,tables.toml,tables.items.columns.category.choices[5].label,choice,"Batteries, torches and power","Batteries, torches and power",Keep; already uses the chosen term or is a distinct idea.
+stock,tables.toml,tables.items.columns.category.choices[8].label,choice,"Screws, fixings and hardware","Screws, fixings and hardware",Keep; already uses the chosen term or is a distinct idea.
+stock,tables.toml,tables.items.columns.category.choices[9].label,choice,Pet supplies,Pet supplies,Keep; already uses the chosen term or is a distinct idea.
+stock,tables.toml,tables.lots.title,title,Batches,Batches,Keep; already uses the chosen term or is a distinct idea.
+stock,tables.toml,tables.lots.description,description,"Part of an item's stock with its own amount, use-by date and place: 3 tins at Kitchen › Pantry › Shelf 3, use by 20/05/27. The item's amount is the sum of its batches.","Part of an item's stock with its own amount, use-by date and place: 3 tins at Kitchen › Pantry › Shelf 3, use by 20/05/27. The item's amount is the sum of its batches.",Keep; already uses the chosen term or is a distinct idea.
+stock,tables.toml,tables.movements.title,title,Stock in and out,Stock in and out,Keep; already uses the chosen term or is a distinct idea.
+stock,tables.toml,tables.movements.description,description,"Each time something is bought, used, expires or is thrown away. The item's count updates by itself.","Each time something is bought, used, expires or is thrown away. The item's count updates by itself.",Keep; already uses the chosen term or is a distinct idea.
+stock,tables.toml,tables.movements.columns.reason.choices[0].label,choice,Bought or added,Bought or added,Keep; already uses the chosen term or is a distinct idea.
+stock,tables.toml,tables.movements.columns.reason.choices[3].label,choice,Thrown away,Thrown away,Keep; already uses the chosen term or is a distinct idea.
+stock,tables.toml,tables.movements.columns.reason.choices[4].label,choice,Given away,Given away,Keep; already uses the chosen term or is a distinct idea.
+stock,labels.toml,tables.places.columns.name.help,help,"Start typing to pick a room, cupboard or shelf, or type your own.","Start typing to pick a room, cupboard or shelf, or type your own.",Keep; already uses the chosen term or is a distinct idea.
+stock,labels.toml,tables.places.columns.inside.label,label,Inside,Inside,Keep; already uses the chosen term or is a distinct idea.
+stock,labels.toml,tables.places.columns.inside.help,help,"Leave blank for a room or area. For a shelf, choose the cupboard it's in: the full path, like Kitchen › Pantry › Shelf 3, then shows everywhere.","Leave blank for a room or area. For a shelf, choose the cupboard it's in: the full path, like Kitchen › Pantry › Shelf 3, then shows everywhere.",Keep; already uses the chosen term or is a distinct idea.
+stock,labels.toml,tables.items.empty,empty,Add a few things from the pantry.,Add a few things from the pantry.,Keep; already uses the chosen term or is a distinct idea.
+stock,labels.toml,tables.items.columns.name.help,help,"Start typing to pick from common goods, or type your own.","Start typing to pick from common goods, or type your own.",Keep; already uses the chosen term or is a distinct idea.
+stock,labels.toml,tables.items.columns.quantity.label,label,Amount on hand,Amount on hand,Keep; already uses the chosen term or is a distinct idea.
+stock,labels.toml,tables.items.columns.quantity.help,help,"For water, enter the total number of litres, not the number of bottles. This starts the item's first batch; later, change amounts through its batches or stock in and out.","For water, enter the total number of litres, not the number of bottles. This starts the item's first batch; later, change amounts through its batches or stock in and out.",Keep; already uses the chosen term or is a distinct idea.
+stock,labels.toml,tables.items.columns.drinking.label,label,Is this water safe to drink now?,Is this water safe to drink now?,Keep; already uses the chosen term or is a distinct idea.
+stock,labels.toml,tables.items.columns.drinking.help,help,"Only drinking water counts towards days of water. Water for washing or flushing, or distilled water for appliances, does not.","Only drinking water counts towards days of water. Water for washing or flushing, or distilled water for appliances, does not.",Keep; already uses the chosen term or is a distinct idea.
+stock,labels.toml,tables.items.columns.drinking.answers[0],answer,"Yes, count these litres as drinking water","Yes, count these litres as drinking water",Keep; already uses the chosen term or is a distinct idea.
+stock,labels.toml,tables.items.columns.drinking.answers[1],answer,"No, keep it out of days of water","No, keep it out of days of water",Keep; already uses the chosen term or is a distinct idea.
+stock,labels.toml,tables.items.columns.unit.label,label,Unit,Unit,Keep; already uses the chosen term or is a distinct idea.
+stock,labels.toml,tables.items.columns.unit.help,help,"Use litres for water; for other things, a unit such as tins, kg or packs.","Use litres for water; for other things, a unit such as tins, kg or packs.",Keep; already uses the chosen term or is a distinct idea.
+stock,labels.toml,tables.items.columns.minimum.label,label,Keep at least,Keep at least,Keep; already uses the chosen term or is a distinct idea.
+stock,labels.toml,tables.items.columns.minimum.help,help,You'll see it under Needs attention when it drops below this.,You'll see it under Needs attention when it drops below this.,Keep; already uses the chosen term or is a distinct idea.
+stock,labels.toml,tables.items.columns.place.label,label,Where it is,Where it is,Keep; already uses the chosen term or is a distinct idea.
+stock,labels.toml,tables.items.columns.expires.label,label,Use by,Use by,Keep; already uses the chosen term or is a distinct idea.
+stock,labels.toml,tables.items.columns.expires.help,help,"For several use-by dates, add the item with one, then add a batch for each of the others.","For several use-by dates, add one batch for each date.",Say batch rather than imply the item has only one date.
+stock,labels.toml,tables.lots.empty,empty,"Batches appear when you add an item or record stock in. Each has its own amount, use-by date and place.","Batches appear when you add an item or record stock in. Each has its own amount, use-by date and place.",Keep; already uses the chosen term or is a distinct idea.
+stock,labels.toml,tables.lots.columns.quantity.label,label,How many,Amount in this batch,Distinguish a batch from the item total.
+stock,labels.toml,tables.lots.columns.quantity.help,help,"In the item's own unit. After a stocktake, change it to what you counted.","In the item's own unit. After a stocktake, change it to what you counted.",Keep; already uses the chosen term or is a distinct idea.
+stock,labels.toml,tables.lots.columns.expires.label,label,Use by,Use by,Keep; already uses the chosen term or is a distinct idea.
+stock,labels.toml,tables.lots.columns.place.label,label,Where it is,Where it is,Keep; already uses the chosen term or is a distinct idea.
+stock,labels.toml,tables.movements.columns.amount.label,label,How many,Amount to add or use,Distinguish movement from stock on hand.
+stock,labels.toml,tables.movements.columns.amount.help,help,"In the item's own unit. The batch's count, and the item's, change by this much.","In the item's own unit. The batch's count, and the item's, change by this much.",Keep; already uses the chosen term or is a distinct idea.
+stock,labels.toml,tables.movements.columns.happened_on.label,label,Date,Date,Keep; already uses the chosen term or is a distinct idea.
+stock,labels.toml,tables.movements.columns.lot.label,label,Which batch,Which batch,Keep; already uses the chosen term or is a distinct idea.
+stock,labels.toml,tables.movements.columns.lot.help,help,Leave blank and stock in starts a new batch; using some takes from the batch with the earliest use-by date.,Leave blank and stock in starts a new batch; using some takes from the batch with the earliest use-by date.,Keep; already uses the chosen term or is a distinct idea.
+stock,labels.toml,tables.movements.columns.expires.label,label,Use by,Use by,Keep; already uses the chosen term or is a distinct idea.
+stock,labels.toml,tables.movements.columns.expires.help,help,For a new batch.,For a new batch.,Keep; already uses the chosen term or is a distinct idea.
+stock,labels.toml,tables.movements.columns.place.label,label,Where you put it,Where you put it,Keep; already uses the chosen term or is a distinct idea.
+stock,labels.toml,tables.movements.columns.place.help,help,For a new batch.,For a new batch.,Keep; already uses the chosen term or is a distinct idea.
+stock,sheets.toml,sheet[0].title,sheet title,Emergency supplies,Emergency supplies,Keep; already uses the chosen term or is a distinct idea.
+stock,sheets.toml,sheet[0].intro,sheet intro,"Water, first aid, power and pantry food recorded here, batch by batch, and where each is kept. Other kinds of stock are not shown. Check use-by dates and amounts when you print a new copy.","Water, first aid, power and pantry food recorded here, batch by batch, and where each is kept. Other kinds of stock are not shown. Check use-by dates and amounts when you print a new copy.",Keep; already uses the chosen term or is a distinct idea.
+stock,sheets.toml,sheet[0].section[0].title,sheet section,Water (litres),Drinking and other water (litres),"The current water section includes all water lots, even those not safe to drink."
+stock,sheets.toml,sheet[0].section[1].title,sheet section,First aid and medical,First aid and medical,Keep; already uses the chosen term or is a distinct idea.
+stock,sheets.toml,sheet[0].section[2].title,sheet section,"Batteries, torches and power","Batteries, torches and power",Keep; already uses the chosen term or is a distinct idea.
+stock,sheets.toml,sheet[0].section[3].title,sheet section,Food,Food,Keep; already uses the chosen term or is a distinct idea.
+pets,module.toml,title,title,Pets,Pets,Keep; already uses the chosen term or is a distinct idea.
+pets,module.toml,description,description,"Your pets: their vet, weight, food, medicine and treatments, and when the next one is due.","Your pets: their vet, weight, food, medicine and treatments, and when the next one is due.",Keep; already uses the chosen term or is a distinct idea.
+pets,module.toml,name,name,pets,pets,Keep; already uses the chosen term or is a distinct idea.
+pets,tables.toml,tables.pets.title,title,Pets,Pets,Keep; already uses the chosen term or is a distinct idea.
+pets,tables.toml,tables.pets.description,description,"Every animal in the household, with its vet and microchip number.","Every animal in the household, with its vet and microchip number.",Keep; already uses the chosen term or is a distinct idea.
+pets,tables.toml,tables.pets.columns.species.choices[5].label,choice,Guinea pig,Guinea pig,Keep; already uses the chosen term or is a distinct idea.
+pets,tables.toml,tables.pets.columns.species.choices[6].label,choice,Reptile,Reptile,Keep; already uses the chosen term or is a distinct idea.
+pets,tables.toml,tables.pets.columns.species.choices[7].label,choice,Horse or pony,Horse or pony,Keep; already uses the chosen term or is a distinct idea.
+pets,tables.toml,tables.pets.columns.species.choices[8].label,choice,Chickens or other poultry,Chickens or other poultry,Keep; already uses the chosen term or is a distinct idea.
+pets,tables.toml,tables.pets.watch.gaps[0].message,gap,Who is {name}'s vet? Their vet is not filled in yet.,Who is {name}'s vet? Their vet is not filled in yet.,Keep; already uses the chosen term or is a distinct idea.
+pets,tables.toml,tables.pets.watch.gaps[1].message,gap,"What is the phone number for {vet}, {name}'s vet?","What is the phone number for {vet}, {name}'s vet?",Keep; already uses the chosen term or is a distinct idea.
+pets,tables.toml,tables.treatments.title,title,Treatments and medicine,Treatments and medicine,Keep; already uses the chosen term or is a distinct idea.
+pets,tables.toml,tables.treatments.description,description,"Regular treatments (flea, worming, heartworm) and medicines, with when the next one is due.","Regular treatments (flea, worming, heartworm) and medicines, with when the next one is due.",Keep; already uses the chosen term or is a distinct idea.
+pets,tables.toml,tables.treatments.columns.kind.choices[0].label,choice,Flea and tick,Flea and tick,Keep; already uses the chosen term or is a distinct idea.
+pets,tables.toml,tables.given.title,title,Treatments given,Treatments given,Keep; already uses the chosen term or is a distinct idea.
+pets,tables.toml,tables.given.description,description,Each time a treatment or medicine is given.,Each time a treatment or medicine is given.,Keep; already uses the chosen term or is a distinct idea.
+pets,tables.toml,tables.weigh_ins.title,title,Weigh-ins,Weigh-ins,Keep; already uses the chosen term or is a distinct idea.
+pets,tables.toml,tables.weigh_ins.description,description,"A pet's weight over time, so slow changes are noticed.","A pet's weight over time, so slow changes are noticed.",Keep; already uses the chosen term or is a distinct idea.
+pets,tables.toml,tables.vet_visits.title,title,Vet visits,Vet visits,Keep; already uses the chosen term or is a distinct idea.
+pets,tables.toml,tables.vet_visits.description,description,"Every visit: why, what happened and what it cost.","Every visit: why, what happened and what it cost.",Keep; already uses the chosen term or is a distinct idea.
+pets,labels.toml,tables.pets.empty,empty,"Add your pets, with their vet.","Add your pets, with their vet.",Keep; already uses the chosen term or is a distinct idea.
+pets,labels.toml,tables.pets.columns.species.label,label,Kind of animal,Kind of animal,Keep; already uses the chosen term or is a distinct idea.
+pets,labels.toml,tables.pets.columns.microchip.label,label,Microchip number,Microchip number,Keep; already uses the chosen term or is a distinct idea.
+pets,labels.toml,tables.pets.columns.microchip.help,help,On the registration papers or the vet's records. Useful if the pet goes missing.,On the registration papers or the vet's records. Useful if the pet goes missing.,Keep; already uses the chosen term or is a distinct idea.
+pets,labels.toml,tables.pets.columns.owner.label,label,Looked after by,Looked after by,Keep; already uses the chosen term or is a distinct idea.
+pets,labels.toml,tables.pets.columns.owner.help,help,The person in the household who looks after this pet day to day.,The person in the household who looks after this pet day to day.,Keep; already uses the chosen term or is a distinct idea.
+pets,labels.toml,tables.pets.columns.vet.help,help,"Add the vet in People first, with their phone number.","Add the vet in People first, with their phone number.",Keep; already uses the chosen term or is a distinct idea.
+pets,labels.toml,tables.pets.columns.vaccinations_due.label,label,Vaccinations due,Vaccinations due by,"Use due by for a deadline, consistent with Check again by."
+pets,labels.toml,tables.pets.columns.vaccinations_due.help,help,You'll see it under Needs attention a month before.,You'll see it under Needs attention a month before.,Keep; already uses the chosen term or is a distinct idea.
+pets,labels.toml,tables.treatments.columns.name.label,label,Treatment or medicine,Treatment or medicine,Keep; already uses the chosen term or is a distinct idea.
+pets,labels.toml,tables.treatments.columns.name.help,help,"For example ""Monthly flea chew"" or ""Arthritis tablets"".","For example ""Monthly flea chew"" or ""Arthritis tablets"".",Keep; already uses the chosen term or is a distinct idea.
+pets,labels.toml,tables.treatments.columns.kind.label,label,What kind,What kind,Keep; already uses the chosen term or is a distinct idea.
+pets,labels.toml,tables.treatments.columns.dose.help,help,"How much, as on the label or the vet's instructions.","How much, as on the label or the vet's instructions.",Keep; already uses the chosen term or is a distinct idea.
+pets,labels.toml,tables.treatments.columns.every_days.label,label,Every (days),Every (days),Keep; already uses the chosen term or is a distinct idea.
+pets,labels.toml,tables.treatments.columns.every_days.help,help,For example 30 for monthly. Leave blank if it isn't regular.,For example 30 for monthly. Leave blank if it isn't regular.,Keep; already uses the chosen term or is a distinct idea.
+pets,labels.toml,tables.treatments.columns.next_due.label,label,Next due,Give again by,Describe the action and deadline.
+pets,labels.toml,tables.treatments.columns.next_due.help,help,You'll see it under Needs attention a week before.,You'll see it under Needs attention a week before.,Keep; already uses the chosen term or is a distinct idea.
+pets,labels.toml,tables.given.columns.given_on.label,label,Date given,Date given,Keep; already uses the chosen term or is a distinct idea.
+pets,labels.toml,tables.weigh_ins.columns.day.label,label,Date,Date,Keep; already uses the chosen term or is a distinct idea.
+pets,labels.toml,tables.vet_visits.columns.day.label,label,Date,Date,Keep; already uses the chosen term or is a distinct idea.
+pets,labels.toml,tables.vet_visits.columns.reason.help,help,"For example ""Annual check-up and vaccinations"".","For example ""Annual check-up and vaccinations"".",Keep; already uses the chosen term or is a distinct idea.
+pets,sheets.toml,sheet[0].title,sheet title,Pet details,Pet details,Keep; already uses the chosen term or is a distinct idea.
+pets,sheets.toml,sheet[0].intro,sheet intro,"For a pet sitter, a boarding kennel or an evacuation centre. Take a copy when you leave home with your pets.","For a pet sitter, a boarding kennel or an evacuation centre. Take a copy when you leave home with your pets.",Keep; already uses the chosen term or is a distinct idea.
+pets,sheets.toml,sheet[0].section[0].title,sheet section,Pets,Pets,Keep; already uses the chosen term or is a distinct idea.
+pets,sheets.toml,sheet[0].section[1].title,sheet section,Treatments and medicine,Treatments and medicine,Keep; already uses the chosen term or is a distinct idea.
+medical,module.toml,title,title,Medical readiness,Medical readiness,Keep; already uses the chosen term or is a distinct idea.
+medical,module.toml,description,description,"Keep track of first aid kits, checks and training renewals.","Keep track of first aid kits, checks and training renewals.",Keep; already uses the chosen term or is a distinct idea.
+medical,module.toml,name,name,medical,medical,Keep; already uses the chosen term or is a distinct idea.
+medical,tables.toml,tables.kits.title,title,First aid kits,First aid kits,Keep; already uses the chosen term or is a distinct idea.
+medical,tables.toml,tables.kits.columns.kept.choices[0].label,choice,At home,At home,Keep; already uses the chosen term or is a distinct idea.
+medical,tables.toml,tables.kits.columns.kept.choices[1].label,choice,In a car or other vehicle,In a car or other vehicle,Keep; already uses the chosen term or is a distinct idea.
+medical,tables.toml,tables.kits.columns.kept.choices[2].label,choice,"Somewhere else, such as work","Somewhere else, such as work",Keep; already uses the chosen term or is a distinct idea.
+medical,tables.toml,tables.kits.watch.gaps[0].message,gap,"No first aid kit is recorded at home. Add one, or check where your kits are kept.","No first aid kit is recorded at home. Add one, or check where your kits are kept.",Keep; already uses the chosen term or is a distinct idea.
+medical,tables.toml,tables.kits.watch.gaps[1].message,gap,"Is {name} kept at home, in a vehicle or somewhere else?","Is {name} kept at home, in a vehicle or somewhere else?",Keep; already uses the chosen term or is a distinct idea.
+medical,tables.toml,tables.kits.watch.gaps[2].message,gap,Which place is {name} in? Choose where to find it.,Which place is {name} in? Choose where to find it.,Keep; already uses the chosen term or is a distinct idea.
+medical,tables.toml,tables.kits.watch.gaps[3].message,gap,When do you plan to check {name} again?,When do you plan to check {name} again?,Keep; already uses the chosen term or is a distinct idea.
+medical,tables.toml,tables.kit_checks.title,title,Kit checks,Kit checks,Keep; already uses the chosen term or is a distinct idea.
+medical,tables.toml,tables.training.title,title,First aid training,First aid training,Keep; already uses the chosen term or is a distinct idea.
+medical,labels.toml,tables.kits.empty,empty,Add a first aid kit and where to find it.,Add a first aid kit and where to find it.,Keep; already uses the chosen term or is a distinct idea.
+medical,labels.toml,tables.kits.columns.kept.label,label,Usually kept,Usually kept,Keep; already uses the chosen term or is a distinct idea.
+medical,labels.toml,tables.kits.columns.kept.help,help,A kit in the car is not there when the car is out.,A kit in the car is not there when the car is out.,Keep; already uses the chosen term or is a distinct idea.
+medical,labels.toml,tables.kits.columns.place.label,label,Where it is,Where it is,Keep; already uses the chosen term or is a distinct idea.
+medical,labels.toml,tables.kits.columns.place.help,help,Choose a place recorded in Household stock. Keep first aid supplies in Stock too.,Choose the place where this kit is kept. Keep first aid supplies in Stock too.,Use kept for location; Home layout promotion can later replace Stock place ownership.
+medical,labels.toml,tables.kits.columns.last_checked.label,label,Last checked,Last checked,Keep; already uses the chosen term or is a distinct idea.
+medical,labels.toml,tables.kits.columns.last_checked.help,help,The date someone checked this kit's contents.,The date someone checked this kit's contents.,Keep; already uses the chosen term or is a distinct idea.
+medical,labels.toml,tables.kits.columns.next_check.label,label,Check again by,Check again by,Keep; already uses the chosen term or is a distinct idea.
+medical,labels.toml,tables.kits.columns.next_check.help,help,Choose a date from your household plan or kit guidance. The dashboard will remind you a month before.,Choose a date from your household plan or kit guidance. The dashboard will remind you a month before.,Keep; already uses the chosen term or is a distinct idea.
+medical,labels.toml,tables.kits.columns.notes.help,help,"For example, what needs replacing. Keep medicine and care details in People.","For example, what needs replacing. Keep medicine and care details in People.",Keep; already uses the chosen term or is a distinct idea.
+medical,labels.toml,tables.kit_checks.empty,empty,Log a check after you look through a kit. Update Stock separately for anything missing or expired.,Log a check after you look through a kit. Update Stock separately for anything missing or expired.,Keep; already uses the chosen term or is a distinct idea.
+medical,labels.toml,tables.kit_checks.columns.checked_on.label,label,Checked on,Checked on,Keep; already uses the chosen term or is a distinct idea.
+medical,labels.toml,tables.kit_checks.columns.next_check.label,label,Next check planned,Check again by,Use the same words as the current kit date; this historical check records what was planned then.
+medical,labels.toml,tables.kit_checks.columns.next_check.help,help,For this check record only. Also update the kit's current Check again by date.,The date planned at this check. Also update the kit's current Check again by date.,Separate historic plan from live kit reminder.
+medical,labels.toml,tables.kit_checks.columns.checked_by.label,label,Checked by,Checked by,Keep; already uses the chosen term or is a distinct idea.
+medical,labels.toml,tables.kit_checks.columns.notes.label,label,What you found,What you found,Keep; already uses the chosen term or is a distinct idea.
+medical,labels.toml,tables.kit_checks.columns.notes.help,help,Record missing or expired supplies here; update their amounts and dates in Household stock.,Record missing or expired supplies here; update their amounts and dates in Household stock.,Keep; already uses the chosen term or is a distinct idea.
+medical,labels.toml,tables.training.empty,empty,Add first aid or CPR training if someone has completed it.,Add first aid or CPR training if someone has completed it.,Keep; already uses the chosen term or is a distinct idea.
+medical,labels.toml,tables.training.columns.person.label,label,Who trained,Who trained,Keep; already uses the chosen term or is a distinct idea.
+medical,labels.toml,tables.training.columns.course.label,label,Training,Training,Keep; already uses the chosen term or is a distinct idea.
+medical,labels.toml,tables.training.columns.provider.label,label,Training provider,Training provider,Keep; already uses the chosen term or is a distinct idea.
+medical,labels.toml,tables.training.columns.completed_on.label,label,Completed on,Completed on,Keep; already uses the chosen term or is a distinct idea.
+medical,labels.toml,tables.training.columns.renew_by.label,label,Renew by,Renew by,Keep; already uses the chosen term or is a distinct idea.
+medical,labels.toml,tables.training.columns.renew_by.help,help,Use the date on the certificate or from the provider. The dashboard will remind you a month before.,Use the date on the certificate or from the provider. The dashboard will remind you a month before.,Keep; already uses the chosen term or is a distinct idea.
+medical,labels.toml,tables.training.columns.notes.help,help,"For example, where the certificate is kept. Do not enter private medical details here.","For example, where the certificate is kept. Do not enter private medical details here.",Keep; already uses the chosen term or is a distinct idea.
+medical,sheets.toml,sheet[0].title,sheet title,First aid at home,First aid at home,Keep; already uses the chosen term or is a distinct idea.
+medical,sheets.toml,sheet[0].intro,sheet intro,"Where the kits are and who has recorded training. Check that places and dates are current before sharing this sheet. In an emergency, follow local emergency advice.","Where the kits are and who has recorded training. Check that places and dates are current before sharing this sheet. In an emergency, follow local emergency advice.",Keep; already uses the chosen term or is a distinct idea.
+medical,sheets.toml,sheet[0].section[0].title,sheet section,First aid kits,First aid kits,Keep; already uses the chosen term or is a distinct idea.
+medical,sheets.toml,sheet[0].section[1].title,sheet section,Training,Training,Keep; already uses the chosen term or is a distinct idea.
+people,rendered,tables.people.columns.name.rendered_label,rendered field label,Name,Name,Keep; already uses the chosen term or is a distinct idea.
+people,rendered,tables.people.columns.lives_here.rendered_label,rendered field label,Lives here,Lives here,Keep; already uses the chosen term or is a distinct idea.
+people,rendered,tables.people.columns.relationship.rendered_label,rendered field label,Relationship,Relationship,Keep; already uses the chosen term or is a distinct idea.
+people,rendered,tables.people.columns.relationship.choices[0],rendered choice,Family,Family,Keep; already uses the chosen term or is a distinct idea.
+people,rendered,tables.people.columns.relationship.choices[1],rendered choice,Partner,Partner,Keep; already uses the chosen term or is a distinct idea.
+people,rendered,tables.people.columns.relationship.choices[2],rendered choice,Child,Child,Keep; already uses the chosen term or is a distinct idea.
+people,rendered,tables.people.columns.relationship.choices[3],rendered choice,Parent,Parent,Keep; already uses the chosen term or is a distinct idea.
+people,rendered,tables.people.columns.relationship.choices[4],rendered choice,Friend,Friend,Keep; already uses the chosen term or is a distinct idea.
+people,rendered,tables.people.columns.relationship.choices[5],rendered choice,Neighbour,Neighbour,Keep; already uses the chosen term or is a distinct idea.
+people,rendered,tables.people.columns.relationship.choices[6],rendered choice,Carer,Carer,Keep; already uses the chosen term or is a distinct idea.
+people,rendered,tables.people.columns.relationship.choices[7],rendered choice,Professional,Professional,Keep; already uses the chosen term or is a distinct idea.
+people,rendered,tables.people.columns.relationship.choices[8],rendered choice,Other,Other,Keep; already uses the chosen term or is a distinct idea.
+people,rendered,tables.people.columns.phone.rendered_label,rendered field label,Phone,Phone,Keep; already uses the chosen term or is a distinct idea.
+people,rendered,tables.people.columns.other_phone.rendered_label,rendered field label,Other phone,Other phone,Keep; already uses the chosen term or is a distinct idea.
+people,rendered,tables.people.columns.email.rendered_label,rendered field label,Email,Email,Keep; already uses the chosen term or is a distinct idea.
+people,rendered,tables.people.columns.address.rendered_label,rendered field label,Address,Address,Keep; already uses the chosen term or is a distinct idea.
+people,rendered,tables.people.columns.birthday.rendered_label,rendered field label,Birthday,Birthday,Keep; already uses the chosen term or is a distinct idea.
+people,rendered,tables.people.columns.notes.rendered_label,rendered field label,Notes,Notes,Keep; already uses the chosen term or is a distinct idea.
+people,rendered,tables.roles.columns.person.rendered_label,rendered field label,Person,Person,Keep; already uses the chosen term or is a distinct idea.
+people,rendered,tables.roles.columns.role.rendered_label,rendered field label,Role,Role,Keep; already uses the chosen term or is a distinct idea.
+people,rendered,tables.roles.columns.role.choices[1],rendered choice,Family,Family,Keep; already uses the chosen term or is a distinct idea.
+people,rendered,tables.roles.columns.role.choices[2],rendered choice,Neighbour,Neighbour,Keep; already uses the chosen term or is a distinct idea.
+people,rendered,tables.roles.columns.role.choices[3],rendered choice,Doctor,Doctor,Keep; already uses the chosen term or is a distinct idea.
+people,rendered,tables.roles.columns.role.choices[4],rendered choice,Dentist,Dentist,Keep; already uses the chosen term or is a distinct idea.
+people,rendered,tables.roles.columns.role.choices[5],rendered choice,Vet,Vet,Keep; already uses the chosen term or is a distinct idea.
+people,rendered,tables.roles.columns.role.choices[6],rendered choice,Pharmacist,Pharmacist,Keep; already uses the chosen term or is a distinct idea.
+people,rendered,tables.roles.columns.role.choices[7],rendered choice,Tradesperson,Tradesperson,Keep; already uses the chosen term or is a distinct idea.
+people,rendered,tables.roles.columns.role.choices[8],rendered choice,School,School,Keep; already uses the chosen term or is a distinct idea.
+people,rendered,tables.roles.columns.role.choices[9],rendered choice,Workplace,Workplace,Keep; already uses the chosen term or is a distinct idea.
+people,rendered,tables.roles.columns.role.choices[11],rendered choice,Other,Other,Keep; already uses the chosen term or is a distinct idea.
+people,rendered,tables.roles.columns.priority.rendered_label,rendered field label,Call order,Call order,Keep; already uses the chosen term or is a distinct idea.
+people,rendered,tables.roles.columns.notes.rendered_label,rendered field label,Notes,Notes,Keep; already uses the chosen term or is a distinct idea.
+people,rendered,tables.important_info.columns.person.rendered_label,rendered field label,Person,Person,Keep; already uses the chosen term or is a distinct idea.
+people,rendered,tables.important_info.columns.kind.rendered_label,rendered field label,What kind,What kind,Keep; already uses the chosen term or is a distinct idea.
+people,rendered,tables.important_info.columns.kind.choices[0],rendered choice,Allergy,Allergy,Keep; already uses the chosen term or is a distinct idea.
+people,rendered,tables.important_info.columns.kind.choices[1],rendered choice,Condition,Condition,Keep; already uses the chosen term or is a distinct idea.
+people,rendered,tables.important_info.columns.kind.choices[2],rendered choice,Medication,Medication,Keep; already uses the chosen term or is a distinct idea.
+people,rendered,tables.important_info.columns.kind.choices[4],rendered choice,Dietary,Dietary,Keep; already uses the chosen term or is a distinct idea.
+people,rendered,tables.important_info.columns.kind.choices[6],rendered choice,Other,Other,Keep; already uses the chosen term or is a distinct idea.
+people,rendered,tables.important_info.columns.detail.rendered_label,rendered field label,Detail,Detail,Keep; already uses the chosen term or is a distinct idea.
+stock,rendered,tables.places.columns.name.rendered_label,rendered field label,Name,Name,Keep; already uses the chosen term or is a distinct idea.
+stock,rendered,tables.places.columns.inside.rendered_label,rendered field label,Inside,Inside,Keep; already uses the chosen term or is a distinct idea.
+stock,rendered,tables.places.columns.notes.rendered_label,rendered field label,Notes,Notes,Keep; already uses the chosen term or is a distinct idea.
+stock,rendered,tables.items.columns.name.rendered_label,rendered field label,Name,Name,Keep; already uses the chosen term or is a distinct idea.
+stock,rendered,tables.items.columns.category.rendered_label,rendered field label,Category,Category,Keep; already uses the chosen term or is a distinct idea.
+stock,rendered,tables.items.columns.category.choices[0],rendered choice,Pantry,Pantry,Keep; already uses the chosen term or is a distinct idea.
+stock,rendered,tables.items.columns.category.choices[1],rendered choice,Water,Water,Keep; already uses the chosen term or is a distinct idea.
+stock,rendered,tables.items.columns.category.choices[3],rendered choice,Toiletries,Toiletries,Keep; already uses the chosen term or is a distinct idea.
+stock,rendered,tables.items.columns.category.choices[4],rendered choice,Cleaning,Cleaning,Keep; already uses the chosen term or is a distinct idea.
+stock,rendered,tables.items.columns.category.choices[6],rendered choice,Fuel,Fuel,Keep; already uses the chosen term or is a distinct idea.
+stock,rendered,tables.items.columns.category.choices[7],rendered choice,Tools,Tools,Keep; already uses the chosen term or is a distinct idea.
+stock,rendered,tables.items.columns.category.choices[10],rendered choice,Garden,Garden,Keep; already uses the chosen term or is a distinct idea.
+stock,rendered,tables.items.columns.category.choices[11],rendered choice,Other,Other,Keep; already uses the chosen term or is a distinct idea.
+stock,rendered,tables.items.columns.quantity.rendered_label,rendered field label,Amount on hand,Amount on hand,Keep; already uses the chosen term or is a distinct idea.
+stock,rendered,tables.items.columns.drinking.rendered_label,rendered field label,Is this water safe to drink now?,Is this water safe to drink now?,Keep; already uses the chosen term or is a distinct idea.
+stock,rendered,tables.items.columns.unit.rendered_label,rendered field label,Unit,Unit,Keep; already uses the chosen term or is a distinct idea.
+stock,rendered,tables.items.columns.minimum.rendered_label,rendered field label,Keep at least,Keep at least,Keep; already uses the chosen term or is a distinct idea.
+stock,rendered,tables.items.columns.place.rendered_label,rendered field label,Where it is,Where it is,Keep; already uses the chosen term or is a distinct idea.
+stock,rendered,tables.items.columns.expires.rendered_label,rendered field label,Use by,Use by,Keep; already uses the chosen term or is a distinct idea.
+stock,rendered,tables.items.columns.notes.rendered_label,rendered field label,Notes,Notes,Keep; already uses the chosen term or is a distinct idea.
+stock,rendered,tables.lots.columns.item.rendered_label,rendered field label,Item,Item,Keep; already uses the chosen term or is a distinct idea.
+stock,rendered,tables.lots.columns.quantity.rendered_label,rendered field label,How many,How many,Keep; already uses the chosen term or is a distinct idea.
+stock,rendered,tables.lots.columns.expires.rendered_label,rendered field label,Use by,Use by,Keep; already uses the chosen term or is a distinct idea.
+stock,rendered,tables.lots.columns.place.rendered_label,rendered field label,Where it is,Where it is,Keep; already uses the chosen term or is a distinct idea.
+stock,rendered,tables.lots.columns.notes.rendered_label,rendered field label,Notes,Notes,Keep; already uses the chosen term or is a distinct idea.
+stock,rendered,tables.movements.columns.item.rendered_label,rendered field label,Item,Item,Keep; already uses the chosen term or is a distinct idea.
+stock,rendered,tables.movements.columns.reason.rendered_label,rendered field label,Reason,Reason,Keep; already uses the chosen term or is a distinct idea.
+stock,rendered,tables.movements.columns.reason.choices[1],rendered choice,Used,Used,Keep; already uses the chosen term or is a distinct idea.
+stock,rendered,tables.movements.columns.reason.choices[2],rendered choice,Expired,Expired,Keep; already uses the chosen term or is a distinct idea.
+stock,rendered,tables.movements.columns.amount.rendered_label,rendered field label,How many,How many,Keep; already uses the chosen term or is a distinct idea.
+stock,rendered,tables.movements.columns.happened_on.rendered_label,rendered field label,Date,Date,Keep; already uses the chosen term or is a distinct idea.
+stock,rendered,tables.movements.columns.notes.rendered_label,rendered field label,Notes,Notes,Keep; already uses the chosen term or is a distinct idea.
+stock,rendered,tables.movements.columns.lot.rendered_label,rendered field label,Which batch,Which batch,Keep; already uses the chosen term or is a distinct idea.
+stock,rendered,tables.movements.columns.expires.rendered_label,rendered field label,Use by,Use by,Keep; already uses the chosen term or is a distinct idea.
+stock,rendered,tables.movements.columns.place.rendered_label,rendered field label,Where you put it,Where you put it,Keep; already uses the chosen term or is a distinct idea.
+pets,rendered,tables.pets.columns.name.rendered_label,rendered field label,Name,Name,Keep; already uses the chosen term or is a distinct idea.
+pets,rendered,tables.pets.columns.species.rendered_label,rendered field label,Kind of animal,Kind of animal,Keep; already uses the chosen term or is a distinct idea.
+pets,rendered,tables.pets.columns.species.choices[0],rendered choice,Dog,Dog,Keep; already uses the chosen term or is a distinct idea.
+pets,rendered,tables.pets.columns.species.choices[1],rendered choice,Cat,Cat,Keep; already uses the chosen term or is a distinct idea.
+pets,rendered,tables.pets.columns.species.choices[2],rendered choice,Bird,Bird,Keep; already uses the chosen term or is a distinct idea.
+pets,rendered,tables.pets.columns.species.choices[3],rendered choice,Fish,Fish,Keep; already uses the chosen term or is a distinct idea.
+pets,rendered,tables.pets.columns.species.choices[4],rendered choice,Rabbit,Rabbit,Keep; already uses the chosen term or is a distinct idea.
+pets,rendered,tables.pets.columns.species.choices[9],rendered choice,Other,Other,Keep; already uses the chosen term or is a distinct idea.
+pets,rendered,tables.pets.columns.breed.rendered_label,rendered field label,Breed,Breed,Keep; already uses the chosen term or is a distinct idea.
+pets,rendered,tables.pets.columns.birthday.rendered_label,rendered field label,Birthday,Birthday,Keep; already uses the chosen term or is a distinct idea.
+pets,rendered,tables.pets.columns.microchip.rendered_label,rendered field label,Microchip number,Microchip number,Keep; already uses the chosen term or is a distinct idea.
+pets,rendered,tables.pets.columns.owner.rendered_label,rendered field label,Looked after by,Looked after by,Keep; already uses the chosen term or is a distinct idea.
+pets,rendered,tables.pets.columns.vet.rendered_label,rendered field label,Vet,Vet,Keep; already uses the chosen term or is a distinct idea.
+pets,rendered,tables.pets.columns.vaccinations_due.rendered_label,rendered field label,Vaccinations due,Vaccinations due,Keep; already uses the chosen term or is a distinct idea.
+pets,rendered,tables.pets.columns.notes.rendered_label,rendered field label,Notes,Notes,Keep; already uses the chosen term or is a distinct idea.
+pets,rendered,tables.treatments.columns.pet.rendered_label,rendered field label,Pet,Pet,Keep; already uses the chosen term or is a distinct idea.
+pets,rendered,tables.treatments.columns.name.rendered_label,rendered field label,Treatment or medicine,Treatment or medicine,Keep; already uses the chosen term or is a distinct idea.
+pets,rendered,tables.treatments.columns.kind.rendered_label,rendered field label,What kind,What kind,Keep; already uses the chosen term or is a distinct idea.
+pets,rendered,tables.treatments.columns.kind.choices[1],rendered choice,Worming,Worming,Keep; already uses the chosen term or is a distinct idea.
+pets,rendered,tables.treatments.columns.kind.choices[2],rendered choice,Heartworm,Heartworm,Keep; already uses the chosen term or is a distinct idea.
+pets,rendered,tables.treatments.columns.kind.choices[3],rendered choice,Medicine,Medicine,Keep; already uses the chosen term or is a distinct idea.
+pets,rendered,tables.treatments.columns.kind.choices[4],rendered choice,Other,Other,Keep; already uses the chosen term or is a distinct idea.
+pets,rendered,tables.treatments.columns.dose.rendered_label,rendered field label,Dose,Dose,Keep; already uses the chosen term or is a distinct idea.
+pets,rendered,tables.treatments.columns.every_days.rendered_label,rendered field label,Every (days),Every (days),Keep; already uses the chosen term or is a distinct idea.
+pets,rendered,tables.treatments.columns.next_due.rendered_label,rendered field label,Next due,Next due,Keep; already uses the chosen term or is a distinct idea.
+pets,rendered,tables.treatments.columns.notes.rendered_label,rendered field label,Notes,Notes,Keep; already uses the chosen term or is a distinct idea.
+pets,rendered,tables.given.columns.treatment.rendered_label,rendered field label,Treatment,Treatment,Keep; already uses the chosen term or is a distinct idea.
+pets,rendered,tables.given.columns.given_on.rendered_label,rendered field label,Date given,Date given,Keep; already uses the chosen term or is a distinct idea.
+pets,rendered,tables.given.columns.notes.rendered_label,rendered field label,Notes,Notes,Keep; already uses the chosen term or is a distinct idea.
+pets,rendered,tables.weigh_ins.columns.pet.rendered_label,rendered field label,Pet,Pet,Keep; already uses the chosen term or is a distinct idea.
+pets,rendered,tables.weigh_ins.columns.day.rendered_label,rendered field label,Date,Date,Keep; already uses the chosen term or is a distinct idea.
+pets,rendered,tables.weigh_ins.columns.weight.rendered_label,rendered field label,Weight,Weight,Keep; already uses the chosen term or is a distinct idea.
+pets,rendered,tables.weigh_ins.columns.notes.rendered_label,rendered field label,Notes,Notes,Keep; already uses the chosen term or is a distinct idea.
+pets,rendered,tables.vet_visits.columns.pet.rendered_label,rendered field label,Pet,Pet,Keep; already uses the chosen term or is a distinct idea.
+pets,rendered,tables.vet_visits.columns.day.rendered_label,rendered field label,Date,Date,Keep; already uses the chosen term or is a distinct idea.
+pets,rendered,tables.vet_visits.columns.vet.rendered_label,rendered field label,Vet,Vet,Keep; already uses the chosen term or is a distinct idea.
+pets,rendered,tables.vet_visits.columns.reason.rendered_label,rendered field label,Reason,Reason,Keep; already uses the chosen term or is a distinct idea.
+pets,rendered,tables.vet_visits.columns.cost.rendered_label,rendered field label,Cost,Cost,Keep; already uses the chosen term or is a distinct idea.
+pets,rendered,tables.vet_visits.columns.notes.rendered_label,rendered field label,Notes,Notes,Keep; already uses the chosen term or is a distinct idea.
+medical,rendered,tables.kits.columns.name.rendered_label,rendered field label,Name,Name,Keep; already uses the chosen term or is a distinct idea.
+medical,rendered,tables.kits.columns.place.rendered_label,rendered field label,Where it is,Where it is,Keep; already uses the chosen term or is a distinct idea.
+medical,rendered,tables.kits.columns.kept.rendered_label,rendered field label,Usually kept,Usually kept,Keep; already uses the chosen term or is a distinct idea.
+medical,rendered,tables.kits.columns.last_checked.rendered_label,rendered field label,Last checked,Last checked,Keep; already uses the chosen term or is a distinct idea.
+medical,rendered,tables.kits.columns.next_check.rendered_label,rendered field label,Check again by,Check again by,Keep; already uses the chosen term or is a distinct idea.
+medical,rendered,tables.kits.columns.notes.rendered_label,rendered field label,Notes,Notes,Keep; already uses the chosen term or is a distinct idea.
+medical,rendered,tables.kit_checks.columns.kit.rendered_label,rendered field label,Kit,Kit,Keep; already uses the chosen term or is a distinct idea.
+medical,rendered,tables.kit_checks.columns.checked_on.rendered_label,rendered field label,Checked on,Checked on,Keep; already uses the chosen term or is a distinct idea.
+medical,rendered,tables.kit_checks.columns.next_check.rendered_label,rendered field label,Next check planned,Next check planned,Keep; already uses the chosen term or is a distinct idea.
+medical,rendered,tables.kit_checks.columns.checked_by.rendered_label,rendered field label,Checked by,Checked by,Keep; already uses the chosen term or is a distinct idea.
+medical,rendered,tables.kit_checks.columns.notes.rendered_label,rendered field label,What you found,What you found,Keep; already uses the chosen term or is a distinct idea.
+medical,rendered,tables.training.columns.person.rendered_label,rendered field label,Who trained,Who trained,Keep; already uses the chosen term or is a distinct idea.
+medical,rendered,tables.training.columns.course.rendered_label,rendered field label,Training,Training,Keep; already uses the chosen term or is a distinct idea.
+medical,rendered,tables.training.columns.course.choices[0],rendered choice,First aid,First aid,Keep; already uses the chosen term or is a distinct idea.
+medical,rendered,tables.training.columns.course.choices[1],rendered choice,Cpr,Cpr,Keep; already uses the chosen term or is a distinct idea.
+medical,rendered,tables.training.columns.course.choices[2],rendered choice,Other,Other,Keep; already uses the chosen term or is a distinct idea.
+medical,rendered,tables.training.columns.provider.rendered_label,rendered field label,Training provider,Training provider,Keep; already uses the chosen term or is a distinct idea.
+medical,rendered,tables.training.columns.completed_on.rendered_label,rendered field label,Completed on,Completed on,Keep; already uses the chosen term or is a distinct idea.
+medical,rendered,tables.training.columns.renew_by.rendered_label,rendered field label,Renew by,Renew by,Keep; already uses the chosen term or is a distinct idea.
+medical,rendered,tables.training.columns.notes.rendered_label,rendered field label,Notes,Notes,Keep; already uses the chosen term or is a distinct idea.
