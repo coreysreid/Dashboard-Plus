@@ -26,3 +26,9 @@ title = "Safety things"
 table = "equipment"
 columns = ["name", "kind", "place", "next_check"]
 order_by = "kind"
+
+[[sheet.section]]
+title = "Utility meters"
+table = "meters"
+columns = ["name", "kind", "place", "how_to_find"]
+order_by = "kind"

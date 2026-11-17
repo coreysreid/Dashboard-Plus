@@ -12,6 +12,7 @@ and made-up example rows. Add a row here for each draft folder you create.
 | documents/ | Where important papers are, with renewal dates | reviewing document records |
 | home_care/ | Household checks and jobs with due-date history | reviewing home checks |
 | wine/ | A compact wine collection module | reviewing or promoting it |
+| grab_list/ | Household leave-in-a-hurry list and one-page print design | building M3 grab lists |
 | seasonal_checklists/ | Source-linked bushfire, cyclone, winter, heat and hurricane questions | building M3 seasonal reviews |
 | collections/ | Hobby collection items, places, costs and household value estimates | reviewing or promoting it |
 | vehicles/ | Vehicle reminders, roadside contacts and Stock car kits | reviewing or promoting it |
@@ -21,3 +22,10 @@ and made-up example rows. Add a row here for each draft folder you create.
 | shopping_list/ | Trip list from the household's own low-stock thresholds, with Stock-in checks | building M2 shopping lists |
 | csv_import/ | CSV column mapping, dry run and atomic Stock import checks | building M2 spreadsheet import |
 | helpers/ | Household permission and review flow for helper proposals | building M2 Agent API review |
+| outcomes/ | Four monthly measures, evidence rules and confirmed wins | building M4 outcomes |
+| question_loop/ | Twenty plausible analysis questions and forty rejected pairings | building M4 questions |
+| charts/ | Four household chart sketches with data and accessibility needs | building M4 graphing |
+| garden/ | Promotion draft of the vegetable-garden worked example | promoting the optional Garden module |
+| home_inventory/ | Private room-by-room belongings and claim-list draft | planning insurance inventory |
+| lent_out/ | Borrower, due-back and return-history draft | planning household loans |
+| utilities/ | Private accounts, People fault contacts and Home layout meter links | planning household utilities |

@@ -12,6 +12,10 @@ columns.notes = { type = "longtext" }
 [tables.vehicles.watch]
 expiring = { date = "registration_due", warn_days = 30, wording = "due", what = "registration" }
 
+[[tables.vehicles.watch.gaps]]
+missing = "roadside_contact"
+message = "Who would you call for help with {name} on the road? Add a contact if you have one."
+
 [tables.insurance]
 title = "Vehicle insurance"
 description = "An insurance renewal reminder; keep policy numbers in your own paperwork."

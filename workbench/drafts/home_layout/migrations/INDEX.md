@@ -2,3 +2,4 @@
 | Entry | What it is | Open it when |
 |---|---|---|
 | 0001_update_tables.sql | First version of draft tables | checking promotion readiness |
+| 0002_meters.sql | Additive meter locations table | checking utility integration |

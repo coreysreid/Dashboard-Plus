@@ -30,3 +30,12 @@ columns.place = { label = "Where it is" }
 columns.last_tested = { label = "Last tested" }
 columns.battery_changed = { label = "Battery changed", help = "Use only when this equipment has a replaceable battery." }
 columns.next_check = { label = "Next check due", help = "Enter the date from your own equipment guidance or household plan." }
+
+[tables.meters]
+empty = "Add a meter only if it helps your household find it."
+form = ["name", "kind", "place", "how_to_find"]
+list = ["name", "kind", "place", "how_to_find"]
+columns.name = { label = "Meter name", help = "For example, Electricity meter or Shared water meter." }
+columns.kind = { label = "Service" }
+columns.place = { label = "Where it is", help = "Choose a full place path or add a place first." }
+columns.how_to_find = { label = "How to find it", help = "A short landmark is enough. Do not enter account numbers or access codes." }

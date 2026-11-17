@@ -1,0 +1,10 @@
+[[sheet]]
+name = "claim_list"
+title = "Home inventory for a claim"
+intro = "Sensitive household copy: room paths and serial numbers are included. Print only when you need it, keep the copy private, and check the list against your belongings. Costs are what you entered, not insured values or promised payments."
+
+[[sheet.section]]
+title = "Belongings by place"
+table = "belongings"
+columns = ["room", "name", "quantity", "make_model", "serial", "bought_on", "paid", "receipt_kept", "photos_kept"]
+order_by = "room"

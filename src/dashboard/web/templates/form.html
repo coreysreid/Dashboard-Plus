@@ -237,8 +237,14 @@
   (function () {
     var MONTHS = ["January", "February", "March", "April", "May", "June", "July", "August", "September",
                   "October", "November", "December"];
+    var EXAMPLES = {dmy: "Use DD/MM/YY, for example 20/05/27.", mdy: "Use MM/DD/YY, for example 05/20/27.",
+                    ymd: "Use YYYY-MM-DD, for example 2027-05-20."};
+    function real(y, mo, d) {
+      var when = new Date(Date.UTC(y, mo - 1, d));
+      return when.getUTCFullYear() === y && when.getUTCMonth() === mo - 1 && when.getUTCDate() === d;
+    }
     function read(text, style) {
-      var m = /^(\d{4})-(\d{1,2})-(\d{1,2})$/.exec(text), y, mo, d;
+      var m = /^(\d{4})-(\d{1,2})-(\d{1,2})$/.exec(text), y, mo, d, typed = !m;
       if (m) { y = +m[1]; mo = +m[2]; d = +m[3]; }
       else {
         m = /^(\d{1,2})\s*[\/.\-]\s*(\d{1,2})\s*[\/.\-]\s*(\d{2}|\d{4})$/.exec(text);
@@ -246,15 +252,15 @@
         d = style === "mdy" ? +m[2] : +m[1]; mo = style === "mdy" ? +m[1] : +m[2];
         y = +m[3] + (m[3].length === 2 ? 2000 : 0);
       }
-      var when = new Date(Date.UTC(y, mo - 1, d));
-      if (when.getUTCFullYear() !== y || when.getUTCMonth() !== mo - 1 || when.getUTCDate() !== d) return false;
+      if (!real(y, mo, d)) return typed && real(y, d, mo) ? null : false;  // null: the other order
       return style === "mdy" ? MONTHS[mo - 1] + " " + d + ", " + y : d + " " + MONTHS[mo - 1] + " " + y;
     }
     document.querySelectorAll("[data-date-style]").forEach(function (input) {
       var preview = document.getElementById(input.id + "-preview");
       function update() {
         var text = input.value.trim(), words = text ? read(text, input.dataset.dateStyle) : null;
-        preview.textContent = words ? "\u2192 " + words : (text && words === false ? "Not a real date" : "");
+        preview.textContent = words ? "\u2192 " + words : !text ? "" : words === false ? "Not a real date" :
+          EXAMPLES[input.dataset.dateStyle];  // typed some other way, such as another country's order
       }
       input.addEventListener("input", update);
       update();

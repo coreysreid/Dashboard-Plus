@@ -8,6 +8,7 @@ columns.next_due = { label = "Next due", help = "Use a date from the equipment i
 columns.notes = { help = "Record the detail that will help next time; follow local safety advice for the work itself." }
 
 [tables.work_done]
+empty = "No work logged yet. Add a dated note after a job is done."
 form = ["job", "done_on", "done_by", "notes"]
 list = ["done_on", "job", "done_by", "notes"]
 columns.done_on = { label = "Done on" }

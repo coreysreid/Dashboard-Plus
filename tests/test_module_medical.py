@@ -35,14 +35,23 @@ class MedicalModuleTests(TempDirTestCase):
         self.assertEqual(self.report.module_problems, {})
         self.assertIn("medical", self.report.modules)
 
-    def test_asks_whether_there_is_a_kit_until_one_is_added(self):
-        self.assertEqual(self.medical_gaps(), ["Is there a first aid kit at home? Add it and where to find it."])
-        self.records.create("medical__kits", {"name": "Car kit"})
-        self.assertEqual(self.medical_gaps(), ["Where is Car kit kept?", "When do you plan to check Car kit again?"])
+    def test_asks_about_a_kit_at_home_until_one_is_recorded_there(self):
+        """A kit in the car is not there when the car is out (Lane B, Medical and dates UX check)."""
+        at_home = "No first aid kit is recorded at home. Add one, or check where your kits are kept."
+        self.assertEqual(self.medical_gaps(), [at_home])
+        car = self.records.create("medical__kits", {"name": "Car kit", "kept": "vehicle"})
+        self.assertIn(at_home, self.medical_gaps())
+        self.records.update("medical__kits", car, {"kept": "home"})
+        self.assertEqual(self.medical_gaps(), ["Which place is Car kit in? Choose where to find it.",
+                                               "When do you plan to check Car kit again?"])
+
+    def test_a_kit_saved_before_the_question_existed_is_asked_about(self):
+        self.conn.execute("INSERT INTO medical__kits (name, created_at, updated_at) VALUES ('Old kit', '', '')")
+        self.assertIn("Is Old kit kept at home, in a vehicle or somewhere else?", self.medical_gaps())
 
     def test_a_kit_check_is_due_or_overdue_never_expired(self):
-        self.records.create("medical__kits", {"name": "Car kit", "next_check": self.day(20)})
-        self.records.create("medical__kits", {"name": "Hall kit", "next_check": self.day(-2)})
+        self.records.create("medical__kits", {"name": "Car kit", "kept": "home", "next_check": self.day(20)})
+        self.records.create("medical__kits", {"name": "Hall kit", "kept": "home", "next_check": self.day(-2)})
         details = {i.name: i.detail for i in watch.expiring(self.conn, self.registry, self.today)}
         self.assertTrue(details["Car kit"].startswith("kit check due"), details["Car kit"])
         self.assertIn("overdue", details["Hall kit"])
@@ -56,7 +65,7 @@ class MedicalModuleTests(TempDirTestCase):
     def test_sheet_shows_the_full_place_path_and_leaves_out_check_notes(self):
         car = self.records.create("stock__places", {"name": "Car"})
         boot = self.records.create("stock__places", {"name": "Car boot", "inside": car})
-        kit = self.records.create("medical__kits", {"name": "Car first aid kit", "place": boot})
+        kit = self.records.create("medical__kits", {"name": "Car first aid kit", "kept": "home", "place": boot})
         self.records.create("medical__kit_checks", {"kit": kit, "checked_on": self.day(0),
                                                     "notes": "Plasters running out"})
         settings.put(self.conn, "setup.done", True)
@@ -70,7 +79,7 @@ class MedicalModuleTests(TempDirTestCase):
 
     def test_a_place_holding_a_kit_cannot_be_deleted(self):
         place = self.records.create("stock__places", {"name": "Hall closet"})
-        self.records.create("medical__kits", {"name": "Hall kit", "place": place})
+        self.records.create("medical__kits", {"name": "Hall kit", "kept": "home", "place": place})
         with self.assertRaises(records.ValidationError):
             self.records.delete("stock__places", place)
 

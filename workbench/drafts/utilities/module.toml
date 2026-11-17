@@ -1,0 +1,8 @@
+name = "utilities"
+title = "Utilities and accounts"
+version = "1.0.0"
+description = "Keep household service contacts, private account references and meter locations together."
+core_api = "1"
+kind = "declarative"
+requires = ["people"]
+outbound_hosts = []

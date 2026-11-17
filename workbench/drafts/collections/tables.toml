@@ -19,3 +19,9 @@ columns.status = { type = "choice", required = true, default = "owned", choices 
 columns.sold_for = { type = "money", min = 0 }
 columns.sold_on = { type = "date" }
 columns.notes = { type = "longtext" }
+
+[tables.items.watch]
+[[tables.items.watch.gaps]]
+missing = "place"
+where = { status = "owned" }
+message = "Where is {name} kept? Add its place so it can be found."

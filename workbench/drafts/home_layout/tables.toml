@@ -45,3 +45,16 @@ columns.notes = { type = "text" }
 
 [tables.equipment.watch]
 expiring = { date = "next_check", warn_days = 30, wording = "due", what = "check" }
+
+[tables.meters]
+title = "Utility meters"
+description = "Where the household's own electricity, gas or water meter can be found."
+columns.name = { type = "text", required = true }
+columns.kind = { type = "choice", required = true, choices = ["electricity", "gas", "water", "other"] }
+columns.place = { type = "link", to = "places", on_delete = "restrict" }
+columns.how_to_find = { type = "text" }
+
+[tables.meters.watch]
+[[tables.meters.watch.gaps]]
+missing = "place"
+message = "Where is {name}? Add a place so someone else can find the meter."

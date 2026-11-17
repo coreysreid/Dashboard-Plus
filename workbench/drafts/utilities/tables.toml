@@ -1,0 +1,19 @@
+[tables.services]
+title = "Utilities and household accounts"
+description = "Who provides a service, who to call about a fault, and where its meter is if there is one."
+columns.name = { type = "text", required = true }
+columns.kind = { type = "choice", required = true, choices = ["electricity", "gas", "water", "internet", "phone", "other"] }
+columns.provider = { type = "link", to = "people.people", on_delete = "clear" }
+columns.fault_contact = { type = "link", to = "people.people", on_delete = "clear" }
+columns.account_number = { type = "text", sensitive = true }
+columns.meter = { type = "text" }
+columns.notes = { type = "longtext", sensitive = true }
+
+[tables.services.watch]
+[[tables.services.watch.gaps]]
+missing = "fault_contact"
+message = "Who would you contact about a fault with {name}? Add a People contact if you have one."
+
+[[tables.services.watch.gaps]]
+missing = "fault_contact.phone"
+message = "What is the fault-line number for {name}? Add it to the People contact."

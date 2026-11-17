@@ -11,6 +11,10 @@ columns.notes = { type = "longtext" }
 [tables.jobs.watch]
 expiring = { date = "next_due", warn_days = 30, wording = "due", what = "home care" }
 
+[[tables.jobs.watch.gaps]]
+missing = "place"
+message = "Where is {name} done? Add a place so the job can be found."
+
 [tables.work_done]
 title = "Work done"
 description = "A dated note of what was checked or done."

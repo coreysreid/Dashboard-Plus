@@ -6,6 +6,7 @@ columns.name = { label = "Collection name", help = "For example, building sets, 
 columns.kind = { label = "What you collect" }
 
 [tables.items]
+empty = "Add the first item in this collection."
 form = ["collection", "name", "catalogue_number", "condition", "place", "bought_for", "value_now", "status", "sold_for", "sold_on", "notes"]
 list = ["collection", "name", "catalogue_number", "condition", "place", "value_now", "status"]
 columns.name = { label = "Item or set", help = "Use the name you would look for later." }
