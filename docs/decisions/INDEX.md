@@ -55,6 +55,7 @@ marked Superseded. Each lists downsides, cost to undo, and the sign it was wrong
 | [0049](0049-nested-places.md) | Places can sit inside other places, and show their full path | Accepted |
 | [0050](0050-restore-brings-back-what-went-with-it.md) | Restoring brings back what went with it; backups and counts made safer | Accepted |
 | [0051](0051-medical-promoted.md) | Medical readiness switched on from Lane B's draft; `none = {}` gaps | Accepted |
+| [0052](0052-dates-the-households-way.md) | Dates typed and shown the household's way (20/05/27 or 05/20/27), stored as 2027-05-20 | Accepted |
 | [0060](0060-garden-example-outside-installed-modules.md) | Keep the worked garden outside installed modules | Accepted |
 | [0061](0061-public-reporting-and-contribution-rules.md) | Public contribution and private security reporting routes | Accepted |
 | [TEMPLATE](TEMPLATE.md) | Blank record to copy for a new decision | recording a decision |

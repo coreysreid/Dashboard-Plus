@@ -103,6 +103,7 @@ marked Superseded. Each lists downsides, cost to undo, and the sign it was wrong
 | [0049](0049-nested-places.md) | Places can sit inside other places, and show their full path | Accepted |
 | [0050](0050-restore-brings-back-what-went-with-it.md) | Restoring brings back what went with it; backups and counts made safer | Accepted |
 | [0051](0051-medical-promoted.md) | Medical readiness switched on from Lane B's draft; `none = {}` gaps | Accepted |
+| [0052](0052-dates-the-households-way.md) | Dates typed and shown the household's way (20/05/27 or 05/20/27), stored as 2027-05-20 | Accepted |
 | [0060](0060-garden-example-outside-installed-modules.md) | Keep the worked garden outside installed modules | Accepted |
 | [0061](0061-public-reporting-and-contribution-rules.md) | Public contribution and private security reporting routes | Accepted |
 | [TEMPLATE](TEMPLATE.md) | Blank record to copy for a new decision | recording a decision |
@@ -271,6 +272,7 @@ Generate the next one with: python tools/make_migration.py stock --name <what_ch
 | __init__.py | Core services: database, migrations, modules and records; review and backups come next. | adding a core service |
 | backups.py | Automatic backups: one a day, one at every safe close, kept in two places. | changing when or where backups are made |
 | db.py | Open the SQLite database with settings that are safe on USB drives. | changing how the data file is opened or backed up |
+| dates.py | Dates the household's way: typed and shown as 20/05/27 or 05/20/27, always stored as 2027-05-20. | changing how dates are typed or shown |
 | migrations.py | Apply numbered migrations, one track for the core and one per module. | changing how database changes are applied |
 | migrations/ | The core's own numbered database changes | adding a core table |
 | modules.py | Find module folders, check their files, and explain any mistakes in plain words. | changing what module files may say |
@@ -337,6 +339,7 @@ How to run them is in AGENTS.md.
 | test_gaps.py | Tests for gaps: details worth filling in, declared in a table's `watch.gaps` and asked as questions. | changing gaps |
 | test_examples.py | Tests for the example households: each loads cleanly and shows exactly what it was written to show. | changing an example household |
 | test_suggest.py | Tests for suggestions while typing: matching, the household's own records first, and module catalogues. | changing picking from a list |
+| test_dates.py | Tests for dates the household's way (Lane B's stock lots acceptance checks 8 to 11, decision 0052). | changing how dates are typed or shown |
 | test_data_safety.py | Tests for the data-safety fixes from the November 2026 review: restore, stock counts, decimals and backups. | changing delete, restore, stock counts or backups |
 | test_robustness.py | Tests for the robustness fixes from the November 2026 review: modules, switching off, long lists, privacy. | changing module loading, settings or long lists |
 | test_adjusts.py | Tests for records that change a linked quantity (stock in and out), and the checks on `adjusts`. | changing stock in and out |
