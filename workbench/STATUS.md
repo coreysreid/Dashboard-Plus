@@ -51,6 +51,7 @@ the "Requests" table of docs/WORKSTREAMS.md.
 | Batch 8 item 25: home inventory | merged by Lane A | #71 | Private room-linked inventory and claim sheet, fictional data, ten checks and NAIC source. |
 | Batch 8 item 26: things lent out | merged by Lane A | #72 | Loan records, active-loan sheet, fictional examples and ten checks; core needs for due filtering and return action. |
 | Batch 8 item 27: utilities and accounts | merged by Lane A | #73 | Private accounts, People contacts, Home layout meter names, three-household examples and ten checks; meter link needs promotion. |
+| Batch 11 item 37: print check | ready | PR pending | 56 available-sheet PDFs pass A4/Letter light/dark; Taylor Pets is off (4 not applicable). |
 
 ## Messages to Lane A
 
