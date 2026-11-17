@@ -50,6 +50,7 @@ the "Requests" table of docs/WORKSTREAMS.md.
 | Batch 8 item 25: home inventory | merged by Lane A | #71 | Private room-linked inventory and claim sheet, fictional data, ten checks and NAIC source. |
 | Batch 8 item 26: things lent out | merged by Lane A | #72 | Loan records, active-loan sheet, fictional examples and ten checks; core needs for due filtering and return action. |
 | Batch 8 item 27: utilities and accounts | merged by Lane A | #73 | Private accounts, People contacts, Home layout meter names, three-household examples and ten checks; meter link needs promotion. |
+| Batch 11 item 39: translation readiness | ready | PR pending | 1,845 template/module/picker source locations grouped by screen; no translations. |
 | Batch 9 item 28: Corey's one-hour test | merged by Lane A | #75 | Ten timed demo tasks, 20-good stocktake card and BACKLOG-ready feedback rows. |
 | Batch 9 item 29: all-household lots fixture | merged by Lane A | #76 | 63 old items to 63 migration lots, 64 target lots, 15 retained movements and a two-stage kidney-bean example. |
 | Batch 9 item 30: Home layout promotion pass | merged by Lane A | #77 | Exact 31-place/63-Stock/3-Medical mapping, rewritten example, 9 promotion checks and way back. |
