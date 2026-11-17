@@ -6,6 +6,7 @@ columns.storeys = { label = "Floors", help = "Include the ground floor. Leave bl
 columns.upstairs_way_out = { label = "Way out from upstairs", help = "Write the route people here would use. Keep it current if the layout changes." }
 
 [tables.places]
+empty = "Add a room or area, then places inside it if useful."
 form = ["name", "kind", "parent", "notes"]
 list = ["name", "kind", "parent"]
 columns.kind = { label = "Type of place" }
