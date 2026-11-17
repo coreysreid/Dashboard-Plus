@@ -193,6 +193,8 @@ class Field:
     blank_words: dict | None = None  # with `blank_follows`: the blank words for each of its choices
     only_when_blank: str | None = None  # shown only while this link field (Which batch) is left blank
 
+    kept_private: bool = False  # a saved private value, not sent until the person chooses Show
+
     @property
     def name(self) -> str:
         return self.column.name
@@ -339,6 +341,8 @@ def build_fields(records: Records, info: TableInfo, values: dict, errors: dict, 
             field.blank = words[1].get(values.get(words[0])) or "(none)"
         if batch_field and column.name in rule["new_batch"].values() and column.name != batch_field:
             field.only_when_blank = batch_field  # a use-by date and place typed here are for a new batch only
+        if column.sensitive and not from_form and field.value not in (None, ""):
+            field.kept_private, field.value = True, ""  # sent only when the person chooses Show
         fields.append(field)
     return fields
 
@@ -348,7 +352,10 @@ def values_from_form(info: TableInfo, form, date_style: str = dates.DAY_FIRST, h
 
     Dates are typed the household's way (20/05/27) and handed on as 2027-05-20."""
     values, problems = {}, {}
+    kept = set(form.getlist("_keep_private")) if hasattr(form, "getlist") else set()
     for column in form_columns(info, hide):
+        if column.name in kept and column.sensitive:
+            continue  # a private detail the person didn't open stays exactly as saved
         if column.type == "date" and form.get(column.name, "").strip():
             try:
                 values[column.name] = dates.parse(form.get(column.name), date_style)

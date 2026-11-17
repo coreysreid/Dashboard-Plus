@@ -3,7 +3,7 @@ from __future__ import annotations
 
 from datetime import date
 
-from flask import Blueprint, abort, current_app, render_template
+from flask import Blueprint, abort, current_app, render_template, request
 
 from dashboard.core import records
 from dashboard.core.schema import table_name
@@ -87,5 +87,8 @@ def show_sheet(module, name):
 
         sections.append({"title": section["title"], "headings": [c[0] for c in columns],
                          "rows": [[value(dict(r), c) for c in columns] for r in rows]})
+    if private and request.args.get("show") != "1":
+        # A sheet with private details opens only by choice, so a mistaken click shows none of them.
+        return render_template("private_sheet.html", sheet=sheet, module=module, name=name)
     return render_template("sheet.html", sheet=sheet, sections=sections, private=private,
                            printed=date.today().strftime("%d %B %Y"))

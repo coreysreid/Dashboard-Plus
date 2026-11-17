@@ -1,12 +1,12 @@
 [[sheet]]
 name = "supplies"
 title = "Emergency supplies"
-intro = "Water, first aid, power and pantry food recorded here, batch by batch, and where each is kept. Other kinds of stock are not shown. Check use-by dates and amounts when you print a new copy."
+intro = "Drinking water, first aid, power and pantry food recorded here, batch by batch, and where each is kept. Water not safe to drink and other kinds of stock are not shown. Check use-by dates and amounts when you print a new copy."
 
 [[sheet.section]]
-title = "Water (litres)"
+title = "Drinking water (litres)"
 table = "lots"
-where = { "item.category" = "water" }
+where = { "item.category" = "water", "item.drinking" = true }
 columns = ["item", "quantity", "place", "expires"]
 order_by = "expires"
 

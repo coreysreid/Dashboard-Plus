@@ -14,3 +14,4 @@
 | close.html | The "Save and exit" page | changing how closing works |
 | closed.html | Shown after a safe close | changing that message |
 | error.html | Plain-language error page with "Save a report" | changing error wording |
+| private_sheet.html | The step before a sheet with private details: show it only when you mean to print or share it | changing how private sheets open |

@@ -50,7 +50,7 @@ STAGES = [
     ("09-emergency-sheet", "Emergency sheet (fridge copy)", "As it prints: who lives here and who to call.",
      {"goto": "/sheet/people/emergency", "media": "print"}),
     ("10-emergency-sheet-medical", "Emergency sheet with private medical details", "As it prints, for "
-     "responders and carers.", {"goto": "/sheet/people/emergency_medical", "media": "print"}),
+     "responders and carers.", {"goto": "/sheet/people/emergency_medical?show=1", "media": "print"}),
     ("11-places", "Places", "Where things are kept.", {"goto": "/t/stock__places"}),
     ("12-stock", "Stock items", "What the household has, how much, and how much to keep.",
      {"goto": "/t/stock__items"}),

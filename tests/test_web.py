@@ -103,7 +103,15 @@ class WebTests(TempDirTestCase):
         grid = self.get("/t/demo__items").get_data(as_text=True)
         for text in ("Bandages", "First aid", "Garage shelf", "12 each", "How many"):
             self.assertIn(text, grid)
-        self.assertIn('<summary aria-label="Show secret">Show</summary>hidden note', grid)
+        # Privacy audit: a private value is never in the list page; "Show" fetches just that one.
+        self.assertNotIn("hidden note", grid)
+        self.assertIn('aria-label="Show secret for Bandages"', grid)
+        record = re.search(r'/t/demo__items/(\d+)/reveal\?column=secret', grid).group(1)
+        self.assertEqual(self.get(f"/t/demo__items/{record}/reveal?column=secret").get_json()["text"], "hidden note")
+        self.assertEqual(self.get(f"/t/demo__items/{record}/reveal?column=name").status_code, 404)  # private only
+        page = self.get(f"/t/demo__items/{record}").get_data(as_text=True)
+        self.assertNotIn("hidden note", page)  # opening the record doesn't show it either
+        self.assertIn("Show private detail", page)
 
     def test_edit_records_history_and_delete_restore(self):
         self.sign_in()
@@ -163,3 +171,14 @@ class WebTests(TempDirTestCase):
         reports = list((self.tmp / "data" / "reports").glob("report-*.txt"))
         self.assertEqual(len(reports), 1)
         self.assertNotIn("Private place name", reports[0].read_text(encoding="utf-8"))
+
+
+class PrivateFieldKeptTests(WebTests):
+    """Saving a record without opening its private detail leaves that detail exactly as it was."""
+
+    def test_saving_other_fields_keeps_an_unopened_private_detail(self):
+        self.sign_in()
+        self.post("/t/demo__items/new", {"name": "Gloves", "kind": "first_aid", "secret": "keep me"})
+        record = re.search(r"/t/demo__items/(\d+)", self.get("/t/demo__items").get_data(as_text=True)).group(1)
+        self.post(f"/t/demo__items/{record}", {"name": "Gloves (box)", "kind": "first_aid", "_keep_private": "secret"})
+        self.assertEqual(self.get(f"/t/demo__items/{record}/reveal?column=secret").get_json()["value"], "keep me")

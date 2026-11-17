@@ -68,7 +68,10 @@ class PeopleModuleTests(TempDirTestCase):
         self.assertIn("Key holder", plain)
         self.assertIn("555 0199", plain)
         self.assertNotIn("Synthetic allergy note", plain)
-        medical = client.get("/sheet/people/emergency_medical", base_url=BASE).get_data(as_text=True)
+        first = client.get("/sheet/people/emergency_medical", base_url=BASE).get_data(as_text=True)
+        self.assertNotIn("Synthetic allergy note", first)  # privacy audit: shown only by choice
+        self.assertIn("Show it only when you mean to print or share it", first)
+        medical = client.get("/sheet/people/emergency_medical?show=1", base_url=BASE).get_data(as_text=True)
         self.assertIn("Synthetic allergy note", medical)
         self.assertIn("includes private details", medical)
 

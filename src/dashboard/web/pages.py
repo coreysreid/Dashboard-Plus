@@ -23,7 +23,8 @@ def _info(table: str) -> records.TableInfo:
 
 def _sorting(info: records.TableInfo) -> tuple[str, bool]:
     sort = request.args.get("sort", "id")
-    allowed = {"id"} | {c.name for c in display.list_columns(info)}
+    # Never sort by a private column: the order alone could give its values away.
+    allowed = {"id"} | {c.name for c in display.list_columns(info) if not c.sensitive}
     return (sort if sort in allowed else "id"), request.args.get("desc") == "1"
 
 
@@ -51,7 +52,11 @@ def _rows(store, info, offset, sort, desc):
         for c in columns:
             text = paths[r["id"]] if paths and name_col is not None and c.name == name_col.name \
                 else formatter.text(info, c, r.get(c.name))
-            cells.append({"text": text, "sensitive": c.sensitive, "label": display.column_label(info, c)})
+            if c.sensitive:  # the private value is never in the page; "Show" fetches it (privacy audit)
+                cells.append({"text": "", "sensitive": True, "saved": bool(text), "column": c.name,
+                              "label": display.column_label(info, c)})
+                continue
+            cells.append({"text": text, "sensitive": False, "label": display.column_label(info, c)})
         out.append({"id": r["id"], "review": r["review_status"], "label": label, "cells": cells})
     return out
 
@@ -185,6 +190,22 @@ def _form_values(info, store, creating: bool) -> dict:
             problems = {**error.problems, **date_problems}
         raise records.ValidationError(problems)
     return values
+
+
+@pages.get("/t/<table>/<int:record_id>/reveal")
+def reveal_private(table, record_id):
+    """One private detail, fetched only when the person chooses Show (privacy audit, decision 0059)."""
+    info, store = _info(table), _store()
+    column = info.table.columns.get(request.args.get("column", ""))
+    if column is None or not column.sensitive:
+        abort(404)
+    try:
+        record = store.get(table, record_id)
+    except records.RecordNotFound:
+        abort(404)
+    value = record.get(column.name)
+    return jsonify({"text": display.Formatter(store).text(info, column, value),
+                    "value": "" if value is None else str(display.input_value(column, value))})
 
 
 @pages.get("/t/<table>/new")
