@@ -29,6 +29,6 @@ form = ["item", "reason", "amount", "happened_on", "lot", "expires", "place", "n
 list = ["happened_on", "item", "reason", "amount", "lot", "notes"]
 columns.amount = { label = "How many", help = "In the item's own unit. The batch's count, and the item's, change by this much." }
 columns.happened_on = { label = "Date" }
-columns.lot = { label = "Which batch", help = "Leave blank and stock in starts a new batch; using some takes from the batch with the earliest use-by date." }
-columns.expires = { label = "Use by", help = "For a new batch.", show_when = { reason = "bought" } }
-columns.place = { label = "Where you put it", help = "For a new batch.", show_when = { reason = "bought" } }
+columns.lot = { label = "Which batch", help = "Only this item's batches are listed. Choose one to add to it or take from it.", blank = { takes = "Use the batch with the earliest use-by date" } }
+columns.expires = { label = "Use by", help = "For the new batch.", show_when = { reason = "bought" } }
+columns.place = { label = "Where you put it", help = "For the new batch.", show_when = { reason = "bought" } }

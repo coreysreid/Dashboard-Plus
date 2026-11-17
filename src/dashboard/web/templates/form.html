@@ -27,7 +27,7 @@
 <form class="record" method="post" action="{% if record %}/t/{{ info.name }}/{{ record.id }}{% else %}/t/{{ info.name }}/new{% endif %}">
   <input type="hidden" name="_csrf" value="{{ csrf_token }}">
   {% for f in fields %}
-  <div class="{% if f.error %}has-error{% endif %}"{% if f.show_when %} data-show-when="{{ f.show_when[0] }}" data-show-value="{{ f.show_when[1] }}"{% endif %}>
+  <div class="{% if f.error %}has-error{% endif %}"{% if f.show_when %} data-show-when="{{ f.show_when[0] }}" data-show-value="{{ f.show_when[1] }}"{% endif %}{% if f.only_when_blank %} data-only-when-blank="{{ f.only_when_blank }}"{% endif %}>
     {% set fid = "f-" ~ f.name %}
     {% set described = ([fid ~ "-error"] if f.error else []) + ([fid ~ "-help"] if f.help else []) %}
     {% set aria %}{% if f.error %} aria-invalid="true"{% endif %}{% if described %} aria-describedby="{{ described | join(' ') }}"{% endif %}{% endset %}
@@ -47,11 +47,12 @@
         {% if f.kind == "link" and (f.options | length > 8 or f.search) %}
         <input type="search" class="find" data-find-for="{{ fid }}" data-add-new="{{ f.add_new or '' }}" data-search="{{ f.search or '' }}" placeholder="Type to find…" aria-label="Find {{ f.label | lower }}" autocomplete="off">
         {% endif %}
-        <select id="{{ fid }}" name="{{ f.name }}"{{ aria }}>
-          <option value="">{% if f.column.required %}Choose…{% else %}(none){% endif %}</option>
-          {% for value, label in f.options %}<option value="{{ value }}" {% if value == (f.value | string) %}selected{% endif %}>{{ label }}</option>{% endfor %}
+        <select id="{{ fid }}" name="{{ f.name }}"{{ aria }}{% if f.follows %} data-follows="{{ f.follows }}"{% endif %}>
+          <option value=""{% if f.blank_follows %} data-blank-follows="{{ f.blank_follows }}" data-blank-words="{{ f.blank_words | tojson | forceescape }}"{% endif %}>{% if f.column.required %}Choose…{% else %}{{ f.blank or "(none)" }}{% endif %}</option>
+          {% for value, label in f.options %}<option value="{{ value }}"{% if f.owners and value in f.owners %} data-owner="{{ f.owners[value] }}"{% endif %} {% if value == (f.value | string) %}selected{% endif %}>{{ label }}</option>{% endfor %}
         </select>
-        {% if f.kind == "link" and not f.options %}<p class="help">There is nothing to choose yet.</p>{% endif %}
+        {% if f.follows %}<p class="help" data-follows-note="{{ fid }}" data-things="{{ f.things }}" hidden></p>
+        {% elif f.kind == "link" and not f.options %}<p class="help">There is nothing to choose yet.</p>{% endif %}
       {% elif f.kind == "links" %}
         <div class="choices" id="{{ fid }}">
           {% for value, label in f.options %}<label style="font-weight:400"><input type="checkbox" name="{{ f.name }}" value="{{ value }}" {% if value in (f.value or []) %}checked{% endif %}> {{ label }}</label>{% endfor %}
@@ -200,6 +201,53 @@
       input.addEventListener("blur", function () { setTimeout(close, 150); });
     });
   })();
+  // "Which batch" lists only the batches of the item chosen, and follows the item when it changes.
+  // The server checks again when saving, so this is a convenience, not the safeguard.
+  (function () {
+    document.querySelectorAll("select[data-follows]").forEach(function (select) {
+      var owner = document.getElementById("f-" + select.dataset.follows);
+      var note = document.querySelector('[data-follows-note="' + select.id + '"]');
+      if (!owner) return;
+      var label = document.querySelector('label[for="' + owner.id + '"]');
+      var word = label ? label.firstChild.textContent.trim().toLowerCase() : "one";
+      function update(changed) {
+        var shown = 0;
+        if (changed === true && select.value && select.selectedOptions[0].dataset.owner !== owner.value) {
+          select.value = "";  // a batch of the item chosen before is not carried over to another item
+        }
+        Array.prototype.forEach.call(select.options, function (option) {
+          if (!option.value) return;
+          // The batch already chosen stays in view, so nothing saved is ever dropped unseen.
+          var match = option.dataset.owner === owner.value || option.selected;
+          option.dataset.off = match ? "" : "1";
+          option.hidden = option.disabled = !match;
+          if (match) shown++;
+        });
+        var find = document.querySelector('input.find[data-find-for="' + select.id + '"]');
+        if (find && changed === true) find.value = "";
+        if (find) find.hidden = shown <= 8;
+        if (note) {
+          note.textContent = !owner.value ? "Choose the " + word + " first to see its " + note.dataset.things + "."
+            : !shown ? "This " + word + " has no " + note.dataset.things + " yet." : "";
+          note.hidden = !note.textContent;
+        }
+        if (changed === true) select.dispatchEvent(new Event("change"));
+      }
+      owner.addEventListener("change", function () { update(true); });
+      update(false);
+    });
+  })();
+  // The blank choice says what leaving it blank does, which depends on the reason chosen.
+  (function () {
+    document.querySelectorAll("option[data-blank-follows]").forEach(function (option) {
+      var other = document.getElementById("f-" + option.dataset.blankFollows), words;
+      try { words = JSON.parse(option.dataset.blankWords); } catch (e) { return; }
+      if (!other) return;
+      function update() { if (words[other.value]) option.textContent = words[other.value]; }
+      other.addEventListener("change", update);
+      update();
+    });
+  })();
   // Long lists of linked records (such as stock items) get a box to type into.
   (function () {
     document.querySelectorAll("input.find").forEach(function (find) {
@@ -211,11 +259,11 @@
       find.addEventListener("input", function () {
         var typed = find.value.trim().toLowerCase(), first = null, shown = 0;
         Array.prototype.forEach.call(select.options, function (option) {
-          var match = !option.value || option.text.toLowerCase().indexOf(typed) >= 0;
+          var match = !option.value || (!option.dataset.off && option.text.toLowerCase().indexOf(typed) >= 0);
           option.hidden = !match;
           if (match && option.value) { shown++; if (!first) first = option; }
         });
-        if (typed) select.value = first ? first.value : "";
+        if (typed) { select.value = first ? first.value : ""; select.dispatchEvent(new Event("change")); }
         if (typed && !shown && find.dataset.search) {
           // Past the first records on the list: ask this computer's dashboard for matches.
           fetch(find.dataset.search + "&q=" + encodeURIComponent(find.value.trim()), {credentials: "same-origin"})
@@ -225,7 +273,7 @@
                 var option = document.createElement("option");
                 option.value = item.existing_id; option.textContent = item.name;
                 select.appendChild(option);
-                if (!select.value) select.value = option.value;
+                if (!select.value) { select.value = option.value; select.dispatchEvent(new Event("change")); }
               });
               if (add && select.value) add.hidden = true;
             }).catch(function () {});
@@ -275,12 +323,16 @@
   // After a refused save, move to the list of answers to check.
   (function () { var summary = document.getElementById("error-summary"); if (summary) summary.focus(); })();
   // Fields that only apply to one choice (such as "Drinking water" for water) follow that choice.
+  // Fields that only apply to a new batch ("Use by", "Where you put it") go away once a batch is chosen.
   (function () {
-    document.querySelectorAll("[data-show-when]").forEach(function (box) {
-      var other = document.getElementById("f-" + box.dataset.showWhen);
-      if (!other) return;
-      function update() { box.hidden = other.value !== box.dataset.showValue; }
-      other.addEventListener("change", update);
+    document.querySelectorAll("[data-show-when], [data-only-when-blank]").forEach(function (box) {
+      var choice = box.dataset.showWhen && document.getElementById("f-" + box.dataset.showWhen);
+      var batch = box.dataset.onlyWhenBlank && document.getElementById("f-" + box.dataset.onlyWhenBlank);
+      function update() {
+        box.hidden = !!(choice && choice.value !== box.dataset.showValue) || !!(batch && batch.value);
+      }
+      if (choice) choice.addEventListener("change", update);
+      if (batch) batch.addEventListener("change", update);
       update();
     });
   })();

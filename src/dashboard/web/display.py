@@ -185,6 +185,13 @@ class Field:
     search: str | None = None  # for a long link list: where to look past the first OPTION_LIMIT records
     help_answers: list | None = None  # the words for yes and no, for a yes/no that must be answered
     date_style: str | None = None  # for a date: dmy, mdy or ymd, the household's way of writing dates
+    follows: str | None = None  # for a link to batches: the field (Item) whose batches these are
+    owners: dict | None = None  # with `follows`: each option's owner id, so the list can follow the Item
+    things: str | None = None  # with `follows`: what the options are called ("batches"), for a one-line note
+    blank: str | None = None  # what leaving a link blank does, in words, instead of "(none)"
+    blank_follows: str | None = None  # the choice field (Reason) that the blank words depend on
+    blank_words: dict | None = None  # with `blank_follows`: the blank words for each of its choices
+    only_when_blank: str | None = None  # shown only while this link field (Which batch) is left blank
 
     @property
     def name(self) -> str:
@@ -210,13 +217,65 @@ def input_value(column: Column, value):
     return value
 
 
+BLANK_STARTS_NEW = "Start a new batch"
+BLANK_KEEPS = "Keep the batch it has"
+
+
+def owner_field(records: Records, info: TableInfo, column: Column, on_form: list[Column]) -> tuple[str, str] | None:
+    """For a link to records that add up into another record (batches of an item): the field on this
+    form that chooses that other record, and the batch column that says which one each belongs to.
+
+    Known from the declarations alone: the link's table has a `total` rule whose link points at the
+    same table as another link on this form (movements.item and lots.item both point at items)."""
+    if column.type != "link":
+        return None
+    target = records.registry[target_table(info.module.name, column)]
+    total = target.table.total
+    if not total:
+        return None
+    owner_table = target_table(target.module.name, target.table.columns[total["link"]])
+    rule = info.table.adjusts or {}
+    others = [c for c in on_form if c.type == "link" and c.name != column.name
+              and target_table(info.module.name, c) == owner_table]
+    others.sort(key=lambda c: not (rule.get("link") == column.name and rule.get("belongs_to") == c.name))
+    return (others[0].name, total["link"]) if others else None
+
+
+def blank_choice(records: Records, info: TableInfo, column: Column, on_form: list[Column],
+                 editing: bool) -> tuple[str, dict] | None:
+    """What leaving "Which batch" blank does, for each reason: (the reason field, {reason: words}).
+
+    Worked out from the `adjusts` rule: reasons that add start a new batch; the others take from the
+    batch with the earliest date. labels.toml's `blank = { adds = "…", takes = "…" }` changes the words."""
+    rule = info.table.adjusts
+    if not rule or rule.get("link") != column.name or not rule.get("belongs_to") or column.required:
+        return None
+    direction = info.table.columns[rule["direction"]]
+    if direction.name not in {c.name for c in on_form}:
+        return None
+    if editing:  # a saved record keeps its batch when the box is left blank
+        return direction.name, {c.key: BLANK_KEEPS for c in direction.choices}
+    own = _labels(info).get("columns", {}).get(column.name, {}).get("blank", {})
+    takes = "Use the first batch that still has some"
+    if rule.get("oldest_first"):
+        target = records.registry[target_table(info.module.name, column)]
+        date_label = column_label(target, target.table.columns[rule["oldest_first"]]).lower()
+        takes = f"Use the batch with the earliest {date_label} date"
+    adds, takes = own.get("adds", BLANK_STARTS_NEW), own.get("takes", takes)
+    return direction.name, {c.key: adds if c.key in rule["adds"] else takes for c in direction.choices}
+
+
 def build_fields(records: Records, info: TableInfo, values: dict, errors: dict, from_form: bool,
                  editing: bool = False) -> list[Field]:
     """Fields for a form. `values` are stored values, or raw form text when `from_form`."""
     formatter = Formatter(records)
     fields = []
-    for column in form_columns(info, batch_columns(records, info) if editing else ()):
+    on_form = form_columns(info, batch_columns(records, info) if editing else ())
+    rule = info.table.adjusts or {}
+    batch_field = rule["link"] if rule.get("belongs_to") and rule["link"] in {c.name for c in on_form} else None
+    for column in on_form:
         options: list[tuple[str, str]] = []
+        follows = owners = None
         if column.type == "choice":
             options = [(c.key, c.label) for c in column.choices]
         elif column.type in ("link", "links"):
@@ -243,6 +302,10 @@ def build_fields(records: Records, info: TableInfo, values: dict, errors: dict, 
                                  key=lambda option: option[1].lower())
             else:
                 options = [(str(r["id"]), display_name(target, r, records)) for r in rows]
+            related = owner_field(records, info, column, on_form)
+            if related:  # batches: the form shows only those of the item chosen
+                follows = related[0]
+                owners = {str(r["id"]): str(r[related[1]]) for r in rows if r[related[1]] is not None}
         raw = values.get(column.name)
         value = raw if from_form else input_value(column, raw)
         help_text = column_help(info, column)
@@ -258,16 +321,25 @@ def build_fields(records: Records, info: TableInfo, values: dict, errors: dict, 
         if column.type == "link":
             target = formatter.target(info, column)
             name_col = name_column(target)
-            if name_col is not None:
+            if name_col is not None and not follows:  # a batch is not started by typing a name for it
                 add_new = f"/t/{target.name}/new?{name_col.name}="
                 if len(options) >= OPTION_LIMIT:
                     search = f"/t/{target.name}/suggest?column={name_col.name}"
-        fields.append(Field(column, column_label(info, column), help_text,
-                            value, errors.get(column.name), options,
-                            next(iter(shown.items())) if shown else None,
-                            (info.table.name, column.name) in info.module.catalogues, add_new, search,
-                            _labels(info).get("columns", {}).get(column.name, {}).get("answers"),
-                            formatter.date_style if column.type == "date" else None))
+        field = Field(column, column_label(info, column), help_text,
+                      value, errors.get(column.name), options,
+                      next(iter(shown.items())) if shown else None,
+                      (info.table.name, column.name) in info.module.catalogues, add_new, search,
+                      _labels(info).get("columns", {}).get(column.name, {}).get("answers"),
+                      formatter.date_style if column.type == "date" else None, follows, owners)
+        if follows:
+            field.things = table_title(formatter.target(info, column)).lower()
+        words = blank_choice(records, info, column, on_form, editing)
+        if words:
+            field.blank_follows, field.blank_words = words
+            field.blank = words[1].get(values.get(words[0])) or "(none)"
+        if batch_field and column.name in rule["new_batch"].values() and column.name != batch_field:
+            field.only_when_blank = batch_field  # a use-by date and place typed here are for a new batch only
+        fields.append(field)
     return fields
 
 

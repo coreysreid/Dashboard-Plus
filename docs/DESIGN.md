@@ -370,6 +370,14 @@ oldest_first = "expires"
   too little, the person is asked to record it batch by batch (no silent
   split); more than the item holds is refused with "only 13 left".
 - A chosen batch must belong to the movement's item.
+- On the form, the batch list follows the item (decision 0057): a link whose
+  table has a `total` rule is tied to the other link on the form that points
+  at the same table, each choice carries `data-owner`, and a few lines of
+  script show only the chosen item's batches. The blank choice is worded from
+  the `adjusts` rule ("Start a new batch" for reasons in `adds`, otherwise
+  "Use the batch with the earliest use-by date"); labels.toml can reword it
+  with `blank = { adds = "…", takes = "…" }`. The `new_batch` boxes are
+  hidden once a batch is chosen. Saving checks again, scripts or not.
 - Each batch that still holds something gets its own use-by warning, named by
   `record_name` ("Kidney beans, 3 tins at Kitchen › Pantry › Shelf 3"); a part
   in [square brackets] is left out when it is blank. A used-up batch stays as

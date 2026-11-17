@@ -210,6 +210,96 @@ class BatchTests(TempDirTestCase):
         new_form = client.get("/t/stock__items/new", base_url=BASE).get_data(as_text=True)
         self.assertIn('name="quantity"', new_form)  # the first batch is typed in with the item
 
+    def client(self):
+        settings.put(self.conn, "setup.done", True)
+        settings.put(self.conn, "household.country", "Australia")
+        app = create_app("t", lambda: None, self.report, data_dir=self.data, session_key="k")
+        app.config["PORT"] = PORT
+        client = app.test_client()
+        client.get("/?key=k", base_url=BASE)
+        return client
+
+    def lot_ids(self, item):
+        return [r[0] for r in self.conn.execute("SELECT id FROM stock__lots WHERE item = ? ORDER BY id", (item,))]
+
+    def test_which_batch_knows_each_batchs_item_and_says_what_blank_does(self):  # decision 0057
+        beans = self.beans()
+        rice = self.records.create("stock__items", {"name": "Rice", "unit": "kg", "quantity": 2})
+        client = self.client()
+        page = client.get(f"/t/stock__movements/new?item={beans}", base_url=BASE).get_data(as_text=True)
+        self.assertIn('<select id="f-lot" name="lot" aria-describedby="f-lot-help" data-follows="item">', page)
+        for lot in self.lot_ids(beans):
+            self.assertIn(f'<option value="{lot}" data-owner="{beans}"', page)
+        self.assertIn(f'<option value="{self.lot_ids(rice)[0]}" data-owner="{rice}"', page)
+        # Leaving it blank is said in plain words, for the reason already chosen and for every other.
+        lot_box = page.split('<select id="f-lot"')[1].split("</select>")[0]
+        self.assertNotIn("(none)", lot_box)
+        self.assertIn(">Start a new batch</option>", lot_box)
+        self.assertIn('data-blank-follows="reason"', lot_box)
+        self.assertIn("&#34;used&#34;: &#34;Use the batch with the earliest use-by date&#34;", lot_box)
+        self.assertIn("&#34;bought&#34;: &#34;Start a new batch&#34;", lot_box)
+        # "Use by" and "Where you put it" are for a new batch only: they go away once a batch is chosen.
+        self.assertIn('data-show-when="reason" data-show-value="bought" data-only-when-blank="lot"', page)
+        self.assertEqual(page.count('data-only-when-blank="lot"'), 2)
+        # Other forms are as they were.
+        item_form = client.get("/t/stock__items/new", base_url=BASE).get_data(as_text=True)
+        self.assertNotIn("data-follows=", item_form)
+        self.assertNotIn("data-blank-follows=", item_form)
+        self.assertIn("(none)", item_form)
+
+    def test_blank_words_come_from_the_rule_and_follow_the_reason(self):
+        from dashboard.web import display
+        beans = self.beans()
+        info = self.registry["stock__movements"]
+        fields = {f.name: f for f in display.build_fields(
+            self.records, info, {"item": beans, "reason": "used"}, {}, False)}
+        self.assertEqual(fields["lot"].blank, "Use the batch with the earliest use-by date")
+        self.assertEqual(fields["lot"].follows, "item")
+        self.assertEqual(set(fields["lot"].blank_words), {"bought", "used", "expired", "thrown_away", "given_away"})
+        self.assertEqual(fields["expires"].only_when_blank, "lot")
+        self.assertEqual(fields["place"].only_when_blank, "lot")
+        self.assertIsNone(fields["item"].follows)
+        # Without the module's own words, the core's are worked out from the batch's date column.
+        del info.module.labels["tables"]["movements"]["columns"]["lot"]["blank"]
+        fields = {f.name: f for f in display.build_fields(
+            self.records, info, {"item": beans, "reason": "used"}, {}, False)}
+        self.assertEqual(fields["lot"].blank, "Use the batch with the earliest use by date")
+        # A saved record keeps its batch when the box is left blank, and the form says so.
+        movement = self.records.create("stock__movements", {"item": beans, "reason": "used", "amount": 1})
+        saved = self.records.get("stock__movements", movement)
+        fields = {f.name: f for f in display.build_fields(self.records, info, saved, {}, False, editing=True)}
+        self.assertEqual(fields["lot"].blank, "Keep the batch it has")
+
+    def test_without_scripts_a_batch_of_another_item_is_still_refused(self):  # the server is the safeguard
+        beans = self.beans()
+        rice = self.records.create("stock__items", {"name": "Rice", "unit": "kg", "quantity": 2})
+        client = self.client()
+        form = client.get(f"/t/stock__movements/new?item={beans}", base_url=BASE).get_data(as_text=True)
+        token = form.split('name="_csrf" value="')[1].split('"')[0]
+        sent = {"_csrf": token, "item": str(beans), "reason": "used", "amount": "1",
+                "happened_on": TODAY.strftime("%d/%m/%y"), "lot": str(self.lot_ids(rice)[0]), "then": "done"}
+        reply = client.post("/t/stock__movements/new", data=sent, base_url=BASE)
+        page = reply.get_data(as_text=True)
+        self.assertEqual(reply.status_code, 422)
+        self.assertIn("Which batch is a batch of a different item. Choose one of this item&#39;s batches, "
+                      "or leave it blank.", page)
+        self.assertIn(f'<option value="{self.lot_ids(rice)[0]}" data-owner="{rice}" selected>', page)
+        self.assertEqual(self.amount(beans), 13)
+        self.assertEqual(self.amount(rice), 2)
+        sent["lot"] = str(self.lot_ids(beans)[1])  # one of its own batches is taken
+        self.assertEqual(client.post("/t/stock__movements/new", data=sent, base_url=BASE).status_code, 302)
+        self.assertEqual(self.batches(beans)[1][0], 9)
+
+    def test_blank_words_in_labels_are_checked(self):
+        from dashboard.core import modules
+        folder = self.tmp / "modules" / "stock"
+        labels = (folder / "labels.toml").read_text(encoding="utf-8")
+        (folder / "labels.toml").write_text(
+            labels + '\ncolumns.notes = { blank = { takes = "Use the oldest" } }\n', encoding="utf-8")
+        with self.assertRaises(modules.ModuleError) as caught:
+            modules.load_module(folder)
+        self.assertIn("blank only applies to the batch link", " ".join(caught.exception.problems))
+
 
 class UpgradeTests(TempDirTestCase):
     """Check 12: items recorded before batches each become one batch, with nothing lost or counted twice."""
