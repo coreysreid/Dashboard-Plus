@@ -14,6 +14,11 @@ columns.place = { type = "text" }
 columns.bought_on = { type = "date" }
 columns.price = { type = "money", min = 0 }
 
+[tables.bottles.watch]
+[[tables.bottles.watch.gaps]]
+missing = "place"
+message = "Where are the bottles of {wine} kept? Add a place if you want to find them quickly."
+
 [tables.tastings]
 title = "Tasting notes"
 columns.wine = { type = "link", to = "wines", required = true }

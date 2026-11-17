@@ -14,6 +14,11 @@ quantity = 2
 place = "Pantry"
 bought_on = "today-30"
 
+[[smith.wine.tastings]]
+wine = "Evening Red"
+tasted_on = "today-5"
+notes = "Remembered the fruit flavour; one bottle opened, count updated separately."
+
 [[garcia.wine.wines]]
 name = "Garden White"
 producer = "Example Vineyard"
@@ -27,6 +32,11 @@ quantity = 1
 place = "Kitchen cabinets"
 bought_on = "today-20"
 
+[[garcia.wine.tastings]]
+wine = "Garden White"
+tasted_on = "today-10"
+notes = "Tried a glass at a made-up family meal."
+
 [[taylor.wine.wines]]
 name = "Weekend Rosé"
 producer = "Example Vineyard"
@@ -39,3 +49,8 @@ wine = "Weekend Rosé"
 quantity = 1
 place = "Kitchen cupboard"
 bought_on = "today-8"
+
+[[taylor.wine.tastings]]
+wine = "Weekend Rosé"
+tasted_on = "today-3"
+notes = "Light and easy to remember."

@@ -1,0 +1,10 @@
+[[sheet]]
+name = "collection_list"
+title = "Collection list"
+intro = "A copy of what you recorded. Check the places before printing or sharing; values and private notes are left out."
+
+[[sheet.section]]
+title = "Items"
+table = "items"
+columns = ["collection", "name", "catalogue_number", "condition", "place", "status"]
+order_by = "collection"

@@ -1,0 +1,10 @@
+[[sheet]]
+name = "home_care_schedule"
+title = "Home care reminders"
+intro = "A copy of your own dates, not maintenance instructions. Check the relevant manual or provider before work."
+
+[[sheet.section]]
+title = "Jobs"
+table = "jobs"
+columns = ["name", "kind", "place", "last_done", "next_due"]
+order_by = "next_due"

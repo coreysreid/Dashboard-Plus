@@ -1,0 +1,29 @@
+[tables.beds]
+empty = "Add one bed, pot or growing spot."
+form = ["name", "location", "notes"]
+list = ["name", "location"]
+columns.location = { label = "Where it is", help = "For example, back yard, balcony or kitchen windowsill." }
+
+[tables.crops]
+empty = "Add a crop you grow or plan to grow."
+form = ["name", "variety", "notes"]
+list = ["name", "variety"]
+
+[tables.plantings]
+empty = "Add the first planting in a bed or pot."
+form = ["name", "bed", "crop", "planted_on", "quantity", "notes"]
+list = ["name", "bed", "crop", "planted_on", "quantity"]
+columns.name = { label = "Planting name", help = "A short name helps link harvests to this sowing." }
+columns.planted_on = { label = "Planted on" }
+
+[tables.harvests]
+empty = "No harvest recorded yet. Add one after picking."
+form = ["planting", "harvested_on", "amount", "unit", "notes"]
+list = ["planting", "harvested_on", "amount", "unit"]
+columns.amount = { label = "How much" }
+
+[tables.jobs]
+empty = "Add a garden job if you want a reminder."
+form = ["title", "bed", "due_on", "done", "notes"]
+list = ["title", "bed", "due_on", "done"]
+columns.due_on = { label = "Due on" }
