@@ -8,15 +8,27 @@ columns.inside = { label = "Inside", help = "Leave blank for a room or area. For
 columns.name = { help = "Start typing to pick from common goods, or type your own.", suggest_from = "catalogue.csv", fills = { category = "category", unit = "unit", drinking = "counts_as_drinking_water" } }
 empty = "Add a few things from the pantry."
 form = ["name", "category", "drinking", "quantity", "unit", "minimum", "place", "expires", "notes"]
-list = ["name", "category", "quantity", "unit", "minimum", "place", "expires"]
-columns.quantity = { label = "Amount on hand", help = "For water, enter the total number of litres, not the number of bottles." }
+list = ["name", "category", "quantity", "unit", "minimum", "expires"]
+columns.quantity = { label = "Amount on hand", help = "For water, enter the total number of litres, not the number of bottles. This starts the item's first batch; later, change amounts through its batches or stock in and out." }
 columns.drinking = { label = "Is this water safe to drink now?", help = "Only drinking water counts towards days of water. Water for washing or flushing, or distilled water for appliances, does not.", show_when = { category = "water" }, answers = ["Yes, count these litres as drinking water", "No, keep it out of days of water"] }
 columns.unit = { label = "Unit", help = "Use litres for water; for other things, a unit such as tins, kg or packs." }
 columns.minimum = { label = "Keep at least", help = "You'll see it under Needs attention when it drops below this." }
+columns.place = { label = "Where it is" }
+columns.expires = { label = "Use by", help = "For several use-by dates, add the item with one, then add a batch for each of the others." }
+
+[tables.lots]
+empty = "Batches appear when you add an item or record stock in. Each has its own amount, use-by date and place."
+form = ["item", "quantity", "expires", "place", "notes"]
+list = ["item", "quantity", "expires", "place"]
+columns.quantity = { label = "How many", help = "In the item's own unit. After a stocktake, change it to what you counted." }
 columns.expires = { label = "Use by" }
+columns.place = { label = "Where it is" }
 
 [tables.movements]
-form = ["item", "reason", "amount", "happened_on", "notes"]
-list = ["happened_on", "item", "reason", "amount", "notes"]
-columns.amount = { label = "How many", help = "In the item's own unit. The item's count changes by this much." }
+form = ["item", "reason", "amount", "happened_on", "lot", "expires", "place", "notes"]
+list = ["happened_on", "item", "reason", "amount", "lot", "notes"]
+columns.amount = { label = "How many", help = "In the item's own unit. The batch's count, and the item's, change by this much." }
 columns.happened_on = { label = "Date" }
+columns.lot = { label = "Which batch", help = "Leave blank and stock in starts a new batch; using some takes from the batch with the earliest use-by date." }
+columns.expires = { label = "Use by", help = "For a new batch.", show_when = { reason = "bought" } }
+columns.place = { label = "Where you put it", help = "For a new batch.", show_when = { reason = "bought" } }

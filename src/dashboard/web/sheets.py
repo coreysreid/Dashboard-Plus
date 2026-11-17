@@ -54,10 +54,19 @@ def show_sheet(module, name):
                 column = info.table.columns[spec]
                 columns.append((display.column_label(info, column), spec, None, column, info))
         private = private or any(c[3].sensitive for c in columns)
-        clause = "".join(f" AND {c} = ?" for c in section["where"])
+        clause = ""
+        for c in section["where"]:
+            link, _, field_name = c.partition(".")
+            if field_name:  # a column of the linked record, such as an item's category for its batches
+                target = registry[table_name(module, info.table.columns[link].to)]
+                clause += f" AND {link} IN (SELECT id FROM {target.name} WHERE {field_name} = ?)"
+            else:
+                clause += f" AND {c} = ?"
+        if info.table.total:  # a used-up batch is history, not something to find in an emergency
+            clause += f" AND {info.table.total['amount']} > 0"
         rows = conn.execute(
             f"SELECT * FROM {info.name} WHERE deleted_at IS NULL{clause} "
-            f"ORDER BY {section['order_by']}, id LIMIT {ROW_LIMIT}",
+            f"ORDER BY {section['order_by']} IS NULL, {section['order_by']}, id LIMIT {ROW_LIMIT}",  # blanks last
             [_where_value(v) for v in section["where"].values()]).fetchall()
         linked: dict[tuple[str, int], dict] = {}
 

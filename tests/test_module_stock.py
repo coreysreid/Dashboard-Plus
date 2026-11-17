@@ -40,7 +40,7 @@ class StockModuleTests(TempDirTestCase):
         self.item(name="Rice", quantity=4, minimum=2)
         low = watch.running_low(self.conn, self.registry)
         self.assertEqual([i.name for i in low], ["AA batteries"])
-        self.assertEqual([i.name for i in watch.expiring(self.conn, self.registry)], ["Bandages"])
+        self.assertEqual([i.name for i in watch.expiring(self.conn, self.registry)], ["Bandages, 20"])
 
     def test_days_of_water_for_the_people_living_here(self):
         for name in ("Person A", "Person B", "Person C"):
@@ -170,8 +170,9 @@ class StockModuleTests(TempDirTestCase):
         shelf = self.records.create("stock__places", {"name": "Shelf 3", "inside": pantry})
         self.item(name="Kidney beans", quantity=5, place=shelf)
         client = self._client()
-        items = client.get("/t/stock__items", base_url=BASE).get_data(as_text=True)
-        self.assertIn("Kitchen › Pantry › Shelf 3", items)
+        beans = self.conn.execute("SELECT id FROM stock__items WHERE name = 'Kidney beans'").fetchone()[0]
+        items = client.get(f"/t/stock__items/{beans}", base_url=BASE).get_data(as_text=True)
+        self.assertIn("Kidney beans, 5 at Kitchen › Pantry › Shelf 3", items)  # its batch
         form = client.get("/t/stock__items/new", base_url=BASE).get_data(as_text=True)
         self.assertLess(form.index(">Kitchen<"), form.index(">Kitchen › Pantry<"))
         self.assertIn(">Kitchen › Pantry › Shelf 3<", form)
