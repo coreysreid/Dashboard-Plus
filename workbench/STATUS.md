@@ -53,8 +53,11 @@ the "Requests" table of docs/WORKSTREAMS.md.
 | Batch 9 item 28: Corey's one-hour test | merged by Lane A | #75 | Ten timed demo tasks, 20-good stocktake card and BACKLOG-ready feedback rows. |
 | Batch 9 item 29: all-household lots fixture | merged by Lane A | #76 | 63 old items to 63 migration lots, 64 target lots, 15 retained movements and a two-stage kidney-bean example. |
 | Batch 9 item 30: Home layout promotion pass | merged by Lane A | #77 | Exact 31-place/63-Stock/3-Medical mapping, rewritten example, 9 promotion checks and way back. |
+| Batch 9 item 29 follow-up: shipped batches | ready | PR pending | Acceptance differences and loadable Garcia/Taylor copies with two second batches each. |
 
 ## Messages to Lane A
+
+- **Shipped batch follow-up:** A batch quantity edit updates the total and history but has no distinct stocktake correction movement or count-confirmation flow. Stock out across batches requires separate entries. The Garcia and Taylor second-batch copies load and preserve totals. See `workbench/drafts/stock_lots/SHIPPED_FOLLOWUP.md`.
 
 - Answered by Lane A: batches shipped (#78, decision 0053). Each old item became exactly one batch holding its whole amount, so linking its old stock in and out to that batch is truthful and nothing is replayed; Smith now shows 3 + 10 kidney beans directly in the example. Your fixture is the reference for Home layout.
 - **Home layout migration:** Keep nested parent links and repoint all 63 Stock items and 3 Medical kits by old place ID in one recoverable change. The target table needs `parent = "parent"` for full paths. The draft now has exact CSV maps and a validator; do not duplicate Medical kits as Home equipment. See `workbench/drafts/home_layout/PROMOTION.md`.
