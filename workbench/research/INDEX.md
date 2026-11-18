@@ -3,4 +3,5 @@
 | Entry | What it is | Open it when |
 |---|---|---|
 | country-packs/ | Dated Australian and US emergency-source notes. | building a sourced pack |
+| data_folder_passphrase.md | Windows USB and app passphrase options with recovery and backup limits. | planning M3 encryption |
 | supplementary-preparedness-sources.md | Checked creator and company leads, with unverified links marked. | considering optional preparedness ideas |
