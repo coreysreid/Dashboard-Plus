@@ -76,6 +76,8 @@ the "Requests" table of docs/WORKSTREAMS.md.
 
 ## Messages to Lane A
 
+- **Batch 13 item 53, private grant:** V1 stays private-free. A later Settings action could allow one helper one read of one sensitive field for 15 minutes, with an explicit off switch and value-free audit. Revocation cannot take back a copy already sent to an online service. See `workbench/drafts/agent_api/PRIVATE_GRANT.md`.
+
 - **Batch 13 item 52, MCP connector:** A local stdio process would expose only eight v1 API tools, keep the key out of tool input/results, refuse external URLs and leave Review decisions to the person. Client secret storage and the changing port need setup guidance. See `workbench/drafts/agent_api/MCP_CONNECTOR.md`.
 
 - **Batch 13 item 51, existing-record suggestions:** Later helper updates must stage a patch with exact before-values and a monotonic revision. Review supports Change then accept; a stale household edit blocks old confirmation; only a person can undo an accepted change after a conflict check. See `workbench/drafts/agent_api/CHANGE_SUGGESTIONS.md`.
