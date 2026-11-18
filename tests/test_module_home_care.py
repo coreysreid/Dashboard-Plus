@@ -178,10 +178,11 @@ class HomeCareModuleTests(TempDirTestCase):
     def test_sheet_shows_the_full_place_and_who_does_it(self):
         backyard = self.records.create("stock__places", {"name": "Backyard"})
         shed = self.records.create("stock__places", {"name": "Garden shed", "inside": backyard})
-        helper = self.records.create("people__people", {"name": "Example Gutters"})
+        helper = self.records.create("people__people", {"name": "Example Gutters", "phone": "0491 570 110"})
         self.job(place=shed, who_does_it=helper, next_due=self.day(30))
         sheet = self.page("/sheet/home_care/home_care")
-        for shown in ("Backyard › Garden shed", "Example Gutters", "Clean the gutters"):
+        # The phone comes from People through the link (decision 0072).
+        for shown in ("Backyard › Garden shed", "Example Gutters", "0491 570 110", "Clean the gutters"):
             self.assertIn(shown, sheet)
 
     def test_home_page_has_a_home_care_card_with_its_main_list(self):

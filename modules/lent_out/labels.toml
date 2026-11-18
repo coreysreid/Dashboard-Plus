@@ -1,0 +1,13 @@
+[tables.loans]
+home = "main"
+empty = "Add a tool or other thing when you lend it to someone."
+form = ["name", "stock_item", "borrower", "lent_on", "due_back", "status", "returned_on", "notes"]
+list = ["name", "borrower", "lent_on", "due_back", "status", "returned_on"]
+columns.name = { label = "What you lent", help = "Use a name you and the borrower would recognise, such as Cordless drill." }
+columns.stock_item = { label = "Stock item, if you track it", help = "Optional. Linking it helps you find the record; lending it does not change how many Stock says you have." }
+columns.borrower = { label = "Who borrowed it", help = "Choose one of your People, or add them there first. Their number is kept in People, so it only needs changing in one place." }
+columns.lent_on = { label = "Lent on" }
+columns.due_back = { label = "Due back", help = "The date you agreed with the borrower. The dashboard reminds you a week before; nothing is sent to them." }
+columns.status = { label = "Is it back?", help = "When it comes back, choose Yes, returned and fill in Returned on. The loan stays here as history." }
+columns.returned_on = { label = "Returned on", show_when = { status = "returned" } }
+columns.notes = { help = "For example, the charger went with it, or a scratch to check on return. Do not write private details here." }

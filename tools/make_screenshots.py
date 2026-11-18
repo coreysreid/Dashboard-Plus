@@ -77,8 +77,8 @@ STAGES = [
      "its full place.", {"goto": "/sheet/home_layout/our_home", "media": "print", "module": "home_layout"}),
     ("18f-vehicles", "Vehicles", "Each vehicle, when its registration is due, who to call if it breaks down, "
      "where it is kept and its car kit.", {"goto": "/t/vehicles__vehicles", "module": "vehicles"}),
-    ("18g-vehicle-sheet", "Vehicles sheet", "As it prints: the vehicles and the dates the household chose, with "
-     "no plate or policy numbers.", {"goto": "/sheet/vehicles/vehicles", "media": "print", "module": "vehicles"}),
+    ("18g-vehicle-sheet", "Vehicles sheet", "As it prints: the vehicles, who to call and their phone number, and "
+     "the dates the household chose, with no plate or policy numbers.", {"goto": "/sheet/vehicles/vehicles", "media": "print", "module": "vehicles"}),
     ("18h-documents", "Important documents", "Where each important paper is kept, whose it is and the review "
      "or renewal date the household chose.", {"goto": "/t/documents__documents", "module": "documents"}),
     ("18i-documents-sheet", "Document review dates sheet", "As it prints: names, kinds and dates only, with no "
@@ -86,8 +86,14 @@ STAGES = [
                                      "module": "documents"}),
     ("18j-home-care", "Home care jobs", "Each job around the home, where it is, who usually does it, when it was "
      "last done and the date the household chose to do it again.", {"goto": "/t/home_care__jobs", "module": "home_care"}),
-    ("18k-home-care-sheet", "Home care sheet", "As it prints: the jobs and the household's own dates, with no "
-     "notes.", {"goto": "/sheet/home_care/home_care", "media": "print", "module": "home_care"}),
+    ("18k-home-care-sheet", "Home care sheet", "As it prints: the jobs, who usually does them and their phone "
+     "number, and the household's own dates, with no notes.",
+     {"goto": "/sheet/home_care/home_care", "media": "print", "module": "home_care"}),
+    ("18l-lent-out", "Things lent out", "What was lent, who borrowed it, when, the date it is due back and when "
+     "it came back.", {"goto": "/t/lent_out__loans", "module": "lent_out"}),
+    ("18m-lent-out-sheet", "Things still lent out sheet", "As it prints: only the loans still out, with the "
+     "borrower's phone from People and no notes.", {"goto": "/sheet/lent_out/still_out", "media": "print",
+                                                     "module": "lent_out"}),
     ("19-needs-attention", "Needs attention", "Days of water with the working shown, running low, use-by "
      "and due dates, and details worth filling in.", {"goto": "/attention"}),
     ("20-supplies-sheet", "Emergency supplies sheet", "As it prints: water, first aid, power and food, and "

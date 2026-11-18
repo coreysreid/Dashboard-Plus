@@ -278,7 +278,7 @@ def _check_watch(file: str, table: str, raw, columns: dict[str, Column], problem
             problems.append(f"{where}, expiring: write it like {{ date = \"expires\", warn_days = 30 }}.")
         else:
             problems.extend(_unknown_keys(f"{where}, expiring", expiring,
-                                          ("date", "warn_days", "wording", "what", "only_positive")))
+                                          ("date", "warn_days", "wording", "what", "only_positive", "where")))
             days = expiring.get("warn_days", 30)
             wording = expiring.get("wording", "expires")
             what = expiring.get("what", "")
@@ -291,10 +291,15 @@ def _check_watch(file: str, table: str, raw, columns: dict[str, Column], problem
                 problems.append(f"{where}, expiring: 'what' must be a few words, like \"vaccinations\".")
             elif column("expiring", "date", expiring.get("date"), ("date",)) and (
                     "only_positive" not in expiring
-                    or column("expiring", "only_positive", expiring["only_positive"], numbers)):
+                    or column("expiring", "only_positive", expiring["only_positive"], numbers)) and (
+                    # Only rows matching every filter are watched: not a loan already returned (decision 0072).
+                    "where" not in expiring
+                    or _check_where(f"{where}, expiring, where", expiring["where"], columns, problems)):
                 watch["expiring"] = {"date": expiring["date"], "warn_days": days, "wording": wording, "what": what}
                 if "only_positive" in expiring:  # a batch that is used up has nothing left to warn about
                     watch["expiring"]["only_positive"] = expiring["only_positive"]
+                if "where" in expiring:
+                    watch["expiring"]["where"] = dict(expiring["where"])
 
     supply = raw.get("supply")
     if supply is not None:
@@ -797,8 +802,12 @@ def _check_sheets(data: dict, tables: dict[str, Table], problems: list[str]) -> 
                 if "." in c:  # a column of the record a link points at, e.g. "person.phone"
                     link, _, field_name = c.partition(".")
                     target = columns.get(link)
-                    if target is None or target.type != "link" or "." in (target.to or "") or target.to not in tables:
-                        problems.append(f"{s_where}: '{c}' must start with a link column to a table of this module.")
+                    if target is not None and target.type == "link" and "." in (target.to or ""):
+                        # A link into a module this one requires (like roadside_contact.phone into People):
+                        # its column is checked once every module has loaded (see dependency_order).
+                        continue
+                    if target is None or target.type != "link" or target.to not in tables:
+                        problems.append(f"{s_where}: '{c}' must start with a link column, like \"person.phone\".")
                         bad.append(c)
                     elif field_name not in tables[target.to].columns:
                         problems.append(f"{s_where}: there is no column '{field_name}' in '{target.to}'."
@@ -949,6 +958,33 @@ def _cross_module_gap_problems(module: Module, by_name: dict[str, Module]) -> li
     return problems
 
 
+def _cross_module_sheet_problems(module: Module, by_name: dict[str, Module]) -> list[str]:
+    """Check sheet columns like "roadside_contact.phone" whose link points into another module.
+
+    The column must exist there and must not be private: a sheet is printed and left out, and another
+    module's private detail must not reach it by a link (decision 0072)."""
+    problems = []
+    for sheet in module.sheets:
+        for number, section in enumerate(sheet["sections"], start=1):
+            table = module.tables.get(section["table"])
+            for spec in section["columns"] if table else []:
+                link_name, _, field_name = spec.partition(".")
+                link = table.columns.get(link_name)
+                if not field_name or link is None or "." not in (link.to or ""):
+                    continue
+                other, _, other_table = link.to.partition(".")
+                target = by_name[other].tables.get(other_table) if other in by_name else None
+                where = f"In sheets.toml, sheet '{sheet['name']}', section {number}"
+                if target is None or field_name not in target.columns:
+                    choices = list(target.columns) if target else []
+                    problems.append(f"{where}: '{spec}' names a column '{field_name}' that '{link.to}' does not "
+                                    f"have.{_suggest(field_name, choices)}")
+                elif target.columns[field_name].sensitive:
+                    problems.append(f"{where}: '{spec}' is private in the '{other}' module, so this sheet can't "
+                                    f"print it.")
+    return problems
+
+
 def dependency_order(modules: list[Module], failures: dict[str, list[str]]) -> list[Module]:
     """Order modules so each comes after the ones it requires; drop any whose requirements fail."""
     by_name = {m.name: m for m in modules}
@@ -975,7 +1011,7 @@ def dependency_order(modules: list[Module], failures: dict[str, list[str]]) -> l
                 failures.setdefault(module.name, []).append(f"It requires the '{name}' module, which could not be loaded.")
                 state[module.name] = "failed"
                 return False
-        problems = _cross_module_gap_problems(module, by_name)
+        problems = _cross_module_gap_problems(module, by_name) + _cross_module_sheet_problems(module, by_name)
         if problems:
             failures.setdefault(module.name, []).extend(problems)
             state[module.name] = "failed"

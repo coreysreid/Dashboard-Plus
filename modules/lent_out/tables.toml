@@ -1,0 +1,29 @@
+# The borrower is one of the household's People, so their number is kept in one place; the Stock item is
+# only for recognising the thing: lending it changes no Stock count (decision 0073). The due-back date is
+# one the household agreed with the borrower. Nothing is ever sent to the borrower.
+
+[tables.loans]
+title = "Things lent out"
+description = "Each thing you lent, who borrowed it, when it is due back and when it came back."
+record_name = "{name}, lent to {borrower}"
+columns.name = { type = "text", required = true }
+columns.stock_item = { type = "link", to = "stock.items", on_delete = "clear" }
+columns.borrower = { type = "link", to = "people.people", required = true, on_delete = "restrict" }
+columns.lent_on = { type = "date", required = true, default = "today" }
+columns.due_back = { type = "date", required = true }
+columns.status = { type = "choice", required = true, default = "out", choices = [
+  { key = "out", label = "No, still out" },
+  { key = "returned", label = "Yes, returned" },
+] }
+columns.returned_on = { type = "date", required_when = { status = "returned" } }
+columns.notes = { type = "longtext" }
+
+# Reminded a week before, and only while the thing is still out: a returned loan is never overdue.
+[tables.loans.watch]
+expiring = { date = "due_back", warn_days = 7, wording = "due", what = "return", where = { status = "out" } }
+
+# Asked only while the loan is out, and once per borrower however many things they have.
+[[tables.loans.watch.gaps]]
+missing = "borrower.phone"
+where = { status = "out" }
+message = "How would you reach {borrower} about {name}? Add a phone number if you have one."

@@ -141,12 +141,13 @@ class VehiclesModuleTests(TempDirTestCase):
         garage = self.records.create("stock__places", {"name": "Garage"})
         bay = self.records.create("stock__places", {"name": "Left bay", "inside": garage})
         kit = self.records.create("stock__items", {"name": "Car emergency kit", "category": "tools", "quantity": 1})
-        helper = self.records.create("people__people", {"name": "Example Roadside"})
+        helper = self.records.create("people__people", {"name": "Example Roadside", "phone": "1800 975 707"})
         car = self.records.create("vehicles__vehicles", {"name": "Family car", "roadside_contact": helper,
                                                          "parked_at": bay, "emergency_kit": kit})
         self.records.create("vehicles__services", {"vehicle": car, "name": "Routine service", "next_due": self.day(30)})
         sheet = self.page("/sheet/vehicles/vehicles")
-        for shown in ("Example Roadside", "Garage › Left bay", "Car emergency kit", "Routine service"):
+        # The phone comes from People through the link (decision 0072), so it is printed beside who to call.
+        for shown in ("Example Roadside", "1800 975 707", "Garage › Left bay", "Car emergency kit", "Routine service"):
             self.assertIn(shown, sheet)
 
     def test_choosing_a_kit_does_not_change_how_much_stock_there_is(self):
