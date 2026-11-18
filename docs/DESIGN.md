@@ -174,6 +174,15 @@ supply = { quantity = "quantity", per_person_per_day = 3, per_pet_per_day = 0,
 - `expiring` may add `wording = "due"` for things to do by a date rather than
   use-by dates ("due in 3 days", "overdue since …"), and `what` to name it
   ("vaccinations due …").
+- `expiring` may add `where`, equality filters on columns of the same table,
+  so finished rows are never reminded about: `where = { status = "out" }`
+  skips a loan already returned, `where = { done = false }` a job already
+  done. Every filter must match. A blank yes/no counts as "no", as the form
+  shows it; a blank choice matches nothing. Filters are checked like the
+  `where` of gaps and sheets: an unknown column, a choice that does not exist,
+  or a yes/no written as anything but `true` or `false` is a plain error
+  (decision 0072). There is no "only while blank" filter yet; a module that
+  needs one uses a choice or yes/no column instead.
 - `running_low` and `expiring` name columns of the same table; `quantity` and
   `minimum` must be number columns, `date` a date column. Checked when the
   module loads, with plain-language errors like everything else.
@@ -220,9 +229,15 @@ order_by = "priority"
 ```
 
 A column written as `link.column` (for example `person.phone`) prints a column
-of the record the link points at, within the same module. Sensitive columns are
-printed only if a section lists them explicitly, and the page says they are
-included.
+of the record the link points at. The link may point into this module, or into
+a module listed under `requires` (Vehicles prints `roadside_contact.phone`
+from People). A link into another module is checked once every module has
+loaded: the column must exist there, and it must not be private, because a
+sheet is printed and left out, and another module's private detail should not
+reach it through a link (decision 0072). Sensitive columns of the module's own
+tables are printed only if a section lists them explicitly, and the page says
+they are included. A section's `where` filters still use this module's tables
+only.
 
 ### 5.3 Records that change a count (stock in and out)
 

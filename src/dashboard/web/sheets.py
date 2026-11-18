@@ -6,7 +6,7 @@ from datetime import date
 from flask import Blueprint, abort, current_app, render_template, request
 
 from dashboard.core import records
-from dashboard.core.schema import table_name
+from dashboard.core.schema import table_name, target_table
 from dashboard.web import display
 
 sheet_pages = Blueprint("sheets", __name__)
@@ -47,7 +47,10 @@ def show_sheet(module, name):
         for spec in section["columns"]:
             if "." in spec:
                 link, _, field_name = spec.partition(".")
-                target = registry[table_name(module, info.table.columns[link].to)]
+                # The linked record may be in this module or one it requires, like People (decision 0072).
+                target = registry.get(target_table(module, info.table.columns[link]))
+                if target is None:
+                    continue
                 column = target.table.columns[field_name]
                 columns.append((display.column_label(target, column), link, field_name, column, target))
             else:

@@ -1,12 +1,12 @@
 [[sheet]]
 name = "vehicles"
 title = "Vehicles"
-intro = "Each vehicle, who to call if it breaks down and the dates you chose to be reminded of. Phone numbers are on the Emergency sheet. Registration and policy numbers are not printed. Check dates against your own notices before relying on this page."
+intro = "Each vehicle, who to call if it breaks down and their phone number from People, and the dates you chose to be reminded of. Registration and policy numbers are not printed. Check dates against your own notices before relying on this page."
 
 [[sheet.section]]
 title = "Vehicles"
 table = "vehicles"
-columns = ["name", "roadside_contact", "parked_at", "emergency_kit", "registration_due"]
+columns = ["name", "roadside_contact", "roadside_contact.phone", "parked_at", "emergency_kit", "registration_due"]
 order_by = "name"
 
 [[sheet.section]]

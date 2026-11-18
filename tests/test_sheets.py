@@ -46,8 +46,66 @@ table = "roles"
 columns = ["role", "person", "person.phone"]
 order_by = "priority"
 '''
+LOANS_MODULE = '''name = "loans"
+title = "Loans"
+version = "1.0.0"
+description = "Synthetic module that links People, for tests."
+core_api = "1"
+kind = "declarative"
+requires = ["people"]
+'''
+LOANS_TABLES = '''[tables.loans]
+title = "Loans"
+columns.name = { type = "text", required = true }
+columns.borrower = { type = "link", to = "people.people", on_delete = "clear" }
+columns.info = { type = "link", to = "people.important_info", on_delete = "clear" }
+'''
+LOANS_SHEET = '''[[sheet]]
+name = "out"
+title = "Loans"
+
+[[sheet.section]]
+table = "loans"
+columns = ["name", "borrower", "borrower.phone"]
+'''
 PORT = 5125
 BASE = f"http://127.0.0.1:{PORT}"
+
+
+class CrossModuleSheetCheckTests(TempDirTestCase):
+    """A sheet column from a record in another module, like the borrower's phone from People (decision 0072)."""
+
+    def failures(self, sheet):
+        self.make_module("people", module=PEOPLE_MODULE, tables=PEOPLE_TABLES, labels=None)
+        self.make_module("loans", module=LOANS_MODULE, tables=LOANS_TABLES, labels=None)
+        self.write("modules/loans/sheets.toml", sheet)
+        found, failures = modules.discover(self.tmp / "modules")
+        return [m.name for m in found], " | ".join(failures.get("loans", []))
+
+    def test_a_column_of_a_required_module_loads(self):
+        loaded, problems = self.failures(LOANS_SHEET)
+        self.assertEqual(problems, "")
+        self.assertIn("loans", loaded)
+
+    def test_a_missing_column_is_explained_after_every_module_loads(self):
+        loaded, problems = self.failures(LOANS_SHEET.replace("borrower.phone", "borrower.phon"))
+        self.assertNotIn("loans", loaded)
+        self.assertIn("'borrower.phon' names a column 'phon' that 'people.people' does not have", problems)
+        self.assertIn("Did you mean 'phone'", problems)
+
+    def test_a_private_column_of_another_module_is_refused(self):
+        loaded, problems = self.failures(LOANS_SHEET.replace("borrower.phone", "info.detail"))
+        self.assertNotIn("loans", loaded)
+        self.assertIn("'info.detail' is private in the 'people' module, so this sheet can't print it", problems)
+
+    def test_a_link_into_a_module_not_required_is_refused(self):
+        self.make_module("people", module=PEOPLE_MODULE, tables=PEOPLE_TABLES, labels=None)
+        self.make_module("loans", module=LOANS_MODULE.replace('requires = ["people"]', "requires = []"),
+                         tables=LOANS_TABLES, labels=None)
+        self.write("modules/loans/sheets.toml", LOANS_SHEET)
+        with self.assertRaises(modules.ModuleError) as caught:
+            modules.load_module(self.tmp / "modules" / "loans")
+        self.assertIn("must be listed in module.toml under requires", " | ".join(caught.exception.problems))
 
 
 class SheetCheckTests(TempDirTestCase):
@@ -118,6 +176,25 @@ class SheetPageTests(TempDirTestCase):
         self.app.config["LOADED"][0].sheets[0]["sections"].append(
             {"title": "Medical", "table": "important_info", "where": {}, "columns": ["detail"], "order_by": "id"})
         self.assertIn("includes private details", self.get("/sheet/people/emergency?show=1").get_data(as_text=True))
+
+    def test_cross_module_column_prints_the_linked_contacts_phone(self):
+        self.make_module("loans", module=LOANS_MODULE, tables=LOANS_TABLES, labels=None)
+        self.write("modules/loans/sheets.toml", LOANS_SHEET)
+        make_migration.make(self.tmp / "modules" / "loans", "first_tables")
+        data = self.tmp / "data"
+        report = startup.prepare(data, self.tmp / "modules")
+        self.assertEqual(report.module_problems, {})
+        app = create_app("t", lambda: None, report, data_dir=data, session_key="k")
+        app.config["PORT"] = PORT
+        client = app.test_client()
+        client.get("/?key=k", base_url=BASE)
+        post = lambda path, values: client.post(path, data=dict(values, _csrf=app.config["CSRF_TOKEN"]),  # noqa: E731
+                                                 base_url=BASE)
+        post("/t/people__people/new", {"name": "Neighbour C", "phone": "555 0199", "then": "done"})
+        post("/t/loans__loans/new", {"name": "Ladder", "borrower": "1", "then": "done"})
+        page = client.get("/sheet/loans/out", base_url=BASE).get_data(as_text=True).replace("\n", "").replace("  ", "")
+        self.assertIn('<td data-label="Borrower">Neighbour C</td><td data-label="Phone">555 0199</td>', page)
+        self.assertNotIn("private details", page)
 
     def test_unknown_or_switched_off_sheet_is_not_found(self):
         self.assertEqual(self.get("/sheet/people/nothing").status_code, 404)
