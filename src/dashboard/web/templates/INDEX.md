@@ -15,3 +15,6 @@
 | closed.html | Shown after a safe close | changing that message |
 | error.html | Plain-language error page with "Save a report" | changing error wording |
 | private_sheet.html | The step before a sheet with private details: show it only when you mean to print or share it | changing how private sheets open |
+| helpers.html | Settings, Helpers: the helper list, the address, and the form that makes a key | changing the Helpers settings page |
+| helper_key.html | The one page that shows a new helper key, with a Copy button and a warning to keep it private | changing the new-key page |
+| review.html | Review suggestions: each helper's waiting suggestions with Accept and Reject | changing the Review page |

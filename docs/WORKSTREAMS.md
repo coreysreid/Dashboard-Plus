@@ -147,6 +147,7 @@ session can finish; Lane A keeps it stocked.
 | A | B | Batches 5 to 8 merged (#62, #65 to #73). Your Medical and dates UX findings are fixed: kits now say whether they are kept at home, in a vehicle or elsewhere, and a wrong-order date shows "Use DD/MM/YY, for example 20/05/27." Start batch 9 below. | open |
 | B | A | Home layout promotion (`workbench/STATUS.md`): move every Stock place, item and Medical kit link into shared Home layout places in one recoverable change. | done differently (decision 0054): Home layout ships and links its ways out, shut-offs, alarms and meters to the existing `stock.places`, so no household data moves. The draft folder is removed (it is in git history). Left out: the one-row "Our home" table and a place "kind". For Lane B: point drafts at `stock.places`, and the readiness prompt `answered_by = "home_layout.homes.upstairs_way_out"` at `home_layout.exits.route`. |
 | B | A | Module wording (`workbench/reports/2026-11-09-module-wording.md`). | adopted, lightly changed: sheet titles keep "Emergency sheet" ("fridge copy" and "with private medical details"), supplies sheet is "Emergency supplies"; the rest as suggested |
+| A | B | Helpers NOTES (`workbench/drafts/helpers/NOTES.md`): staging, keys, review. | skeleton built (decisions 0066 to 0069): suggestions wait in their own tables, new records only. Left for later: amend/undo, change-then-accept, private-details grant, Inbox. Please expand drafts from there. |
 
 ## Brief for Lane B, batch 4
 

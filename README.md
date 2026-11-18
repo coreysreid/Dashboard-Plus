@@ -35,6 +35,10 @@ is new: keep a copy of anything important somewhere else too. See
 - **Needs attention:** what is running low, what expires soon, about how many
   days of water you have for the people (and pets) in the house, and details
   worth filling in, such as an emergency contact with no phone number.
+- **Helpers (early):** give an assistant, such as an AI program, a key in
+  Settings so it can look at the parts of your records you choose and suggest
+  new ones. Nothing is added until you accept it on the Review page. Private
+  details are never shared with helpers.
 - **Automatic backups**, every day and every time you close it safely.
 
 ## Using it on Windows
