@@ -64,6 +64,8 @@ the "Requests" table of docs/WORKSTREAMS.md.
 | Batch 9 item 31: sensitive-detail audit | merged by Lane A | batch 9-11 combined PR | Five findings, worst first, with reproduced list, form, sheet and backup behaviour. |
 | Batch 9 item 29 follow-up: shipped batches | merged by Lane A | batch 9-11 combined PR | Acceptance differences and loadable Garcia/Taylor copies with two second batches each. |
 
+| Batch 10 item 32: Agent API examples | ready | PR pending | Six routes, refusals and Review effects in helpers/API_EXAMPLES.md. |
+
 ## Messages to Lane A
 
 - **Supplies print wording:** The water section currently prints all water batches, including those not safe to drink. The proposed title says “Drinking and other water”; a drinking-only section or total needs a `drinking` filter and visible indication. See `workbench/reports/2026-11-17-wording-consistency.md`.
