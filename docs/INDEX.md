@@ -8,6 +8,7 @@
 | BACKLOG.md | Corey's feedback from using it, and what happened to each item | adding feedback or choosing the next fix |
 | WORKSTREAMS.md | How two agents split the work: lanes, owned files, contracts, status | before starting any work |
 | JOURNEYS.md | Short stories of real use, each an acceptance test | reviewing the experience |
+| plans/ | Build plans for larger pieces of work, such as the Agent API | building or reviewing a big feature |
 | INFLUENCES.md | Books and ideas we build on, credited, and how we credit | adding or checking a credit |
 | MODULES.md | Plain-language guide to writing a module with a garden example | making a module |
 | EXAMPLES.md | Three made-up households shown at every stage, welcome to closing (generated) | showing what it looks like |

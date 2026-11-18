@@ -384,6 +384,40 @@ asked (0059). Work down this list, one pull request per item, as before.
 47. **Shopping list with batches.** Update the shopping list design for
     batches: buying adds a batch with its use-by date and place in one pass.
 
+### Batch 13: the Agent API, expanded (M2)
+
+Corey wants AI helpers to be able to use the dashboard. Lane A is building
+the skeleton from `docs/plans/agent-api-v1.md` (decisions 0066 to 0069 will
+record it). Lane B checks for new work every 6 hours: start these as soon as
+you see them; items 48 to 51 need only the plan, the rest are easier once the
+skeleton is merged (look for `src/dashboard/web/api.py`). Work in
+`workbench/drafts/agent_api/`.
+
+48. **Abuse-case catalogue.** Every way a helper, a web page or another
+    program on the computer could misuse the API: replay, timing, guessing,
+    a key pasted into a chat or a git repository, prompt-injection text in
+    `why` or values shown on Review, flooding, a helper reading a module it
+    wasn't given. For each: what should happen, and a test idea.
+49. **OpenAPI 3.1 description** of the v1 routes in the plan, with the error
+    shapes and a made-up example for every route; note what must be kept in
+    step with the code.
+50. **Helper examples by household job.** Ten end-to-end examples with the
+    Smith, Garcia and Taylor data: a receipt becomes Stock in suggestions; a
+    pet weigh-in log; "what's running low?"; document review reminders; a
+    home-care job done. Exact requests, responses and the Review screen words.
+51. **Suggesting changes to existing records, designed.** Amend and undo,
+    stale "before" values, what happens if the household edited the record
+    meanwhile, and "change then accept" on Review. Acceptance checks.
+52. **A connector for AI assistants (MCP), designed.** A small local program
+    that maps assistant "tools" to the API routes: tool names, inputs,
+    plain-language descriptions, how the key is given to it, what it must
+    never do. Design only.
+53. **Private-details grant, designed.** If a household ever wants a helper
+    to see a private detail: the Settings wording, warnings, how it's turned
+    off, and what is logged. Design only; v1 never shares them.
+54. **UX check of the skeleton** once merged: make a key, connect with curl,
+    suggest, Review, accept, reject, turn the key off; worst first.
+
 ## Brief for Lane B, batch 3 (done)
 
 > You are Lane B, the checker and drafter. You have full internet access for

@@ -1,0 +1,129 @@
+# Agent API skeleton — implementation plan (from the Opus planning pass, 2026-11-18)
+
+## 0. Findings that shape the design
+A. Suggestions must NOT be stored as `needs_review` rows in module tables: `Records._create` applies side effects regardless of review_status (_adjust/_shift change stock, _retotal adds batches into totals, _choose_batch creates batches), and watch.py/home/grids/sheets never filter on review_status. Decision: stage suggestions in core table `core__proposals`; write to module tables only when a person accepts, via the normal Records create path. `review_status` stays unused by helpers.
+B. Security hole: a module named `core` bypasses the module guard (0055). modules.NAME allows "core"; startup.prepare does `tracks[module.name] = module.migrations`, replacing the real core track; migrations.migrate skips the guard for CORE_TRACK; `_confined_to("core")` would treat every core__* table as own. Also prefix matching lets module `pets` claim `pets___x` (belongs to `pets_`). FIX FIRST: refuse module names `core`, names containing `__`, names ending `_` (plain message "'core' is reserved for the program itself"); in startup.prepare skip any found module named CORE_TRACK as a second net. Tests in tests/test_module_confinement.py (module "core" refused, its migrations never run, core tables intact; `pets_`/`a__b` refused; a "core" module carrying copies of real core 0001/0002 plus a 0003 can't run that 0003).
+C. Port changes every launch (create_server port=0). Skeleton shows current address on the Helpers settings page with a warning; fixed port later.
+
+## 1. Scope (skeleton)
+1. Core-name fix (B).
+2. Helper keys managed in Settings → Helpers: name, access level ("Look only"=read / "Look and suggest"=suggest), list of modules it may use (none ticked by default). Key shown once; "Turn off access". Private details never shared (no grant in v1).
+3. Read routes: GET /api/v1/me, /tables, /tables/<t>/records (keyset paging), /tables/<t>/records/<id>, /attention.
+4. Suggest: POST /api/v1/proposals — ADD NEW RECORDS ONLY, ≤50 entries per call, required `request_key` (retry-safe), required `why`. GET /api/v1/batches, /api/v1/batches/<id> (own batches only).
+5. Review screen /review: pending batches newest first; rows "Add to <Table>: field: value…"; Accept / Reject per row; Accept all / Reject all per batch; home card "N suggestions need a look"; nav link "Review" with count.
+6. Every helper action audited (key made/turned off, batch suggested, accepted, rejected).
+Deferred: updates/deletes of existing records, amend/undo, change-then-accept, private-detail grant, per-table scope, CLI, forgetting request keys, file columns (readable, not suggestible).
+
+## 2. Security model
+- Single entry point `only_this_computer` in app.py. Host check unchanged and applies to /api/v1 too. Add `if request.path.startswith("/api/v1/"): return helper_api.authenticate()` BEFORE the existing Origin/cookie/CSRF code so that code stays as strict for every other path. Update the comment that says nothing is exempt.
+- authenticate(): refuse any request carrying an `Origin` header (403 JSON `from_a_web_page`) — helpers are programs, not web pages; require `Authorization: Bearer <key>`; never read cookie, query string or form; set g.helper or 401 JSON. POSTs must be `Content-Type: application/json` else 415. Set `request.max_content_length = 65536` (413 JSON). Exact prefix `/api/v1/` only; /api/ping and /api/shutdown unchanged.
+- Pages never look at Authorization. Tests: bearer key without cookie on /t/... still redirects to /start; cookie without key → 401 on /api/v1.
+- Keys: `dph_` + secrets.token_urlsafe(32). Stored hash = sha256 hex. Hashes live in `data/secrets/helper_keys.json` mapping {sha256: key_id} (key_id random 16 hex, also on the core__helpers row) — NOT in the DB, so restoring an old backup can never revive a turned-off key, and a key made after a backup is dead after restore. Verify: refuse header >100 chars; hash; hmac.compare_digest against every live hash; load row by key_id; require revoked_at IS NULL. File writes: threading.Lock, temp file + os.replace, db.keep_private. Make key: DB row first, then file. Turn off: remove hash from file first, then set revoked_at.
+- Private (`sensitive`) columns: never returned or accepted. /tables omits them; a table with a REQUIRED private column reports "can_suggest": false with reason; proposals naming one → 403 `private_detail` (field name only, never value); errors never echo submitted values; no history/audit route.
+- A helper can never: confirm/accept, change/delete existing records, see private details/history, read core__* or unallowed modules, see other helpers or their batches, make/see keys, change settings/backups/restore/export/modules/files, run SQL. (No routes for these.)
+- Inputs matched against known lists: table names must be keys of the allowed registry (enabled modules ∩ helper modules); field names must be keys of info.table.columns; system fields (review_status, source, id, batch_id, edited_by_person, deleted_at) refused 422 "is not a field of this table."; entry keys other than table/values → 400.
+- Limits: body ≤64 KB; ≤50 entries/call; ≤200 suggested rows per helper per UTC day (count on core__proposals) → 429; why 1–300 chars; request_key 1–100 chars `^[A-Za-z0-9._:-]+$`; limit 1–200. Failed sign-ins logged "helper key refused" without the key.
+- Checking suggestions: full dry run. New `Records.check_create(entries, actor)`: BEGIN IMMEDIATE, call `_create` for each entry in order, collect ValidationError per entry, ALWAYS ROLLBACK. Derived columns (`_derived`) refused explicitly: "is worked out from its batches; suggest a Stock in instead". Store RAW submitted values (never cleaned — money would double-scale). Accept re-runs create on raw values; if the world changed, row stays pending with reason. Batches all-or-nothing on submit.
+- Accept: in one db.transaction: `store.create_in(name, raw_values, actor=f"agent:{slug}", review_status="confirmed", batch_id=batch.id)`; set edited_by_person = 1 on the new row; mark proposal accepted with record_id; audit actor='person', action='accept', table_name='core__proposals'. Reject: status='rejected', audit action='reject'. Retry with same request_key returns the original batch (rejected never comes back). Proposals for a switched-off module: show "This is for <module>, which is switched off", Reject only. Proposals from a turned-off helper still shown: "This helper's access is off. Its earlier suggestions still need your decision."
+- Audit rows: helper_add (person, core__helpers/id), helper_off (person), propose (agent:<slug>, core__proposals/id, after={"table","batch"}, no values), accept (person), reject (person). Reads not audited. last_used_at updated at most once a minute.
+- NOTE: the /api/v1 exemption from the page token is a security-rule change; Corey must OK it before merge (Lane A handles that).
+
+## 3. Data model — src/dashboard/core/migrations/0003_helpers.sql (core migration; add INDEX row)
+```sql
+-- Helpers (AI or human assistants) the household gave a key to. The key itself is never stored;
+-- its fingerprint lives in data/secrets/helper_keys.json, matched by key_id.
+CREATE TABLE core__helpers (
+    id INTEGER PRIMARY KEY,
+    key_id TEXT NOT NULL UNIQUE,
+    slug TEXT NOT NULL UNIQUE,
+    name TEXT NOT NULL,
+    access TEXT NOT NULL CHECK (access IN ('read', 'suggest')),
+    modules TEXT NOT NULL DEFAULT '[]',
+    created_at TEXT NOT NULL,
+    last_used_at TEXT,
+    revoked_at TEXT
+);
+CREATE TABLE core__helper_batches (
+    id INTEGER PRIMARY KEY,
+    helper_id INTEGER NOT NULL REFERENCES core__helpers(id),
+    request_key TEXT NOT NULL,
+    body_hash TEXT NOT NULL,
+    why TEXT NOT NULL,
+    created_at TEXT NOT NULL,
+    UNIQUE (helper_id, request_key)
+);
+CREATE TABLE core__proposals (
+    id INTEGER PRIMARY KEY,
+    batch_id INTEGER NOT NULL REFERENCES core__helper_batches(id),
+    position INTEGER NOT NULL,
+    table_name TEXT NOT NULL,
+    values_json TEXT NOT NULL,
+    status TEXT NOT NULL DEFAULT 'pending' CHECK (status IN ('pending', 'accepted', 'rejected')),
+    record_id INTEGER,
+    reason TEXT,
+    created_at TEXT NOT NULL,
+    decided_at TEXT
+);
+CREATE INDEX core__proposals__status__idx ON core__proposals(status, batch_id);
+CREATE INDEX core__helper_batches__helper__idx ON core__helper_batches(helper_id, created_at);
+```
+Slug from name: lowercase, chars outside [a-z0-9-] → '-', ≤40 chars, add -2, -3 if taken; unique across turned-off helpers; must match records.ACTOR. batch_id on module rows refers to core__helper_batches.id.
+
+## 4. HTTP API (/api/v1)
+JSON only, `application/json; charset=utf-8`, inherits Cache-Control: no-store. ISO dates. Money as decimal major units (note "stored in cents" in spec). Choices by key. Links by id only. Unknown query params ignored. Error shape:
+`{"error": "invalid", "message": "Weigh-ins: some values could not be used. Nothing was saved.", "problems": [{"entry": 0, "table": "pets__weigh_ins", "field": "weight", "message": "must be at least 0."}]}`
+Statuses: 400 bad_request ("This request could not be read. Check the fields and try again." / "Give this request a key so a retry cannot add the same rows twice." / "Say why, in a sentence, so the household knows where these came from." / "Send 50 suggestions or fewer at a time."); 401 no_key ("This helper's access key is missing or no longer works. Ask the household to check Helpers in Settings."); 403 not_allowed ("Pet diary helper may use: Pets. Ask the household to change its access in Settings."); 403 look_only ("This helper may look but not suggest changes. Ask the household to change its access in Settings."); 403 private_detail ("Private details are never shared with helpers. Leave out: allergies."); 403 from_a_web_page ("The helper API cannot be used from a web page."); 404 not_found ("That table or record could not be found."); 409 request_key_reused ("This request key was already used for different suggestions. Check the earlier batch, then use a new key."); 413 too_large ("This request is too large. Send fewer suggestions at a time."); 415 needs_json ("Send the body as JSON (Content-Type: application/json)."); 422 invalid; 429 daily_limit ("This helper has reached 200 suggestions today. Try again tomorrow."). Table outside grant → 403 not_allowed; unknown table → 404.
+Routes:
+1. GET /api/v1/me → {"name","access","modules","private_details": false,"limits":{"entries_per_call":50,"suggestions_per_day":200,"suggestions_left_today":N,"max_body_bytes":65536},"api_version":"1","program_version":...}
+2. GET /api/v1/tables → {"tables":[{"table","module","title","can_suggest","columns":[{"name","label","type","to"?, "required","help","unit","min","choices":[{"key","label"}]}],"worked_out":[derived cols],"private_columns_left_out":N}]} — labels via display.table_title/column_label; file columns can_suggest false.
+3. GET /api/v1/tables/<t>/records?after=<id>&limit=50 → {"table","records":[{"id","created_at","updated_at","source","values":{...}}],"next_after": last id if page full else null}. Omit review_status, edited_by_person, batch_id, private columns. Deleted excluded.
+4. GET /api/v1/tables/<t>/records/<id> → one record, same shape, or 404.
+5. GET /api/v1/attention → running_low, expiring, supplies, gaps from watch.py on the ALLOWED registry only (dataclasses.asdict; drop internal sort keys/URLs; check real field names).
+6. POST /api/v1/proposals (suggest access) body {"request_key","why","entries":[{"table","values"}]} → 201 first time, 200 identical retry: {"batch_id","state":"waiting","why","proposals":[{"id","position","table","status"}],"message":"1 suggestion is waiting for the household to review. Nothing changes until they accept it."}. Steps: authorise → body shape → request key (same key+same body_hash returns stored; different hash 409) → daily limit → tables allowed, no private/system/derived fields → check_create dry run → insert batch+proposals+propose audit in one transaction. Catch sqlite3.IntegrityError on the UNIQUE race and return stored batch.
+7. GET /api/v1/batches?after=<id>&limit=20 → own batches newest first with totals {total,pending,accepted,rejected}, next_after.
+8. GET /api/v1/batches/<id> → one batch + proposals with status, record_id once accepted, reason. Another helper's → 404.
+
+## 5. Screens (plain words; reuse Lane B's workbench/drafts/helpers/REVIEW_WORDS.md where possible)
+Settings → Helpers (/settings/helpers; link from Settings: "Helpers: let an assistant look at or suggest records"):
+- Intro: "A helper is a program, such as an AI assistant, that can look at parts of your records and suggest new ones. Nothing a helper suggests is added until you accept it on the Review page. Private details are never shared with helpers."
+- "Helpers connect to: http://127.0.0.1:<port>/api/v1 (only from this computer). This address changes each time Dashboard opens; copy it again after reopening."
+- List rows: Name · "May look" / "May look and suggest" · "Parts: Pets, Household stock" · "Private details: never shared" · "Made 17 Nov 2026 · Last used …" · Turn off access button. Off rows: "Access turned off on … Its history is kept."
+- Add form: Name (1–40), "What may it do?" (Look only / Look and suggest new records), "Which parts of your records?" (checkbox per enabled module, none ticked), button Make a key. Errors "Give the helper a name." / "Choose at least one part of your records."
+- Key page = the POST response (status 201, never a redirect, key never in a URL): "Here is the key for <name>. Copy it now: it will not be shown again." read-only box + Copy button; "Keep it private. Anyone with this key can [look at / look at and suggest records for] <parts> while Dashboard is open on this computer. If you give it to an online service, that service will see what the helper reads. You can turn it off in Settings → Helpers at any time." Done button.
+- Turn off: POST /settings/helpers/<id>/turn-off → redirect with "<name> can no longer connect. Its suggestions and history are kept."
+Review (/review; nav "Review" with pending count; home card "1 suggestion needs a look"/"N suggestions need a look" only when N>0):
+- Heading "Review suggestions"; intro "Helpers can suggest new records. Nothing is added to your records until you accept it."; empty "No suggestions to review."
+- Batch card: "<helper> · N suggestions", "Why: …", "Suggested <date>". Rows: "Add to **Weigh-ins**: Pet: Miso · Day: 17 Nov 2026 · Weight: 4.3 kg" (records.clean read-only, then display.Formatter.text + column_label; link names OK here).
+- Buttons per row Accept/Reject; per batch Accept all N / Reject all N. Results via ?done=: "Added to Weigh-ins." / "Rejected. Nothing was added to Weigh-ins." / "Added 10. 2 could not be added and are still waiting: …". Failing row stays pending with "This can't be added as it is: … Reject it, or add the record yourself." Accept all = each row its own transaction. All forms carry _csrf.
+- display.ACTION_TEXT gains accept/reject.
+
+## 6. Files in build order
+1. Core-name fix: modules.py (RESERVED_NAMES={"core"}, refuse "__" and trailing "_"); startup.prepare skip found module named CORE_TRACK; tests.
+2. core migration 0003_helpers.sql + INDEX row.
+3. records.py: `create_in(name, values, actor, review_status="confirmed", batch_id=None) -> int` (for callers already inside db.transaction); `check_create(entries, actor) -> dict[int, dict[str,str]]` (dry run, always rollback, refuses derived explicitly); `after(name, after_id, limit) -> list[dict]` (keyset paging, deleted excluded, ORDER BY id, clamp MAX_PAGE).
+4. src/dashboard/core/helpers.py (new): Helper dataclass (.actor, .may_suggest), make_slug, issue → (Helper, key), verify, turn_off, all_helpers, touch (throttled), allowed_registry, _read_keys/_write_keys (atomic, 0600, lock); KEY_PREFIX="dph_", KEYS_FILE="secrets/helper_keys.json".
+5. src/dashboard/core/proposals.py (new): MAX_ENTRIES=50, MAX_PER_DAY=200, ProposalError(PlainError) with status/code/problems, submit → (result, created), used_today, batch_result, helper_batches, pending, pending_count, accept, reject, accept_batch, reject_batch, _audit.
+6. src/dashboard/web/api.py (new): Blueprint helper_api url_prefix="/api/v1"; authenticate(), api_error(status, code, message, **extra), table_spec, record_out, _allowed; one view per route.
+7. app.py: /api/v1 branch in only_this_computer; register helper_api, review_pages, helper_settings; 400/403/404/HTTPException/500 handlers return api_error JSON when path starts with /api/v1/ (500 says only "Something went wrong. Nothing was changed." and logs); pending_reviews count for home and nav (guard DATA_DIR None).
+8. src/dashboard/web/review.py (new): GET /review; POST /review/<pid>/accept, /reject; POST /review/batch/<bid>/accept-all, /reject-all; describe(store, proposal).
+9. src/dashboard/web/helper_settings.py (new): GET/POST /settings/helpers (POST renders helper_key.html with 201); POST /settings/helpers/<hid>/turn-off.
+10. Templates review.html, helpers.html, helper_key.html; base.html nav Review link with count; home.html suggestions card; settings page link to Helpers; templates INDEX.
+11. display.ACTION_TEXT accept/reject.
+12. tools/check_privacy.py: flag `dph_[A-Za-z0-9_-]{40,}` as a likely helper key.
+13. Docs: DESIGN §9 rewrite (routes, staging, data/secrets, no private grant, module scope, address); §8 suggestions staged/review_status unused; §12 the /api/v1 exemption and why; decisions 0066–0069; INDEX rows; README (what helpers can do); PROJECT_MAP; ROADMAP M2 "Agent API skeleton"; core/web __init__ docstrings; WORKSTREAMS Requests row answering Lane B's helpers NOTES.
+
+## 7. Tests (unittest, support.TempDirTestCase, synthetic modules)
+tests/test_helpers.py: issue returns dph_ key not stored in DB (search columns and DB bytes), file holds only sha256, 0600 on POSIX; verify accepts; refuses wrong/empty/200-char/one-char-changed; refuses after turn_off; restore safety both ways (old DB copy restored after turn-off still refused; key made after copy + row-id reuse doesn't authenticate as new helper); slugs ("Pet diary helper" → pet-diary-helper, duplicate -2, odd chars, matches records.ACTOR); allowed_registry intersects.
+tests/test_proposals.py (demo module with adjusts stock table + total batch table, copy fixtures from test_stock_batches.py): submit leaves module tables unchanged (count 0, quantity unchanged, running_low unchanged); accept creates record with source agent:<slug>, review_status confirmed, batch_id, edited_by_person=1, stock changes only now, audit create(agent)+accept(person); reject changes nothing, status rejected, audit; stale stock-out → accept fails plainly, stays pending with reason, nothing written; batch atomicity (1 bad of 3 → nothing stored, problems name entry/table/field); idempotency (same key+body → same batch, created False; different body 409; other helper same key fine); limits (51 → 400; 201st today → 429, no partial batch); derived column refused "worked out"; review_status/source/edited_by_person/id refused "is not a field of this table"; field names like `name; DROP TABLE x` → 422 and table intact; proposal for switched-off module: accept plain error, reject works.
+tests/test_agent_api.py (web, like WebTests, sensitive column `secret`, helpers via helpers.issue): no header / wrong key / "Bearer" no key / "Basic …" / key in ?key= or ?token= → 401 no_key; turned-off key 401; valid key no cookie → 200 on /tables, no Set-Cookie; cookie only → 401 on /api/v1/tables; bearer without cookie on /t/demo__items → redirect /start; page POST without _csrf + bearer → 400; Host evil.example:5123 and 127.0.0.1:9999 → 403; Origin http://evil.example and http://127.0.0.1:<port> → 403 from_a_web_page; /tables omits secret, record GET has no secret and raw value nowhere in response, proposal with secret → 403 private_detail and body doesn't contain the value; table in non-granted module → 403, unknown table → 404; read helper POST → 403 look_only; values {"review_status":"confirmed"} → 422, top-level "status":"accepted" → 400, no module record appears; 70 KB → 413 JSON; 51 entries → 400; text/plain → 415; malformed JSON / entries not list / values not object → 400; paging 120 records limit 50 → 3 pages, next_after null at end, deleted absent, limit=100000 clamped; /attention only allowed modules; /batches own only, other's id 404; every /api/v1 response JSON + Cache-Control no-store; /api/v1/nope JSON 404.
+Review/settings (tests/test_review_page.py): making a key returns 201 with key in page, later GET of /settings/helpers doesn't contain it; turn off works and key then fails; making a key without _csrf → 400; /review shows "<helper> · 1 suggestion", why, readable row ("Weight: 4.3 kg"); accept → grid shows record; reject → "Rejected. Nothing was added to …"; accept all with one stale row reports counts, stale stays with reason; home shows "1 suggestion needs a look" only when there is one; turned-off helper's batch shows the "access is off" line; a value with <script> is escaped on Review.
+tests/test_module_confinement.py additions per finding B.
+
+## 8. Deliberately later (Lane B expands in workbench/drafts/helpers/)
+Update/delete suggestions (amend/undo, stale before-values, edited_by_person lock, change-then-accept); private-details grant; per-table scopes; key expiry; "last 20 things this helper did"; fixed port or connection file; forgetting request keys after 30 days; duplicate-receipt flagging; abuse-case catalogue (replay, timing, local DoS, key pasted into chat/git, prompt-injection text in why/values on Review); OpenAPI 3.1 description generated from the same spec; versioning policy; MCP wrapper (local stdio server mapping tools to routes) + example prompts; more receipt→Stock-in examples; rate limits beyond daily cap; Inbox items from helpers; Review history filters; screen-reader status messages; confirmation dialogs; resolve the unused `review_status = needs_review` in DESIGN.
+
+## 9. Decision records
+0066 Helpers get a key from Settings: shown once, kept only as a fingerprint outside the database.
+0067 The Agent API v1: local, bearer-only, module-scoped, and never private details. (Needs Corey's plain-words OK — security rule change.)
+0068 Helpers' suggestions wait in their own place until a person accepts them. (Changes DESIGN 3 and 8.)
+0069 A module may not be called "core" or use double underscores in its name. (Refines 0055.)
