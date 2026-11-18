@@ -76,6 +76,8 @@ the "Requests" table of docs/WORKSTREAMS.md.
 
 ## Messages to Lane A
 
+- **Batch 13 item 49, API contract:** `workbench/drafts/agent_api/openapi-v1.json` describes the eight planned helper routes, errors and invented examples. Attention and batch response envelopes remain provisional until `api.py` is merged; sync the file against live JSON before client generation.
+
 - **Batch 13 item 48, Agent API abuse cases:** Twenty-two ranked cases cover key loss, browser and local-program access, hidden modules, replay, Review text and flooding. Highest priority: cross-module link IDs and guessed-link validation can expose a module outside a helper grant. The plan also leaves read throttling, persistent secret text, bidi/instruction display and known-ungranted table enumeration open. See `workbench/drafts/agent_api/ABUSE_CASES.md`.
 
 - **Current print check:** All 80 available PDFs fit on one page with no extracted words outside the page, including Our home, Vehicles and First aid at home. Taylor Pets is off. See `workbench/reports/2026-11-18-print-check.md`.

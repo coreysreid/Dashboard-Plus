@@ -1,0 +1,1734 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "Dashboard Plus Helper API v1 (draft)",
+    "version": "0.1.0-draft",
+    "description": "Local, bearer-only API for granted modules. Helpers may look or suggest new rows; a person decides on Review. Private, system and derived fields are not shared or assignable. This describes the plan before the skeleton is merged; see NOTES.md for provisional response envelopes."
+  },
+  "servers": [
+    {
+      "url": "http://127.0.0.1:{port}/api/v1",
+      "variables": {
+        "port": {
+          "default": "5199",
+          "description": "Current ephemeral local port shown in Settings → Helpers. Never hard-code the example port."
+        }
+      }
+    }
+  ],
+  "security": [
+    {
+      "HelperBearer": []
+    }
+  ],
+  "paths": {
+    "/me": {
+      "get": {
+        "summary": "Describe this helper and its limits",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "headers": {
+              "Cache-Control": {
+                "description": "Responses are not cached.",
+                "schema": {
+                  "type": "string"
+                },
+                "example": "no-store"
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Me"
+                },
+                "example": {
+                  "name": "Pet diary helper",
+                  "access": "suggest",
+                  "modules": [
+                    "pets"
+                  ],
+                  "private_details": false,
+                  "limits": {
+                    "entries_per_call": 50,
+                    "suggestions_per_day": 200,
+                    "suggestions_left_today": 199,
+                    "max_body_bytes": 65536
+                  },
+                  "api_version": "1",
+                  "program_version": "0.0.0"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "This helper's access key is missing or no longer works. Ask the household to check Helpers in Settings.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                },
+                "example": {
+                  "error": "no_key",
+                  "message": "This helper's access key is missing or no longer works. Ask the household to check Helpers in Settings."
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "This helper may not use that part of the household records.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                },
+                "examples": {
+                  "not_allowed": {
+                    "summary": "not_allowed",
+                    "value": {
+                      "error": "not_allowed",
+                      "message": "This helper may not use that part of the household records."
+                    }
+                  },
+                  "look_only": {
+                    "summary": "look_only",
+                    "value": {
+                      "error": "look_only",
+                      "message": "This helper may look but not suggest changes. Ask the household to change its access in Settings."
+                    }
+                  },
+                  "private_detail": {
+                    "summary": "private_detail",
+                    "value": {
+                      "error": "private_detail",
+                      "message": "Private details are never shared with helpers. Leave out: detail."
+                    }
+                  },
+                  "from_a_web_page": {
+                    "summary": "from_a_web_page",
+                    "value": {
+                      "error": "from_a_web_page",
+                      "message": "The helper API cannot be used from a web page."
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Unexpected error; no submitted value is echoed.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                },
+                "example": {
+                  "error": "server_error",
+                  "message": "Something went wrong. Nothing was changed."
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/tables": {
+      "get": {
+        "summary": "List granted tables and safe fields",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "headers": {
+              "Cache-Control": {
+                "description": "Responses are not cached.",
+                "schema": {
+                  "type": "string"
+                },
+                "example": "no-store"
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "tables"
+                  ],
+                  "properties": {
+                    "tables": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/Table"
+                      }
+                    }
+                  }
+                },
+                "example": {
+                  "tables": [
+                    {
+                      "table": "pets__weigh_ins",
+                      "module": "pets",
+                      "title": "Weigh-ins",
+                      "can_suggest": true,
+                      "columns": [
+                        {
+                          "name": "pet",
+                          "label": "Pet",
+                          "type": "link",
+                          "to": "pets.pets",
+                          "required": true
+                        },
+                        {
+                          "name": "day",
+                          "label": "Day",
+                          "type": "date",
+                          "required": true
+                        },
+                        {
+                          "name": "weight",
+                          "label": "Weight",
+                          "type": "decimal",
+                          "required": true,
+                          "unit": "kg",
+                          "min": 0
+                        }
+                      ],
+                      "worked_out": [],
+                      "private_columns_left_out": 0
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "This helper's access key is missing or no longer works. Ask the household to check Helpers in Settings.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                },
+                "example": {
+                  "error": "no_key",
+                  "message": "This helper's access key is missing or no longer works. Ask the household to check Helpers in Settings."
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "This helper may not use that part of the household records.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                },
+                "examples": {
+                  "not_allowed": {
+                    "summary": "not_allowed",
+                    "value": {
+                      "error": "not_allowed",
+                      "message": "This helper may not use that part of the household records."
+                    }
+                  },
+                  "look_only": {
+                    "summary": "look_only",
+                    "value": {
+                      "error": "look_only",
+                      "message": "This helper may look but not suggest changes. Ask the household to change its access in Settings."
+                    }
+                  },
+                  "private_detail": {
+                    "summary": "private_detail",
+                    "value": {
+                      "error": "private_detail",
+                      "message": "Private details are never shared with helpers. Leave out: detail."
+                    }
+                  },
+                  "from_a_web_page": {
+                    "summary": "from_a_web_page",
+                    "value": {
+                      "error": "from_a_web_page",
+                      "message": "The helper API cannot be used from a web page."
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Unexpected error; no submitted value is echoed.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                },
+                "example": {
+                  "error": "server_error",
+                  "message": "Something went wrong. Nothing was changed."
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/tables/{table}/records": {
+      "get": {
+        "summary": "Page through current records",
+        "parameters": [
+          {
+            "name": "table",
+            "in": "path",
+            "required": true,
+            "description": "Table name returned by GET /tables, such as pets__weigh_ins.",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "after",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 0,
+              "default": 0
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 200,
+              "default": 50
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "headers": {
+              "Cache-Control": {
+                "description": "Responses are not cached.",
+                "schema": {
+                  "type": "string"
+                },
+                "example": "no-store"
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "table",
+                    "records",
+                    "next_after"
+                  ],
+                  "properties": {
+                    "table": {
+                      "type": "string"
+                    },
+                    "records": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/Record"
+                      }
+                    },
+                    "next_after": {
+                      "type": [
+                        "integer",
+                        "null"
+                      ]
+                    }
+                  }
+                },
+                "example": {
+                  "table": "pets__weigh_ins",
+                  "records": [
+                    {
+                      "id": 14,
+                      "created_at": "2026-11-18T09:00:00Z",
+                      "updated_at": "2026-11-18T09:00:00Z",
+                      "source": "person",
+                      "values": {
+                        "pet": 1,
+                        "day": "2026-11-18",
+                        "weight": 4.3
+                      }
+                    }
+                  ],
+                  "next_after": null
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "This helper's access key is missing or no longer works. Ask the household to check Helpers in Settings.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                },
+                "example": {
+                  "error": "no_key",
+                  "message": "This helper's access key is missing or no longer works. Ask the household to check Helpers in Settings."
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "This helper may not use that part of the household records.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                },
+                "examples": {
+                  "not_allowed": {
+                    "summary": "not_allowed",
+                    "value": {
+                      "error": "not_allowed",
+                      "message": "This helper may not use that part of the household records."
+                    }
+                  },
+                  "look_only": {
+                    "summary": "look_only",
+                    "value": {
+                      "error": "look_only",
+                      "message": "This helper may look but not suggest changes. Ask the household to change its access in Settings."
+                    }
+                  },
+                  "private_detail": {
+                    "summary": "private_detail",
+                    "value": {
+                      "error": "private_detail",
+                      "message": "Private details are never shared with helpers. Leave out: detail."
+                    }
+                  },
+                  "from_a_web_page": {
+                    "summary": "from_a_web_page",
+                    "value": {
+                      "error": "from_a_web_page",
+                      "message": "The helper API cannot be used from a web page."
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "That table or record could not be found.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                },
+                "example": {
+                  "error": "not_found",
+                  "message": "That table or record could not be found."
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Unexpected error; no submitted value is echoed.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                },
+                "example": {
+                  "error": "server_error",
+                  "message": "Something went wrong. Nothing was changed."
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/tables/{table}/records/{record_id}": {
+      "get": {
+        "summary": "Read one current record",
+        "parameters": [
+          {
+            "name": "table",
+            "in": "path",
+            "required": true,
+            "description": "Table name returned by GET /tables, such as pets__weigh_ins.",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "record_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "headers": {
+              "Cache-Control": {
+                "description": "Responses are not cached.",
+                "schema": {
+                  "type": "string"
+                },
+                "example": "no-store"
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Record"
+                },
+                "example": {
+                  "id": 14,
+                  "created_at": "2026-11-18T09:00:00Z",
+                  "updated_at": "2026-11-18T09:00:00Z",
+                  "source": "person",
+                  "values": {
+                    "pet": 1,
+                    "day": "2026-11-18",
+                    "weight": 4.3
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "This helper's access key is missing or no longer works. Ask the household to check Helpers in Settings.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                },
+                "example": {
+                  "error": "no_key",
+                  "message": "This helper's access key is missing or no longer works. Ask the household to check Helpers in Settings."
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "This helper may not use that part of the household records.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                },
+                "examples": {
+                  "not_allowed": {
+                    "summary": "not_allowed",
+                    "value": {
+                      "error": "not_allowed",
+                      "message": "This helper may not use that part of the household records."
+                    }
+                  },
+                  "look_only": {
+                    "summary": "look_only",
+                    "value": {
+                      "error": "look_only",
+                      "message": "This helper may look but not suggest changes. Ask the household to change its access in Settings."
+                    }
+                  },
+                  "private_detail": {
+                    "summary": "private_detail",
+                    "value": {
+                      "error": "private_detail",
+                      "message": "Private details are never shared with helpers. Leave out: detail."
+                    }
+                  },
+                  "from_a_web_page": {
+                    "summary": "from_a_web_page",
+                    "value": {
+                      "error": "from_a_web_page",
+                      "message": "The helper API cannot be used from a web page."
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "That table or record could not be found.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                },
+                "example": {
+                  "error": "not_found",
+                  "message": "That table or record could not be found."
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Unexpected error; no submitted value is echoed.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                },
+                "example": {
+                  "error": "server_error",
+                  "message": "Something went wrong. Nothing was changed."
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/attention": {
+      "get": {
+        "summary": "Read Needs attention for granted modules",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "headers": {
+              "Cache-Control": {
+                "description": "Responses are not cached.",
+                "schema": {
+                  "type": "string"
+                },
+                "example": "no-store"
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Attention"
+                },
+                "example": {
+                  "running_low": [],
+                  "expiring": [],
+                  "supplies": [],
+                  "gaps": []
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "This helper's access key is missing or no longer works. Ask the household to check Helpers in Settings.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                },
+                "example": {
+                  "error": "no_key",
+                  "message": "This helper's access key is missing or no longer works. Ask the household to check Helpers in Settings."
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "This helper may not use that part of the household records.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                },
+                "examples": {
+                  "not_allowed": {
+                    "summary": "not_allowed",
+                    "value": {
+                      "error": "not_allowed",
+                      "message": "This helper may not use that part of the household records."
+                    }
+                  },
+                  "look_only": {
+                    "summary": "look_only",
+                    "value": {
+                      "error": "look_only",
+                      "message": "This helper may look but not suggest changes. Ask the household to change its access in Settings."
+                    }
+                  },
+                  "private_detail": {
+                    "summary": "private_detail",
+                    "value": {
+                      "error": "private_detail",
+                      "message": "Private details are never shared with helpers. Leave out: detail."
+                    }
+                  },
+                  "from_a_web_page": {
+                    "summary": "from_a_web_page",
+                    "value": {
+                      "error": "from_a_web_page",
+                      "message": "The helper API cannot be used from a web page."
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Unexpected error; no submitted value is echoed.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                },
+                "example": {
+                  "error": "server_error",
+                  "message": "Something went wrong. Nothing was changed."
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/proposals": {
+      "post": {
+        "summary": "Suggest new records for household review",
+        "description": "Requires suggest access. Never changes live module records before a person accepts. Exact retries return 200 and the same batch. Body at most 65536 bytes. Any Origin header is refused.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ProposalRequest"
+              },
+              "example": {
+                "request_key": "miso-20261118-01",
+                "why": "Copied Miso’s invented paper weight log.",
+                "entries": [
+                  {
+                    "table": "pets__weigh_ins",
+                    "values": {
+                      "pet": 1,
+                      "day": "2026-11-18",
+                      "weight": 4.3
+                    }
+                  }
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Suggestions staged for review",
+            "headers": {
+              "Cache-Control": {
+                "description": "Responses are not cached.",
+                "schema": {
+                  "type": "string"
+                },
+                "example": "no-store"
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProposalResult"
+                },
+                "example": {
+                  "batch_id": 31,
+                  "state": "waiting",
+                  "why": "Copied Miso’s invented paper weight log.",
+                  "proposals": [
+                    {
+                      "id": 91,
+                      "position": 0,
+                      "table": "pets__weigh_ins",
+                      "status": "pending"
+                    }
+                  ],
+                  "message": "1 suggestion is waiting for the household to review. Nothing changes until they accept it."
+                }
+              }
+            }
+          },
+          "200": {
+            "description": "Identical request_key retry",
+            "headers": {
+              "Cache-Control": {
+                "description": "Responses are not cached.",
+                "schema": {
+                  "type": "string"
+                },
+                "example": "no-store"
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProposalResult"
+                },
+                "example": {
+                  "batch_id": 31,
+                  "state": "waiting",
+                  "why": "Copied Miso’s invented paper weight log.",
+                  "proposals": [
+                    {
+                      "id": 91,
+                      "position": 0,
+                      "table": "pets__weigh_ins",
+                      "status": "pending"
+                    }
+                  ],
+                  "message": "1 suggestion is waiting for the household to review. Nothing changes until they accept it."
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "This request could not be read. Check the fields and try again.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                },
+                "examples": {
+                  "bad_request": {
+                    "summary": "bad_request",
+                    "value": {
+                      "error": "bad_request",
+                      "message": "This request could not be read. Check the fields and try again."
+                    }
+                  },
+                  "missing_key": {
+                    "summary": "bad_request",
+                    "value": {
+                      "error": "bad_request",
+                      "message": "Give this request a key so a retry cannot add the same rows twice."
+                    }
+                  },
+                  "missing_why": {
+                    "summary": "bad_request",
+                    "value": {
+                      "error": "bad_request",
+                      "message": "Say why, in a sentence, so the household knows where these came from."
+                    }
+                  },
+                  "too_many_entries": {
+                    "summary": "bad_request",
+                    "value": {
+                      "error": "bad_request",
+                      "message": "Send 50 suggestions or fewer at a time."
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "This helper's access key is missing or no longer works. Ask the household to check Helpers in Settings.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                },
+                "example": {
+                  "error": "no_key",
+                  "message": "This helper's access key is missing or no longer works. Ask the household to check Helpers in Settings."
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "This helper may not use that part of the household records.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                },
+                "examples": {
+                  "not_allowed": {
+                    "summary": "not_allowed",
+                    "value": {
+                      "error": "not_allowed",
+                      "message": "This helper may not use that part of the household records."
+                    }
+                  },
+                  "look_only": {
+                    "summary": "look_only",
+                    "value": {
+                      "error": "look_only",
+                      "message": "This helper may look but not suggest changes. Ask the household to change its access in Settings."
+                    }
+                  },
+                  "private_detail": {
+                    "summary": "private_detail",
+                    "value": {
+                      "error": "private_detail",
+                      "message": "Private details are never shared with helpers. Leave out: detail."
+                    }
+                  },
+                  "from_a_web_page": {
+                    "summary": "from_a_web_page",
+                    "value": {
+                      "error": "from_a_web_page",
+                      "message": "The helper API cannot be used from a web page."
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "This request key was already used for different suggestions. Check the earlier batch, then use a new key.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                },
+                "example": {
+                  "error": "request_key_reused",
+                  "message": "This request key was already used for different suggestions. Check the earlier batch, then use a new key."
+                }
+              }
+            }
+          },
+          "413": {
+            "description": "This request is too large. Send fewer suggestions at a time.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                },
+                "example": {
+                  "error": "too_large",
+                  "message": "This request is too large. Send fewer suggestions at a time."
+                }
+              }
+            }
+          },
+          "415": {
+            "description": "Send the body as JSON (Content-Type: application/json).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                },
+                "example": {
+                  "error": "needs_json",
+                  "message": "Send the body as JSON (Content-Type: application/json)."
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Some values could not be used. Nothing was saved.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                },
+                "example": {
+                  "error": "invalid",
+                  "message": "Weigh-ins: some values could not be used. Nothing was saved.",
+                  "problems": [
+                    {
+                      "entry": 0,
+                      "table": "pets__weigh_ins",
+                      "field": "weight",
+                      "message": "must be at least 0."
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "This helper has reached 200 suggestions today. Try again tomorrow.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                },
+                "example": {
+                  "error": "daily_limit",
+                  "message": "This helper has reached 200 suggestions today. Try again tomorrow."
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Unexpected error; no submitted value is echoed.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                },
+                "example": {
+                  "error": "server_error",
+                  "message": "Something went wrong. Nothing was changed."
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/batches": {
+      "get": {
+        "summary": "List this helper’s own suggestion batches",
+        "parameters": [
+          {
+            "name": "after",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 0,
+              "default": 0
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 200,
+              "default": 20
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "headers": {
+              "Cache-Control": {
+                "description": "Responses are not cached.",
+                "schema": {
+                  "type": "string"
+                },
+                "example": "no-store"
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "batches",
+                    "next_after"
+                  ],
+                  "properties": {
+                    "batches": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/BatchSummary"
+                      }
+                    },
+                    "next_after": {
+                      "type": [
+                        "integer",
+                        "null"
+                      ]
+                    }
+                  }
+                },
+                "example": {
+                  "batches": [
+                    {
+                      "id": 31,
+                      "why": "Copied Miso’s invented paper weight log.",
+                      "created_at": "2026-11-18T09:01:00Z",
+                      "totals": {
+                        "total": 1,
+                        "pending": 1,
+                        "accepted": 0,
+                        "rejected": 0
+                      }
+                    }
+                  ],
+                  "next_after": null
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "This helper's access key is missing or no longer works. Ask the household to check Helpers in Settings.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                },
+                "example": {
+                  "error": "no_key",
+                  "message": "This helper's access key is missing or no longer works. Ask the household to check Helpers in Settings."
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "This helper may not use that part of the household records.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                },
+                "examples": {
+                  "not_allowed": {
+                    "summary": "not_allowed",
+                    "value": {
+                      "error": "not_allowed",
+                      "message": "This helper may not use that part of the household records."
+                    }
+                  },
+                  "look_only": {
+                    "summary": "look_only",
+                    "value": {
+                      "error": "look_only",
+                      "message": "This helper may look but not suggest changes. Ask the household to change its access in Settings."
+                    }
+                  },
+                  "private_detail": {
+                    "summary": "private_detail",
+                    "value": {
+                      "error": "private_detail",
+                      "message": "Private details are never shared with helpers. Leave out: detail."
+                    }
+                  },
+                  "from_a_web_page": {
+                    "summary": "from_a_web_page",
+                    "value": {
+                      "error": "from_a_web_page",
+                      "message": "The helper API cannot be used from a web page."
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "That table or record could not be found.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                },
+                "example": {
+                  "error": "not_found",
+                  "message": "That table or record could not be found."
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Unexpected error; no submitted value is echoed.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                },
+                "example": {
+                  "error": "server_error",
+                  "message": "Something went wrong. Nothing was changed."
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/batches/{batch_id}": {
+      "get": {
+        "summary": "Read one of this helper’s suggestion batches",
+        "parameters": [
+          {
+            "name": "batch_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "headers": {
+              "Cache-Control": {
+                "description": "Responses are not cached.",
+                "schema": {
+                  "type": "string"
+                },
+                "example": "no-store"
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BatchSummary"
+                },
+                "example": {
+                  "id": 31,
+                  "why": "Copied Miso’s invented paper weight log.",
+                  "created_at": "2026-11-18T09:01:00Z",
+                  "totals": {
+                    "total": 1,
+                    "pending": 1,
+                    "accepted": 0,
+                    "rejected": 0
+                  },
+                  "proposals": [
+                    {
+                      "id": 91,
+                      "position": 0,
+                      "table": "pets__weigh_ins",
+                      "status": "pending",
+                      "record_id": null,
+                      "reason": null
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "This helper's access key is missing or no longer works. Ask the household to check Helpers in Settings.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                },
+                "example": {
+                  "error": "no_key",
+                  "message": "This helper's access key is missing or no longer works. Ask the household to check Helpers in Settings."
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "This helper may not use that part of the household records.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                },
+                "examples": {
+                  "not_allowed": {
+                    "summary": "not_allowed",
+                    "value": {
+                      "error": "not_allowed",
+                      "message": "This helper may not use that part of the household records."
+                    }
+                  },
+                  "look_only": {
+                    "summary": "look_only",
+                    "value": {
+                      "error": "look_only",
+                      "message": "This helper may look but not suggest changes. Ask the household to change its access in Settings."
+                    }
+                  },
+                  "private_detail": {
+                    "summary": "private_detail",
+                    "value": {
+                      "error": "private_detail",
+                      "message": "Private details are never shared with helpers. Leave out: detail."
+                    }
+                  },
+                  "from_a_web_page": {
+                    "summary": "from_a_web_page",
+                    "value": {
+                      "error": "from_a_web_page",
+                      "message": "The helper API cannot be used from a web page."
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "That table or record could not be found.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                },
+                "example": {
+                  "error": "not_found",
+                  "message": "That table or record could not be found."
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Unexpected error; no submitted value is echoed.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                },
+                "example": {
+                  "error": "server_error",
+                  "message": "Something went wrong. Nothing was changed."
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "securitySchemes": {
+      "HelperBearer": {
+        "type": "http",
+        "scheme": "bearer",
+        "description": "Send the one-time helper key only in Authorization. Cookies, query parameters and form fields are not accepted."
+      }
+    },
+    "schemas": {
+      "Error": {
+        "type": "object",
+        "required": [
+          "error",
+          "message"
+        ],
+        "properties": {
+          "error": {
+            "type": "string"
+          },
+          "message": {
+            "type": "string"
+          },
+          "problems": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "required": [
+                "entry",
+                "table",
+                "field",
+                "message"
+              ],
+              "properties": {
+                "entry": {
+                  "type": "integer"
+                },
+                "table": {
+                  "type": "string"
+                },
+                "field": {
+                  "type": "string"
+                },
+                "message": {
+                  "type": "string"
+                }
+              },
+              "additionalProperties": false
+            }
+          }
+        },
+        "additionalProperties": false
+      },
+      "Limits": {
+        "type": "object",
+        "properties": {
+          "entries_per_call": {
+            "type": "integer"
+          },
+          "suggestions_per_day": {
+            "type": "integer"
+          },
+          "suggestions_left_today": {
+            "type": "integer"
+          },
+          "max_body_bytes": {
+            "type": "integer"
+          }
+        },
+        "required": [
+          "entries_per_call",
+          "suggestions_per_day",
+          "suggestions_left_today",
+          "max_body_bytes"
+        ]
+      },
+      "Me": {
+        "type": "object",
+        "required": [
+          "name",
+          "access",
+          "modules",
+          "private_details",
+          "limits",
+          "api_version",
+          "program_version"
+        ],
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "access": {
+            "type": "string",
+            "enum": [
+              "read",
+              "suggest"
+            ]
+          },
+          "modules": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "private_details": {
+            "const": false
+          },
+          "limits": {
+            "$ref": "#/components/schemas/Limits"
+          },
+          "api_version": {
+            "type": "string"
+          },
+          "program_version": {
+            "type": "string"
+          }
+        }
+      },
+      "Column": {
+        "type": "object",
+        "required": [
+          "name",
+          "label",
+          "type",
+          "required"
+        ],
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "label": {
+            "type": "string"
+          },
+          "type": {
+            "type": "string"
+          },
+          "to": {
+            "type": "string"
+          },
+          "required": {
+            "type": "boolean"
+          },
+          "help": {
+            "type": "string"
+          },
+          "unit": {
+            "type": "string"
+          },
+          "min": {
+            "type": "number"
+          },
+          "choices": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "required": [
+                "key",
+                "label"
+              ],
+              "properties": {
+                "key": {
+                  "type": "string"
+                },
+                "label": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        }
+      },
+      "Table": {
+        "type": "object",
+        "required": [
+          "table",
+          "module",
+          "title",
+          "can_suggest",
+          "columns",
+          "worked_out",
+          "private_columns_left_out"
+        ],
+        "properties": {
+          "table": {
+            "type": "string"
+          },
+          "module": {
+            "type": "string"
+          },
+          "title": {
+            "type": "string"
+          },
+          "can_suggest": {
+            "type": "boolean"
+          },
+          "columns": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Column"
+            }
+          },
+          "worked_out": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "private_columns_left_out": {
+            "type": "integer"
+          },
+          "reason": {
+            "type": "string"
+          }
+        }
+      },
+      "Record": {
+        "type": "object",
+        "required": [
+          "id",
+          "created_at",
+          "updated_at",
+          "source",
+          "values"
+        ],
+        "properties": {
+          "id": {
+            "type": "integer"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "updated_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "source": {
+            "type": "string"
+          },
+          "values": {
+            "type": "object",
+            "additionalProperties": true,
+            "description": "Dynamic, nonprivate module values; choice keys and linked IDs, with ISO dates."
+          }
+        }
+      },
+      "ProposalEntry": {
+        "type": "object",
+        "required": [
+          "table",
+          "values"
+        ],
+        "properties": {
+          "table": {
+            "type": "string"
+          },
+          "values": {
+            "type": "object",
+            "additionalProperties": true,
+            "description": "Raw values for a new row; use only suggestible fields returned by GET /tables."
+          }
+        },
+        "additionalProperties": false
+      },
+      "ProposalRequest": {
+        "type": "object",
+        "required": [
+          "request_key",
+          "why",
+          "entries"
+        ],
+        "properties": {
+          "request_key": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 100,
+            "pattern": "^[A-Za-z0-9._:-]+$"
+          },
+          "why": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 300
+          },
+          "entries": {
+            "type": "array",
+            "minItems": 1,
+            "maxItems": 50,
+            "items": {
+              "$ref": "#/components/schemas/ProposalEntry"
+            }
+          }
+        },
+        "additionalProperties": false
+      },
+      "ProposalStatus": {
+        "type": "object",
+        "required": [
+          "id",
+          "position",
+          "table",
+          "status"
+        ],
+        "properties": {
+          "id": {
+            "type": "integer"
+          },
+          "position": {
+            "type": "integer"
+          },
+          "table": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "pending",
+              "accepted",
+              "rejected"
+            ]
+          },
+          "record_id": {
+            "type": [
+              "integer",
+              "null"
+            ]
+          },
+          "reason": {
+            "type": [
+              "string",
+              "null"
+            ]
+          }
+        }
+      },
+      "ProposalResult": {
+        "type": "object",
+        "required": [
+          "batch_id",
+          "state",
+          "why",
+          "proposals",
+          "message"
+        ],
+        "properties": {
+          "batch_id": {
+            "type": "integer"
+          },
+          "state": {
+            "const": "waiting"
+          },
+          "why": {
+            "type": "string"
+          },
+          "proposals": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ProposalStatus"
+            }
+          },
+          "message": {
+            "type": "string"
+          }
+        }
+      },
+      "BatchSummary": {
+        "type": "object",
+        "required": [
+          "id",
+          "why",
+          "created_at",
+          "totals"
+        ],
+        "properties": {
+          "id": {
+            "type": "integer"
+          },
+          "why": {
+            "type": "string"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "totals": {
+            "type": "object",
+            "properties": {
+              "total": {
+                "type": "integer"
+              },
+              "pending": {
+                "type": "integer"
+              },
+              "accepted": {
+                "type": "integer"
+              },
+              "rejected": {
+                "type": "integer"
+              }
+            },
+            "required": [
+              "total",
+              "pending",
+              "accepted",
+              "rejected"
+            ]
+          },
+          "proposals": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ProposalStatus"
+            }
+          }
+        }
+      },
+      "Attention": {
+        "type": "object",
+        "description": "Provisional envelope; confirm field names with the shipped api.py. Only granted modules may contribute.",
+        "properties": {
+          "running_low": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "additionalProperties": true
+            }
+          },
+          "expiring": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "additionalProperties": true
+            }
+          },
+          "supplies": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "additionalProperties": true
+            }
+          },
+          "gaps": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "additionalProperties": true
+            }
+          }
+        },
+        "additionalProperties": false
+      }
+    }
+  }
+}
