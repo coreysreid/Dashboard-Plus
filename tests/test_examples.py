@@ -31,10 +31,9 @@ class ExampleHouseholdTests(TempDirTestCase):
         self.assertEqual(result["low"], ["AA batteries", "Baked beans", "Dog food (Rex)", "Reliever puffer (Jack)",
                                          "Tinned tomatoes"])
         self.assertEqual(result["expiring"], ["Muesli bars", "Monthly flea and tick chew", "Long-life milk",
-                                              "Upstairs hall smoke alarm", "Family car: Routine service", "Sunscreen SPF 50", "Rex", "Adrenaline auto-injector (Emily)",
+                                              "Upstairs hall smoke alarm", "Family car: Routine service", "Clean the gutters",
+                                              "Sunscreen SPF 50", "Rex", "Adrenaline auto-injector (Emily)",
                                               "Home insurance policy", "Kidney beans"])  # the 3 tins on Shelf 3, not the 10 in the garage
-                                              "Upstairs hall smoke alarm", "Family car: Routine service", "Clean the gutters", "Sunscreen SPF 50", "Rex", "Adrenaline auto-injector (Emily)",
-                                              "Kidney beans"])  # the 3 tins on Shelf 3, not the 10 in the garage
         beans = result["conn"].execute("SELECT quantity FROM stock__items WHERE name = 'Kidney beans'").fetchone()
         self.assertEqual(beans[0], 13)
         self.assertEqual(result["gaps"], 2)  # their only first aid kit is in the car; Home layout is filled in
@@ -61,9 +60,8 @@ class ExampleHouseholdTests(TempDirTestCase):
         result = self.summary("taylor")
         self.assertEqual((result["days"], result["need"]), (4.0, 3))
         self.assertEqual(result["low"], ["AA batteries", "Tinned soup"])
-        self.assertEqual(result["gaps"], 8)  # Home layout asks about the rest; nobody to call for the car; one paper's place
-        self.assertEqual(result["gaps"], 8)  # Home layout asks about the rest; nobody to call for the car yet;
-        # and where the radiators are bled
+        # Home layout asks about the rest; nobody to call for the car yet; one paper's place; where the radiators are bled
+        self.assertEqual(result["gaps"], 9)
         self.assertEqual(result["expiring"], ["Oat milk", "Small car: MOT test"])
         gaps = [g.message for g in watch.gaps(result["conn"], result["registry"])]
         for question in ("Where is the water shut-off? It is not written down yet.",
