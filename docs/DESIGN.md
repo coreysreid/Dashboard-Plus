@@ -1188,7 +1188,7 @@ choice; its "costs" and "revisit if" sections must be honest.
 | Access | This computer only | 0011 |
 | Migrations | One track per module | 0012 |
 | Agent-friendly files | INDEX.md in every folder, CI-checked | 0013 |
-| Licence | MIT | 0014 |
+| Licence | AGPL-3.0-or-later | 0065 (was MIT, 0014) |
 
 The process itself is decision 0001. The questions Corey stays involved in are
 about the product: screens, wording, what the household sees and does.

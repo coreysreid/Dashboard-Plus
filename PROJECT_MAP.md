@@ -14,7 +14,7 @@ Follow the INDEX.md in a folder before opening its files. Hidden files are not l
 | CONTRIBUTING.md | Public contribution rules and checks | before contributing |
 | SECURITY.md | How to report a problem that could expose household data | reporting security concerns |
 | CLAUDE.md | One line pointing to AGENTS.md | never; tools read it for you |
-| LICENSE | MIT licence, Copyright (c) 2026 Corey Reid | checking reuse terms |
+| LICENSE | GNU AGPL v3 or later; Copyright (C) 2026 Corey Reid (README) | checking reuse terms |
 | PROJECT_MAP.md | Generated one-page map of every INDEX.md | you want the whole picture |
 | config.example.toml | Example settings (the real file lives in the data folder) | adding a setting |
 | pyproject.toml | Project name, version and Python version | changing project metadata |
@@ -65,7 +65,7 @@ marked Superseded. Each lists downsides, cost to undo, and the sign it was wrong
 | [0011](0011-the-program-listens-on-this-computer-only.md) | The program listens on this computer only | Accepted |
 | [0012](0012-each-module-has-its-own-migration-track.md) | Each module has its own migration track | Accepted |
 | [0013](0013-a-short-index-md-in-every-folder-checked-by-ci.md) | A short INDEX.md in every folder, checked by CI | Accepted |
-| [0014](0014-mit-licence.md) | MIT licence | Accepted |
+| [0014](0014-mit-licence.md) | MIT licence | Superseded by 0065 |
 | [0015](0015-household-stock-and-watch-views-in-v1.md) | Household stock module and watch views in v1 | Accepted |
 | [0016](0016-people-module-in-v1-on-by-default.md) | People module in v1, on by default | Accepted |
 | [0017](0017-only-ask-plausible-questions.md) | Only ask plausible questions | Accepted |
@@ -113,9 +113,13 @@ marked Superseded. Each lists downsides, cost to undo, and the sign it was wrong
 | [0059](0059-private-details-only-when-asked.md) | Private details sent to the screen only when the person asks (lists, records, private sheets) | Accepted |
 | [0060](0060-garden-example-outside-installed-modules.md) | Keep the worked garden outside installed modules | Accepted |
 | [0061](0061-public-reporting-and-contribution-rules.md) | Public contribution and private security reporting routes | Accepted |
+<<<<<<< HEAD
 | [0062](0062-documents-promoted.md) | Important documents switched on from Lane B's draft: places and people linked, no document numbers stored | Accepted |
 | [0063](0063-home-care-promoted.md) | Home care switched on from Lane B's draft: jobs at your places, done by your People, on dates you type; no repeats invented | Accepted |
 | [0064](0064-real-browser-check.md) | A real-browser check clicks through setup, dates, stock in, private details and closing in Chromium (Linux CI job); a refused save keeps a private detail | Accepted |
+=======
+| [0065](0065-agpl-licence.md) | Licence changed to GNU AGPL v3 or later (from MIT) | Accepted |
+>>>>>>> origin/main
 | [TEMPLATE](TEMPLATE.md) | Blank record to copy for a new decision | recording a decision |
 
 ## docs/releases/  (summary: release checks, one file per milestone)
