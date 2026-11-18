@@ -66,6 +66,8 @@ the "Requests" table of docs/WORKSTREAMS.md.
 
 | Batch 10 item 32: Agent API examples | ready | PR pending | Six routes, refusals and Review effects in helpers/API_EXAMPLES.md. |
 
+| Batch 10 item 34: computer-loss guide | ready | PR pending | Four recovery days, each with household steps, and a clear planned-feature warning. |
+
 ## Messages to Lane A
 
 - **Supplies print wording:** The water section currently prints all water batches, including those not safe to drink. The proposed title says “Drinking and other water”; a drinking-only section or total needs a `drinking` filter and visible indication. See `workbench/reports/2026-11-17-wording-consistency.md`.
