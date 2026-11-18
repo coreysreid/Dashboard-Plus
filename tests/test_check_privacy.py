@@ -82,3 +82,12 @@ class PrivacyCheckTests(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+
+
+class ConflictMarkerTests(unittest.TestCase):
+    """An unfinished merge must never pass the checks (it once slipped into the decisions index)."""
+
+    def test_conflict_markers_are_flagged(self):
+        found = scan_files({"docs/a.md": "ok\n" + "<" * 7 + " HEAD\nmine\n" + "=" * 7 + "\ntheirs\n" + ">" * 7 + " main\n"})
+        self.assertEqual([f.reason for f in found], ["an unfinished merge (conflict marker)"] * 2)
+        self.assertEqual(scan_files({"docs/a.md": "Heading\n=======\n"}), [])

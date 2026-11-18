@@ -113,13 +113,10 @@ marked Superseded. Each lists downsides, cost to undo, and the sign it was wrong
 | [0059](0059-private-details-only-when-asked.md) | Private details sent to the screen only when the person asks (lists, records, private sheets) | Accepted |
 | [0060](0060-garden-example-outside-installed-modules.md) | Keep the worked garden outside installed modules | Accepted |
 | [0061](0061-public-reporting-and-contribution-rules.md) | Public contribution and private security reporting routes | Accepted |
-<<<<<<< HEAD
 | [0062](0062-documents-promoted.md) | Important documents switched on from Lane B's draft: places and people linked, no document numbers stored | Accepted |
 | [0063](0063-home-care-promoted.md) | Home care switched on from Lane B's draft: jobs at your places, done by your People, on dates you type; no repeats invented | Accepted |
 | [0064](0064-real-browser-check.md) | A real-browser check clicks through setup, dates, stock in, private details and closing in Chromium (Linux CI job); a refused save keeps a private detail | Accepted |
-=======
 | [0065](0065-agpl-licence.md) | Licence changed to GNU AGPL v3 or later (from MIT) | Accepted |
->>>>>>> origin/main
 | [TEMPLATE](TEMPLATE.md) | Blank record to copy for a new decision | recording a decision |
 
 ## docs/releases/  (summary: release checks, one file per milestone)
