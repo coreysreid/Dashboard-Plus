@@ -46,6 +46,14 @@ columns.due_on = { type = "date" }
 columns.done = { type = "boolean", default = false }
 columns.notes = { type = "longtext" }
 
+# One press marks a job done; its reminder goes because it only looks at jobs not done (decision 0075).
+[[tables.jobs.actions]]
+key = "done"
+label = "Mark done"
+show_when = { done = false }
+set = { done = true }
+done = "Marked as done. Add a new job if it needs doing again."
+
 [tables.jobs.watch]
 # A finished job is never reminded about (decision 0072): the reminder uses only the household's own due date.
 expiring = { date = "due_on", warn_days = 14, wording = "due", what = "job", where = { done = false } }

@@ -74,6 +74,24 @@ class GardenModuleTests(TempDirTestCase):
         self.job(due_on=self.day(1), done=None)
         self.assertIn("Check bed ties", self.due())
 
+    def test_mark_done_is_one_press_and_the_reminder_goes(self):
+        """A job not done (or never ticked either way) has a Mark done button; pressing it ends the reminder (0075)."""
+        job = self.job(due_on=self.day(-1))
+        blank = self.job("Stake the beans", due_on=self.day(2), done=None)
+        settings.put(self.conn, "setup.done", True)
+        app = create_app("t", lambda: None, self.report, data_dir=self.data, session_key="k")
+        app.config["PORT"] = PORT
+        client = app.test_client()
+        client.get("/?key=k", base_url=BASE)
+        csrf = app.config["CSRF_TOKEN"]
+        for record in (job, blank):
+            path = f"/t/garden__jobs/{record}"
+            self.assertIn(">Mark done</button>", client.get(path, base_url=BASE).get_data(as_text=True))
+            self.assertEqual(client.post(f"{path}/do/done", data={"_csrf": csrf}, base_url=BASE).status_code, 302)
+            self.assertEqual(self.records.get("garden__jobs", record)["done"], 1)
+            self.assertNotIn(">Mark done</button>", client.get(path, base_url=BASE).get_data(as_text=True))
+        self.assertEqual(self.due(), {})
+
     def test_a_job_without_a_date_is_never_a_reminder(self):
         self.job()
         self.assertEqual(self.due(), {})

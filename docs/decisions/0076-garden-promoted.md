@@ -50,6 +50,10 @@ jobs still to do. There is no growing advice anywhere in it.
   not need Household stock to follow it. It is not the installed module, and
   its own test (`tests/test_example_garden.py`) still passes.
 
+- **Mark done.** A garden job has a one-press **Mark done** button while it is
+  not done (decision 0075). It only ticks "done", so the reminder goes; a job
+  that needs doing again is added as a new job.
+
 ## Why we chose it
 - A garden is a common home record, and the one thing blocking it (a reminder
   that would stay on after a job was done) is fixed in the core (decision 0072).

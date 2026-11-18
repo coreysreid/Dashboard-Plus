@@ -61,6 +61,9 @@ on, and the form says so in those words.
   checked when the module loads.
 - **Used straight away** in Things lent out: Mark returned, and Returned on
   not before Lent on.
+- **Vegetable garden jobs get Mark done** (added when Garden was switched on
+  in the same session, decision 0076): it only ticks "done", which ends the
+  job's reminder.
 - **Home care gets no button.** Its natural one-press action, "Mark done", must
   add a separate Work done record (and leave the job's dates for the household
   to type, decision 0063). An action that *creates another record* is a
