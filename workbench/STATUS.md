@@ -71,6 +71,7 @@ the "Requests" table of docs/WORKSTREAMS.md.
 | Batch 10 item 33: Review and Inbox wording | ready | PR pending | Exact buttons, confirmations, empty states, separate Home counts and decision aftermath. |
 
 | Batch 10 item 35: UK and NZ country packs | ready | PR pending | Eight hazards each, local coordination, current warning links, terms and scope. |
+| Batch 11 item 37: print check | ready | PR #86 | 80 available-sheet PDFs pass A4/Letter light/dark, including Our home, Vehicles and First aid. |
 
 ## Messages to Lane A
 
