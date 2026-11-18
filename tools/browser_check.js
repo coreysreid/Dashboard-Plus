@@ -142,6 +142,27 @@ function expect(condition, message) { if (!condition) throw new Failed(message);
     ok(`stock in: batches follow the item; blank wording follows Reason; Use by and place hide for a batch; ${before} -> ${after}`);
   }
 
+  async function checkStocktake() {  // Count this batch: one correction of the difference, never the count on top
+    const name = plan.stock.item;
+    const before = (await itemCells(name)).quantity;
+    await page.click(`a[aria-label="Open ${name}"]`);
+    const count = page.locator('a[aria-label^="Count "]').first();
+    expect(await count.count(), `"${name}" should offer Count next to each batch; it does not.`);
+    await Promise.all([page.waitForNavigation(), count.click()]);
+    const recorded = Number(((await text('form.record')).match(/Recorded here: ([\d.]+)/) || [])[1]);
+    expect(!Number.isNaN(recorded), 'Count this batch should say how many are recorded here.');
+    await page.fill('#f-counted', String(recorded + 2));
+    await submit('button:has-text("Review count")');
+    const review = await text('main');
+    expect(review.includes('This adds 2') && review.includes('stocktake correction'), `The review should say it adds 2 as a stocktake correction; it says "${review}".`);
+    await submit('button:has-text("Save correction")');
+    const saved = await text('[role=status]');
+    expect(saved.includes(`This batch has ${recorded + 2}`) && saved.includes('Stocktake correction: +2'), `After saving, the page should say the batch has ${recorded + 2} and show the +2 correction; it says "${saved}".`);
+    const after = (await itemCells(name)).quantity;
+    expect(Math.abs(after - before - 2) < 1e-9, `Counting ${recorded + 2} where ${recorded} were recorded should take "${name}" from ${before} to ${before + 2}, but it shows ${after}.`);
+    ok(`stocktake: counted ${recorded + 2} where ${recorded} were recorded; one correction of +2; ${before} -> ${after}`);
+  }
+
   async function checkPrivateDetail() {
     const p = plan.private;
     await goto('/t/people__important_info');
@@ -198,7 +219,7 @@ function expect(condition, message) { if (!condition) throw new Failed(message);
     } else {
       await goto(plan.launch);
       await checkDates();
-      if (plan.stock) await checkStockIn();
+      if (plan.stock) { await checkStockIn(); await checkStocktake(); }
       if (plan.private) { await checkPrivateDetail(); await checkPrivateSheet(); }
       await checkClose();
     }

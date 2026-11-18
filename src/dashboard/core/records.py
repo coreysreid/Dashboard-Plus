@@ -33,6 +33,14 @@ class RecordNotFound(PlainError):
     """The record does not exist (or has been deleted)."""
 
 
+class CountOutOfDate(ValidationError):
+    """A batch changed after its count was reviewed; `current` is the amount it holds now (decision 0070)."""
+
+    def __init__(self, problems: dict[str, str], current: Decimal):
+        self.current = current
+        super().__init__(problems)
+
+
 @dataclass
 class TableInfo:
     """One real table: its module, its declaration and its database name."""
@@ -485,6 +493,10 @@ class Records:
             return
         if current is not None or owner is None:
             return
+        counts = rule.get("counts")
+        if counts and merged.get(rule["direction"]) in (counts["more"], counts["less"]):
+            raise ValidationError({link: "is needed for a stocktake correction: it changes one batch. Choose the "
+                                         "batch, or open it and use Count this batch."})
         if merged.get(rule["direction"]) in rule["adds"]:
             new_values = {owner_col: owner, rule["quantity"]: 0}
             new_values.update({k: merged.get(v) for k, v in rule["new_batch"].items()
@@ -512,6 +524,92 @@ class Records:
                                    f"({_plain_number(found[rule['quantity']])}{when}). Record that batch first, "
                                    f"then the rest from the next one, or choose a batch."})
         cleaned[link] = found["id"]
+
+    # ----- stocktake: counting one batch (decision 0070, DESIGN.md 5.7) ------------------------
+
+    def count_table(self, batch_table: str) -> TableInfo | None:
+        """The table (such as stock in and out) whose `counts` reasons record a count of `batch_table`."""
+        for other in self.registry.values():
+            rule = other.table.adjusts
+            if rule and rule.get("counts") and table_name(other.module.name, rule["target"]) == batch_table:
+                return other
+        return None
+
+    def check_count(self, batch_table: str, batch_id: int, counted) -> dict:
+        """What counting one batch would change, without saving anything.
+
+        Returns the amount recorded, the amount counted, the difference, the item it belongs to, the
+        item's amount before and after, and how many of the item's batches would still hold some."""
+        movements = self.count_table(batch_table)
+        if movements is None:
+            raise RecordNotFound("These records cannot be counted.")
+        rule = movements.table.adjusts
+        batches = self.info(batch_table)
+        row = self._row(batches, batch_id)
+        column = batches.table.columns[rule["quantity"]]
+        try:
+            number = self._clean_value(batches, column, counted)
+        except ValueError as error:
+            raise ValidationError({"counted": str(error)}) from None
+        if number is None:
+            raise ValidationError({"counted": "is needed: type how many you counted, or 0 if there are none."})
+        if Decimal(str(counted).strip().replace(",", "")) != Decimal(str(number)):
+            raise ValidationError({"counted": "has more decimal places than can be kept (6 at most)."})
+        recorded, counted_now = Decimal(str(row[rule["quantity"]] or 0)), Decimal(str(number))
+        owner_col, total = rule["belongs_to"], batches.table.total
+        owner = row[owner_col]
+        others = [Decimal(str(r[0])) for r in self.conn.execute(
+            f"SELECT {rule['quantity']} FROM {batches.name} WHERE deleted_at IS NULL AND {owner_col} = ? "
+            f"AND id != ? AND {rule['quantity']} > 0", (owner, batch_id))]
+        owner_before = None
+        if total:
+            owner_info = self.registry[table_name(batches.module.name, total["target"])]
+            value = self.conn.execute(f"SELECT {total['into']} FROM {owner_info.name} WHERE id = ?",
+                                      (owner,)).fetchone()
+            owner_before = Decimal(str(value[0] or 0)) if value else None
+        difference = counted_now - recorded
+        return {"batch": batch_id, "owner": owner, "recorded": recorded, "counted": counted_now,
+                "difference": difference, "owner_before": owner_before,
+                "owner_after": None if owner_before is None else owner_before + difference,
+                "batches_holding": len(others) + (1 if counted_now > 0 else 0)}
+
+    def count_batch(self, batch_table: str, batch_id: int, counted, recorded, actor: str = "person",
+                    happened_on: str | None = None) -> dict:
+        """Save a stocktake count of one batch as one stock correction (decision 0070).
+
+        `recorded` is the amount the person saw when they reviewed the count. The difference is saved
+        as its own stock in or out record ("counted more" or "counted less"), never as the count added on
+        top and never by typing over the amount. If the batch already holds what was counted, nothing is
+        saved (so a second click on Save adds nothing). If it changed since the review, CountOutOfDate."""
+        self._check_actor(actor)
+        movements = self.count_table(batch_table)
+        with db.transaction(self.conn):
+            plan = self.check_count(batch_table, batch_id, counted)
+            if not plan["difference"]:
+                return dict(plan, status="same", movement=None)
+            try:
+                seen = Decimal(str(recorded).strip())
+            except (InvalidOperation, AttributeError):
+                seen = None
+            if seen != plan["recorded"]:
+                raise CountOutOfDate({"counted": f"is out of date: this batch now shows "
+                                                 f"{_plain_number(plan['recorded'])}. Check the count again."},
+                                     plan["recorded"])
+            rule = movements.table.adjusts
+            counts = rule["counts"]
+            values = {rule["belongs_to"]: plan["owner"], rule["link"]: batch_id,
+                      rule["direction"]: counts["more"] if plan["difference"] > 0 else counts["less"],
+                      rule["amount"]: str(abs(plan["difference"]))}
+            if counts.get("note"):
+                values[counts["note"]] = (f"Stocktake: counted {_plain_number(plan['counted'])}; "
+                                          f"{_plain_number(plan['recorded'])} were recorded.")
+            if happened_on:
+                date_col = next((c.name for c in movements.table.columns.values()
+                                 if c.type == "date" and c.default == "today"), None)
+                if date_col:
+                    values[date_col] = happened_on
+            movement = self._create(movements, values, actor)
+            return dict(plan, status="saved", movement=movement)
 
     def update(self, name: str, record_id: int, values: dict, actor: str = "person") -> dict:
         """Change some fields of a record; return what changed as {field: [before, after]}."""

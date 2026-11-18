@@ -1,4 +1,4 @@
-"""Click through the real dashboard in Chromium (setup, dates, stock in, private details, closing) and fail loudly."""
+"""Click through the real dashboard in Chromium (setup, dates, stock in, stocktake, private details, closing) and fail loudly."""
 from __future__ import annotations
 
 import argparse
