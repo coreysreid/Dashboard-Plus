@@ -24,6 +24,9 @@ expected, actual, severity (blocker, important, minor), suggested change.
 | 2026-11-18-wording-inventory.csv | 472 current strings and twelve exact proposed changes. | reviewing wording locations |
 | 2026-11-17-wording-consistency.md | Exact shipped-module wording replacements and term rules. | polishing module words |
 | 2026-11-17-wording-inventory.csv | All 310 authored or rendered module strings with exact proposals. | applying the wording table |
+| 2026-11-18-current-build-ux.md | Batch 12 three-household UX check with exact findings and 320px pass. | refining current screens |
+| 2026-11-18-ux-route-matrix.csv | 39 route, status and phone-width measurements. | reproducing the phone pass |
+| ux_2026_11_18/ | Seven invented-household 320px screenshots. | seeing the current UI |
 | 2026-11-17-sensitive-detail-audit.md | Read-only audit of private fields in shipped screens, history and backups. | tightening privacy before M2 helpers and export |
 | 2026-11-18-print-check.md | A4/Letter light/dark results including Home layout, Vehicles and Medical sheets. | checking printable sheets |
 | 2026-11-18-print-matrix.csv | 84 route and PDF combinations, four expected unavailable. | reproducing print results |
