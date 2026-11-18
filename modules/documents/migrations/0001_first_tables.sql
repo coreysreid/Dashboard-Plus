@@ -14,6 +14,7 @@ CREATE TABLE documents__documents (
     name TEXT,
     kind TEXT,
     holder INTEGER REFERENCES people__people(id) ON DELETE SET NULL,
+    holder TEXT,
     place INTEGER REFERENCES stock__places(id) ON DELETE RESTRICT,
     renew_by TEXT,
     notes TEXT

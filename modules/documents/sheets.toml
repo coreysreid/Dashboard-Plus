@@ -2,6 +2,7 @@
 name = "document_review"
 title = "Document review dates"
 intro = "A reminder list of the dates you chose. Where each paper is kept, whose it is, notes and document numbers are not printed. Check each issuer's current advice before renewing."
+intro = "A reminder list only. Storage places, private holder names and notes are not printed. Check issuer advice for renewals."
 
 [[sheet.section]]
 title = "Documents to review"
