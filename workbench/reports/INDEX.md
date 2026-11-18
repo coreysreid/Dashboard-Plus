@@ -14,6 +14,8 @@ expected, actual, severity (blocker, important, minor), suggested change.
 | 2026-11-17-medical-dates-ux.md | J1–J5 check after Medical and local dates, including a car-only kit gap. | refining Medical and date entry |
 | 2026-11-17-print-check.md | A4/Letter light/dark results for three fictional households. | checking printable sheets |
 | 2026-11-17-print-matrix.csv | Sixty route and PDF combinations, including four expected unavailable routes. | reproducing print results |
+| 2026-11-18-translation-readiness.md | 14-template, six-module extraction plan for other languages. | preparing localization |
+| 2026-11-18-translation-inventory.csv | 1,992 visible string locations and picker search terms. | extracting messages |
 | 2026-11-17-translation-readiness.md | Screen-grouped extraction plan for shipped template and module words. | preparing other languages |
 | 2026-11-17-translation-inventory.csv | 1,845 literal locations, picker names and search aliases. | extracting locale messages |
 | 2026-11-17-wording-consistency.md | Exact shipped-module wording replacements and term rules. | polishing module words |
