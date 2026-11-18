@@ -1148,6 +1148,13 @@ changed later.
   parsing, naming the module and showing the failing field. This is how
   outside changes get noticed without anyone watching. It also checks that every
   country-pack link still works and flags packs past their `review_by` date.
+- **Real-browser check (decision 0064).** `tools/browser_check.py` starts the real program on a
+  throwaway data folder and clicks through it in Chromium (en-AU and en-US): the setup wizard, Home,
+  typing dates the household's way, stock in with batches, private details and sheets, and Save and
+  exit, failing on any browser console error or refused request. It runs in its own Linux CI job;
+  `tests/test_browser_check.py` runs it locally when Node.js and Playwright are installed and skips
+  with the reason otherwise. The Flask test client cannot see browser behaviour such as the
+  `Origin: null` that a `no-referrer` policy causes.
 - **Portable build test.** The built zip is unpacked in a clean runner
   and started; the acceptance list in `CORE.md` is checked where it can be
   automated.

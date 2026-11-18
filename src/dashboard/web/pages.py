@@ -169,6 +169,7 @@ def _default_text(column) -> str:
 def _raw_form(info):
     """What the person typed, so a form with mistakes comes back filled in."""
     raw = {k: request.form.get(k) for k in request.form}
+    raw["_keep_private"] = request.form.getlist("_keep_private")  # private details left unopened
     for column in info.table.columns.values():
         if column.type == "links":
             raw[column.name] = request.form.getlist(column.name)

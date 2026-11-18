@@ -341,8 +341,11 @@ def build_fields(records: Records, info: TableInfo, values: dict, errors: dict, 
             field.blank = words[1].get(values.get(words[0])) or "(none)"
         if batch_field and column.name in rule["new_batch"].values() and column.name != batch_field:
             field.only_when_blank = batch_field  # a use-by date and place typed here are for a new batch only
-        if column.sensitive and not from_form and field.value not in (None, ""):
-            field.kept_private, field.value = True, ""  # sent only when the person chooses Show
+        # A saved private value is sent only when the person chooses Show; one still unopened when a save
+        # was refused stays closed and kept, so the next save cannot erase it (decision 0064).
+        if column.sensitive and (field.value not in (None, "") if not from_form else
+                                 editing and column.name in (values.get("_keep_private") or ())):
+            field.kept_private, field.value = True, ""
         fields.append(field)
     return fields
 
