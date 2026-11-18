@@ -1,40 +1,44 @@
 [tables.exits]
 home = "main"
 empty = "Write down the ways out of your home."
-form = ["name", "floor", "place", "route", "notes"]
+form = ["name", "floor", "place", "route", "notes", "access_details"]
 list = ["name", "floor", "place", "route"]
 columns.name = { help = "For example, Front door or Back door." }
 columns.floor = { label = "Floor", help = "For example, Ground floor. Leave blank if your home has one floor." }
 columns.place = { label = "Where it is", help = "Choose one of your Places, or add the room first. Places are shared with Household stock." }
-columns.route = { label = "How to get there", help = "In your own words, including the way from upstairs if you have one. This prints on Our home. Don't write alarm codes or key-safe numbers here." }
-columns.notes = { help = "Do not write down where a spare key is hidden or an alarm code." }
+columns.route = { label = "How to get there", help = "In your own words, including the way from upstairs if you have one. This prints on Our home. Put alarm codes or key-safe numbers in the private box below instead." }
+columns.notes = { help = "Do not write down where a spare key is hidden or an alarm code. Codes go in the private box below." }
+columns.access_details = { label = "Codes or access details (private)", help = "Kept private: shown only when you press Show, never printed." }
 
 [tables.shutoffs]
 home = "main"
 empty = "Write down where the water shut-off and power board are."
-form = ["name", "kind", "place", "how_to_find", "notes"]
+form = ["name", "kind", "place", "how_to_find", "notes", "access_details"]
 list = ["name", "kind", "place", "how_to_find"]
 columns.name = { help = "For example, Water main or Power board." }
 columns.kind = { label = "What it turns off" }
 columns.place = { label = "Where it is", help = "Choose one of your Places, or add the room or area first. Places are shared with Household stock." }
-columns.how_to_find = { label = "How to find it", help = "A landmark helps someone who has never looked for it, such as: behind the grey shelves. This prints on Our home. Don't write alarm codes or key-safe numbers here." }
+columns.how_to_find = { label = "How to find it", help = "A landmark helps someone who has never looked for it, such as: behind the grey shelves. This prints on Our home. Put alarm codes or key-safe numbers in the private box below instead." }
+columns.access_details = { label = "Codes or access details (private)", help = "Kept private: shown only when you press Show, never printed." }
 
 [tables.equipment]
 empty = "Add a smoke alarm and where it is."
-form = ["name", "kind", "place", "last_tested", "battery_changed", "next_check", "notes"]
+form = ["name", "kind", "place", "last_tested", "battery_changed", "next_check", "notes", "access_details"]
 list = ["name", "kind", "place", "last_tested", "next_check"]
 columns.name = { help = "For example, Upstairs hall smoke alarm. First aid kits have their own list." }
 columns.kind = { label = "What it is" }
 columns.place = { label = "Where it is", help = "Choose one of your Places, or add the room first. Places are shared with Household stock." }
 columns.last_tested = { label = "Last tested or checked" }
 columns.battery_changed = { label = "Battery changed", help = "Only if it has a battery you can change." }
+columns.access_details = { label = "Codes or access details (private)", help = "Kept private: shown only when you press Show, never printed." }
 columns.next_check = { label = "Test or check again by", help = "Choose a date from the maker's instructions, your local fire service's advice or your own plan. The dashboard will remind you a month before." }
 
 [tables.meters]
 empty = "Add a meter if it helps someone find it."
-form = ["name", "kind", "place", "how_to_find"]
+form = ["name", "kind", "place", "how_to_find", "access_details"]
 list = ["name", "kind", "place", "how_to_find"]
 columns.name = { help = "For example, Electricity meter." }
 columns.kind = { label = "What it measures" }
 columns.place = { label = "Where it is", help = "Choose one of your Places, or add the room or area first. Places are shared with Household stock." }
-columns.how_to_find = { label = "How to find it", help = "A short landmark is enough. Do not enter account numbers or access codes." }
+columns.how_to_find = { label = "How to find it", help = "A short landmark is enough. This prints on Our home. Do not enter account numbers or access codes; the private box below is for a code to open a locked meter box." }
+columns.access_details = { label = "Codes or access details (private)", help = "Kept private: shown only when you press Show, never printed." }

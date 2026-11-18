@@ -12,9 +12,11 @@ CREATE TABLE garden__beds (
     edited_by_person INTEGER NOT NULL DEFAULT 0,
     deleted_at TEXT,
     name TEXT,
-    location TEXT,
+    place INTEGER REFERENCES stock__places(id) ON DELETE RESTRICT,
     notes TEXT
 );
+
+CREATE INDEX garden__beds__place__idx ON garden__beds(place);
 
 -- Crops
 CREATE TABLE garden__crops (
@@ -41,6 +43,7 @@ CREATE TABLE garden__plantings (
     batch_id INTEGER,
     edited_by_person INTEGER NOT NULL DEFAULT 0,
     deleted_at TEXT,
+    name TEXT,
     bed INTEGER REFERENCES garden__beds(id) ON DELETE RESTRICT,
     crop INTEGER REFERENCES garden__crops(id) ON DELETE RESTRICT,
     planted_on TEXT,
