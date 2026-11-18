@@ -1,15 +1,19 @@
 [tables.beds]
+home = "more"
 empty = "Add one bed, pot or growing spot."
-form = ["name", "location", "notes"]
-list = ["name", "location"]
-columns.location = { label = "Where it is", help = "For example, back yard, balcony or kitchen windowsill." }
+form = ["name", "place", "notes"]
+list = ["name", "place"]
+columns.place = { label = "Where it is", help = "Choose one of your Places, such as Backyard or Balcony, or add it first. Places are shared with Household stock." }
+columns.notes = { help = "Anything that helps someone else find or care for it. This is your own record, not growing advice." }
 
 [tables.crops]
+home = "more"
 empty = "Add a crop you grow or plan to grow."
 form = ["name", "variety", "notes"]
 list = ["name", "variety"]
 
 [tables.plantings]
+home = "more"
 empty = "Add the first planting in a bed or pot."
 form = ["name", "bed", "crop", "planted_on", "quantity", "notes"]
 list = ["name", "bed", "crop", "planted_on", "quantity"]
@@ -17,13 +21,16 @@ columns.name = { label = "Planting name", help = "A short name helps link harves
 columns.planted_on = { label = "Planted on" }
 
 [tables.harvests]
+home = "more"
 empty = "No harvest recorded yet. Add one after picking."
 form = ["planting", "harvested_on", "amount", "unit", "notes"]
 list = ["planting", "harvested_on", "amount", "unit"]
 columns.amount = { label = "How much" }
 
 [tables.jobs]
+home = "main"
 empty = "Add a garden job if you want a reminder."
 form = ["title", "bed", "due_on", "done", "notes"]
 list = ["title", "bed", "due_on", "done"]
-columns.due_on = { label = "Due on" }
+columns.due_on = { label = "Due on", help = "A date you choose. The dashboard reminds you two weeks before, only while the job is not done." }
+columns.done = { label = "Done?", help = "Tick when the job is finished. A finished job is never a reminder." }

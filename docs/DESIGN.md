@@ -579,7 +579,9 @@ number and the core can load both for a transition period.
   for a way out, the water shut-off, the power board and a smoke alarm (not
   gas, which many homes lack); a check is *due* on the date the household
   chose, never one worked out for it; an **Our home** sheet prints everything
-  with full place paths and no notes.
+  with full place paths and no notes. Each of the four lists also has an
+  optional private `access_details` box for alarm codes and key-safe numbers
+  (`sensitive`, shown only on Show, never in the sheet; decision 0077).
 - **Vehicles** (declarative; requires People and Household stock; shipped,
   decision 0058). Tables: vehicles (registration or plate number, marked
   `sensitive`; registration or vehicle tax due; who to call if it breaks
@@ -610,6 +612,13 @@ number and the core can load both for a transition period.
   gap asks where a job is done; smoke alarms and extinguishers stay in Home
   layout; a **Home care** sheet prints the jobs and dates without notes. No
   field holds alarm codes or how to get in.
+- **Vegetable garden** (declarative; requires Household stock; shipped,
+  decision 0076). Tables: beds (a link to `stock.places`), crops, plantings
+  (a name, bed, crop, planted on, quantity), harvests (a planting, a date, an
+  amount) and jobs (a due date and "Done?"). Behaviour: a job is "due" from two
+  weeks before its date, only while not done (`where` on `expiring`, decision
+  0072); one gap asks where a bed is; a **Garden plan** sheet prints beds,
+  plantings and jobs not done, without notes. No growing advice is stored.
 - **Things lent out** (declarative; requires People and Household stock;
   shipped, decision 0073). Table: loans (what was lent; an optional
   `stock.items` link that changes no count; the borrower, a link to
