@@ -3,6 +3,7 @@ from __future__ import annotations
 
 import os
 import sqlite3
+import threading
 from contextlib import contextmanager
 from pathlib import Path
 from typing import Iterator
@@ -125,3 +126,62 @@ def backup_to(conn: sqlite3.Connection, destination: Path) -> Path:
         raise DatabaseError("A backup copy failed its check and was not kept.")
     os.replace(partial, destination)
     return destination
+
+
+class Gate:
+    """Lets any number of pages use one data file at once, or a restore hold it alone (decision 0079).
+
+    Pages enter as "shared" and leave when they close their connection. `alone` stops new pages from
+    entering, waits until every open connection is closed, and holds the file until the block ends."""
+
+    def __init__(self):
+        self._lock = threading.Condition()
+        self._users = 0
+        self._held = False
+
+    def enter(self, timeout: float = 60.0) -> None:
+        with self._lock:
+            if not self._lock.wait_for(lambda: not self._held, timeout):
+                raise DatabaseError("The dashboard is busy putting back a backup. Try again in a moment.")
+            self._users += 1
+
+    def leave(self) -> None:
+        with self._lock:
+            self._users = max(0, self._users - 1)
+            self._lock.notify_all()
+
+    @contextmanager
+    def shared(self, timeout: float = 120.0) -> Iterator[None]:
+        self.enter(timeout)
+        try:
+            yield
+        finally:
+            self.leave()
+
+    @contextmanager
+    def alone(self, timeout: float = 30.0) -> Iterator[None]:
+        with self._lock:
+            if not self._lock.wait_for(lambda: not self._held, timeout):
+                raise DatabaseError("Another change to the whole data file is still running.")
+            self._held = True
+            if not self._lock.wait_for(lambda: self._users == 0, timeout):
+                self._held = False
+                self._lock.notify_all()
+                raise DatabaseError("The data file is still in use by another page.")
+        try:
+            yield
+        finally:
+            with self._lock:
+                self._held = False
+                self._lock.notify_all()
+
+
+_gates: dict[str, Gate] = {}
+_gates_lock = threading.Lock()
+
+
+def gate(path: Path) -> Gate:
+    """The one gate for a data file in this program, found by its full path."""
+    key = os.path.normcase(str(Path(path).resolve()))
+    with _gates_lock:
+        return _gates.setdefault(key, Gate())

@@ -1,0 +1,10 @@
+{% if undo %}
+<div class="card" id="undo-restore">
+  <p style="margin-top:0"><strong>You restored a backup on {{ undo.at }}</strong> (the copy made {{ undo.made }}{% if undo.where %}, {{ undo.where|lower }}{% endif %}).</p>
+  <p>Undo puts your records back exactly as they were just before that restore. Anything changed since the restore is kept in a backup called "Before an undo".</p>
+  <div class="actions">
+    <form method="post" action="/settings/backups/undo"><input type="hidden" name="_csrf" value="{{ csrf_token }}"><button type="submit">Undo restore</button></form>
+    <form method="post" action="/settings/backups/keep"><input type="hidden" name="_csrf" value="{{ csrf_token }}"><button type="submit" class="quiet">Keep the restored records</button></form>
+  </div>
+</div>
+{% endif %}

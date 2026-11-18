@@ -133,7 +133,8 @@ def _serve(data_dir: Path, open_browser: bool, ready: threading.Event | None,
         # Close from another thread so the current reply can finish first.
         threading.Timer(0.3, lambda: holder["server"].close()).start()
 
-    app = create_app(token, request_shutdown, report, data_dir=data_dir, session_key=session)
+    app = create_app(token, request_shutdown, report, data_dir=data_dir, session_key=session,
+                     extra_backup_dir=extra_backup_dir)
     server = create_server(app, host=HOST, port=0, threads=4)
     holder["server"] = server
     port = int(server.effective_port)

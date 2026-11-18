@@ -26,7 +26,8 @@ OPEN_PATHS = {"/api/ping", "/api/shutdown", "/start"}
 
 
 def create_app(shutdown_token: str, on_shutdown: Callable[[], None], report=None,
-               data_dir: Path | None = None, session_key: str | None = None) -> Flask:
+               data_dir: Path | None = None, session_key: str | None = None,
+               extra_backup_dir: Path | None = None) -> Flask:
     """Return the web app.
 
     - `on_shutdown` is called when a safe close is requested.
@@ -34,12 +35,14 @@ def create_app(shutdown_token: str, on_shutdown: Callable[[], None], report=None
     - `data_dir` is the data folder; pages that read records need it.
     - `session_key` is the secret in the launch link. The browser exchanges it for a
       cookie, so only the browser opened by *Open Dashboard* can use the pages.
+    - `extra_backup_dir` is the second backup folder on this computer, or None; the restore page lists it.
     """
     app = Flask(__name__)
     app.config["PORT"] = None  # set by the server once it knows its port
     app.config["SESSION_KEY"] = session_key or secrets.token_urlsafe(32)
     app.config["CSRF_TOKEN"] = secrets.token_urlsafe(32)
     app.config["DATA_DIR"] = Path(data_dir) if data_dir else None
+    app.config["EXTRA_BACKUP_DIR"] = Path(extra_backup_dir) if extra_backup_dir else None
     app.config["REPORT"] = report
     app.config["LOADED"] = report.loaded if report else []
     app.config["HELPER_REQUESTS_PER_MINUTE"] = REQUESTS_PER_MINUTE  # tests may lower it (decision 0074)
@@ -107,10 +110,29 @@ def create_app(shutdown_token: str, on_shutdown: Callable[[], None], report=None
 
     def connection():
         if "db" not in g:
-            g.db = db.connect(database_path(app.config["DATA_DIR"]))
+            # Each request's connection passes the data file's gate, so a restore can wait until none is open
+            # before it swaps the file (decision 0079).
+            path = database_path(app.config["DATA_DIR"])
+            gate = db.gate(path)
+            gate.enter()
+            try:
+                g.db = db.connect(path)
+            except BaseException:
+                gate.leave()
+                raise
+            g.db_gate = gate
         return g.db
 
+    def release_connection():
+        """Close this request's connection now, instead of at the end of the request."""
+        conn, gate = g.pop("db", None), g.pop("db_gate", None)
+        if conn is not None:
+            conn.close()
+        if gate is not None:
+            gate.leave()
+
     app.config["CONNECT"] = connection
+    app.config["RELEASE"] = release_connection
 
     def registry():
         """Tables of the modules that are switched on, worked out once per request."""
@@ -133,9 +155,7 @@ def create_app(shutdown_token: str, on_shutdown: Callable[[], None], report=None
 
     @app.teardown_appcontext
     def close_connection(_error):
-        conn = g.pop("db", None)
-        if conn is not None:
-            conn.close()
+        release_connection()
 
     @app.get("/start")
     def start():
@@ -194,6 +214,7 @@ def create_app(shutdown_token: str, on_shutdown: Callable[[], None], report=None
     from dashboard.web.export_page import export_pages
     from dashboard.web.helper_settings import helper_settings
     from dashboard.web.pages import pages
+    from dashboard.web.restore import restore_pages
     from dashboard.web.review import review_pages
     from dashboard.web.setup import setup_pages
     from dashboard.web.sheets import sheet_pages
@@ -203,6 +224,7 @@ def create_app(shutdown_token: str, on_shutdown: Callable[[], None], report=None
     app.register_blueprint(helper_settings)
     app.register_blueprint(export_pages)
     app.register_blueprint(review_pages)
+    app.register_blueprint(restore_pages)
     app.register_blueprint(helper_api)
 
     def for_helpers() -> bool:

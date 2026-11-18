@@ -79,6 +79,11 @@ def _read_keys(data_dir: Path) -> dict[str, str]:
     return {str(k): str(v) for k, v in found.items()} if isinstance(found, dict) else {}
 
 
+def known_key_ids(data_dir: Path) -> set[str]:
+    """The helpers (by key_id) whose key still works: the ones with a fingerprint in the file."""
+    return set(_read_keys(data_dir).values())
+
+
 def _write_keys(data_dir: Path, keys: dict[str, str]) -> None:
     """Write the file whole, under a temporary name first, readable only by this computer account."""
     path = _keys_path(data_dir)

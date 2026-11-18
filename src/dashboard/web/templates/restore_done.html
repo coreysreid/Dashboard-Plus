@@ -1,0 +1,19 @@
+{% extends "base.html" %}
+{% block title %}{% if undone %}Restore undone{% else %}Backup restored{% endif %} · Dashboard Plus{% endblock %}
+{% block body %}
+<p class="muted"><a href="/settings/backups">Back to backups</a></p>
+{% if problem %}
+<h1>Undo did not work</h1>
+<p class="problem" role="alert">{{ problem }}</p>
+{% include "restore_undo.html" %}
+{% elif undone %}
+<h1>Restore undone</h1>
+<p class="notice" role="status">Your records are back as they were just before the restore. The restored records were kept as a backup called "Before an undo".</p>
+{% else %}
+<h1>Backup restored</h1>
+<p class="notice" role="status">Done. You are now using the records from the backup made {{ undo.made }}. Your records from before were kept as a backup called "Before a restore".</p>
+<p class="muted">Helper keys are not part of a backup, so they were not changed.</p>
+{% include "restore_undo.html" %}
+{% endif %}
+<p><a href="/">Go to the home page</a></p>
+{% endblock %}

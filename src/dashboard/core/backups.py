@@ -39,40 +39,50 @@ def _write(data_dir: Path, extra_dir: Path | None, filename: str) -> list[Path]:
 
     The household can switch the second copy off in Settings (`backups.second_copy`).
     """
-    from dashboard.core import settings
-
-    written = []
-    second: dict = {"state": "off"}
-    conn = db.connect(Path(data_dir) / "dashboard.db")
-    try:
-        if not settings.get(conn, "backups.second_copy", True):
-            extra_dir = None
-        elif extra_dir is not None:
-            # Each data folder keeps its second copies in its own sub-folder, so two copies of the
-            # program on one computer never overwrite each other's backups.
-            folder_id = settings.get(conn, "backups.folder_id")
-            if not isinstance(folder_id, str) or not FOLDER_ID.fullmatch(folder_id):
-                # Only a name this program made: anything else (such as "../" or a full path) could
-                # send the backup, and the clearing out of old ones, somewhere else (security review).
-                folder_id = secrets.token_hex(6)
-                settings.put(conn, "backups.folder_id", folder_id)
-            extra_dir = Path(extra_dir) / folder_id
-        for i, folder in enumerate(backup_dirs(data_dir, extra_dir)):
-            try:
-                written.append(db.backup_to(conn, folder / filename))
-                if i == 1:
-                    second = {"state": "ok", "folder": str(folder)}
-            except Exception as error:  # noqa: BLE001 - the main copy must not depend on the second
-                if i == 0:
-                    raise
-                log.warning("The second backup copy could not be written (%s)", _reason(error))
-                second = {"state": "failed", "folder": str(folder), "reason": _reason(error)}
-    finally:
-        conn.close()
+    written: list[Path] = []
+    path = Path(data_dir) / "dashboard.db"
+    with db.gate(path).shared():  # never while a restore is swapping the file (decision 0079)
+        conn = db.connect(path)
+        try:
+            extra_dir = second_folder(conn, extra_dir)
+            second: dict = {"state": "off"}
+            for i, folder in enumerate(backup_dirs(data_dir, extra_dir)):
+                try:
+                    written.append(db.backup_to(conn, folder / filename))
+                    if i == 1:
+                        second = {"state": "ok", "folder": str(folder)}
+                except Exception as error:  # noqa: BLE001 - the main copy must not depend on the second
+                    if i == 0:
+                        raise
+                    log.warning("The second backup copy could not be written (%s)", _reason(error))
+                    second = {"state": "failed", "folder": str(folder), "reason": _reason(error)}
+        finally:
+            conn.close()
     _record(data_dir, filename, second)
     for folder in backup_dirs(data_dir, extra_dir):
         prune(folder)
     return written
+
+
+def second_folder(conn, extra_dir: Path | None, make: bool = True) -> Path | None:
+    """This data folder's own sub-folder of the second backup folder, or None when the second copy is off.
+
+    Each data folder keeps its second copies in its own sub-folder, so two copies of the program on one
+    computer never overwrite each other's backups. With `make` False nothing is written: a data folder
+    that has no sub-folder name yet has no second copies, and None is returned."""
+    from dashboard.core import settings
+
+    if extra_dir is None or not settings.get(conn, "backups.second_copy", True):
+        return None
+    folder_id = settings.get(conn, "backups.folder_id")
+    if not isinstance(folder_id, str) or not FOLDER_ID.fullmatch(folder_id):
+        # Only a name this program made: anything else (such as "../" or a full path) could
+        # send the backup, and the clearing out of old ones, somewhere else (security review).
+        if not make:
+            return None
+        folder_id = secrets.token_hex(6)
+        settings.put(conn, "backups.folder_id", folder_id)
+    return Path(extra_dir) / folder_id
 
 
 def _reason(error: Exception) -> str:

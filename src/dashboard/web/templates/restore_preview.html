@@ -1,0 +1,41 @@
+{% extends "base.html" %}
+{% block title %}Check this backup · Dashboard Plus{% endblock %}
+{% block body %}
+<p class="muted"><a href="/settings/backups">Back to backups</a></p>
+<h1>Backup made {{ when(copy.made) }}</h1>
+<p class="lead">{{ copy.kind }} · {{ copy.where }} · {{ size(copy.size) }}</p>
+{% if problem %}<p class="problem" role="alert">{{ problem }}</p>{% endif %}
+{% if copy.usable %}
+<p class="notice" role="status">{{ copy.reason }}</p>
+<h2>What is in it</h2>
+{% if rows %}
+<div class="scroll"><table class="grid" id="compare">
+  <thead><tr><th scope="col">List</th><th scope="col">In this backup</th><th scope="col">Now</th></tr></thead>
+  <tbody>{% for r in rows %}
+  <tr><td>{{ r.title }} <span class="muted">({{ r.area }})</span></td>
+    <td>{% if r.then is none %}<span class="muted">not in this copy</span>{% else %}{{ r.then }}{% endif %}</td>
+    <td>{{ r.now }}{% if r.differs %} <span class="muted">(different)</span>{% endif %}</td></tr>
+  {% endfor %}</tbody>
+</table></div>
+{% else %}
+<p class="muted">Neither this backup nor your records now have any records yet.</p>
+{% endif %}
+
+<h2>What will happen</h2>
+<ol>
+  <li>A copy of your records as they are now is made first, so you can undo this.</li>
+  <li>This backup is copied and checked again.{% if copy.pending %} It was made by an older version, so the copy is brought up to date.{% endif %} The backup itself is not changed.</li>
+  <li>The copy replaces your records. Anything added or changed after {{ when(copy.made) }} is replaced.</li>
+</ol>
+<p class="muted">Helper keys are not part of a backup. A helper added after this backup was made will need a new key. A key you turned off stays off.</p>
+<form method="post" action="/settings/backups/{{ copy.place }}/{{ copy.name }}/restore" class="actions">
+  <input type="hidden" name="_csrf" value="{{ csrf_token }}">
+  <input type="hidden" name="seen" value="{{ copy.stamp }}">
+  <button type="submit">Restore this backup</button>
+  <a href="/settings/backups">Keep my records as they are</a>
+</form>
+{% else %}
+<p class="problem" role="alert"><strong>Cannot restore this copy.</strong> {{ copy.reason }}</p>
+<p><a href="/settings/backups">Back to backups</a></p>
+{% endif %}
+{% endblock %}

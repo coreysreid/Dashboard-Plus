@@ -81,4 +81,5 @@ One record per decision, from `TEMPLATE.md`. Never deleted; reversed ones are ma
 | [0076](0076-garden-promoted.md) | Vegetable garden switched on from Lane B's draft: beds at your Places, job reminders only while not done, no growing advice | Accepted |
 | [0077](0077-home-layout-private-access-details.md) | Home layout gets a private "Codes or access details" box, hidden until Show and never printed | Accepted |
 | [0078](0078-export-my-records.md) | Export my records: one zip of spreadsheet files for the household, private details left out, text guarded against formulas, read from one moment | Accepted |
+| [0079](0079-restore-from-a-backup.md) | Restore from a backup: copies checked read-only, the chosen one prepared on a new file, a checked before-restore copy, an atomic swap while no page holds the file, and an Undo that survives a restart | Accepted |
 | [TEMPLATE](TEMPLATE.md) | Blank record to copy for a new decision | recording a decision |

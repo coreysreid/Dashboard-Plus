@@ -39,7 +39,9 @@ is new: keep a copy of anything important somewhere else too. See
   Settings so it can look at the parts of your records you choose and suggest
   new ones. Nothing is added until you accept it on the Review page. Private
   details are never shared with helpers.
-- **Automatic backups**, every day and every time you close it safely.
+- **Automatic backups**, every day and every time you close it safely, and
+  **Restore from a backup** in Settings: check a backup and compare it with
+  now, put it back, and undo that if it was the wrong one.
 
 ## Using it on Windows
 
@@ -93,6 +95,9 @@ Dashboard` in the folder. It makes a backup and finishes writing before it stops
   `%LOCALAPPDATA%\Dashboard Plus\backups` (paste that into the File Explorer
   address bar to open it). The last 14 daily backups and 10 closing backups
   are kept.
+- To **go back to a backup**, open Settings, then *Restore from a backup*. Your
+  records as they are now are copied first, so *Undo restore* can put them
+  back. Helper keys are not part of a backup.
 - To **update**, close the dashboard, then replace everything in the
   `Dashboard Plus` folder **except the `data` folder**. The next start backs up
   your data before changing anything.
