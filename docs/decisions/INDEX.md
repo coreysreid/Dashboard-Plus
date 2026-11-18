@@ -80,4 +80,5 @@ One record per decision, from `TEMPLATE.md`. Never deleted; reversed ones are ma
 | [0075](0075-one-step-actions-and-date-order.md) | One-step buttons declared in tables.toml (Mark returned), saved through the ordinary change path and refused when pressed twice; `not_before` keeps one date from coming before another | Accepted |
 | [0076](0076-garden-promoted.md) | Vegetable garden switched on from Lane B's draft: beds at your Places, job reminders only while not done, no growing advice | Accepted |
 | [0077](0077-home-layout-private-access-details.md) | Home layout gets a private "Codes or access details" box, hidden until Show and never printed | Accepted |
+| [0080](0080-import-from-a-spreadsheet.md) | Import from a spreadsheet (CSV) in Settings: columns matched, every row checked like a helper's suggestion, ready rows wait on Review as one batch by "Import '<file>'"; the file is never kept; private details not imported | Accepted |
 | [TEMPLATE](TEMPLATE.md) | Blank record to copy for a new decision | recording a decision |

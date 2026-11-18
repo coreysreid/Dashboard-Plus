@@ -36,6 +36,8 @@ def create_app(shutdown_token: str, on_shutdown: Callable[[], None], report=None
       cookie, so only the browser opened by *Open Dashboard* can use the pages.
     """
     app = Flask(__name__)
+    from dashboard.web.csv_import import UploadRequest
+    app.request_class = UploadRequest  # import uploads stay in memory; other requests are unchanged
     app.config["PORT"] = None  # set by the server once it knows its port
     app.config["SESSION_KEY"] = session_key or secrets.token_urlsafe(32)
     app.config["CSRF_TOKEN"] = secrets.token_urlsafe(32)
@@ -191,6 +193,7 @@ def create_app(shutdown_token: str, on_shutdown: Callable[[], None], report=None
         return render_template("report.html", path=path)
 
     from dashboard.web.api import helper_api
+    from dashboard.web.csv_import import imports
     from dashboard.web.helper_settings import helper_settings
     from dashboard.web.pages import pages
     from dashboard.web.review import review_pages
@@ -200,6 +203,7 @@ def create_app(shutdown_token: str, on_shutdown: Callable[[], None], report=None
     app.register_blueprint(sheet_pages)
     app.register_blueprint(setup_pages)
     app.register_blueprint(helper_settings)
+    app.register_blueprint(imports)
     app.register_blueprint(review_pages)
     app.register_blueprint(helper_api)
 

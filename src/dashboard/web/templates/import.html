@@ -1,0 +1,79 @@
+{% extends "base.html" %}
+{% block title %}Import from a spreadsheet · Dashboard Plus{% endblock %}
+{% block body %}
+<p class="muted"><a href="/settings">Settings</a></p>
+<h1>Import from a spreadsheet</h1>
+<p class="lead">Bring rows from a spreadsheet saved as CSV into one of your lists. You will see what would be added before anything is sent, and nothing is added to your records until you accept it on the <a href="/review">Review</a> page.</p>
+{% if step == "choose" %}
+{% if error %}<p class="problem" role="alert">{{ error }}</p>{% endif %}
+<form class="record" method="post" action="/settings/import" enctype="multipart/form-data">
+  <input type="hidden" name="_csrf" value="{{ csrf_token }}">
+  <div><label for="import-table">Which list?</label>
+    <select id="import-table" name="table">
+      <option value="">Choose a list</option>
+      {% for g in groups %}<optgroup label="{{ g.module }}">{% for t in g.tables %}
+        <option value="{{ t.name }}" {% if t.name == chosen %}selected{% endif %}>{{ t.title }}</option>{% endfor %}
+      </optgroup>{% endfor %}
+    </select></div>
+  <div><label for="import-file">CSV file</label>
+    <input type="file" id="import-file" name="file" accept=".csv,text/csv">
+    <p class="help">Up to {{ limit }} and {{ "{:,}".format(max_rows) }} rows. The first row should hold the column headings. Save from your spreadsheet as "CSV UTF-8"; commas or semicolons between cells are both fine. Dates can be typed your usual way or as 2027-05-20.</p></div>
+  <p class="help" style="margin:0">The file is read on this computer and not kept. Private details, such as door codes, can't be imported in this version{% if refused %}, so some lists are not offered here{% endif %}.</p>
+  <div class="actions"><button type="submit">Read the file</button><a href="/settings">Cancel</a></div>
+</form>
+{% if refused %}<ul class="muted">{% for r in refused %}<li>{{ r }}</li>{% endfor %}</ul>{% endif %}
+{% else %}
+<p><strong>{{ file_name }}</strong> into <strong>{{ title }}</strong>: {{ row_count }} row{{ "" if row_count == 1 else "s" }} read. Nothing has been saved.</p>
+{% if notice %}<p class="problem" role="alert">{{ notice }}</p>{% endif %}
+{% for p in problems %}<p class="problem" role="alert">{{ p }}</p>{% endfor %}
+
+<h2>The first rows of the file</h2>
+<div class="scroll"><table class="grid">
+  <thead><tr><th scope="col">Row</th>{% for c in columns %}<th scope="col"><bdi>{{ c.header }}</bdi></th>{% endfor %}</tr></thead>
+  <tbody>{% for number, cells in preview %}<tr><td>{{ number }}</td>{% for cell in cells %}<td><bdi style="white-space:pre-line">{{ cell }}</bdi></td>{% endfor %}</tr>{% endfor %}</tbody>
+</table></div>
+
+<form method="post" action="/settings/import/check">
+  <input type="hidden" name="_csrf" value="{{ csrf_token }}">
+  <input type="hidden" name="table" value="{{ info.name }}">
+  <input type="hidden" name="file_name" value="{{ file_name }}">
+  <input type="hidden" name="data" value="{{ data }}">
+  <input type="hidden" name="checked" value="{{ checked }}">
+  <input type="hidden" name="ready" value="{{ run.ready | length if run else -1 }}">
+  <h2>Match each column to a field</h2>
+  <p class="muted" style="margin-top:0">Guesses are made from the column headings. Change any of them, or skip a column.</p>
+  <div class="record" style="display:grid;gap:.8rem;max-width:36rem">
+  {% for c in columns %}
+    <div><label for="match_{{ c.index }}" style="font-weight:600">Column “<bdi>{{ c.header }}</bdi>”</label>
+      <select id="match_{{ c.index }}" name="match_{{ c.index }}">
+        <option value="">Skip this column</option>
+        {% for o in options %}<option value="{{ o.name }}" {% if o.name == c.chosen %}selected{% endif %}>{{ o.label }}{% if o.required %} (needed){% endif %}</option>{% endfor %}
+      </select>
+      {% if c.private %}<p class="help" style="margin:.2rem 0 0">{{ c.private }} This column will be skipped.</p>{% endif %}
+    </div>
+  {% endfor %}
+  </div>
+  <div class="actions"><button type="submit"{% if run %} class="quiet"{% endif %}>{% if run %}Check again{% else %}Check the rows{% endif %}</button>
+    <a href="/settings/import?table={{ info.name }}">Choose another file</a></div>
+
+  {% if run %}
+  <section class="card" aria-labelledby="dry-run">
+    <h2 id="dry-run" style="margin-top:0">{{ run.ready | length }} row{{ "" if run.ready | length == 1 else "s" }} ready{% if run.problems %}, {{ run.problems | length }} need{{ "s" if run.problems | length == 1 else "" }} fixing{% endif %}</h2>
+    <p class="muted" style="margin:.2rem 0">Nothing has been saved yet.{% if run.problems %} Rows that need fixing are left out: fix them in your spreadsheet and import them on their own.{% endif %}</p>
+    {% if fixes %}
+    <h3>Rows that need fixing</h3>
+    <ul>{% for number, messages in fixes %}<li>Row {{ number }}: {% for m in messages %}<bdi>{{ m }}</bdi>{% if not loop.last %} {% endif %}{% endfor %}</li>{% endfor %}</ul>
+    {% endif %}
+    {% if ready %}
+    <h3>Rows ready{% if run.ready | length > ready | length %} (the first {{ ready | length }}){% endif %}</h3>
+    <ul style="list-style:none;padding:0">{% for r in ready %}
+      <li style="padding:.3rem 0;border-top:1px solid var(--line)">Row {{ r.row }}: {% for label, text in r.text.parts %}{{ label }}: <bdi>{{ text }}</bdi>{% if not loop.last %} · {% endif %}{% endfor %}</li>
+    {% endfor %}</ul>
+    <div class="actions"><button type="submit" formaction="/settings/import/send">Send {{ run.ready | length }} row{{ "" if run.ready | length == 1 else "s" }} to Review</button></div>
+    <p class="muted" style="margin:0">On Review you can accept them one by one or all at once.</p>
+    {% endif %}
+  </section>
+  {% endif %}
+</form>
+{% endif %}
+{% endblock %}

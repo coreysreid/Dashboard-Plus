@@ -178,6 +178,26 @@ function expect(condition, message) { if (!condition) throw new Failed(message);
     ok(`Mark returned: one press on "${name}" saves it as back today, says so, and the button goes`);
   }
 
+  async function checkImport() {  // Import from a spreadsheet: read in the page, checked, sent to Review, accepted (decision 0080)
+    const c = plan.csv;
+    await goto('/settings/import?table=stock__items');
+    await page.setInputFiles('#import-file', { name: c.file, mimeType: 'text/csv', buffer: Buffer.from(c.text, 'utf8') });
+    await submit('button[type=submit]:has-text("Read the file")');
+    expect(await page.inputValue('#match_1') === 'minimum', 'The heading "Keep at least" should be matched to Keep at least by itself.');
+    await Promise.all([page.waitForNavigation(), page.click('button:has-text("Check the rows")')]);
+    const summary = await text('#dry-run');
+    expect(summary.includes(`${c.ready} rows ready, ${c.fixing} needs fixing`), `The check should say "${c.ready} rows ready, ${c.fixing} needs fixing"; it says "${summary}".`);
+    await Promise.all([page.waitForNavigation(), page.click(`button:has-text("Send ${c.ready} rows to Review")`)]);
+    expect(new URL(page.url()).pathname === '/review', `Send to Review should open Review, not ${page.url()}.`);
+    expect((await html()).includes(`Import &#39;${c.file}&#39;`) || (await html()).includes(`Import '${c.file}'`), 'Review does not show the import by its file name.');
+    await submit(`button:has-text("Accept all ${c.ready}")`);
+    await goto('/t/stock__items');
+    await Promise.all([page.waitForNavigation(), page.click(`a[aria-label="Open ${c.item}"]`)]);
+    const note = await page.inputValue('#f-notes');
+    expect(note.replace(/\r\n/g, '\n') === c.note, `The imported note should read "${c.note}"; it reads "${note}".`);
+    ok(`spreadsheet import: ${c.ready} rows ready and ${c.fixing} to fix, sent to Review, accepted; a quoted two-line note kept`);
+  }
+
   async function checkPrivateDetail() {
     const p = plan.private;
     await goto('/t/people__important_info');
@@ -236,6 +256,7 @@ function expect(condition, message) { if (!condition) throw new Failed(message);
       await checkDates();
       if (plan.stock) { await checkStockIn(); await checkStocktake(); }
       if (plan.loan) await checkMarkReturned();
+      if (plan.csv) await checkImport();
       if (plan.private) { await checkPrivateDetail(); await checkPrivateSheet(); }
       await checkClose();
     }

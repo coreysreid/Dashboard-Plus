@@ -15,7 +15,7 @@ from dashboard.core.modules import Column, Module, Table
 from dashboard.core.schema import join_table_name, table_name, target_table
 from dashboard.errors import PlainError
 
-ACTOR = re.compile(r"^(person|system|agent:[a-z0-9_-]+|module:[a-z0-9_]+|import:[a-z0-9_-]+)$")
+ACTOR = re.compile(r"^(person|system|agent:[a-z0-9_-]+|module:[a-z0-9_]+|import:[a-z0-9_.-]+)$")
 TRUE_WORDS = {"true", "yes", "y", "1", "on"}
 FALSE_WORDS = {"false", "no", "n", "0", "off"}
 MAX_PAGE = 500
@@ -407,13 +407,17 @@ class Records:
         self._check_actor(actor)
         return self._create(self.info(name), values, actor, review_status, batch_id)
 
-    def check_create(self, entries: list[tuple[str, dict]], actor: str) -> dict[int, dict[str, str]]:
+    def check_create(self, entries: list[tuple[str, dict]], actor: str,
+                     starting_amounts: bool = False) -> dict[int, dict[str, str]]:
         """Try creating each (table, values) in order without keeping anything; return what is wrong.
 
         A full dry run: the real create path runs for every entry (so stock that would go below zero, links
         that point nowhere and required fields are all caught, and an earlier entry's effects count for the
         later ones), then everything is rolled back. The result maps an entry's position to {field: problem};
-        an empty result means every entry would be saved."""
+        an empty result means every entry would be saved.
+
+        Amounts worked out from batches are refused, except that `starting_amounts` lets a new record start its
+        first batch the way the add form does (a spreadsheet import, decision 0080); helpers never get this."""
         self._check_actor(actor)
         problems: dict[int, dict[str, str]] = {}
         self.conn.execute("BEGIN IMMEDIATE")
@@ -422,7 +426,10 @@ class Records:
                 self.conn.execute("SAVEPOINT check_entry")
                 try:
                     info = self.info(name)
-                    clash = sorted(set(values) & self._derived(info))
+                    derived = self._derived(info)
+                    if starting_amounts:
+                        derived -= {c for other in self._totals_into(info) for c in other.table.total["starts_from"]}
+                    clash = sorted(set(values) & derived)
                     if clash:
                         problems[position] = {c: "is worked out from its batches; suggest a Stock in instead."
                                               for c in clash}

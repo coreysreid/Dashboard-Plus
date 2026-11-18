@@ -17,4 +17,5 @@
 | watch.py | Work out what is running low, what expires soon, how many days of supplies are on hand, and what is worth filling in. | changing running low, expiring, days of cover or gaps |
 | startup.py | Prepare the database at start-up: load modules, back up if needed, and migrate. | changing what happens at start-up |
 | helpers.py | Helpers the household has given a key to: making a key, checking it, and turning it off. | changing how helper keys work |
-| proposals.py | Suggestions from helpers: checked, kept waiting in their own table, and added only when a person accepts. | changing suggestions, limits or accepting |
+| proposals.py | Suggestions from helpers and rows imported from a spreadsheet: checked, kept waiting, added only when a person accepts. | changing suggestions, limits or accepting |
+| csv_import.py | Read a spreadsheet saved as CSV, match its columns to a table's fields, and check every row before it goes to Review. | changing how spreadsheets are read or matched |

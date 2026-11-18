@@ -11,5 +11,6 @@
 | display.py | Turn declared tables and stored values into friendly labels, form fields and text. | changing how values look |
 | templates/ | The HTML pages | changing what a page looks like |
 | api.py | The helper API (/api/v1): programs the household gave a key to can look at records and suggest new ones. | changing what helpers can read or send |
-| review.py | The Review screen: helpers' suggested new records, waiting for a person to accept or reject each one. | changing the Review page |
+| review.py | The Review screen: helpers' suggested new records and imported rows, waiting for a person to accept or reject each one. | changing the Review page |
+| csv_import.py | Settings, Import from a spreadsheet: choose a table, upload a CSV, match its columns, check the rows, send to Review. | changing the import screens |
 | helper_settings.py | Settings, Helpers: give an assistant a key, choose what it may do, and turn its access off. | changing the Helpers settings page |

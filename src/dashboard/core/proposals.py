@@ -1,9 +1,14 @@
-"""Suggestions from helpers: checked, kept waiting in their own table, and added only when a person accepts."""
+"""Suggestions from helpers and rows imported from a spreadsheet: checked, kept waiting, added only when a person accepts.
+
+A batch comes either from a helper (`kind` "helper") or from a spreadsheet a person imported (`kind` "import",
+decision 0080). Helpers only ever see their own batches: every helper query filters on `helper_id`, which an
+import batch never has."""
 from __future__ import annotations
 
 import hashlib
 import json
 import re
+import secrets
 import sqlite3
 from datetime import datetime, timezone
 
@@ -263,6 +268,52 @@ def owns(conn: sqlite3.Connection, helper: helpers.Helper, batch_id: int) -> boo
                         (batch_id, helper.id)).fetchone() is not None
 
 
+# ----- a person's spreadsheet import (decision 0080) ---------------------------------------------------
+
+MAX_SOURCE_NAME = 100
+
+
+def source_label(file_name: str) -> str:
+    """A file's name as shown on Review and in history: no folders, no hidden characters, at most 100 characters."""
+    name = (file_name or "").replace("\\", "/").rsplit("/", 1)[-1]
+    name = HIDDEN_CHARACTERS.sub("", name).strip()
+    return name[:MAX_SOURCE_NAME] or "spreadsheet.csv"
+
+
+def import_actor(source_name: str) -> str:
+    """Who an imported record's history names: "import:pantry.csv" (shown as "Import 'pantry.csv'")."""
+    slug = re.sub(r"[^a-z0-9_.-]+", "-", source_name.lower()).strip("-.")[:60]
+    return f"import:{slug or 'spreadsheet'}"
+
+
+def stage_import(conn: sqlite3.Connection, source_name: str, rows: list[tuple[int, str, dict]]) -> int:
+    """Keep imported rows waiting for Review as one batch, and return its id. Nothing in the records changes.
+
+    `rows` holds (spreadsheet row number, table, values), already checked by the caller with the same dry run
+    helpers' suggestions get (Records.check_create). They are checked again, for real, on Accept."""
+    if not rows:
+        raise PlainError("There are no rows ready to send.")
+    source_name = source_label(source_name)
+    entries = [(table, values) for _row, table, values in rows]
+    why = f"{len(rows)} row{'' if len(rows) == 1 else 's'} from {source_name}, imported by you."
+    now = _now()
+    with db.transaction(conn):
+        batch_id = conn.execute(
+            "INSERT INTO core__helper_batches (kind, helper_id, source_name, request_key, body_hash, why, created_at) "
+            "VALUES ('import', NULL, ?, ?, ?, ?, ?)",
+            (source_name, f"import-{secrets.token_hex(8)}", _body_hash(why, entries), why, now)).lastrowid
+        for position, (row_number, table, values) in enumerate(rows):
+            proposal_id = conn.execute(
+                "INSERT INTO core__proposals (batch_id, position, table_name, values_json, created_at, source_row) "
+                "VALUES (?, ?, ?, ?, ?, ?)",
+                (batch_id, position, table, json.dumps(values, sort_keys=True), now, row_number)).lastrowid
+            conn.execute("INSERT INTO core__audit (at, actor, action, table_name, record_id, before, after, batch_id) "
+                         "VALUES (?, 'person', 'propose', 'core__proposals', ?, NULL, ?, ?)",
+                         (now, proposal_id, json.dumps({"table": table, "batch": batch_id, "row": row_number}),
+                          batch_id))
+    return batch_id
+
+
 # ----- the household's side: Review -------------------------------------------------------------------
 
 def pending_count(conn: sqlite3.Connection) -> int:
@@ -270,17 +321,22 @@ def pending_count(conn: sqlite3.Connection) -> int:
 
 
 def pending(conn: sqlite3.Connection) -> list[dict]:
-    """Batches that still have rows waiting, newest first, each with its waiting rows and its helper."""
+    """Batches that still have rows waiting, newest first, each with its waiting rows and who it came from.
+
+    `helper` names the author: the helper's name, or "Import 'pantry.csv'" for a person's import."""
     batches = conn.execute(
         "SELECT b.*, h.name AS helper_name, h.revoked_at AS helper_revoked_at FROM core__helper_batches b "
-        "JOIN core__helpers h ON h.id = b.helper_id WHERE EXISTS "
+        "LEFT JOIN core__helpers h ON h.id = b.helper_id WHERE EXISTS "
         "(SELECT 1 FROM core__proposals p WHERE p.batch_id = b.id AND p.status = 'pending') "
         "ORDER BY b.id DESC").fetchall()
     found = []
     for b in batches:
         rows = conn.execute("SELECT * FROM core__proposals WHERE batch_id = ? AND status = 'pending' ORDER BY position",
                             (b["id"],)).fetchall()
-        found.append({"id": b["id"], "helper": b["helper_name"], "helper_off": b["helper_revoked_at"] is not None,
+        imported = b["kind"] == "import"
+        found.append({"id": b["id"], "kind": b["kind"], "source_name": b["source_name"],
+                      "helper": f"Import '{b['source_name']}'" if imported else b["helper_name"],
+                      "helper_off": not imported and b["helper_revoked_at"] is not None,
                       "why": b["why"], "created_at": b["created_at"], "total": conn.execute(
                           "SELECT COUNT(*) FROM core__proposals WHERE batch_id = ?", (b["id"],)).fetchone()[0],
                       "proposals": [dict(r, values=json.loads(r["values_json"])) for r in rows]})
@@ -295,8 +351,9 @@ def _audit(conn, action: str, proposal_id: int, after: dict | None, batch_id: in
 
 def _load(conn, proposal_id: int):
     row = conn.execute(
-        "SELECT p.*, h.slug AS slug, b.helper_id AS helper_id FROM core__proposals p JOIN core__helper_batches b ON b.id = p.batch_id "
-        "JOIN core__helpers h ON h.id = b.helper_id WHERE p.id = ?", (proposal_id,)).fetchone()
+        "SELECT p.*, h.slug AS slug, b.helper_id AS helper_id, b.kind AS kind, b.source_name AS source_name "
+        "FROM core__proposals p JOIN core__helper_batches b ON b.id = p.batch_id "
+        "LEFT JOIN core__helpers h ON h.id = b.helper_id WHERE p.id = ?", (proposal_id,)).fetchone()
     if row is None:
         raise PlainError("That suggestion could not be found.")
     if row["status"] != "pending":
@@ -313,7 +370,9 @@ def _why_not(store: Records, info, error: ValidationError) -> str:
 
 
 def accept(conn: sqlite3.Connection, registry: dict, proposal_id: int) -> tuple[str, int]:
-    """Add the suggested record, in the person's name. Returns (table, new record id).
+    """Add the suggested (or imported) record. Returns (table, new record id).
+
+    History names the helper ("agent:<slug>") or the file ("import:<name>") as the creator.
 
     If the world has changed so the record can no longer be added, the suggestion stays waiting with the
     reason written on it, nothing else is changed, and a PlainError says why."""
@@ -325,16 +384,15 @@ def accept(conn: sqlite3.Connection, registry: dict, proposal_id: int) -> tuple[
         raise PlainError(reason)
     store = Records(conn, registry)
     values = json.loads(row["values_json"])
-    helper = helpers.get(conn, row["helper_id"])
-    if helper is None or set(values) & {c.name for c in helpers.hidden_links(info, helper, registry)}:
-        # Refused when suggested since decision 0074; this catches anything kept from before, or a part since
-        # switched off. The reason does not say which part, because the helper can read it.
-        _keep_reason(conn, proposal_id, "This suggestion sets a link to a part of your records the helper was not "
-                                        "given, so it cannot be added. Reject it, or add the record yourself.")
+    if row["kind"] == "import":  # a person's own file: no helper limits apply, and the person decides here
+        actor = import_actor(row["source_name"])
+    else:
+        actor = f"agent:{row['slug']}"
+        _check_helper_links(conn, registry, info, row, values, proposal_id)
     try:
         with db.transaction(conn):
             _claim(conn, proposal_id, "accepted")  # first, so a second click or window cannot add it again
-            record_id = store.create_in(row["table_name"], values, actor=f"agent:{row['slug']}",
+            record_id = store.create_in(row["table_name"], values, actor=actor,
                                         review_status="confirmed", batch_id=row["batch_id"])
             conn.execute(f"UPDATE {info.name} SET edited_by_person = 1 WHERE id = ?", (record_id,))
             conn.execute("UPDATE core__proposals SET record_id = ?, reason = NULL WHERE id = ?", (record_id, proposal_id))
@@ -342,6 +400,16 @@ def accept(conn: sqlite3.Connection, registry: dict, proposal_id: int) -> tuple[
     except ValidationError as error:
         _keep_reason(conn, proposal_id, _why_not(store, info, error))
     return info.name, record_id
+
+
+def _check_helper_links(conn, registry: dict, info, row, values: dict, proposal_id: int) -> None:
+    """Refuse a helper's suggestion that sets a link into a part the helper was not given (decision 0074)."""
+    helper = helpers.get(conn, row["helper_id"])
+    if helper is None or set(values) & {c.name for c in helpers.hidden_links(info, helper, registry)}:
+        # Refused when suggested since decision 0074; this catches anything kept from before, or a part since
+        # switched off. The reason does not say which part, because the helper can read it.
+        _keep_reason(conn, proposal_id, "This suggestion sets a link to a part of your records the helper was not "
+                                        "given, so it cannot be added. Reject it, or add the record yourself.")
 
 
 def _claim(conn, proposal_id: int, status: str) -> None:

@@ -5,6 +5,7 @@ How to run them is in AGENTS.md.
 | support.py | Shared helpers for tests: temporary folders and made-up (synthetic) modules. | writing a new test |
 | test_db.py | Tests for opening the database safely, transactions, statement splitting and backups. | changing the database layer |
 | test_migrations.py | Tests for numbered migrations: tracks, checksums, newer databases, rollback and backups. | changing migrations |
+| test_csv_import.py | Tests for Import from a spreadsheet: reading a CSV, matching columns, the dry run, staging for Review and Accept. | changing spreadsheet import |
 | test_modules.py | Tests for loading module folders and the plain-language problems they report. | changing module rules |
 | test_actions.py | Tests for one-step actions (buttons like Mark returned) and the date order rule `not_before` (decision 0075). | changing actions or date order |
 | test_example_garden.py | Exercise the garden example with a temporary database and synthetic harvest. | changing the garden example |
