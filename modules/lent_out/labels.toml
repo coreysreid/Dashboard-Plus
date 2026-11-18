@@ -8,6 +8,6 @@ columns.stock_item = { label = "Stock item, if you track it", help = "Optional. 
 columns.borrower = { label = "Who borrowed it", help = "Choose one of your People, or add them there first. Their number is kept in People, so it only needs changing in one place." }
 columns.lent_on = { label = "Lent on" }
 columns.due_back = { label = "Due back", help = "The date you agreed with the borrower. The dashboard reminds you a week before; nothing is sent to them." }
-columns.status = { label = "Is it back?", help = "When it comes back, choose Yes, returned and fill in Returned on. The loan stays here as history." }
+columns.status = { label = "Is it back?", help = "When it comes back, press Mark returned on the loan's page, or choose Yes, returned and fill in Returned on. The loan stays here as history." }
 columns.returned_on = { label = "Returned on", show_when = { status = "returned" } }
 columns.notes = { help = "For example, the charger went with it, or a scratch to check on return. Do not write private details here." }

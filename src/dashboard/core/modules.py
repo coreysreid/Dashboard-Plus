@@ -7,6 +7,7 @@ import re
 import string
 import tomllib
 from dataclasses import dataclass, field
+from datetime import date
 from pathlib import Path
 
 from dashboard.core.migrations import Migration, load_track, MigrationError
@@ -27,7 +28,9 @@ SYSTEM_COLUMNS = ("id", "created_at", "updated_at", "review_status", "source", "
 
 MODULE_KEYS = ("name", "title", "version", "description", "core_api", "kind", "requires", "outbound_hosts")
 MODULE_REQUIRED = ("name", "title", "version", "description", "core_api", "kind")
-TABLE_KEYS = ("title", "description", "columns", "watch", "adjusts", "parent", "total", "record_name")
+TABLE_KEYS = ("title", "description", "columns", "watch", "adjusts", "parent", "total", "record_name", "actions")
+# A one-step button on a record's page, such as "Mark returned" (decision 0075).
+ACTION_KEYS = ("key", "label", "show_when", "set", "done")
 ADJUST_KEYS = ("link", "quantity", "amount", "direction", "adds")
 # Optional, for batches (DESIGN.md 5.7): the record a batch belongs to, how to pick or start one,
 # and the two reasons a stocktake count records its difference with (decision 0070).
@@ -36,8 +39,9 @@ TOTAL_KEYS = ("link", "amount", "into", "earliest", "starts_from")
 WATCH_KEYS = ("running_low", "expiring", "supply", "gaps")
 GAP_KEYS = ("missing", "none", "where", "message")
 COLUMN_KEYS = ("type", "required", "required_when", "default", "min", "max", "unit", "choices", "help", "sensitive",
-               "to", "on_delete")
-LABEL_TABLE_KEYS = ("title", "columns", "form", "list", "empty", "home")
+               "to", "on_delete", "not_before")
+LABEL_TABLE_KEYS = ("title", "columns", "form", "list", "empty", "home", "actions")
+LABEL_ACTION_KEYS = ("label", "done")  # new words for an action's button and its notice
 HOME_PLACES = ("main", "more")  # where a table sits on the home page: shown large, or in the line of links
 LABEL_COLUMN_KEYS = ("label", "help", "show_when", "suggest_from", "fills", "answers", "blank")
 
@@ -72,6 +76,7 @@ class Column:
     to: str | None = None          # for link/links: "table" or "module.table"
     on_delete: str = "restrict"
     required_when: dict = field(default_factory=dict)  # required only while another choice has a value
+    not_before: str | None = None  # a date column of this table this date may not come before (decision 0075)
 
 
 @dataclass
@@ -85,6 +90,7 @@ class Table:
     parent: str | None = None  # a link to this same table that nests records (DESIGN.md 5.6)
     total: dict = field(default_factory=dict)  # checked `total` section: batches add up into a record (5.7)
     record_name: str | None = None  # how to name a record with no name of its own, like "{quantity} {item.unit} of {item}"
+    actions: list = field(default_factory=list)  # checked one-step buttons, like "Mark returned" (decision 0075)
 
 
 @dataclass
@@ -202,7 +208,8 @@ def _parse_column(file: str, table: str, name: str, raw, problems: list[str]) ->
     column = Column(name=name, type=kind, required=bool(raw.get("required", False)), default=raw.get("default"),
                     unit=raw.get("unit"), help=raw.get("help"), sensitive=bool(raw.get("sensitive", False)),
                     to=raw.get("to"), on_delete=raw.get("on_delete", "restrict"),
-                    required_when=raw.get("required_when") if isinstance(raw.get("required_when"), dict) else {})
+                    required_when=raw.get("required_when") if isinstance(raw.get("required_when"), dict) else {},
+                    not_before=raw.get("not_before"))
     if "required_when" in raw and (not isinstance(raw["required_when"], dict) or len(raw["required_when"]) != 1):
         problems.append(f"{where}: required_when names one choice column and a value, like {{ category = \"water\" }}.")
     for bound in ("min", "max"):
@@ -583,11 +590,144 @@ def _check_tables(module: str, data: dict, requires: list[str], problems: list[s
                 elif column.to not in tables:
                     problems.append(f"{where}: it points at a table '{column.to}' that this module does not declare."
                                     f"{_suggest(column.to, list(tables))}")
+    for table in tables.values():
+        for column in table.columns.values():
+            if column.not_before is not None:
+                other = table.columns.get(column.not_before) if isinstance(column.not_before, str) else None
+                if column.type != "date" or other is None or other.type != "date" or other is column:
+                    problems.append(f"In {file}, table '{table.name}', column '{column.name}': not_before names "
+                                    f"another date column of this table, like not_before = \"lent_on\", and only "
+                                    f"applies to a date column.")
+                    column.not_before = None
+    computed = _computed_columns(tables)
+    for tname, raw in raw_tables.items():
+        if isinstance(raw, dict) and tname in tables and "actions" in raw:
+            tables[tname].actions = _check_actions(file, tables[tname], raw["actions"], computed.get(tname, set()),
+                                                   problems)
     for tname, raw in raw_tables.items():
         gaps = raw.get("watch", {}).get("gaps") if isinstance(raw, dict) and isinstance(raw.get("watch"), dict) else None
         if gaps is not None and tname in tables:
             tables[tname].watch["gaps"] = _check_gaps(file, tables[tname], tables, gaps, problems)
     return tables
+
+
+def _computed_columns(tables: dict[str, Table]) -> dict[str, set[str]]:
+    """Columns worked out from other records, by table: an item's total and earliest use-by from its batches,
+    and a batch's amount changed by stock in and out. Nobody types over these, so no action may set them."""
+    computed: dict[str, set[str]] = {}
+    for table in tables.values():
+        if table.total:
+            into = computed.setdefault(table.total["target"], set())
+            into.add(table.total["into"])
+            if table.total.get("earliest"):
+                into.add(table.total["earliest"]["into"])
+        if table.adjusts:
+            computed.setdefault(table.adjusts["target"], set()).add(table.adjusts["quantity"])
+    return computed
+
+
+def _action_value(column: Column, value) -> str | None:
+    """Why `value` cannot be set on `column` by an action, or None when it can."""
+    if column.type in ("link", "links", "file"):
+        return "links and files can't be set by an action"
+    if column.type == "choice":
+        keys = [c.key for c in column.choices]
+        return None if value in keys else f"it is not one of the choices. Allowed: {', '.join(keys)}"
+    if column.type == "boolean":
+        return None if isinstance(value, bool) else "it is a yes/no column, so write true or false"
+    if column.type == "date":
+        if value == "today":
+            return None
+        try:
+            date.fromisoformat(str(value))
+            return None
+        except ValueError:
+            return "write \"today\" or a date like 2027-05-20"
+    if column.type == "datetime":
+        return None if value == "now" else "write \"now\""
+    if column.type in NUMERIC_TYPES:
+        if not _number(value):
+            return "it is a number column, so write a number"
+        if (column.min is not None and value < column.min) or (column.max is not None and value > column.max):
+            return "the number is outside the column's min and max"
+        return None
+    return None if isinstance(value, str) and value.strip() else "write the words to fill in"
+
+
+def _check_actions(file: str, table: Table, raw, computed: set[str], problems: list[str]) -> list[dict]:
+    """Check `actions`: one-step buttons on a record's page that set a few fields, like "Mark returned"."""
+    where = f"In {file}, table '{table.name}', actions"
+    if not isinstance(raw, list):
+        problems.append(f"{where}: write each action as a [[tables.{table.name}.actions]] section.")
+        return []
+    actions, keys = [], set()
+    columns = table.columns
+    for number, action in enumerate(raw, start=1):
+        a_where = f"{where} {number}"
+        if not isinstance(action, dict):
+            problems.append(f"{a_where}: describe it with key, label, show_when, set and done.")
+            continue
+        problems.extend(_unknown_keys(a_where, action, ACTION_KEYS))
+        missing = [k for k in ACTION_KEYS if k not in action]
+        if missing:
+            problems.append(f"{a_where}: {', '.join(repr(k) for k in missing)} "
+                            f"{'is' if len(missing) == 1 else 'are'} missing.")
+            continue
+        key = action["key"]
+        if not isinstance(key, str) or not NAME.match(key):
+            problems.append(f"{a_where}: 'key' must be lower-case letters, digits and underscores, like \"returned\".")
+            continue
+        a_where = f"{where} '{key}'"
+        if key in keys:
+            problems.append(f"{a_where}: two actions have this key.")
+            continue
+        keys.add(key)
+        if any(not isinstance(action[k], str) or not action[k].strip() for k in ("label", "done")):
+            problems.append(f"{a_where}: 'label' (the button's words) and 'done' (what it says afterwards) must "
+                            f"be short sentences, like label = \"Mark returned\".")
+            continue
+        shown, values = action["show_when"], action["set"]
+        if not _check_where(f"{a_where}, show_when", shown, columns, problems):
+            continue
+        private = [c for c in shown if columns[c].sensitive]
+        if private:  # whether the button shows would give the private value away
+            problems.append(f"{a_where}, show_when: '{private[0]}' is private, so it can't decide when a button "
+                            f"shows.")
+            continue
+        if not isinstance(values, dict) or not values:
+            problems.append(f"{a_where}: 'set' lists the fields to fill in, like {{ status = \"returned\" }}.")
+            continue
+        bad = False
+        for name, value in values.items():
+            column = columns.get(name)
+            if column is None:
+                problems.append(f"{a_where}, set: there is no column '{name}'.{_suggest(name, list(columns))}")
+            elif column.sensitive:
+                problems.append(f"{a_where}, set: '{name}' is private, so an action can't change it.")
+            elif name in computed:
+                problems.append(f"{a_where}, set: '{name}' is worked out from other records, so an action can't "
+                                f"set it.")
+            elif (why := _action_value(column, value)) is not None:
+                problems.append(f"{a_where}, set: '{name}' can't be set to {value!r}: {why}.")
+            else:
+                continue
+            bad = True
+        if bad:
+            continue
+        if not any(name in values and values[name] != value for name, value in shown.items()):
+            # Pressed twice (a double click, an old page), the second press must find nothing to do.
+            problems.append(f"{a_where}: 'set' must change a column named in show_when, so the button goes away "
+                            f"once pressed, like show_when = {{ status = \"out\" }} with "
+                            f"set = {{ status = \"returned\" }}.")
+            continue
+        needed = [c.name for c in columns.values() if c.required_when and c.name not in values
+                  and all(values.get(k) == v for k, v in c.required_when.items())]
+        if needed:
+            problems.append(f"{a_where}: what it sets makes '{needed[0]}' required, so set that too.")
+            continue
+        actions.append({"key": key, "label": action["label"].strip(), "done": action["done"].strip(),
+                        "show_when": dict(shown), "set": dict(values)})
+    return actions
 
 
 def _check_where(where: str, filters, columns: dict[str, Column], problems: list[str]) -> bool:
@@ -710,6 +850,21 @@ def _check_labels(data: dict, tables: dict[str, Table], problems: list[str]) -> 
             problems.append(f"{where}: 'home' must be \"main\" (shown large on the home page) or \"more\" "
                             f"(in the line of other lists), not {raw['home']!r}.")
         known = tables[tname].columns
+        actions = {a["key"] for a in tables[tname].actions}
+        raw_actions = raw.get("actions", {})
+        if not isinstance(raw_actions, dict):
+            problems.append(f"{where}: write actions like actions.returned = {{ label = \"Back now\" }}.")
+            raw_actions = {}
+        for key, words in raw_actions.items():
+            a_where = f"{where}, action '{key}'"
+            if key not in actions:
+                problems.append(f"{a_where}: tables.toml declares no such action.{_suggest(key, sorted(actions))}")
+            elif not isinstance(words, dict):
+                problems.append(f"{a_where}: write it like {{ label = \"Back now\", done = \"Marked as back.\" }}.")
+            else:
+                problems.extend(_unknown_keys(a_where, words, LABEL_ACTION_KEYS))
+                if any(not isinstance(v, str) or not v.strip() for k, v in words.items() if k in LABEL_ACTION_KEYS):
+                    problems.append(f"{a_where}: 'label' and 'done' must be short sentences.")
         for cname, craw in raw.get("columns", {}).items():
             if cname not in known:
                 problems.append(f"{where}: there is no column '{cname}'.{_suggest(cname, list(known))}")
