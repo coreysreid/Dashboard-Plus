@@ -9,3 +9,5 @@ The plan already covers bearer-only auth, local Host and Origin checks, module g
 Item 51 adds [later change-suggestion screens](CHANGE_SUGGESTIONS.md) and [acceptance checks](CHANGE_ACCEPTANCE.md). V1 is still add-only; these need monotonic revisions and person-only conflict/undo services before any endpoint is exposed.
 
 Item 52 adds a [local stdio MCP design](MCP_CONNECTOR.md), [eight-tool manifest](mcp-tools.json) and [acceptance checks](MCP_ACCEPTANCE.md). It remains unshippable until the v1 API and decision 0067 land; client secret storage and changing port need explicit setup guidance.
+
+Item 53 adds a [future one-field private grant](PRIVATE_GRANT.md) and [acceptance checks](PRIVATE_GRANT_ACCEPTANCE.md). V1 continues to share no sensitive fields; a grant needs a dedicated API route, durable revision, one-read consumption and restore-safe revocation before it can ship.
