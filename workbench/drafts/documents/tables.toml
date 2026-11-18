@@ -3,10 +3,10 @@ title = "Important documents"
 description = "Where important papers or their copies are kept. Do not enter document numbers here."
 columns.name = { type = "text", required = true }
 columns.kind = { type = "choice", required = true, choices = ["passport", "insurance", "will", "warranty", "identity", "property", "other"] }
-columns.holder = { type = "text" }
-columns.place = { type = "text" }
+columns.holder = { type = "text", sensitive = true }
+columns.place = { type = "link", to = "stock.places", on_delete = "restrict" }
 columns.renew_by = { type = "date" }
-columns.notes = { type = "longtext" }
+columns.notes = { type = "longtext", sensitive = true }
 
 [tables.documents.watch]
 expiring = { date = "renew_by", warn_days = 30, wording = "due", what = "document review or renewal" }

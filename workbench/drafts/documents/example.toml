@@ -4,38 +4,38 @@
 name = "Home insurance policy"
 kind = "insurance"
 holder = "Smith household"
-place = "Study folder"
+place = "Front hall"
 renew_by = "today+90"
 
 [[smith.documents.documents]]
 name = "Family passports"
 kind = "passport"
-place = "Study folder"
+place = "Front hall"
 notes = "Check each person's document separately before travel."
 
 [[garcia.documents.documents]]
 name = "Apartment insurance policy"
 kind = "insurance"
 holder = "Garcia household"
-place = "Entry cupboard"
+place = "Hall closet"
 renew_by = "today+45"
 
 [[garcia.documents.documents]]
-name = "Rosa's care papers"
+name = "Care papers"
 kind = "other"
 holder = "Rosa Garcia"
-place = "Private folder at home"
+place = "Main bedroom"
 notes = "No private medical details in this location list."
 
 [[taylor.documents.documents]]
 name = "Tenancy agreement"
 kind = "property"
 holder = "Sam Taylor"
-place = "Desk folder"
+place = "Hall cupboard"
 
 [[taylor.documents.documents]]
 name = "Bicycle warranty"
 kind = "warranty"
 holder = "Sam Taylor"
-place = "Desk folder"
+place = "Hall cupboard"
 renew_by = "today+120"

@@ -1,8 +1,9 @@
 [tables.documents]
 empty = "Add where one important paper is kept."
 form = ["name", "kind", "holder", "place", "renew_by", "notes"]
-list = ["name", "kind", "holder", "place", "renew_by"]
-columns.holder = { label = "Whose document", help = "Use a name if it helps you find the right paper; leave blank for household documents." }
-columns.place = { label = "Where to find it", help = "Describe the paper or copy's location. Avoid passwords or document numbers." }
+list = ["name", "kind", "place", "renew_by"]
+columns.name = { help = "Use a broad title, such as Insurance policy. Names appear in lists, questions and the review sheet; do not put a person's private details or document number here." }
+columns.holder = { label = "Whose document", help = "Private: choose Show to see it. Use a name only if it helps; leave blank for shared papers." }
+columns.place = { label = "Where to find it", help = "Choose a shared Place and check its full path. Do not use a place name as a hiding instruction." }
 columns.renew_by = { label = "Review or renew by", help = "Use a date shown on the document or choose a reminder date. Leave blank if none applies." }
-columns.notes = { help = "For example, where a spare copy is kept. Do not enter passwords or identification numbers." }
+columns.notes = { help = "Private: choose Show to see saved notes. Do not enter passwords, document numbers or copies here." }

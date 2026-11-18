@@ -14,9 +14,11 @@ CREATE TABLE documents__documents (
     name TEXT,
     kind TEXT,
     holder TEXT,
-    place TEXT,
+    place INTEGER REFERENCES stock__places(id) ON DELETE RESTRICT,
     renew_by TEXT,
     notes TEXT
 );
+
+CREATE INDEX documents__documents__place__idx ON documents__documents(place);
 
 CREATE INDEX documents__documents__renew_by__idx ON documents__documents(renew_by);

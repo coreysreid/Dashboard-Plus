@@ -1,7 +1,7 @@
 [[sheet]]
 name = "document_review"
 title = "Document review dates"
-intro = "A reminder list only. Storage locations, private notes and document numbers are not printed. Check issuer advice for renewals."
+intro = "A reminder list only. Storage places, private holder names and notes are not printed. Check issuer advice for renewals."
 
 [[sheet.section]]
 title = "Documents to review"

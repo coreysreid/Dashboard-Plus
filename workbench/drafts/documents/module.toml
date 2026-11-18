@@ -4,5 +4,5 @@ version = "1.0.0"
 description = "Know where important papers are and when they need attention."
 core_api = "1"
 kind = "declarative"
-requires = []
+requires = ["stock"]
 outbound_hosts = []
