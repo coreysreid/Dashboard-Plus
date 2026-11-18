@@ -1,0 +1,21 @@
+# Existing-record suggestion acceptance checks
+
+Future checks, using invented Smith Stock and Pet records. Source: current `Records.update`, v1 staging plan and decisions 0043/0053, checked **18 November 2026**. V1 has no update/amend/undo endpoints yet.
+
+1. **Grant and field policy:** A Stock helper may suggest changing Smith Kidney beans `minimum`, but cannot set worked-out `quantity`, `id`, `review_status`, a private field or a link into an ungranted module. It cannot update a deleted or switched-off record. No private value appears in errors.
+2. **Before snapshot:** The helper submits record ID, monotonic revision, exact ordinary `before` values and a `set` patch. A stale revision at submission is refused without an existence oracle for a hidden record. An omitted field stays unchanged; explicit null clears only an optional field.
+3. **No pre-accept effect:** Staging 4→6 tins changes no Stock row, batch, watch card, sheet or history outside the proposal store. Reject adds only a decision audit and leaves the record at 4.
+4. **Human review:** Review shows verified helper, untrusted why text, current 4, suggested 6 and buttons **Accept change**, **Change then accept**, **Reject**. Markup, URLs and bidi/control text in why/values do not run code, change layout silently or cause automatic acceptance.
+5. **Accept unchanged:** A person accepts while the record still has the expected revision/values. One transaction updates only `minimum` to 6, records helper proposal and person decision separately, and refreshes Needs attention. A duplicate click does not apply twice.
+6. **Change then accept:** A person changes the proposed 6 to 5. A second review shows current 4 → helper 6 → person 5. Save updates to 5 once; proposal history keeps both versions and attribution. Private or derived fields cannot be smuggled through this form.
+7. **Stale before Review:** A second local session changes minimum 4→5 after submission. Review disables the old Accept, says the record changed, and offers **Review again**; it does not apply 6 over 5.
+8. **Stale during Save:** Another session edits between review render and confirmation. Compare-and-swap rejects the action with current values; no partial update or audit success. Two simultaneous accepts produce one decision.
+9. **Version precision:** Two edits within the same UTC second still get distinct revisions. `updated_at` alone is not used as the lock token. A nonprivate unrelated edit also prompts review rather than silently accepting against a stale whole-record snapshot.
+10. **Helper amend:** Only the same active helper may amend its own pending suggestion using a new request key and expected proposal revision. Old/new values and time appear on Review; an open tab cannot accept the superseded version. Other helpers and revoked keys are refused.
+11. **Withdraw:** The owning active helper may withdraw pending work; no live row changes. Accepted, rejected, person-edited or another helper's proposal cannot be withdrawn by that helper. History and person-visible attribution remain.
+12. **Undo accepted update:** A person previews the inverse and can undo when accepted after-values are still current. Later person edits to an affected field block automatic undo and preserve the later value. A helper cannot call Undo.
+13. **Side effects:** Undo an accepted Stock movement only through its normal adjustment and nonnegative guard; check derived item/batch totals and audit exactly once. An accepted new row uses soft delete with a cascade preview, not a hard delete.
+14. **Batch undo:** A batch with one conflicted and one safe row previews both. Default group Undo does nothing until the person resolves the conflict or selects a safe row explicitly. No partial silent undo.
+15. **Privacy and scope:** Review, helper batch status, audit metadata, links and errors do not disclose hidden module IDs or private fields. Turning a key off blocks new calls but does not remove pending proposals or accepted history.
+
+Core needs: monotonic record and proposal revisions, safe patch validation, staging/version history, transactional compare-and-swap, person-edited decision state, conflict preview and undo through existing record side-effect services. See [the screen design](CHANGE_SUGGESTIONS.md). No current core workaround is implied.
