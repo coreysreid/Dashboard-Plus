@@ -45,6 +45,7 @@ Dashboard/                      <- the portable folder (or the git clone)
     config.toml                 real settings, written by the wizard
     secrets/                    API keys and agent token hashes
     backups/  exports/  attachments/  reports/
+    restore.json                the last restore, so it can be undone (no secrets)
 ```
 
 In the git repository only `config.example.toml` exists. `data/` is in
@@ -1117,8 +1118,23 @@ only to choose which pack applies; nothing is looked up online.
   Settings shows when each copy was last made, and if the copy on the computer
   failed, Settings and the home page say so plainly, with the reason and the
   date of the last good copy (decision 0046).
-- **Restore.** One click on the Backups screen. Restoring first backs up the
-  current state, so a restore can be undone too.
+- **Restore** (decision 0079). Settings → Backups lists the copies in the data
+  folder and in the second folder on the computer, newest first. Each is
+  opened read-only and checked (`quick_check` in the list, the full
+  `integrity_check` before a restore); nothing is ever written to a backup.
+  A copy from a newer version, with a part (module) this program lacks, or
+  with a changed database step is refused; an older copy is brought up to
+  date on a copy. The preview shows the date, size, "Check passed" and the
+  number of records in each list then and now. Restoring prepares the copy as
+  a new file in the data folder, waits until no page has the data file open,
+  makes a checked `before-restore-` backup, and swaps the prepared file in
+  with one atomic rename. `restore.json` names that backup, so **Undo
+  restore** works after a restart until the household keeps the restored
+  records or restores again. Undo is itself a restore (with a `before-undo-`
+  backup). Any failure leaves the records in use and says "Nothing was
+  changed." Helper keys (`data/secrets/`) are never part of a backup or a
+  restore. Later: restoring into a new folder and switching folders,
+  removable drives, attachments, and a catalogue of copies across computers.
 - **Export everything.** One click writes a folder: one CSV per table (with
   dropdown labels and keys, link columns resolved to readable names), the
   attachments, the notes and annotations as plain text/Markdown, and a

@@ -3,6 +3,7 @@
 |---|---|---|
 | __init__.py | Core services: database, migrations, modules, records, backups, helpers and their suggestions. | adding a core service |
 | backups.py | Automatic backups: one a day, one at every safe close, kept in two places. | changing when or where backups are made |
+| restore.py | Restore from a backup: check copies without changing them, put one back safely, and undo it. | changing how a backup is checked, put back or undone |
 | db.py | Open the SQLite database with settings that are safe on USB drives. | changing how the data file is opened or backed up |
 | dates.py | Dates the household's way: typed and shown as 20/05/27 or 05/20/27, always stored as 2027-05-20. | changing how dates are typed or shown |
 | naming.py | What to call a record wherever it appears: its name, or for a batch "Kidney beans, 3 tins". | changing how records are named |

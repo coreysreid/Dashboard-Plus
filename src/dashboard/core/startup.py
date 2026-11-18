@@ -43,6 +43,19 @@ def _missing_columns(conn, module) -> list[str]:
     return missing
 
 
+def record_modules(conn, found: list) -> None:
+    """Note each module in use and its version; a module seen for the first time starts switched on."""
+    now = datetime.now(timezone.utc).isoformat(timespec="seconds")
+    with db.transaction(conn):
+        for module in found:
+            conn.execute(
+                "INSERT INTO core__modules (name, version, enabled, first_seen_at, updated_at) "
+                "VALUES (?, ?, 1, ?, ?) ON CONFLICT(name) DO UPDATE SET version = excluded.version, "
+                "updated_at = excluded.updated_at",
+                (module.name, module.version, now, now),
+            )
+
+
 def prepare(data_dir: Path, modules_dir: Path | None = None) -> StartupReport:
     """Open the database, bring it up to date, and record the modules in use.
 
@@ -81,15 +94,7 @@ def prepare(data_dir: Path, modules_dir: Path | None = None) -> StartupReport:
                     f"Its tables.toml describes {', '.join(missing)}, which its migrations do not create. "
                     f"Run tools/make_migration.py for it.")
         found = modules.dependency_order([m for m in found if m.name not in failures], failures)
-        now = datetime.now(timezone.utc).isoformat(timespec="seconds")
-        with db.transaction(conn):
-            for module in found:
-                conn.execute(
-                    "INSERT INTO core__modules (name, version, enabled, first_seen_at, updated_at) "
-                    "VALUES (?, ?, 1, ?, ?) ON CONFLICT(name) DO UPDATE SET version = excluded.version, "
-                    "updated_at = excluded.updated_at",
-                    (module.name, module.version, now, now),
-                )
+        record_modules(conn, found)
         version = conn.execute("PRAGMA user_version").fetchone()[0]
     finally:
         conn.close()

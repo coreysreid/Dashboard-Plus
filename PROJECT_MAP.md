@@ -129,6 +129,7 @@ One record per decision, from `TEMPLATE.md`. Never deleted; reversed ones are ma
 | [0075](0075-one-step-actions-and-date-order.md) | One-step buttons declared in tables.toml (Mark returned), saved through the ordinary change path and refused when pressed twice; `not_before` keeps one date from coming before another | Accepted |
 | [0076](0076-garden-promoted.md) | Vegetable garden switched on from Lane B's draft: beds at your Places, job reminders only while not done, no growing advice | Accepted |
 | [0077](0077-home-layout-private-access-details.md) | Home layout gets a private "Codes or access details" box, hidden until Show and never printed | Accepted |
+| [0079](0079-restore-from-a-backup.md) | Restore from a backup: copies checked read-only, the chosen one prepared on a new file, a checked before-restore copy, an atomic swap while no page holds the file, and an Undo that survives a restart | Accepted |
 | [TEMPLATE](TEMPLATE.md) | Blank record to copy for a new decision | recording a decision |
 
 ## docs/plans/  (summary: build plans for larger pieces of work, written before building)
@@ -404,6 +405,7 @@ Generate the next one with: python tools/make_migration.py vehicles --name <what
 |---|---|---|
 | __init__.py | Core services: database, migrations, modules, records, backups, helpers and their suggestions. | adding a core service |
 | backups.py | Automatic backups: one a day, one at every safe close, kept in two places. | changing when or where backups are made |
+| restore.py | Restore from a backup: check copies without changing them, put one back safely, and undo it. | changing how a backup is checked, put back or undone |
 | db.py | Open the SQLite database with settings that are safe on USB drives. | changing how the data file is opened or backed up |
 | dates.py | Dates the household's way: typed and shown as 20/05/27 or 05/20/27, always stored as 2027-05-20. | changing how dates are typed or shown |
 | naming.py | What to call a record wherever it appears: its name, or for a batch "Kidney beans, 3 tins". | changing how records are named |
@@ -444,6 +446,7 @@ Add a new file with the next number instead of changing an old one.
 | api.py | The helper API (/api/v1): programs the household gave a key to can look at records and suggest new ones. | changing what helpers can read or send |
 | review.py | The Review screen: helpers' suggested new records, waiting for a person to accept or reject each one. | changing the Review page |
 | helper_settings.py | Settings, Helpers: give an assistant a key, choose what it may do, and turn its access off. | changing the Helpers settings page |
+| restore.py | Settings, Backups: the list of backups, a preview of one, putting it back, and Undo restore. | changing the restore pages |
 
 ## src/dashboard/web/templates/  (summary: HTML pages; base.html holds the shared look)
 | Entry | What it is | Open it when |
@@ -466,6 +469,7 @@ Add a new file with the next number instead of changing an old one.
 | helpers.html | Settings, Helpers: the helper list, the address, and the form that makes a key | changing the Helpers settings page |
 | helper_key.html | The one page that shows a new helper key, with a Copy button and a warning to keep it private | changing the new-key page |
 | review.html | Review suggestions: each helper's waiting suggestions with Accept and Reject | changing the Review page |
+| restore_*.html | Settings, Backups: the list of backups, the check-and-compare page, the result, and the shared Undo restore box | changing the restore pages |
 
 ## tests/  (summary: automatic tests; synthetic data only)
 How to run them is in AGENTS.md.
@@ -510,6 +514,7 @@ How to run them is in AGENTS.md.
 | test_repofiles.py | Tests for the shared list of repository files, including during a merge with conflicts. | a tool counts a file twice |
 | test_repository.py | Tests that this repository passes its own checks. | CI fails on the repo itself |
 | test_helper_*.py | Tests for helpers: keys, suggestions waiting for a person, the /api/v1 door, and the Settings and Review screens | changing helpers, the helper API or Review |
+| test_restore.py | Tests for restoring a backup: checks that change nothing, the safe swap, Undo after a restart, and refusals. | changing restore or Undo |
 
 ## tools/  (summary: scripts that check, lock and build the project; run by CI)
 | Entry | What it is | Open it when |
