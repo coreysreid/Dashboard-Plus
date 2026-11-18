@@ -599,6 +599,16 @@ number and the core can load both for a transition period.
   gap asks where a job is done; smoke alarms and extinguishers stay in Home
   layout; a **Home care** sheet prints the jobs and dates without notes. No
   field holds alarm codes or how to get in.
+- **Things lent out** (declarative; requires People and Household stock;
+  shipped, decision 0073). Table: loans (what was lent; an optional
+  `stock.items` link that changes no count; the borrower, a link to
+  `people.people`; lent on; due back; "is it back?"; returned on, required
+  once it is back; notes). Behaviour: "return due" or "overdue" from a week
+  before the agreed date, only while the loan is out (`where` on `expiring`,
+  decision 0072); a returned loan stays as history; one gap asks how to reach
+  a borrower with no phone, once per borrower, only while something is out; a
+  **Things still lent out** sheet prints open loans with the borrower's phone
+  from People, without notes. Nothing is ever sent to the borrower.
 - **Readiness** (declarative; the home of the prompts in section 10.5).
   Tables: plans (a situation the household has thought through: what we would
   do, who does what, the answer to "could we get down from upstairs?"), drills

@@ -16,7 +16,7 @@ home_type = "apartment"
 storeys = 1
 mobility_needs = true
 hazards = ["earthquake", "heat", "power"]
-modules = ["documents", "home_care", "home_layout", "medical", "people", "pets", "stock", "vehicles"]
+modules = ["documents", "home_care", "home_layout", "lent_out", "medical", "people", "pets", "stock", "vehicles"]
 
 # ---- People -----------------------------------------------------------------
 
@@ -702,3 +702,13 @@ job = "Air conditioner filter"
 done_on = "today-45"
 done_by = "Carlos Garcia"
 notes = "Washed and dried the filter."
+
+# ---- Things lent out ----------------------------------------------------------
+# Luis borrowed the folding trolley for his move; his number is already in People.
+
+[[lent_out.loans]]
+name = "Folding trolley"
+borrower = "Luis Garcia"
+lent_on = "today-3"
+due_back = "today+7"
+status = "out"

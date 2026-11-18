@@ -16,7 +16,7 @@ home_type = "house"
 storeys = 2
 mobility_needs = false
 hazards = ["bushfire", "heat", "storm"]
-modules = ["documents", "home_care", "home_layout", "medical", "people", "pets", "stock", "vehicles"]
+modules = ["documents", "home_care", "home_layout", "lent_out", "medical", "people", "pets", "stock", "vehicles"]
 
 # ---- People -----------------------------------------------------------------
 
@@ -771,3 +771,24 @@ job = "Hot water system service"
 done_on = "today-300"
 done_by = "Dave Wilson"
 notes = "Replaced the relief valve. The invoice is with the house papers."
+
+# ---- Things lent out ----------------------------------------------------------
+# Dave borrowed the drill; the trowel came back, so it is history and never "overdue".
+# Dave has no number yet, so the dashboard asks how to reach him while the drill is out.
+
+[[lent_out.loans]]
+name = "Cordless drill"
+stock_item = "Cordless drill"
+borrower = "Dave Wilson"
+lent_on = "today-10"
+due_back = "today+4"
+status = "out"
+notes = "The charger went with it."
+
+[[lent_out.loans]]
+name = "Garden trowel"
+borrower = "Dave Wilson"
+lent_on = "today-30"
+due_back = "today-20"
+status = "returned"
+returned_on = "today-18"

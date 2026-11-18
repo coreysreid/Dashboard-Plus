@@ -119,6 +119,7 @@ marked Superseded. Each lists downsides, cost to undo, and the sign it was wrong
 | [0064](0064-real-browser-check.md) | A real-browser check clicks through setup, dates, stock in, private details and closing in Chromium (Linux CI job); a refused save keeps a private detail | Accepted |
 | [0065](0065-agpl-licence.md) | Licence changed to GNU AGPL v3 or later (from MIT) | Accepted |
 | [0072](0072-reminders-skip-finished-rows-and-sheets-print-linked-contacts.md) | Due-date reminders can skip finished rows (`where` on `expiring`); sheets print a linked contact's phone from a required module, never a private column | Accepted |
+| [0073](0073-lent-out-promoted.md) | Things lent out switched on from Lane B's draft: borrowers in People, reminders only while still out, Stock count untouched | Accepted |
 | [TEMPLATE](TEMPLATE.md) | Blank record to copy for a new decision | recording a decision |
 
 ## docs/plans/  (summary: build plans for larger pieces of work, written before building)
@@ -198,6 +199,7 @@ numbered migrations. See docs/DESIGN.md section 6 for the module contract.
 | documents/ | Where important papers are kept, whose they are and the review or renewal dates you choose; a review dates sheet | changing document records |
 | home_care/ | Jobs around the home, where each is, who usually does it, last done and do again by; work done; a Home care sheet | changing home care jobs |
 | home_layout/ | Ways out, shut-offs, smoke alarms and safety equipment, meters, each at one of your places; an Our home sheet | changing home layout records |
+| lent_out/ | Things lent out: what, to whom (one of your People), lent on, due back and returned on; a Things still lent out sheet | changing loans |
 | medical/ | First aid kits and where they are, kit checks, first aid training renewals; a first aid sheet | changing first aid records |
 | people/ | Who lives here, who to call, important details, emergency sheets | changing people, contacts or the emergency sheet |
 | pets/ | Pets, their vet, treatments and medicine with due dates, weigh-ins, vet visits; a pet details sheet | changing pets |
@@ -247,6 +249,22 @@ Generate the next one with: python tools/make_migration.py home_care --name <wha
 
 ## modules/home_layout/migrations/  (summary: this module's numbered database changes; never edit a released one)
 Generate the next one with: python tools/make_migration.py home_layout --name <what_changed>
+
+| Entry | What it is | Open it when |
+|---|---|---|
+| 0001_first_tables.sql | The module's first tables, generated from tables.toml | checking how the tables are stored |
+
+## modules/lent_out/  (summary: the Things lent out module, files only; built on Lane B's draft, linking to People and Household stock)
+| Entry | What it is | Open it when |
+|---|---|---|
+| module.toml | Name, version, description; requires People (the borrower) and Household stock (the item) | changing the module's details |
+| tables.toml | Loans with a due-back reminder only while still out, and one question about reaching the borrower | adding a field or a gap question |
+| labels.toml | Friendly labels, help text, form and list order, main list on home | changing wording or order |
+| sheets.toml | Things still lent out sheet: what, who, their phone from People and the dates, with no notes | changing what prints |
+| migrations/ | Numbered database changes | after changing tables.toml |
+
+## modules/lent_out/migrations/  (summary: this module's numbered database changes; never edit a released one)
+Generate the next one with: python tools/make_migration.py lent_out --name <what_changed>
 
 | Entry | What it is | Open it when |
 |---|---|---|

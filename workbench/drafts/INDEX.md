@@ -23,7 +23,6 @@ and made-up example rows. Add a row here for each draft folder you create.
 | charts/ | Four household chart sketches with data and accessibility needs | building M4 graphing |
 | garden/ | Promotion draft of the vegetable-garden worked example | promoting the optional Garden module |
 | home_inventory/ | Private room-by-room belongings and claim-list draft | planning insurance inventory |
-| lent_out/ | Borrower, due-back and return-history draft | planning household loans |
 | utilities/ | Private accounts, People fault contacts and Home layout meter links | planning household utilities |
 | corey_test/ | One-hour solo Windows test and BACKLOG-ready feedback form | planning Corey's hands-on round |
 | speed_fixture/ | Large made-up household file for speed testing | measuring scale |
