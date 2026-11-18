@@ -1,10 +1,10 @@
 [[sheet]]
 name = "home_care"
 title = "Home care"
-intro = "Your own list of jobs around the home, who usually does them and the dates you chose. It is a copy of your dates, not maintenance instructions; check the manual or a qualified tradesperson before any work. Phone numbers are kept in People. Notes are not printed."
+intro = "Your own list of jobs around the home, who usually does them and the dates you chose. It is a copy of your dates, not maintenance instructions; check the manual or a qualified tradesperson before any work. Phone numbers come from People, so they only need changing there. Notes are not printed."
 
 [[sheet.section]]
 title = "Jobs"
 table = "jobs"
-columns = ["name", "place", "who_does_it", "last_done", "next_due"]
+columns = ["name", "place", "who_does_it", "who_does_it.phone", "last_done", "next_due"]
 order_by = "next_due"

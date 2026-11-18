@@ -148,10 +148,15 @@ def _render_form(info, store, values, errors, from_form, record=None, status=200
             held = sum(1 for r in rows if r[rule["amount"]])
             summary = (f"{display.column_label(info, into)}: {amount}{' ' + unit if unit else ''}, "
                        f"in {held} batch{'es' if held != 1 else ''}")
+            countable = store.count_table(other.name) is not None and not record.get("deleted_at")
             batches.append({"title": display.table_title(other), "table": other.name, "summary": summary,
                             "add": f"/t/{other.name}/new?{rule['link']}={record['id']}",
                             "rows": [{"href": f"/t/{other.name}/{r['id']}",
+                                      "count": f"/t/{other.name}/{r['id']}/count" if countable else None,
                                       "name": display.display_name(other, dict(r), store)} for r in rows]})
+    count_href = None  # "Count this batch": a stocktake saved as one correction (decision 0070)
+    if record and not record.get("deleted_at") and store.count_table(info.name) is not None:
+        count_href = f"/t/{info.name}/{record['id']}/count"
     related = []
     if record and not record.get("deleted_at"):
         for other, column in store._dependents(info):
@@ -159,7 +164,7 @@ def _render_form(info, store, values, errors, from_form, record=None, status=200
                             "label": display.table_title(other)})
     return render_template("form.html", info=info, title=display.table_title(info), fields=fields, record=record,
                            record_name=record_name, errors=errors, history=history, saved=saved,
-                           related=related, back=back, batches=batches), status
+                           related=related, back=back, batches=batches, count_href=count_href), status
 
 
 def _default_text(column) -> str:
@@ -290,3 +295,6 @@ def restore_record(table, record_id):
     except records.RecordNotFound:
         abort(404)
     return redirect(url_for("pages.edit_record", table=table, record_id=record_id))
+
+
+from dashboard.web import count  # noqa: E402,F401 - adds "Count this batch" to these pages

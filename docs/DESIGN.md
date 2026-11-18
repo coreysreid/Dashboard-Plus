@@ -174,6 +174,15 @@ supply = { quantity = "quantity", per_person_per_day = 3, per_pet_per_day = 0,
 - `expiring` may add `wording = "due"` for things to do by a date rather than
   use-by dates ("due in 3 days", "overdue since …"), and `what` to name it
   ("vaccinations due …").
+- `expiring` may add `where`, equality filters on columns of the same table,
+  so finished rows are never reminded about: `where = { status = "out" }`
+  skips a loan already returned, `where = { done = false }` a job already
+  done. Every filter must match. A blank yes/no counts as "no", as the form
+  shows it; a blank choice matches nothing. Filters are checked like the
+  `where` of gaps and sheets: an unknown column, a choice that does not exist,
+  or a yes/no written as anything but `true` or `false` is a plain error
+  (decision 0072). There is no "only while blank" filter yet; a module that
+  needs one uses a choice or yes/no column instead.
 - `running_low` and `expiring` name columns of the same table; `quantity` and
   `minimum` must be number columns, `date` a date column. Checked when the
   module loads, with plain-language errors like everything else.
@@ -220,9 +229,15 @@ order_by = "priority"
 ```
 
 A column written as `link.column` (for example `person.phone`) prints a column
-of the record the link points at, within the same module. Sensitive columns are
-printed only if a section lists them explicitly, and the page says they are
-included.
+of the record the link points at. The link may point into this module, or into
+a module listed under `requires` (Vehicles prints `roadside_contact.phone`
+from People). A link into another module is checked once every module has
+loaded: the column must exist there, and it must not be private, because a
+sheet is printed and left out, and another module's private detail should not
+reach it through a link (decision 0072). Sensitive columns of the module's own
+tables are printed only if a section lists them explicitly, and the page says
+they are included. A section's `where` filters still use this module's tables
+only.
 
 ### 5.3 Records that change a count (stock in and out)
 
@@ -357,12 +372,23 @@ link = "lot"
 belongs_to = "item"
 new_batch = { expires = "expires", place = "place" }
 oldest_first = "expires"
+counts = { more = "counted_more", less = "counted_less", note = "notes" }  # stocktake (decision 0070)
 # plus quantity, amount, direction and adds as in 5.3
 ```
 
 - The item's amount and Use by are worked out, never typed over: changing them
   directly is refused with "is worked out from its batches". A stocktake
   correction changes the batch, and the item follows, both in history.
+- **Count this batch** (decision 0070), on a batch whose table is the target of
+  an `adjusts` rule with `counts`: the person types what they counted; a review
+  says "You counted 5 tins; 3 tins are recorded here. This adds 2 tins as a
+  stocktake correction"; Save records one movement of the difference with the
+  `more` or `less` reason, the batch, the item and a note of both amounts. The
+  count is never added on top. Saving compares the amount the review showed with
+  the batch now and refuses an out-of-date review; a batch that already holds
+  the count saves nothing (so a second click adds nothing). A `counts` reason
+  with no batch chosen is refused. Undo, edit and restore move only the
+  difference, as for any movement. The item total has no count form.
 - Stock in with no batch chosen starts a new batch with the use-by date and
   place given. Adding to an existing batch is an explicit choice of that batch.
 - Using some with no batch chosen takes from the batch with the earliest known
@@ -584,6 +610,16 @@ number and the core can load both for a transition period.
   gap asks where a job is done; smoke alarms and extinguishers stay in Home
   layout; a **Home care** sheet prints the jobs and dates without notes. No
   field holds alarm codes or how to get in.
+- **Things lent out** (declarative; requires People and Household stock;
+  shipped, decision 0073). Table: loans (what was lent; an optional
+  `stock.items` link that changes no count; the borrower, a link to
+  `people.people`; lent on; due back; "is it back?"; returned on, required
+  once it is back; notes). Behaviour: "return due" or "overdue" from a week
+  before the agreed date, only while the loan is out (`where` on `expiring`,
+  decision 0072); a returned loan stays as history; one gap asks how to reach
+  a borrower with no phone, once per borrower, only while something is out; a
+  **Things still lent out** sheet prints open loans with the borrower's phone
+  from People, without notes. Nothing is ever sent to the borrower.
 - **Readiness** (declarative; the home of the prompts in section 10.5).
   Tables: plans (a situation the household has thought through: what we would
   do, who does what, the answer to "could we get down from upstairs?"), drills

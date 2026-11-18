@@ -1,0 +1,74 @@
+{% extends "base.html" %}
+{% block title %}Count this batch · Dashboard Plus{% endblock %}
+{% block body %}
+<p class="muted"><a href="/">Home</a> · <a href="/t/{{ info.name }}">{{ title }}</a> · <a href="{{ batch_href }}">This batch</a></p>
+{% if step == "review" %}
+<h1>Update this batch?</h1>
+{% elif step == "done" %}
+<h1>Count updated</h1>
+{% else %}
+<h1>Count this batch</h1>
+{% endif %}
+<p>{{ where }}</p>
+
+{% if error %}<p class="problem" role="alert">{{ error }}</p>{% endif %}
+
+{% if same %}
+<p class="notice" role="status">This batch already shows {{ recorded }}. No correction was saved.</p>
+<div class="actions"><a class="button" href="{{ batch_href }}">Back to this batch</a> <a href="{{ owner_href }}">Open the item</a></div>
+
+{% elif step == "done" %}
+<p class="notice" role="status">{{ done or "Count updated." }}</p>
+<div class="actions"><a class="button" href="{{ batch_href }}">Back to this batch</a> <a href="{{ owner_href }}">Open the item</a> <a href="{{ movements_href }}">Stock in and out</a></div>
+
+{% elif step == "review" %}
+<div class="card">
+  <p>You counted <strong>{{ counted_text }}</strong>; <strong>{{ recorded }}</strong> {{ "are" if recorded_value != 1 else "is" }} recorded here.</p>
+  {% if plan.difference > 0 %}
+  <p>This adds <strong>{{ difference_text }}</strong> as a <strong>stocktake correction</strong>. It is not a purchase.</p>
+  {% else %}
+  <p>This removes <strong>{{ difference_text }}</strong> as a <strong>stocktake correction</strong>. It does not say they were used or thrown away.</p>
+  {% endif %}
+  {% if after %}<p>{{ after }}</p>{% endif %}
+  <p class="muted">The correction will appear in Stock in and out and in this batch's history.</p>
+  <form method="post" action="{{ count_href }}" data-once>
+    <input type="hidden" name="_csrf" value="{{ csrf_token }}">
+    <input type="hidden" name="step" value="save">
+    <input type="hidden" name="counted" value="{{ counted }}">
+    <input type="hidden" name="recorded" value="{{ recorded_value }}">
+    <div class="actions">
+      <button type="submit">Save correction</button>
+      <a href="{{ count_href }}?counted={{ counted | urlencode }}">Go back</a>
+    </div>
+  </form>
+</div>
+
+{% elif not batch.deleted_at %}
+<form class="record" method="post" action="{{ count_href }}">
+  <input type="hidden" name="_csrf" value="{{ csrf_token }}">
+  <input type="hidden" name="step" value="review">
+  <input type="hidden" name="recorded" value="{{ recorded_value }}">
+  <p><strong>Recorded here: {{ recorded }}</strong></p>
+  <div class="{% if field_error %}has-error{% endif %}">
+    <label for="f-counted">You counted{% if unit %} <span class="muted">({{ unit }})</span>{% endif %}</label>
+    <input type="text" inputmode="decimal" id="f-counted" name="counted" value="{{ counted or '' }}" autocomplete="off" autofocus
+           aria-describedby="{% if field_error %}f-counted-error {% endif %}f-counted-help"{% if field_error %} aria-invalid="true"{% endif %}>
+    {% if field_error %}<p class="error" id="f-counted-error">{{ field_error }}</p>{% endif %}
+    <p class="help" id="f-counted-help">Count only this batch. If some are in another place or have another use-by date, open that batch or add a new one.</p>
+  </div>
+  <div class="actions">
+    <button type="submit">Review count</button>
+    <a href="{{ batch_href }}">Cancel</a>
+  </div>
+</form>
+{% endif %}
+<script>
+  // Save once: a second click while the first is on its way does nothing (the server also refuses a repeat).
+  document.querySelectorAll("form[data-once]").forEach(function (form) {
+    form.addEventListener("submit", function (e) {
+      if (form.dataset.sent) { e.preventDefault(); return; }
+      form.dataset.sent = "1";
+    });
+  });
+</script>
+{% endblock %}

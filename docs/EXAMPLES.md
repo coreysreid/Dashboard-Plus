@@ -166,7 +166,7 @@ Each vehicle, when its registration is due, who to call if it breaks down, where
 
 ### Vehicles sheet
 
-As it prints: the vehicles and the dates the household chose, with no plate or policy numbers.
+As it prints: the vehicles, who to call and their phone number, and the dates the household chose, with no plate or policy numbers.
 
 ![Vehicles sheet](screenshots/smith/18g-vehicle-sheet.png)
 
@@ -190,9 +190,21 @@ Each job around the home, where it is, who usually does it, when it was last don
 
 ### Home care sheet
 
-As it prints: the jobs and the household's own dates, with no notes.
+As it prints: the jobs, who usually does them and their phone number, and the household's own dates, with no notes.
 
 ![Home care sheet](screenshots/smith/18k-home-care-sheet.png)
+
+### Things lent out
+
+What was lent, who borrowed it, when, the date it is due back and when it came back.
+
+![Things lent out](screenshots/smith/18l-lent-out.png)
+
+### Things still lent out sheet
+
+As it prints: only the loans still out, with the borrower's phone from People and no notes.
+
+![Things still lent out sheet](screenshots/smith/18m-lent-out-sheet.png)
 
 ### Needs attention
 
@@ -382,7 +394,7 @@ Each vehicle, when its registration is due, who to call if it breaks down, where
 
 ### Vehicles sheet
 
-As it prints: the vehicles and the dates the household chose, with no plate or policy numbers.
+As it prints: the vehicles, who to call and their phone number, and the dates the household chose, with no plate or policy numbers.
 
 ![Vehicles sheet](screenshots/garcia/18g-vehicle-sheet.png)
 
@@ -406,9 +418,21 @@ Each job around the home, where it is, who usually does it, when it was last don
 
 ### Home care sheet
 
-As it prints: the jobs and the household's own dates, with no notes.
+As it prints: the jobs, who usually does them and their phone number, and the household's own dates, with no notes.
 
 ![Home care sheet](screenshots/garcia/18k-home-care-sheet.png)
+
+### Things lent out
+
+What was lent, who borrowed it, when, the date it is due back and when it came back.
+
+![Things lent out](screenshots/garcia/18l-lent-out.png)
+
+### Things still lent out sheet
+
+As it prints: only the loans still out, with the borrower's phone from People and no notes.
+
+![Things still lent out sheet](screenshots/garcia/18m-lent-out-sheet.png)
 
 ### Needs attention
 
@@ -580,7 +604,7 @@ Each vehicle, when its registration is due, who to call if it breaks down, where
 
 ### Vehicles sheet
 
-As it prints: the vehicles and the dates the household chose, with no plate or policy numbers.
+As it prints: the vehicles, who to call and their phone number, and the dates the household chose, with no plate or policy numbers.
 
 ![Vehicles sheet](screenshots/taylor/18g-vehicle-sheet.png)
 
@@ -604,9 +628,21 @@ Each job around the home, where it is, who usually does it, when it was last don
 
 ### Home care sheet
 
-As it prints: the jobs and the household's own dates, with no notes.
+As it prints: the jobs, who usually does them and their phone number, and the household's own dates, with no notes.
 
 ![Home care sheet](screenshots/taylor/18k-home-care-sheet.png)
+
+### Things lent out
+
+What was lent, who borrowed it, when, the date it is due back and when it came back.
+
+![Things lent out](screenshots/taylor/18l-lent-out.png)
+
+### Things still lent out sheet
+
+As it prints: only the loans still out, with the borrower's phone from People and no notes.
+
+![Things still lent out sheet](screenshots/taylor/18m-lent-out-sheet.png)
 
 ### Needs attention
 

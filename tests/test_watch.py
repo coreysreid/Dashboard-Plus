@@ -132,3 +132,57 @@ class WatchResultsTests(TempDirTestCase):
             self.records.create("people__people", {"name": name, "lives_here": here})
         home = watch.household(self.conn, self.registry)
         self.assertEqual((home.people, home.source), (2, "people marked as living here"))
+
+
+FILTERED = '''[tables.tasks]
+title = "Tasks"
+columns.name = { type = "text", required = true }
+columns.status = { type = "choice", choices = ["out", "returned"] }
+columns.done = { type = "boolean" }
+columns.due = { type = "date" }
+
+[tables.tasks.watch]
+'''
+
+
+class ExpiringWhereTests(TempDirTestCase):
+    """`expiring` with `where`: reminders that skip finished rows, such as a loan already returned (decision 0072)."""
+
+    def module(self, rule):
+        return self.make_module(tables=FILTERED + rule, labels=None)
+
+    def problems(self, rule):
+        with self.assertRaises(modules.ModuleError) as caught:
+            modules.load_module(self.module(rule))
+        return " | ".join(caught.exception.problems)
+
+    def test_the_filter_is_kept_with_the_rule(self):
+        module = modules.load_module(self.module(
+            'expiring = { date = "due", wording = "due", where = { status = "out", done = false } }\n'))
+        self.assertEqual(module.tables["tasks"].watch["expiring"]["where"], {"status": "out", "done": False})
+
+    def test_mistakes_in_the_filter_are_explained(self):
+        self.assertIn("not one of the choices for 'status'",
+                      self.problems('expiring = { date = "due", where = { status = "lost" } }\n'))
+        self.assertIn("Did you mean 'status'", self.problems('expiring = { date = "due", where = { staus = "out" } }\n'))
+        self.assertIn("yes/no column, so write true or false",
+                      self.problems('expiring = { date = "due", where = { done = "no" } }\n'))
+        self.assertIn("write it as settings", self.problems('expiring = { date = "due", where = "out" }\n'))
+
+    def test_only_matching_rows_are_reminded_and_a_blank_yes_no_counts_as_no(self):
+        make_migration.make(self.module(
+            'expiring = { date = "due", wording = "due", where = { status = "out", done = false } }\n'), "first_tables")
+        startup.prepare(self.tmp / "data", self.tmp / "modules")
+        conn = db.connect(self.tmp / "data" / "dashboard.db")
+        self.addCleanup(conn.close)
+        found, failures = modules.discover(self.tmp / "modules")
+        self.assertEqual(failures, {})
+        registry = records.build_registry(found)
+        store = records.Records(conn, registry)
+        for name, status, done in (("Still out", "out", None), ("Back already", "returned", None),
+                                   ("Out but done", "out", True), ("Out, not done", "out", False),
+                                   ("No status", None, None)):
+            store.create("demo__tasks", {"name": name, "status": status, "done": done, "due": "2026-05-30"})
+        items = watch.expiring(conn, registry, date(2026, 6, 1))
+        self.assertEqual(sorted(i.name for i in items), ["Out, not done", "Still out"])
+        self.assertTrue(all(i.detail.startswith("overdue since") for i in items))

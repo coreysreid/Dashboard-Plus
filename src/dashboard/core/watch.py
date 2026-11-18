@@ -102,8 +102,9 @@ def expiring(conn: sqlite3.Connection, registry: dict[str, TableInfo], today: da
             continue
         col, warn = rule["date"], rule["warn_days"]
         positive = f" AND {rule['only_positive']} > 0" if rule.get("only_positive") else ""  # used up: no warning
+        clause, values = _where_sql(info, rule.get("where", {}))  # e.g. only loans still out (decision 0072)
         rows = conn.execute(f"SELECT * FROM {info.name} WHERE deleted_at IS NULL AND {col} IS NOT NULL "
-                            f"AND {col} != ''{positive}")
+                            f"AND {col} != ''{positive}{clause}", values)
         for row in rows:
             try:
                 when = date.fromisoformat(row[col])
@@ -115,6 +116,19 @@ def expiring(conn: sqlite3.Connection, registry: dict[str, TableInfo], today: da
             detail = _due_words(rule.get("wording", "expires"), rule.get("what", ""), when, days, style)
             items.append(WatchItem(info.name, row["id"], _name(info, row, conn, registry, (col,)), detail, days))
     return sorted(items, key=lambda i: (i.sort_key, i.name))
+
+
+def _where_sql(info: TableInfo, filters: dict) -> tuple[str, list]:
+    """SQL for equality filters like { status = "out" }. A blank yes/no counts as no, as the form shows it."""
+    clause, values = "", []
+    for name, value in filters.items():
+        if info.table.columns[name].type == "boolean":
+            clause += f" AND COALESCE({name}, 0) = ?"
+            values.append(int(value))
+        else:
+            clause += f" AND {name} = ?"
+            values.append(value)
+    return clause, values
 
 
 def _due_words(wording: str, what: str, when: date, days: int, style: str = dates.DAY_FIRST) -> str:

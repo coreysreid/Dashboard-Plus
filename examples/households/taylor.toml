@@ -17,7 +17,7 @@ home_type = "apartment"
 storeys = 1
 mobility_needs = false
 hazards = ["flood", "snow", "storm"]
-modules = ["documents", "home_care", "home_layout", "medical", "people", "stock", "vehicles"]
+modules = ["documents", "home_care", "home_layout", "lent_out", "medical", "people", "stock", "vehicles"]
 
 # ---- People -----------------------------------------------------------------
 
@@ -308,3 +308,13 @@ notes = "The letting agent books the engineer and sends the date."
 name = "Bleed the radiators"
 kind = "heating_cooling"
 who_does_it = "Sam Taylor"
+
+# ---- Things lent out ----------------------------------------------------------
+# Chris has the spare bike pump and it is a couple of days late; his number is still to add.
+
+[[lent_out.loans]]
+name = "Spare bike pump"
+borrower = "Chris Taylor"
+lent_on = "today-20"
+due_back = "today-2"
+status = "out"

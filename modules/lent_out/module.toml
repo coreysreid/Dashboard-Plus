@@ -1,7 +1,7 @@
 name = "lent_out"
 title = "Things lent out"
 version = "1.0.0"
-description = "Remember who borrowed a tool or other thing and when it is due back."
+description = "Remember what you lent, who borrowed it and when it is due back."
 core_api = "1"
 kind = "declarative"
 requires = ["people", "stock"]

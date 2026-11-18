@@ -255,7 +255,9 @@ class BatchTests(TempDirTestCase):
             self.records, info, {"item": beans, "reason": "used"}, {}, False)}
         self.assertEqual(fields["lot"].blank, "Use the batch with the earliest use-by date")
         self.assertEqual(fields["lot"].follows, "item")
-        self.assertEqual(set(fields["lot"].blank_words), {"bought", "used", "expired", "thrown_away", "given_away"})
+        self.assertEqual(set(fields["lot"].blank_words), {"bought", "used", "expired", "thrown_away", "given_away",
+                                                          "counted_more", "counted_less"})
+        self.assertEqual(fields["lot"].blank_words["counted_more"], "Choose the batch you counted")  # decision 0070
         self.assertEqual(fields["expires"].only_when_blank, "lot")
         self.assertEqual(fields["place"].only_when_blank, "lot")
         self.assertIsNone(fields["item"].follows)
