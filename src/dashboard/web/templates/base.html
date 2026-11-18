@@ -18,6 +18,8 @@
     header nav { max-width: var(--wide); margin: 0 auto; padding: .6rem 1rem; display: flex; gap: 1rem; align-items: center; flex-wrap: wrap; }
     header a { color: var(--fg); text-decoration: none; }
     header .brand { font-weight: 700; margin-right: auto; }
+    header .mode { order: -1; flex-basis: 100%; font-size: .85rem; color: var(--muted); }
+    @media (min-width: 40rem) { header .mode { order: 0; flex-basis: auto; border: 1px solid var(--line); border-radius: 999px; padding: .1rem .6rem; } }
     main { max-width: var(--wide); margin: 0 auto; padding: 1.5rem 1rem 2rem; }
     h1 { font-size: 1.6rem; margin: 0 0 .25rem; }
     h2 { font-size: 1.2rem; margin: 1.5rem 0 .5rem; }
@@ -67,6 +69,7 @@
 <body>
   <header><nav>
     <a class="brand" href="/">Dashboard Plus</a>
+    <a class="mode" href="/settings/helpers" title="Your records are kept on this computer and shared with no other device (decision 0082).">On this computer only{% if helper_count %} · {{ helper_count }} helper{{ "s" if helper_count != 1 }} can look{% endif %}</a>
     <a href="/attention">Needs attention</a>
     <a href="/review">Review{% if review_count %} <span aria-label="{{ review_count }} waiting">({{ review_count }})</span>{% endif %}</a>
     <a href="/settings">Settings</a>
@@ -75,7 +78,7 @@
   <main>
     {% block body %}{% endblock %}
   </main>
-  <footer>Runs on this computer only. Nothing is sent anywhere. Version {{ version }}.</footer>
+  <footer>Runs on this computer only. Dashboard Plus itself sends nothing anywhere; a helper you connect sees only what you tick. Version {{ version }}.</footer>
 <script>
   // Private details are never in the page; "Show" fetches just the one asked for (privacy audit, decision 0059).
   document.addEventListener("click", function (event) {
