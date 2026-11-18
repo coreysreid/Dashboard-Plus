@@ -2,6 +2,8 @@
 
 Thanks for helping make this local household dashboard useful. Start with [the project vision](docs/VISION.md) and [the working rules](AGENTS.md). Describe the household benefit in plain language so Corey can judge the result.
 
+Dashboard Plus is licensed under the GNU AGPL, version 3 or later (see [`LICENSE`](LICENSE)). By contributing you agree your contribution is shared under the same licence. Modules, including files-only modules, are part of the program and are expected to use the same licence.
+
 This is a public repository. Use made-up people, addresses, dates and records in every example and test. Never commit a real database, a real `config.toml`, personal paths, tokens or other private household information. If you discover a way household data could be exposed, follow [the private reporting route](SECURITY.md).
 
 Keep each change small. Add a decision record in `docs/decisions/` for a technical choice: what you chose, why, its downsides, how to undo it and when to reconsider. Copy `docs/decisions/TEMPLATE.md` and update its index. Every folder needs a short `INDEX.md` with one row per entry; each Python file begins with a one-line docstring that the index quotes. Keep `README.md` and `PROJECT_MAP.md` current when your change affects them. Dependencies must be few and pinned exactly; ask before adding one.
