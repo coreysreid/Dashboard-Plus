@@ -12,3 +12,5 @@ expected, actual, severity (blocker, important, minor), suggested change.
 | 2026-11-17-picking-water-ux.md | Batch 4 stock picking and drinking-water check in four temporary households. | reviewing picker and water defaults |
 | 2026-11-17-accessibility.md | WCAG 2.2 review of all example screens, with live keyboard and narrow-view checks. | fixing screen access and reflow |
 | 2026-11-17-medical-dates-ux.md | J1–J5 check after Medical and local dates, including a car-only kit gap. | refining Medical and date entry |
+| 2026-11-18-translation-readiness.md | Screen-grouped extraction plan including Home layout and Vehicles. | preparing other languages |
+| 2026-11-18-translation-inventory.csv | 1,983 literal locations, picker names and search aliases. | extracting locale messages |
