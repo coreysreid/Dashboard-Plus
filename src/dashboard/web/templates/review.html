@@ -9,9 +9,9 @@
 {% endif %}
 {% for b in batches %}
 <section class="card" aria-labelledby="batch-{{ b.id }}">
-  <h2 id="batch-{{ b.id }}" style="margin-top:0">{{ b.helper }} · {{ b.total }} suggestion{{ "" if b.total == 1 else "s" }}</h2>
+  <h2 id="batch-{{ b.id }}" style="margin-top:0">{{ b.helper }} · {{ b.proposals | length }} suggestion{{ "" if b.proposals | length == 1 else "s" }}</h2>
   <p style="margin:.2rem 0">Why: {{ b.why }}</p>
-  <p class="muted" style="margin:.2rem 0">Suggested {{ b.created_at[:10] }}</p>
+  <p class="muted" style="margin:.2rem 0">Suggested {{ b.when }}</p>
   {% if b.helper_off %}<p class="muted">This helper's access is off. Its earlier suggestions still need your decision.</p>{% endif %}
   <ul style="list-style:none;padding:0;margin:1rem 0">
   {% for p in b.proposals %}

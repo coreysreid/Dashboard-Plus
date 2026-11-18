@@ -39,11 +39,6 @@ def authenticate():
     if "Origin" in request.headers:
         return api_error(403, "from_a_web_page", "The helper API cannot be used from a web page.")
     request.max_content_length = MAX_BODY
-    if request.method == "POST":
-        if (request.content_length or 0) > MAX_BODY:
-            return api_error(413, "too_large", "This request is too large. Send fewer suggestions at a time.")
-        if request.mimetype != "application/json":
-            return api_error(415, "needs_json", "Send the body as JSON (Content-Type: application/json).")
     if current_app.config["DATA_DIR"] is None:
         return api_error(401, "no_key", "This helper's access key is missing or no longer works. "
                                         "Ask the household to check Helpers in Settings.")
@@ -55,6 +50,11 @@ def authenticate():
                                         "Ask the household to check Helpers in Settings.")
     helpers.touch(conn, helper)
     g.helper = helper
+    if request.method == "POST":  # only once we know who is asking
+        if (request.content_length or 0) > MAX_BODY:
+            return api_error(413, "too_large", "This request is too large. Send fewer suggestions at a time.")
+        if request.mimetype != "application/json":
+            return api_error(415, "needs_json", "Send the body as JSON (Content-Type: application/json).")
     return None
 
 

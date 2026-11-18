@@ -3,7 +3,7 @@ from __future__ import annotations
 
 from flask import Blueprint, current_app, redirect, render_template, request, url_for
 
-from dashboard.core import proposals, records
+from dashboard.core import dates, proposals, records
 from dashboard.errors import PlainError
 from dashboard.web import display
 
@@ -74,7 +74,9 @@ def _message(args) -> tuple[str, str] | None:
 def review():
     conn, store = current_app.config["CONNECT"](), _store()
     batches = proposals.pending(conn)
+    style = dates.household_style(conn)
     for batch in batches:
+        batch["when"] = dates.show(batch["created_at"][:10], style)
         for item in batch["proposals"]:
             item["text"] = describe(store, item)
     return render_template("review.html", batches=batches, message=_message(request.args),
