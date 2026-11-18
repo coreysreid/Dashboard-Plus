@@ -14,6 +14,7 @@ from dashboard.errors import PlainError
 
 CORE_API = "1"
 NAME = re.compile(r"^[a-z][a-z0-9_]{0,39}$")
+RESERVED_NAMES = {"core"}  # the program's own tables begin "core__"; no module may take that name (decision 0069)
 CHOICE_KEY = re.compile(r"^[a-z0-9][a-z0-9_]*$")
 VERSION = re.compile(r"^\d+\.\d+\.\d+$")
 KINDS = ("declarative", "code")
@@ -137,6 +138,12 @@ def _check_module_toml(folder: Path, data: dict, problems: list[str]) -> None:
     if name is not None and not NAME.match(str(name)):
         problems.append(f"{where}: name must start with a letter and use only lower-case letters, digits and "
                         f"underscores, like \"garden\".")
+    if isinstance(name, str) and NAME.match(name):
+        if name in RESERVED_NAMES:
+            problems.append(f"{where}: '{name}' is reserved for the program itself. Choose another name.")
+        elif "__" in name or name.endswith("_"):
+            problems.append(f"{where}: the name '{name}' may not contain two underscores in a row or end with an "
+                            f"underscore, because that could be mistaken for another module's tables.")
     if name is not None and name != folder.name:
         problems.append(f"{where}: name is '{name}' but the folder is called '{folder.name}'; they must match.")
     if "version" in data and not VERSION.match(str(data["version"])):
