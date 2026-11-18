@@ -131,6 +131,7 @@ One record per decision, from `TEMPLATE.md`. Never deleted; reversed ones are ma
 | [0077](0077-home-layout-private-access-details.md) | Home layout gets a private "Codes or access details" box, hidden until Show and never printed | Accepted |
 | [0078](0078-export-my-records.md) | Export my records: one zip of spreadsheet files for the household, private details left out, text guarded against formulas, read from one moment | Accepted |
 | [0079](0079-restore-from-a-backup.md) | Restore from a backup: copies checked read-only, the chosen one prepared on a new file, a checked before-restore copy, an atomic swap while no page holds the file, and an Undo that survives a restart | Accepted |
+| [0080](0080-import-from-a-spreadsheet.md) | Import from a spreadsheet (CSV) in Settings: columns matched, every row checked like a helper's suggestion, ready rows wait on Review as one batch by "Import '<file>'"; the file is never kept; private details not imported | Accepted |
 | [TEMPLATE](TEMPLATE.md) | Blank record to copy for a new decision | recording a decision |
 
 ## docs/plans/  (summary: build plans for larger pieces of work, written before building)
@@ -421,8 +422,9 @@ Generate the next one with: python tools/make_migration.py vehicles --name <what
 | watch.py | Work out what is running low, what expires soon, how many days of supplies are on hand, and what is worth filling in. | changing running low, expiring, days of cover or gaps |
 | startup.py | Prepare the database at start-up: load modules, back up if needed, and migrate. | changing what happens at start-up |
 | helpers.py | Helpers the household has given a key to: making a key, checking it, and turning it off. | changing how helper keys work |
-| proposals.py | Suggestions from helpers: checked, kept waiting in their own table, and added only when a person accepts. | changing suggestions, limits or accepting |
+| proposals.py | Suggestions from helpers and rows imported from a spreadsheet: checked, kept waiting, added only when a person accepts. | changing suggestions, limits or accepting |
 | export.py | Export my records: one zip with a spreadsheet file for every table, a manifest and a plain-words README. | changing what the export contains |
+| csv_import.py | Read a spreadsheet saved as CSV, match its columns to a table's fields, and check every row before it goes to Review. | changing how spreadsheets are read or matched |
 
 ## src/dashboard/core/migrations/  (summary: the core's numbered database changes; never edit a released one)
 Add a new file with the next number instead of changing an old one.
@@ -432,6 +434,7 @@ Add a new file with the next number instead of changing an old one.
 | 0001_core_tables.sql | Settings and the list of modules in use | checking the core tables |
 | 0002_audit_history.sql | The history of every change to every record | checking how history is stored |
 | 0003_helpers.sql | Helpers, their suggestion batches and the suggested records waiting for a decision | checking how helpers and suggestions are stored |
+| 0004_import_batches.sql | Batches can come from a spreadsheet import by a person, not only a helper; rows keep their spreadsheet row | checking how imported rows wait for Review |
 
 ## src/dashboard/web/  (summary: the screens: pages, forms and their protections)
 | Entry | What it is | Open it when |
@@ -446,7 +449,8 @@ Add a new file with the next number instead of changing an old one.
 | display.py | Turn declared tables and stored values into friendly labels, form fields and text. | changing how values look |
 | templates/ | The HTML pages | changing what a page looks like |
 | api.py | The helper API (/api/v1): programs the household gave a key to can look at records and suggest new ones. | changing what helpers can read or send |
-| review.py | The Review screen: helpers' suggested new records, waiting for a person to accept or reject each one. | changing the Review page |
+| review.py | The Review screen: helpers' suggested new records and imported rows, waiting for a person to accept or reject each one. | changing the Review page |
+| csv_import.py | Settings, Import from a spreadsheet: choose a table, upload a CSV, match its columns, check the rows, send to Review. | changing the import screens |
 | helper_settings.py | Settings, Helpers: give an assistant a key, choose what it may do, and turn its access off. | changing the Helpers settings page |
 | export_page.py | Settings, Export my records: a page and a button that downloads a zip of spreadsheet files. | changing the Export page |
 | restore.py | Settings, Backups: the list of backups, a preview of one, putting it back, and Undo restore. | changing the restore pages |
@@ -458,6 +462,7 @@ Add a new file with the next number instead of changing an old one.
 | home.html | Home page: days of cover, needs attention, tables with counts, backup and data file status | changing the home screen |
 | attention.html | Running low, expiring soon, days of cover with the working shown, and gaps worth filling in | changing the attention page |
 | count.html | Count this batch: the count, its review and what was saved | changing the stocktake wording |
+| import.html | Import from a spreadsheet: choose a list and file, match columns, see which rows are ready, send to Review | changing the import wording |
 | grid.html | A table's records, a page at a time, sortable | changing the list of records |
 | rows.html | One page of grid rows (also loaded as you scroll) | changing a row |
 | form.html | Add and edit forms, delete and restore, and history | changing the form |
@@ -482,6 +487,7 @@ How to run them is in AGENTS.md.
 | support.py | Shared helpers for tests: temporary folders and made-up (synthetic) modules. | writing a new test |
 | test_db.py | Tests for opening the database safely, transactions, statement splitting and backups. | changing the database layer |
 | test_migrations.py | Tests for numbered migrations: tracks, checksums, newer databases, rollback and backups. | changing migrations |
+| test_csv_import.py | Tests for Import from a spreadsheet: reading a CSV, matching columns, the dry run, staging for Review and Accept. | changing spreadsheet import |
 | test_modules.py | Tests for loading module folders and the plain-language problems they report. | changing module rules |
 | test_actions.py | Tests for one-step actions (buttons like Mark returned) and the date order rule `not_before` (decision 0075). | changing actions or date order |
 | test_example_garden.py | Exercise the garden example with a temporary database and synthetic harvest. | changing the garden example |
@@ -536,6 +542,6 @@ How to run them is in AGENTS.md.
 | load_example.py | Load a made-up example household into an empty data folder, for demos, screenshots and testing. | demonstrating or testing with realistic data |
 | make_screenshots.py | Make the example screenshots: run each example household through every stage of using the dashboard. | the screens changed and the gallery needs remaking |
 | screenshots.js | Browser steps for make_screenshots.py (Node and Playwright) | changing how screenshots are taken |
-| browser_check.py | Click through the real dashboard in Chromium (setup, dates, stock in, stocktake, Mark returned, private details, closing) and fail loudly. | a screen or its browser code changed |
+| browser_check.py | Click through the real dashboard in Chromium (setup, dates, stock in, stocktake, Mark returned, spreadsheet import, private details, closing) and fail loudly. | a screen or its browser code changed |
 | browser_check.js | Browser steps for browser_check.py (Node and Playwright): what is clicked and checked | changing what the browser check clicks |
 | make_project_map.py | Build PROJECT_MAP.md from every INDEX.md in the repository. | changing the map format |
