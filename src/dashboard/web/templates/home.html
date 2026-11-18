@@ -10,6 +10,13 @@
   <a class="button" href="/t/{{ start.name }}/new">Add to {{ start.title }}</a>
 </div>
 {% endif %}
+{% if suggestions %}
+<div class="card start-here">
+  <div class="muted">Helpers</div>
+  <h2 style="margin-top:.2rem"><a href="/review">{{ suggestions }} suggestion{{ " needs" if suggestions == 1 else "s need" }} a look</a></h2>
+  <p class="muted" style="margin:.2rem 0">Nothing is added until you accept it.</p>
+</div>
+{% endif %}
 {% if attention and (attention.low or attention.expiring or attention.supplies or attention.gaps) %}
 <div class="tables">
   {% for s in attention.supplies %}
