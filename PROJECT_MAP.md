@@ -126,6 +126,9 @@ One record per decision, from `TEMPLATE.md`. Never deleted; reversed ones are ma
 | [0072](0072-reminders-skip-finished-rows-and-sheets-print-linked-contacts.md) | Due-date reminders can skip finished rows (`where` on `expiring`); sheets print a linked contact's phone from a required module, never a private column | Accepted |
 | [0073](0073-lent-out-promoted.md) | Things lent out switched on from Lane B's draft: borrowers in People, reminders only while still out, Stock count untouched | Accepted |
 | [0074](0074-agent-api-hardening.md) | Agent API hardening: links into parts a helper was not given are invisible, one 404 for "not yours" and "not there", hidden characters and key-like text refused, 120 requests a minute, one decision per suggestion | Accepted |
+| [0075](0075-one-step-actions-and-date-order.md) | One-step buttons declared in tables.toml (Mark returned), saved through the ordinary change path and refused when pressed twice; `not_before` keeps one date from coming before another | Accepted |
+| [0076](0076-garden-promoted.md) | Vegetable garden switched on from Lane B's draft: beds at your Places, job reminders only while not done, no growing advice | Accepted |
+| [0077](0077-home-layout-private-access-details.md) | Home layout gets a private "Codes or access details" box, hidden until Show and never printed | Accepted |
 | [TEMPLATE](TEMPLATE.md) | Blank record to copy for a new decision | recording a decision |
 
 ## docs/plans/  (summary: build plans for larger pieces of work, written before building)
@@ -203,6 +206,7 @@ numbered migrations. See docs/DESIGN.md section 6 for the module contract.
 | Entry | What it is | Open it when |
 |---|---|---|
 | documents/ | Where important papers are kept, whose they are and the review or renewal dates you choose; a review dates sheet | changing document records |
+| garden/ | Vegetable garden: beds at your places, crops, plantings, harvests and jobs with a due date; a Garden plan sheet | changing garden records |
 | home_care/ | Jobs around the home, where each is, who usually does it, last done and do again by; work done; a Home care sheet | changing home care jobs |
 | home_layout/ | Ways out, shut-offs, smoke alarms and safety equipment, meters, each at one of your places; an Our home sheet | changing home layout records |
 | lent_out/ | Things lent out: what, to whom (one of your People), lent on, due back and returned on; a Things still lent out sheet | changing loans |
@@ -227,6 +231,22 @@ Generate the next one with: python tools/make_migration.py documents --name <wha
 | Entry | What it is | Open it when |
 |---|---|---|
 | 0001_first_tables.sql | The module's first table, generated from tables.toml | checking how the table is stored |
+
+## modules/garden/  (summary: the Vegetable garden module, files only; built on Lane B's draft, linking to Household stock)
+| Entry | What it is | Open it when |
+|---|---|---|
+| module.toml | Name, version, description; requires Household stock (places) | changing the module's details |
+| tables.toml | Beds, crops, plantings, harvests and jobs; a job reminder only while not done | adding a field or a gap question |
+| labels.toml | Friendly labels, help text, form and list order, jobs main on home | changing wording or order |
+| sheets.toml | Garden plan sheet: beds and where they are, plantings, jobs not yet done | changing what prints |
+| migrations/ | Numbered database changes | after changing tables.toml |
+
+## modules/garden/migrations/  (summary: this module's numbered database changes; never edit a released one)
+Generate the next one with: python tools/make_migration.py garden --name <what_changed>
+
+| Entry | What it is | Open it when |
+|---|---|---|
+| 0001_first_tables.sql | The module's first tables, generated from tables.toml | checking how the tables are stored |
 
 ## modules/home_care/  (summary: the Home care module, files only; built on Lane B's draft, linking to People and Household stock)
 | Entry | What it is | Open it when |
@@ -259,12 +279,13 @@ Generate the next one with: python tools/make_migration.py home_layout --name <w
 | Entry | What it is | Open it when |
 |---|---|---|
 | 0001_first_tables.sql | The module's first tables, generated from tables.toml | checking how the tables are stored |
+| 0002_private_access_details.sql | Adds a private codes-or-access-details box to ways out, shut-offs, alarms and meters | checking the upgrade |
 
 ## modules/lent_out/  (summary: the Things lent out module, files only; built on Lane B's draft, linking to People and Household stock)
 | Entry | What it is | Open it when |
 |---|---|---|
 | module.toml | Name, version, description; requires People (the borrower) and Household stock (the item) | changing the module's details |
-| tables.toml | Loans with a due-back reminder only while still out, and one question about reaching the borrower | adding a field or a gap question |
+| tables.toml | Loans with a due-back reminder only while still out, a Mark returned button, and one question about reaching the borrower | adding a field or a gap question |
 | labels.toml | Friendly labels, help text, form and list order, main list on home | changing wording or order |
 | sheets.toml | Things still lent out sheet: what, who, their phone from People and the dates, with no notes | changing what prints |
 | migrations/ | Numbered database changes | after changing tables.toml |
@@ -454,6 +475,7 @@ How to run them is in AGENTS.md.
 | test_db.py | Tests for opening the database safely, transactions, statement splitting and backups. | changing the database layer |
 | test_migrations.py | Tests for numbered migrations: tracks, checksums, newer databases, rollback and backups. | changing migrations |
 | test_modules.py | Tests for loading module folders and the plain-language problems they report. | changing module rules |
+| test_actions.py | Tests for one-step actions (buttons like Mark returned) and the date order rule `not_before` (decision 0075). | changing actions or date order |
 | test_example_garden.py | Exercise the garden example with a temporary database and synthetic harvest. | changing the garden example |
 | test_records.py | Tests for saving, checking, linking, deleting and restoring records, and their history. | changing how records are saved |
 | test_schema.py | Tests for turning declared tables into SQL and generating the next migration. | changing table building |
@@ -504,6 +526,6 @@ How to run them is in AGENTS.md.
 | load_example.py | Load a made-up example household into an empty data folder, for demos, screenshots and testing. | demonstrating or testing with realistic data |
 | make_screenshots.py | Make the example screenshots: run each example household through every stage of using the dashboard. | the screens changed and the gallery needs remaking |
 | screenshots.js | Browser steps for make_screenshots.py (Node and Playwright) | changing how screenshots are taken |
-| browser_check.py | Click through the real dashboard in Chromium (setup, dates, stock in, stocktake, private details, closing) and fail loudly. | a screen or its browser code changed |
+| browser_check.py | Click through the real dashboard in Chromium (setup, dates, stock in, stocktake, Mark returned, private details, closing) and fail loudly. | a screen or its browser code changed |
 | browser_check.js | Browser steps for browser_check.py (Node and Playwright): what is clicked and checked | changing what the browser check clicks |
 | make_project_map.py | Build PROJECT_MAP.md from every INDEX.md in the repository. | changing the map format |
