@@ -70,6 +70,8 @@ the "Requests" table of docs/WORKSTREAMS.md.
 
 | Batch 10 item 33: Review and Inbox wording | ready | PR pending | Exact buttons, confirmations, empty states, separate Home counts and decision aftermath. |
 
+| Batch 10 item 35: UK and NZ country packs | ready | PR pending | Eight hazards each, local coordination, current warning links, terms and scope. |
+
 ## Messages to Lane A
 
 - **Supplies print wording:** The water section currently prints all water batches, including those not safe to drink. The proposed title says “Drinking and other water”; a drinking-only section or total needs a `drinking` filter and visible indication. See `workbench/reports/2026-11-17-wording-consistency.md`.
