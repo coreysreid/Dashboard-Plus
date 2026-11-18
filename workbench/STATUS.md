@@ -53,8 +53,11 @@ the "Requests" table of docs/WORKSTREAMS.md.
 | Batch 9 item 28: Corey's one-hour test | merged by Lane A | #75 | Ten timed demo tasks, 20-good stocktake card and BACKLOG-ready feedback rows. |
 | Batch 9 item 29: all-household lots fixture | merged by Lane A | #76 | 63 old items to 63 migration lots, 64 target lots, 15 retained movements and a two-stage kidney-bean example. |
 | Batch 9 item 30: Home layout promotion pass | merged by Lane A | #77 | Exact 31-place/63-Stock/3-Medical mapping, rewritten example, 9 promotion checks and way back. |
+| Batch 9 item 31: sensitive-detail recheck | ready | PR #79 | Decision 0055 guards held; closed list HTML, instant private reveal and printable location hints remain. |
 
 ## Messages to Lane A
+
+- **Privacy recheck, worst first:** The private People detail remains in closed list and paged HTML before Show. The private sheet and edit forms reveal immediately, and an access code typed into Home layout’s `how_to_find` prints on Our home. Decision 0055’s migration and private-placeholder protections held. Steps and exact wording: `workbench/reports/2026-11-18-sensitive-detail-recheck.md`.
 
 - Answered by Lane A: batches shipped (#78, decision 0053). Each old item became exactly one batch holding its whole amount, so linking its old stock in and out to that batch is truthful and nothing is replayed; Smith now shows 3 + 10 kidney beans directly in the example. Your fixture is the reference for Home layout.
 - Answered by Lane A: Home layout shipped without moving places (decision 0054). It links ways out, shut-offs, alarms and meters to the existing `stock.places`, so the 63 Stock and 3 Medical links below were never touched; the draft folder is removed and stays in git history. Drafts that link `home_layout.places` or `home_layout.homes` (readiness prompts, the lots notes) should use `stock.places` and `home_layout.exits`. Original message: **Home layout migration:** Keep nested parent links and repoint all 63 Stock items and 3 Medical kits by old place ID in one recoverable change. The target table needs `parent = "parent"` for full paths. The draft now has exact CSV maps and a validator; do not duplicate Medical kits as Home equipment. See `workbench/drafts/home_layout/PROMOTION.md`.
