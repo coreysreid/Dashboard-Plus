@@ -29,6 +29,12 @@ class PrivacyCheckTests(unittest.TestCase):
         for name in ("home.db", "x/y.sqlite3", "cert.pem", "id.key"):
             self.assertTrue(scan_files({name: "x"}), name)
 
+    def test_a_helper_key_is_flagged_but_a_short_placeholder_is_not(self):
+        key = "dph_" + "Ab3_x-" * 8  # made up: the right shape, no real key
+        found = scan_files({"notes.md": f"Authorization: {key}\n"})
+        self.assertTrue([f for f in found if "helper key" in str(f)])
+        self.assertEqual(scan_files({"notes.md": "Authorization: Bearer dph_YOUR_KEY_HERE\n"}), [])
+
     def test_real_config_is_flagged_but_example_is_not(self):
         self.assertTrue(scan_files({"config.toml": "a = 1\n"}))
         self.assertTrue(scan_files({"x/config.toml": "a = 1\n"}))

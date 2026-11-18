@@ -128,6 +128,15 @@ class Records:
             (limit, max(0, int(offset))))
         return [dict(r) for r in rows]
 
+    def after(self, name: str, after_id: int = 0, limit: int = 50) -> list[dict]:
+        """Records with an id above `after_id`, oldest first, deleted ones left out (for paging by id)."""
+        info = self.info(name)
+        limit = max(1, min(int(limit), MAX_PAGE))
+        ids = [r[0] for r in self.conn.execute(
+            f"SELECT id FROM {info.name} WHERE deleted_at IS NULL AND id > ? ORDER BY id LIMIT ?",
+            (max(0, int(after_id)), limit))]
+        return [self._row(info, record_id) for record_id in ids]
+
     def history(self, name: str, record_id: int) -> list[dict]:
         """Every change to one record, oldest first."""
         info = self.info(name)
@@ -372,6 +381,45 @@ class Records:
         info = self.info(name)
         with db.transaction(self.conn):
             return self._create(info, values, actor, review_status, batch_id)
+
+    def create_in(self, name: str, values: dict, actor: str = "person", review_status: str = "confirmed",
+                  batch_id: int | None = None) -> int:
+        """Save a new record inside a transaction the caller has already opened; return its id."""
+        self._check_actor(actor)
+        return self._create(self.info(name), values, actor, review_status, batch_id)
+
+    def check_create(self, entries: list[tuple[str, dict]], actor: str) -> dict[int, dict[str, str]]:
+        """Try creating each (table, values) in order without keeping anything; return what is wrong.
+
+        A full dry run: the real create path runs for every entry (so stock that would go below zero, links
+        that point nowhere and required fields are all caught, and an earlier entry's effects count for the
+        later ones), then everything is rolled back. The result maps an entry's position to {field: problem};
+        an empty result means every entry would be saved."""
+        self._check_actor(actor)
+        problems: dict[int, dict[str, str]] = {}
+        self.conn.execute("BEGIN IMMEDIATE")
+        try:
+            for position, (name, values) in enumerate(entries):
+                self.conn.execute("SAVEPOINT check_entry")
+                try:
+                    info = self.info(name)
+                    clash = sorted(set(values) & self._derived(info))
+                    if clash:
+                        problems[position] = {c: "is worked out from its batches; suggest a Stock in instead."
+                                              for c in clash}
+                        self.conn.execute("ROLLBACK TO check_entry")
+                    else:
+                        self._create(info, values, actor, "confirmed", None)
+                except ValidationError as error:
+                    problems[position] = dict(error.problems)
+                    self.conn.execute("ROLLBACK TO check_entry")
+                except PlainError as error:
+                    problems[position] = {"": str(error)}
+                    self.conn.execute("ROLLBACK TO check_entry")
+                self.conn.execute("RELEASE check_entry")
+        finally:
+            self.conn.execute("ROLLBACK")
+        return problems
 
     def _create(self, info: TableInfo, values: dict, actor: str, review_status: str = "confirmed",
                 batch_id: int | None = None) -> int:

@@ -125,6 +125,11 @@
   </div>
   {% endif %}
 
+  {% if mode == "settings" %}
+  <h2>5. Helpers</h2>
+  <p style="margin-top:0"><a href="/settings/helpers">Helpers: let an assistant look at or suggest records</a></p>
+  {% endif %}
+
   <div class="actions">
     <button type="submit">{% if mode == "setup" %}Finish setup{% else %}Save settings{% endif %}</button>
     {% if mode == "settings" %}<a href="/">Cancel</a>{% endif %}

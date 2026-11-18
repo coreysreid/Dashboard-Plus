@@ -1,1 +1,1 @@
-"""Core services: database, migrations, modules and records; review and backups come next."""
+"""Core services: database, migrations, modules, records, backups, helpers and their suggestions."""

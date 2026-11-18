@@ -1,7 +1,7 @@
 # src/dashboard/core/  (summary: core services, nothing topic-specific)
 | Entry | What it is | Open it when |
 |---|---|---|
-| __init__.py | Core services: database, migrations, modules and records; review and backups come next. | adding a core service |
+| __init__.py | Core services: database, migrations, modules, records, backups, helpers and their suggestions. | adding a core service |
 | backups.py | Automatic backups: one a day, one at every safe close, kept in two places. | changing when or where backups are made |
 | db.py | Open the SQLite database with settings that are safe on USB drives. | changing how the data file is opened or backed up |
 | dates.py | Dates the household's way: typed and shown as 20/05/27 or 05/20/27, always stored as 2027-05-20. | changing how dates are typed or shown |
@@ -16,3 +16,5 @@
 | suggest.py | Suggestions while typing: a household's own records first, then a module's list of common things. | changing how picking from a list matches |
 | watch.py | Work out what is running low, what expires soon, how many days of supplies are on hand, and what is worth filling in. | changing running low, expiring, days of cover or gaps |
 | startup.py | Prepare the database at start-up: load modules, back up if needed, and migrate. | changing what happens at start-up |
+| helpers.py | Helpers the household has given a key to: making a key, checking it, and turning it off. | changing how helper keys work |
+| proposals.py | Suggestions from helpers: checked, kept waiting in their own table, and added only when a person accepts. | changing suggestions, limits or accepting |

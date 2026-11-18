@@ -118,6 +118,10 @@ marked Superseded. Each lists downsides, cost to undo, and the sign it was wrong
 | [0063](0063-home-care-promoted.md) | Home care switched on from Lane B's draft: jobs at your places, done by your People, on dates you type; no repeats invented | Accepted |
 | [0064](0064-real-browser-check.md) | A real-browser check clicks through setup, dates, stock in, private details and closing in Chromium (Linux CI job); a refused save keeps a private detail | Accepted |
 | [0065](0065-agpl-licence.md) | Licence changed to GNU AGPL v3 or later (from MIT) | Accepted |
+| [0066](0066-helper-keys-shown-once-kept-as-a-fingerprint.md) | Helpers get a key from Settings: shown once, kept only as a fingerprint outside the database | Accepted |
+| [0067](0067-agent-api-v1-local-bearer-only-module-scoped.md) | The Agent API v1: local, bearer-only, module-scoped, and never private details | Proposed, awaiting Corey's OK |
+| [0068](0068-helper-suggestions-wait-until-a-person-accepts.md) | Helpers' suggestions wait in their own place until a person accepts them | Accepted |
+| [0069](0069-no-module-called-core-or-with-double-underscores.md) | A module may not be called "core" or use double underscores in its name | Accepted |
 | [0070](0070-stocktake-corrections.md) | Count this batch saves the difference as one stocktake correction in Stock in and out; never the count on top; an out-of-date review is refused | Accepted |
 | [0071](0071-private-sheet-opens-only-by-choice.md) | The private sheet opens only from its Show button (a POST), never from a link such as ?show=1 | Accepted |
 | [0072](0072-reminders-skip-finished-rows-and-sheets-print-linked-contacts.md) | Due-date reminders can skip finished rows (`where` on `expiring`); sheets print a linked contact's phone from a required module, never a private column | Accepted |
@@ -377,7 +381,7 @@ Generate the next one with: python tools/make_migration.py vehicles --name <what
 ## src/dashboard/core/  (summary: core services, nothing topic-specific)
 | Entry | What it is | Open it when |
 |---|---|---|
-| __init__.py | Core services: database, migrations, modules and records; review and backups come next. | adding a core service |
+| __init__.py | Core services: database, migrations, modules, records, backups, helpers and their suggestions. | adding a core service |
 | backups.py | Automatic backups: one a day, one at every safe close, kept in two places. | changing when or where backups are made |
 | db.py | Open the SQLite database with settings that are safe on USB drives. | changing how the data file is opened or backed up |
 | dates.py | Dates the household's way: typed and shown as 20/05/27 or 05/20/27, always stored as 2027-05-20. | changing how dates are typed or shown |
@@ -392,6 +396,8 @@ Generate the next one with: python tools/make_migration.py vehicles --name <what
 | suggest.py | Suggestions while typing: a household's own records first, then a module's list of common things. | changing how picking from a list matches |
 | watch.py | Work out what is running low, what expires soon, how many days of supplies are on hand, and what is worth filling in. | changing running low, expiring, days of cover or gaps |
 | startup.py | Prepare the database at start-up: load modules, back up if needed, and migrate. | changing what happens at start-up |
+| helpers.py | Helpers the household has given a key to: making a key, checking it, and turning it off. | changing how helper keys work |
+| proposals.py | Suggestions from helpers: checked, kept waiting in their own table, and added only when a person accepts. | changing suggestions, limits or accepting |
 
 ## src/dashboard/core/migrations/  (summary: the core's numbered database changes; never edit a released one)
 Add a new file with the next number instead of changing an old one.
@@ -400,11 +406,12 @@ Add a new file with the next number instead of changing an old one.
 |---|---|---|
 | 0001_core_tables.sql | Settings and the list of modules in use | checking the core tables |
 | 0002_audit_history.sql | The history of every change to every record | checking how history is stored |
+| 0003_helpers.sql | Helpers, their suggestion batches and the suggested records waiting for a decision | checking how helpers and suggestions are stored |
 
 ## src/dashboard/web/  (summary: the screens: pages, forms and their protections)
 | Entry | What it is | Open it when |
 |---|---|---|
-| __init__.py | Web layer: pages, forms and the Agent API (not built yet). | adding a screen or route |
+| __init__.py | Web layer: pages, forms, the Review screen and the helper API. | adding a screen or route |
 | app.py | Build the Flask web application and its local-only protections. | changing sign-in, protections or reports |
 | pages.py | Pages built from module declarations: the record grid, add and edit forms, and history. | changing the grid or forms |
 | setup.py | The first-run wizard and the settings page: who lives here, the home, modules and backups. | changing setup questions or settings |
@@ -413,6 +420,9 @@ Add a new file with the next number instead of changing an old one.
 | sheets.py | One-page printable sheets declared by modules, such as the emergency sheet. | changing printable sheets |
 | display.py | Turn declared tables and stored values into friendly labels, form fields and text. | changing how values look |
 | templates/ | The HTML pages | changing what a page looks like |
+| api.py | The helper API (/api/v1): programs the household gave a key to can look at records and suggest new ones. | changing what helpers can read or send |
+| review.py | The Review screen: helpers' suggested new records, waiting for a person to accept or reject each one. | changing the Review page |
+| helper_settings.py | Settings, Helpers: give an assistant a key, choose what it may do, and turn its access off. | changing the Helpers settings page |
 
 ## src/dashboard/web/templates/  (summary: HTML pages; base.html holds the shared look)
 | Entry | What it is | Open it when |
@@ -432,6 +442,9 @@ Add a new file with the next number instead of changing an old one.
 | closed.html | Shown after a safe close | changing that message |
 | error.html | Plain-language error page with "Save a report" | changing error wording |
 | private_sheet.html | The step before a sheet with private details: show it only when you mean to print or share it | changing how private sheets open |
+| helpers.html | Settings, Helpers: the helper list, the address, and the form that makes a key | changing the Helpers settings page |
+| helper_key.html | The one page that shows a new helper key, with a Copy button and a warning to keep it private | changing the new-key page |
+| review.html | Review suggestions: each helper's waiting suggestions with Accept and Reject | changing the Review page |
 
 ## tests/  (summary: automatic tests; synthetic data only)
 How to run them is in AGENTS.md.
@@ -474,6 +487,7 @@ How to run them is in AGENTS.md.
 | test_lock_requirements.py | Tests for the requirements lock generator. | changing how libraries are locked |
 | test_repofiles.py | Tests for the shared list of repository files, including during a merge with conflicts. | a tool counts a file twice |
 | test_repository.py | Tests that this repository passes its own checks. | CI fails on the repo itself |
+| test_helper_*.py | Tests for helpers: keys, suggestions waiting for a person, the /api/v1 door, and the Settings and Review screens | changing helpers, the helper API or Review |
 
 ## tools/  (summary: scripts that check, lock and build the project; run by CI)
 | Entry | What it is | Open it when |

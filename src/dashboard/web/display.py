@@ -389,4 +389,5 @@ def actor_text(actor: str) -> str:
         kind, "The program")
 
 
-ACTION_TEXT = {"create": "added this", "update": "changed", "delete": "deleted this", "restore": "restored this"}
+ACTION_TEXT = {"create": "added this", "update": "changed", "delete": "deleted this", "restore": "restored this",
+               "accept": "accepted a helper's suggestion", "reject": "rejected a helper's suggestion"}

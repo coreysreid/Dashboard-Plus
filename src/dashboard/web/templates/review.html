@@ -1,0 +1,42 @@
+{% extends "base.html" %}
+{% block title %}Review · Dashboard Plus{% endblock %}
+{% block body %}
+<h1>Review suggestions</h1>
+<p class="lead">Helpers can suggest new records. Nothing is added to your records until you accept it.</p>
+{% if message %}<p class="{{ message[0] }}" role="status">{{ message[1] }}</p>{% endif %}
+{% if not batches %}
+<p class="card">No suggestions to review.</p>
+{% endif %}
+{% for b in batches %}
+<section class="card" aria-labelledby="batch-{{ b.id }}">
+  <h2 id="batch-{{ b.id }}" style="margin-top:0">{{ b.helper }} · {{ b.proposals | length }} suggestion{{ "" if b.proposals | length == 1 else "s" }}</h2>
+  <p style="margin:.2rem 0">Why: {{ b.why }}</p>
+  <p class="muted" style="margin:.2rem 0">Suggested {{ b.when }}</p>
+  {% if b.helper_off %}<p class="muted">This helper's access is off. Its earlier suggestions still need your decision.</p>{% endif %}
+  <ul style="list-style:none;padding:0;margin:1rem 0">
+  {% for p in b.proposals %}
+    <li style="padding:.6rem 0;border-top:1px solid var(--line)">
+      {% if p.text.off %}
+      <p style="margin:0">This is for {{ p.text.module }}, which is switched off.</p>
+      {% else %}
+      <p style="margin:0">Add to <strong>{{ p.text.table }}</strong>: {% for label, text in p.text.parts %}{{ label }}: {{ text }}{% if not loop.last %} · {% endif %}{% endfor %}</p>
+      {% endif %}
+      {% if p.reason %}<p class="problem" role="alert" style="margin:.4rem 0">{{ p.reason }}</p>{% endif %}
+      <div class="actions" style="margin:.4rem 0 0">
+        {% if not p.text.off %}
+        <form method="post" action="/review/{{ p.id }}/accept"><input type="hidden" name="_csrf" value="{{ csrf_token }}"><button type="submit">Accept</button></form>
+        {% endif %}
+        <form method="post" action="/review/{{ p.id }}/reject"><input type="hidden" name="_csrf" value="{{ csrf_token }}"><button type="submit" class="quiet">Reject</button></form>
+      </div>
+    </li>
+  {% endfor %}
+  </ul>
+  {% if b.proposals | length > 1 %}
+  <div class="actions">
+    <form method="post" action="/review/batch/{{ b.id }}/accept-all"><input type="hidden" name="_csrf" value="{{ csrf_token }}"><button type="submit">Accept all {{ b.proposals | length }}</button></form>
+    <form method="post" action="/review/batch/{{ b.id }}/reject-all"><input type="hidden" name="_csrf" value="{{ csrf_token }}"><button type="submit" class="quiet">Reject all {{ b.proposals | length }}</button></form>
+  </div>
+  {% endif %}
+</section>
+{% endfor %}
+{% endblock %}

@@ -739,11 +739,16 @@ One generic connector that can be aimed at any API.
 
 ### Review queue
 
-Rows with `review_status = needs_review` appear on the **Review** screen,
-grouped by batch, each showing who or what proposed it and why. The person can
-approve, edit-then-approve, or reject. Approving or editing marks
-`edited_by_person` where applicable. Rejected rows stay in history (hidden by
-default).
+Helpers' suggestions are **not** stored as `needs_review` rows in module tables
+(decision 0068): creating a row applies its side effects at once, and lists and
+totals do not filter on review status. They wait in the core tables
+`core__helper_batches` and `core__proposals`. The **Review** screen (`/review`)
+shows waiting batches newest first, each with the helper, the reason and every
+suggestion in plain words. The person can accept or reject each one, or a whole
+batch. Accepting creates the record by the normal path in one transaction,
+credited to `agent:<helper>`, marked `edited_by_person`; if it can no longer be
+added it stays waiting with the reason. Rejected rows stay in history. The
+`review_status` column is not used by helpers.
 
 ### Inbox
 
@@ -758,65 +763,51 @@ API; the core does not call an AI service by itself.
 ## 9. Agent API
 
 Assistants, whether AI or human helpers, enter data through the API and never
-touch the database. The API listens on `127.0.0.1` only, the same as the rest
-of the program.
+touch the database. The API is part of the same local server (`127.0.0.1`
+only) under `/api/v1/`. The port changes at each start, so Settings, Helpers
+shows the current address (decisions 0066 to 0068).
 
 ### Authentication
 
-`Authorization: Bearer <token>`. Tokens are 32 random bytes, shown once when
-issued, and stored only as a SHA-256 hash (adequate for high-entropy random
-tokens). A command-line tool issues, lists and revokes them:
-
-```text
-dashboard agent add "<name>" --tables pets__weights,pets__meals
-dashboard agent revoke "<name>"
-```
-
-Each agent has a name and a list of tables it may touch. Anything else is
-refused.
+`Authorization: Bearer <key>`. A key is `dph_` plus 32 random bytes, made on
+Settings, Helpers with a name, a level (look only, or look and suggest new
+records) and the modules it may use (none ticked by default). It is shown once
+and kept only as a SHA-256 fingerprint in `data/secrets/helper_keys.json`
+(mode 0600), never in the database. A request carrying an `Origin` header is
+refused (helpers are programs, not web pages). Cookies, query strings and form
+fields are never read for a key.
 
 ### Routes
 
 | Route | Purpose |
 |---|---|
-| `POST /api/propose` | Propose rows (below) |
-| `GET /api/tables` | Live column spec: field names, types and dropdown keys. The source of truth; agents must read it rather than guess |
-| `GET /api/rows` | Read rows (only tables the agent is allowed) |
-| `POST /api/amend` | Change one of the agent's own *unreviewed* rows |
-| `POST /api/undo` | Withdraw the agent's own *unreviewed* rows (a row, or a whole batch) |
-| `GET /api/batches` | List the agent's batches and their state |
+| `GET /api/v1/me` | The helper's name, level, modules and limits |
+| `GET /api/v1/tables` | Live column spec for allowed tables; private columns left out |
+| `GET /api/v1/tables/<t>/records` | Records, paged by id (`after`, `limit` up to 200) |
+| `GET /api/v1/tables/<t>/records/<id>` | One record |
+| `GET /api/v1/attention` | Running low, expiring, supplies and gaps for allowed modules |
+| `POST /api/v1/proposals` | Suggest new records (below) |
+| `GET /api/v1/batches`, `/batches/<id>` | The helper's own batches and their state |
 
-`POST /api/propose` body:
-
-```json
-{
-  "request_key": "2026-06-03-sheet-14",
-  "why": "Transcribed from the paper feeding sheet for 3 June",
-  "entries": [
-    { "table": "pets__meals", "values": { "pet": 1, "...": "..." } }
-  ]
-}
-```
+`POST /api/v1/proposals` body: `request_key`, `why`, `entries` (each
+`{"table", "values"}`).
 
 ### Rules
 
-- `request_key` is **required**. Repeating a call with the same key from the
-  same agent returns the original result and writes nothing new (idempotent
-  retries). Keys are remembered for 30 days.
-- At most **50 entries per call** and **200 rows per agent per day**.
-- Rows land with `review_status = needs_review`, `source = agent:<name>` and a
-  `batch_id`. Every call is one batch, so it can be undone together.
-- Once the **person edits** a row, `edited_by_person` is set and the agent can no
-  longer amend or undo it.
-- An agent can fix or withdraw **only its own unreviewed rows**.
-- Columns marked `sensitive` (allergies, conditions, medications) are never
-  returned to an agent and cannot be written by one unless the token was issued
-  with `--sensitive`, and the Settings screen shows which agents have it.
-- Validation uses the same declaration as the forms. Errors name the table,
-  the field and the allowed values, in plain language, so an AI helper can
-  correct itself.
-- Rows written outside the API have no batch and cannot be undone together,
-  so the core provides no other write path for agents.
+- Suggestions are **new records only**. `request_key` is required; the same key
+  and body returns the original batch, a different body is refused (409).
+- At most **50 entries per call** and **200 suggested rows per helper per day**;
+  body at most 64 KB; JSON only.
+- Every suggestion is tried by a full dry run before it is stored; any problem
+  refuses the whole call and names entry, table and field.
+- Columns marked `sensitive` are never returned and never accepted. There is no
+  grant for them in v1.
+- Money is read and sent in whole units (stored in cents). Columns worked out
+  from batches (a stock item's amount) cannot be suggested; suggest a Stock in.
+- A helper can never accept, change or delete records, see history, see other
+  helpers, or reach settings, backups, files or keys: there are no such routes.
+- Deferred: suggested changes and deletions, amend and undo, a private-details
+  grant, per-table scope, a command-line tool, forgetting request keys.
 
 ## 10. Annotations and the question loop
 
@@ -1084,8 +1075,10 @@ only to choose which pack applies; nothing is looked up online.
   (defends against DNS-rebinding), uses `SameSite` cookies and checks the
   `Origin` header on writes (defends against other web pages talking to the
   local server).
-- **The Agent API** uses bearer tokens as described. It is on the same local
-  port; there is no remote option.
+- **The Agent API** uses bearer keys as described. It is on the same local
+  port; there is no remote option. `/api/v1/` is the only exemption from the
+  cookie and page token, and it refuses any request with an `Origin` header;
+  every other path is exactly as strict as before (decision 0067).
 - **Outside contact is opt-in and listed.** Each module's `module.toml` lists
   the hosts it may contact. The Settings screen shows them all in one place.
   Nothing contacts anywhere until the person switches a source on.
