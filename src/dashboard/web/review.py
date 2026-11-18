@@ -4,6 +4,7 @@ from __future__ import annotations
 from flask import Blueprint, current_app, redirect, render_template, request, url_for
 
 from dashboard.core import dates, proposals, records
+from dashboard.core.proposals import HIDDEN_CHARACTERS
 from dashboard.errors import PlainError
 from dashboard.web import display
 
@@ -17,6 +18,14 @@ def _store() -> records.Records:
 def _module_title(table_name: str) -> str:
     name = table_name.split("__", 1)[0]
     return next((m.title for m in current_app.config["LOADED"] if m.name == name), name)
+
+
+def visible(text: str) -> str:
+    """Text with any hidden or text-reversing character shown as a plain replacement mark (U+FFFD).
+
+    Suggestions with such characters are refused when sent (decision 0074); this is a second net, and also
+    covers names already in the household's records that a suggestion links to."""
+    return HIDDEN_CHARACTERS.sub("\ufffd", text)
 
 
 def describe(store: records.Records, proposal: dict) -> dict:
@@ -38,7 +47,7 @@ def describe(store: records.Records, proposal: dict) -> dict:
             text = formatter.text(info, column, shown[column.name])
         except Exception:  # noqa: BLE001 - a value that cannot be shown nicely is shown as typed
             text = str(shown[column.name])
-        parts.append((display.column_label(info, column), text))
+        parts.append((display.column_label(info, column), visible(text)))
     return {"table": display.table_title(info), "parts": parts, "off": False, "module": info.module.title}
 
 
@@ -77,6 +86,7 @@ def review():
     style = dates.household_style(conn)
     for batch in batches:
         batch["when"] = dates.show(batch["created_at"][:10], style)
+        batch["why"] = visible(batch["why"])
         for item in batch["proposals"]:
             item["text"] = describe(store, item)
     return render_template("review.html", batches=batches, message=_message(request.args),

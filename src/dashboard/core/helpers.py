@@ -12,7 +12,7 @@ from dataclasses import dataclass
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
 
-from dashboard.core import db
+from dashboard.core import db, schema
 from dashboard.errors import PlainError
 
 KEY_PREFIX = "dph_"
@@ -201,3 +201,13 @@ def touch(conn, helper: Helper) -> None:
 def allowed_registry(registry: dict, helper: Helper) -> dict:
     """The tables a helper may use: those of the modules switched on that the household ticked for it."""
     return {name: info for name, info in registry.items() if info.module.name in helper.modules}
+
+
+def hidden_links(info, helper: Helper, registry: dict) -> list:
+    """The link columns of a table that point into a part this helper was not given (or one switched off).
+
+    A helper never sees these: not in the table's description, not in records, and it may not suggest them.
+    Leaving them out is what stops a helper given Vehicles from learning anything about People."""
+    allowed = allowed_registry(registry, helper)
+    return [c for c in info.table.columns.values() if c.type in ("link", "links")
+            and schema.target_table(info.module.name, c) not in allowed]

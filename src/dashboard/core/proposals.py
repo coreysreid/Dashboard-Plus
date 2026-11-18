@@ -16,6 +16,12 @@ MAX_PER_DAY = 200
 MAX_WHY = 300
 MAX_KEY = 100
 REQUEST_KEY = re.compile(r"^[A-Za-z0-9._:-]+$")
+# Something shaped like a helper key (decision 0066). Keys belong only in the Authorization header.
+KEY_LIKE = re.compile(re.escape(helpers.KEY_PREFIX) + r"[A-Za-z0-9_-]{8,}")
+# Characters that are invisible or turn text around on screen: C0 controls except the newline, DEL, C1 controls,
+# and the bidirectional embeddings, overrides and isolates (U+202A to U+202E, U+2066 to U+2069). Decision 0074.
+HIDDEN_CHARACTERS = re.compile(r"[\x00-\x09\x0b-\x1f\x7f-\x9f\u202a-\u202e\u2066-\u2069]")
+NOT_FOUND = "That table or record could not be found. GET /api/v1/tables lists what this helper may use."
 SCALARS = (str, int, float, bool, type(None))
 
 
@@ -48,8 +54,37 @@ def used_today(conn: sqlite3.Connection, helper: helpers.Helper) -> int:
         "WHERE b.helper_id = ? AND p.created_at >= ?", (helper.id, midnight)).fetchone()[0]
 
 
+def _texts(body):
+    """Every piece of text in a request (names and values, at any depth), without recursion."""
+    waiting = [body]
+    while waiting:
+        item = waiting.pop()
+        if isinstance(item, str):
+            yield item
+        elif isinstance(item, dict):
+            waiting.extend(item.keys())
+            waiting.extend(item.values())
+        elif isinstance(item, list):
+            waiting.extend(item)
+
+
+def _screen(body) -> None:
+    """Refuse text that should never be kept: a helper key, or characters that hide or reverse text.
+
+    Neither is ever repeated back, logged or stored."""
+    texts = list(_texts(body))
+    if any(KEY_LIKE.search(t) for t in texts):
+        raise ProposalError(400, "looks_like_a_key",
+                            "That looks like a helper key. Keys belong only in the Authorization header.")
+    if any(HIDDEN_CHARACTERS.search(t) for t in texts):
+        raise ProposalError(400, "hidden_characters",
+                            "This request contains hidden control characters, such as marks that turn text "
+                            "around on screen. Remove them and send it again. Line breaks are fine.")
+
+
 def _read_body(body) -> tuple[str, str, list[tuple[str, dict]]]:
     """Check the shape of a request and return (request_key, why, [(table, values)])."""
+    _screen(body)
     if not isinstance(body, dict) or set(body) - {"request_key", "why", "entries"}:
         raise _bad()
     key = body.get("request_key")
@@ -77,18 +112,19 @@ def _body_hash(why: str, entries: list[tuple[str, dict]]) -> str:
     return hashlib.sha256(text.encode("utf-8")).hexdigest()
 
 
-def _grant_words(helper: helpers.Helper, registry: dict) -> str:
-    titles = sorted({info.module.title for info in registry.values() if info.module.name in helper.modules})
-    return f"{helper.name} may use: {', '.join(titles) or 'nothing yet'}."
-
-
 def _check_tables(helper: helpers.Helper, registry: dict, entries: list[tuple[str, dict]]) -> None:
+    """Refuse tables and fields this helper may not use, by name alone: no value is ever looked up.
+
+    A table in a part it was not given is answered exactly like a table that does not exist. A link into such
+    a part is refused the same way whatever ID is sent, so nothing is learned about records it cannot see."""
     for name, _values in entries:
-        if name not in registry:
-            raise ProposalError(404, "not_found", "That table or record could not be found.")
-        if registry[name].module.name not in helper.modules:
-            raise ProposalError(403, "not_allowed",
-                                f"{_grant_words(helper, registry)} Ask the household to change its access in Settings.")
+        if name not in registry or registry[name].module.name not in helper.modules:
+            raise ProposalError(404, "not_found", NOT_FOUND)
+    hidden = sorted({field for name, values in entries for field in values
+                     if field in {c.name for c in helpers.hidden_links(registry[name], helper, registry)}})
+    if hidden:
+        raise ProposalError(403, "not_allowed", f"This helper may not set {', '.join(hidden)}: it links to a part of "
+                                                f"the records this helper was not given. Leave it out.")
     private = sorted({field for name, values in entries for field in values
                       if field in registry[name].table.columns and registry[name].table.columns[field].sensitive})
     if private:
@@ -96,7 +132,7 @@ def _check_tables(helper: helpers.Helper, registry: dict, entries: list[tuple[st
                             f"Private details are never shared with helpers. Leave out: {', '.join(private)}.")
 
 
-def _shape_problems(registry: dict, entries: list[tuple[str, dict]]) -> list[dict]:
+def _shape_problems(helper: helpers.Helper, registry: dict, entries: list[tuple[str, dict]]) -> list[dict]:
     """Problems found by looking at field names and kinds of value alone, before anything is tried."""
     problems = []
     for position, (name, values) in enumerate(entries):
@@ -105,6 +141,11 @@ def _shape_problems(registry: dict, entries: list[tuple[str, dict]]) -> list[dic
         if needs_private:
             problems.append({"entry": position, "table": name, "field": "",
                              "message": "Helpers cannot add to this table, because it needs a private detail."})
+            continue
+        if any(c.required for c in helpers.hidden_links(info, helper, registry)):
+            problems.append({"entry": position, "table": name, "field": "",
+                             "message": "This helper cannot add to this table, because it needs a link to a part "
+                                        "of the records this helper was not given."})
             continue
         for field, value in values.items():
             column = info.table.columns.get(field)
@@ -145,7 +186,7 @@ def submit(conn: sqlite3.Connection, registry: dict, helper: helpers.Helper, bod
         raise ProposalError(429, "daily_limit", f"This helper has reached {MAX_PER_DAY} suggestions today. "
                                                 f"Try again tomorrow.")
     _check_tables(helper, registry, entries)
-    problems = _shape_problems(registry, entries)
+    problems = _shape_problems(helper, registry, entries)
     if not problems:
         wrong = Records(conn, registry).check_create(entries, helper.actor)
         problems = [{"entry": position, "table": entries[position][0], "field": field[:60], "message": message}
@@ -254,7 +295,7 @@ def _audit(conn, action: str, proposal_id: int, after: dict | None, batch_id: in
 
 def _load(conn, proposal_id: int):
     row = conn.execute(
-        "SELECT p.*, h.slug AS slug FROM core__proposals p JOIN core__helper_batches b ON b.id = p.batch_id "
+        "SELECT p.*, h.slug AS slug, b.helper_id AS helper_id FROM core__proposals p JOIN core__helper_batches b ON b.id = p.batch_id "
         "JOIN core__helpers h ON h.id = b.helper_id WHERE p.id = ?", (proposal_id,)).fetchone()
     if row is None:
         raise PlainError("That suggestion could not be found.")
@@ -283,28 +324,48 @@ def accept(conn: sqlite3.Connection, registry: dict, proposal_id: int) -> tuple[
         reason = f"This is for {module}, which is switched off. Reject it, or switch it on in Settings first."
         raise PlainError(reason)
     store = Records(conn, registry)
+    values = json.loads(row["values_json"])
+    helper = helpers.get(conn, row["helper_id"])
+    if helper is None or set(values) & {c.name for c in helpers.hidden_links(info, helper, registry)}:
+        # Refused when suggested since decision 0074; this catches anything kept from before, or a part since
+        # switched off. The reason does not say which part, because the helper can read it.
+        _keep_reason(conn, proposal_id, "This suggestion sets a link to a part of your records the helper was not "
+                                        "given, so it cannot be added. Reject it, or add the record yourself.")
     try:
         with db.transaction(conn):
-            record_id = store.create_in(row["table_name"], json.loads(row["values_json"]), actor=f"agent:{row['slug']}",
+            _claim(conn, proposal_id, "accepted")  # first, so a second click or window cannot add it again
+            record_id = store.create_in(row["table_name"], values, actor=f"agent:{row['slug']}",
                                         review_status="confirmed", batch_id=row["batch_id"])
             conn.execute(f"UPDATE {info.name} SET edited_by_person = 1 WHERE id = ?", (record_id,))
-            conn.execute("UPDATE core__proposals SET status = 'accepted', record_id = ?, reason = NULL, decided_at = ? "
-                         "WHERE id = ?", (record_id, _now(), proposal_id))
+            conn.execute("UPDATE core__proposals SET record_id = ?, reason = NULL WHERE id = ?", (record_id, proposal_id))
             _audit(conn, "accept", proposal_id, {"table": info.name, "record_id": record_id}, row["batch_id"])
     except ValidationError as error:
-        reason = _why_not(store, info, error)
-        with db.transaction(conn):
-            conn.execute("UPDATE core__proposals SET reason = ? WHERE id = ?", (reason, proposal_id))
-        raise PlainError(reason) from None
+        _keep_reason(conn, proposal_id, _why_not(store, info, error))
     return info.name, record_id
+
+
+def _claim(conn, proposal_id: int, status: str) -> None:
+    """Inside a transaction: decide a suggestion only if it is still waiting, or refuse.
+
+    The check and the change are one statement, so two decisions at once cannot both win."""
+    changed = conn.execute("UPDATE core__proposals SET status = ?, decided_at = ? WHERE id = ? AND status = 'pending'",
+                           (status, _now(), proposal_id)).rowcount
+    if changed != 1:
+        raise PlainError("That suggestion has already been decided.")
+
+
+def _keep_reason(conn, proposal_id: int, reason: str):
+    """Write why a suggestion cannot be added on it (if it is still waiting), then refuse with that reason."""
+    with db.transaction(conn):
+        conn.execute("UPDATE core__proposals SET reason = ? WHERE id = ? AND status = 'pending'", (reason, proposal_id))
+    raise PlainError(reason) from None
 
 
 def reject(conn: sqlite3.Connection, proposal_id: int) -> str:
     """Say no to one suggestion. Nothing is added. Returns its table name."""
     row = _load(conn, proposal_id)
     with db.transaction(conn):
-        conn.execute("UPDATE core__proposals SET status = 'rejected', decided_at = ? WHERE id = ?",
-                     (_now(), proposal_id))
+        _claim(conn, proposal_id, "rejected")
         _audit(conn, "reject", proposal_id, {"table": row["table_name"]}, row["batch_id"])
     return row["table_name"]
 

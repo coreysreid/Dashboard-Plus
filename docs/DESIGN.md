@@ -765,7 +765,7 @@ API; the core does not call an AI service by itself.
 Assistants, whether AI or human helpers, enter data through the API and never
 touch the database. The API is part of the same local server (`127.0.0.1`
 only) under `/api/v1/`. The port changes at each start, so Settings, Helpers
-shows the current address (decisions 0066 to 0068).
+shows the current address (decisions 0066 to 0068, hardened by 0074).
 
 ### Authentication
 
@@ -802,6 +802,18 @@ fields are never read for a key.
   refuses the whole call and names entry, table and field.
 - Columns marked `sensitive` are never returned and never accepted. There is no
   grant for them in v1.
+- A link into a part the helper was not given is invisible: left out of
+  `/tables`, of records and of `/attention`, and refused (403 `not_allowed`, the
+  same reply whatever value is sent) in a suggestion. A table that requires such
+  a link cannot be suggested into. A table in a part not given answers exactly
+  like a table that does not exist (404 `not_found`); `/me` says what it may use.
+- Text in a suggestion that looks like a helper key (`dph_...`) is refused
+  without being repeated; so are invisible control characters and marks that
+  turn text around (400). Review shows the reason and values as the named
+  helper's own words.
+- At most **120 requests per helper per minute** (429 `too_many_requests` with
+  `Retry-After`). Accept and Reject decide a suggestion once, even if two clicks
+  arrive together.
 - Money is read and sent in whole units (stored in cents). Columns worked out
   from batches (a stock item's amount) cannot be suggested; suggest a Stock in.
 - A helper can never accept, change or delete records, see history, see other

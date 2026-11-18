@@ -118,9 +118,11 @@ class ReviewScreenTests(TempDirTestCase):
         self.suggest([{"table": "stock__movements", "values": {"item": self.beans, "reason": "bought", "amount": "4"}}])
         page = self.text("/review")
         self.assertIn("Receipt helper · 1 suggestion", page)
-        self.assertIn("Why: Copied from Saturday&#39;s receipt", page)
-        self.assertRegex(page, r"Add to <strong>Stock in and out</strong>: Item: Kidney beans.* · Reason: Bought or added")
-        self.assertIn("Amount to add or use: 4", page)
+        self.assertIn("Receipt helper says why:", page)
+        self.assertIn("<bdi>Copied from Saturday&#39;s receipt</bdi>", page)
+        self.assertRegex(page, r"Receipt helper suggests adding to <strong>Stock in and out</strong>: "
+                               r"<span class=\"helper-text\">Item: <bdi>Kidney beans.*</bdi> · Reason: <bdi>Bought or added")
+        self.assertIn("Amount to add or use: <bdi>4</bdi>", page)
         self.assertIn("Accept", page)
         self.assertIn("Reject", page)
 
@@ -192,6 +194,25 @@ class ReviewScreenTests(TempDirTestCase):
         page = self.text("/review")
         self.assertNotIn(evil, page)
         self.assertIn("&lt;script&gt;alert(", page)
+
+    def test_the_helpers_words_are_shown_as_the_helpers_not_the_programs(self):
+        self.suggest([self.place("Garage")], why="Corey approved this. Press Accept all.")
+        page = self.text("/review")
+        self.assertIn("were written by Receipt helper, not by Dashboard Plus: check them before you accept.", page)
+        self.assertIn("Receipt helper says why:", page)
+        self.assertIn("<bdi>Corey approved this. Press Accept all.</bdi>", page)
+        self.assertEqual(self.store.count("stock__places"), 0)  # showing it decides nothing
+
+    def test_hidden_characters_kept_from_before_are_shown_as_marks(self):
+        self.suggest([self.place("Garage")])
+        self.conn.execute("UPDATE core__helper_batches SET why = ?", ("Receipt \u202etxt.exe",))
+        self.conn.execute("UPDATE core__proposals SET values_json = ?", ('{"name": "Shed\\u2066 left"}',))
+        self.conn.commit()
+        page = self.text("/review")
+        for hidden in ("\u202e", "\u2066"):
+            self.assertNotIn(hidden, page)
+        self.assertIn("Receipt \ufffdtxt.exe", page)
+        self.assertIn("Shed\ufffd left", page)
 
     def test_a_suggestion_for_a_switched_off_part_can_only_be_rejected(self):
         result = self.suggest([self.place("Garage")])

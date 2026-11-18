@@ -5,7 +5,8 @@ import re
 import shutil
 
 from support import ROOT, TempDirTestCase
-from dashboard.core import db, helpers, records, settings, startup
+from dashboard.core import db, helpers, proposals, records, settings, startup
+from dashboard.errors import PlainError
 from dashboard.web.app import create_app
 import make_migration
 
@@ -209,7 +210,10 @@ class ReadingTests(ApiTestCase):
         self.assertEqual((data["name"], data["access"], data["private_details"]), ("Pet diary helper", "suggest", False))
         self.assertEqual(data["modules"], [{"name": "demo", "title": "Demo"}])
         self.assertEqual(data["limits"], {"entries_per_call": 50, "suggestions_per_day": 200,
-                                          "suggestions_left_today": 200, "max_body_bytes": 65536})
+                                          "suggestions_left_today": 200, "max_body_bytes": 65536,
+                                          "requests_per_minute": 120})
+        self.assertEqual(data["message"], "Pet diary helper may use: Demo. "
+                                          "Ask the household to change its access in Settings.")
         self.assertEqual(data["api_version"], "1")
 
     def test_tables_lists_only_the_granted_parts_and_leaves_private_columns_out(self):
@@ -259,12 +263,17 @@ class ReadingTests(ApiTestCase):
         self.store.delete("demo__items", self.item)
         self.assertEqual(self.api_get(f"/api/v1/tables/demo__items/records/{self.item}").status_code, 404)
 
-    def test_other_parts_are_off_limits_and_unknown_tables_are_not_found(self):
-        response = self.api_get("/api/v1/tables/stock__items/records")
-        self.assertEqual((response.status_code, response.get_json()["error"]), (403, "not_allowed"))
-        self.assertIn("Pet diary helper may use: Demo.", response.get_json()["message"])
-        self.assertEqual(self.api_get("/api/v1/tables/core__helpers/records").status_code, 404)
-        self.assertEqual(self.api_get("/api/v1/tables/nope__nothing/records").status_code, 404)
+    def test_other_parts_look_exactly_like_tables_that_do_not_exist(self):
+        rice = self.store.create("stock__items", {"name": "Rice", "unit": "kg", "quantity": 1})
+        unknown = self.api_get("/api/v1/tables/nope__nothing/records")
+        self.assertEqual((unknown.status_code, unknown.get_json()["error"]), (404, "not_found"))
+        for path in ("/api/v1/tables/stock__items/records", f"/api/v1/tables/stock__items/records/{rice}",
+                     "/api/v1/tables/stock__items/records/9999", "/api/v1/tables/core__helpers/records",
+                     "/api/v1/tables/nope__nothing/records/1"):
+            with self.subTest(path):
+                response = self.api_get(path)
+                self.assertEqual(response.status_code, 404)
+                self.assertEqual(response.get_data(), unknown.get_data())
         names = [t["table"] for t in self.api_get("/api/v1/tables").get_json()["tables"]]
         self.assertFalse([n for n in names if n.startswith(("stock__", "core__"))])
 
@@ -332,9 +341,10 @@ class SuggestingTests(ApiTestCase):
 
     def test_a_table_in_a_part_the_helper_was_not_given_is_refused(self):
         body = {"request_key": "s1", "why": "Test", "entries": [{"table": "stock__items", "values": {"name": "Rice"}}]}
-        self.assertEqual(self.api_post("/api/v1/proposals", body).status_code, 403)
+        hidden = self.api_post("/api/v1/proposals", body)
+        self.assertEqual((hidden.status_code, hidden.get_json()["error"]), (404, "not_found"))
         body["entries"][0]["table"] = "nope__x"
-        self.assertEqual(self.api_post("/api/v1/proposals", body).status_code, 404)
+        self.assertEqual(self.api_post("/api/v1/proposals", body).get_data(), hidden.get_data())
 
     def test_system_fields_cannot_be_set_and_nothing_appears_in_the_records(self):
         response = self.api_post("/api/v1/proposals", self.suggestion(review_status="confirmed"))
@@ -386,6 +396,174 @@ class SuggestingTests(ApiTestCase):
                 self.assertIn(response.status_code, (404, 405))
         self.assertEqual(self.store.get("demo__items", self.item)["name"], "Torch")
         self.assertEqual(self.conn.execute("SELECT status FROM core__proposals").fetchone()[0], "pending")
+
+
+class RequestLimitTests(ApiTestCase):
+    def test_too_many_requests_in_a_minute_are_refused_with_how_long_to_wait(self):
+        self.app.config["HELPER_REQUESTS_PER_MINUTE"] = 3
+        for _ in range(3):
+            self.assertEqual(self.api_get("/api/v1/me").status_code, 200)
+        response = self.api_get("/api/v1/tables")
+        self.assertEqual(response.status_code, 429)
+        self.assertEqual(response.get_json()["error"], "too_many_requests")
+        self.assertIn("too quickly", response.get_json()["message"])
+        self.assertTrue(1 <= int(response.headers["Retry-After"]) <= 60)
+        self.assertEqual(self.api_post("/api/v1/proposals", self.suggestion()).status_code, 429)
+        self.assertEqual(self.conn.execute("SELECT COUNT(*) FROM core__proposals").fetchone()[0], 0)
+
+    def test_each_helper_has_its_own_limit(self):
+        self.app.config["HELPER_REQUESTS_PER_MINUTE"] = 2
+        for _ in range(3):
+            self.api_get("/api/v1/me")
+        self.assertEqual(self.api_get("/api/v1/me").status_code, 429)
+        self.assertEqual(self.api_get("/api/v1/me", key=self.stock_key).status_code, 200)
+
+    def test_a_refused_key_does_not_use_up_a_helpers_limit(self):
+        self.app.config["HELPER_REQUESTS_PER_MINUTE"] = 2
+        for _ in range(5):
+            self.api_get("/api/v1/me", headers={"Authorization": "Bearer dph_notarealkey"})
+        self.assertEqual(self.api_get("/api/v1/me").status_code, 200)
+
+    def test_the_usual_limit_is_one_hundred_and_twenty_a_minute(self):
+        for _ in range(120):
+            self.assertEqual(self.api_get("/api/v1/me", key=self.reader_key).status_code, 200)
+        self.assertEqual(self.api_get("/api/v1/me", key=self.reader_key).status_code, 429)
+
+
+class KeysInSuggestionsTests(ApiTestCase):
+    def test_a_key_pasted_into_a_suggestion_is_refused_and_never_repeated(self):
+        for body in (dict(self.suggestion(), why=f"key {self.key}"), dict(self.suggestion(), request_key=self.key),
+                     self.suggestion(name=self.key)):
+            with self.subTest(sorted(body)):
+                response = self.api_post("/api/v1/proposals", body)
+                self.assertEqual(response.status_code, 400)
+                self.assertEqual(response.get_json(), {
+                    "error": "looks_like_a_key",
+                    "message": "That looks like a helper key. Keys belong only in the Authorization header."})
+                self.assertNotIn(self.key[4:], response.get_data(as_text=True))
+        self.assertEqual(self.conn.execute("SELECT COUNT(*) FROM core__proposals").fetchone()[0], 0)
+
+    def test_a_text_reversing_mark_is_refused_over_the_api(self):
+        response = self.api_post("/api/v1/proposals", dict(self.suggestion(), why="Shelf \u202elebal"))
+        self.assertEqual((response.status_code, response.get_json()["error"]), (400, "hidden_characters"))
+        self.assertNotIn("\u202e", response.get_data(as_text=True))
+
+
+class HiddenLinksTests(TempDirTestCase):
+    """A helper given Vehicles but not People or Stock never learns anything through a link (decision 0074)."""
+
+    def setUp(self):
+        super().setUp()
+        for name in ("people", "stock", "vehicles", "lent_out"):
+            shutil.copytree(ROOT / "modules" / name, self.tmp / "modules" / name)
+        self.data = self.tmp / "data"
+        report = startup.prepare(self.data, self.tmp / "modules")
+        self.assertEqual(report.module_problems, {})
+        self.conn = db.connect(self.data / "dashboard.db")
+        self.addCleanup(self.conn.close)
+        settings.put(self.conn, "setup.done", True)
+        self.registry = records.build_registry(report.loaded)
+        self.store = records.Records(self.conn, self.registry)
+        self.robin = self.store.create("people__people", {"name": "Robin Example", "phone": "000 0000"})
+        self.carport = self.store.create("stock__places", {"name": "Carport"})
+        self.leads = self.store.create("stock__items", {"name": "Jump leads", "unit": "each", "quantity": 1})
+        self.car = self.store.create("vehicles__vehicles", {"name": "Blue hatchback", "roadside_contact": self.robin,
+                                                            "parked_at": self.carport, "emergency_kit": self.leads})
+        self.van = self.store.create("vehicles__vehicles", {"name": "Old van"})
+        self.helper, self.key = helpers.issue(self.conn, self.data, "Car helper", "suggest", ["vehicles", "lent_out"])
+        _, self.both_key = helpers.issue(self.conn, self.data, "Car and people helper", "suggest", ["vehicles", "people"])
+        self.app = create_app("shutdown-token", lambda: None, report, data_dir=self.data, session_key="session-key")
+        self.app.config["PORT"] = PORT
+        self.client = self.app.test_client()
+
+    def get(self, path, key=None):
+        return self.client.get(path, base_url=BASE, headers={"Authorization": f"Bearer {key or self.key}"})
+
+    def post(self, body):
+        return self.client.post("/api/v1/proposals", data=json.dumps(body), base_url=BASE,
+                                headers={"Authorization": f"Bearer {self.key}", "Content-Type": "application/json"})
+
+    def leaks(self, response):
+        text = response.get_data(as_text=True)
+        for hidden in ("people", "People", "Robin", "stock__", "Carport", "Jump leads"):
+            self.assertNotIn(hidden, text)
+
+    def test_tables_leave_out_links_into_parts_the_helper_was_not_given(self):
+        response = self.get("/api/v1/tables")
+        self.leaks(response)
+        tables = {t["table"]: t for t in response.get_json()["tables"]}
+        names = [c["name"] for c in tables["vehicles__vehicles"]["columns"]]
+        for hidden in ("roadside_contact", "parked_at", "emergency_kit"):
+            self.assertNotIn(hidden, names)
+        self.assertIn("name", names)
+        self.assertEqual(tables["vehicles__vehicles"]["private_columns_left_out"], 1)  # the registration only
+        self.assertTrue(tables["vehicles__vehicles"]["can_suggest"])
+        insurance = next(c for c in tables["vehicles__insurance"]["columns"] if c["name"] == "vehicle")
+        self.assertEqual(insurance["to"], "vehicles__vehicles")  # a link inside its own part is fine
+
+    def test_a_helper_given_both_parts_sees_the_link(self):
+        vehicles = {t["table"]: t for t in self.get("/api/v1/tables", self.both_key).get_json()["tables"]}
+        contact = next(c for c in vehicles["vehicles__vehicles"]["columns"] if c["name"] == "roadside_contact")
+        self.assertEqual(contact["to"], "people__people")
+        record = self.get(f"/api/v1/tables/vehicles__vehicles/records/{self.car}", self.both_key).get_json()["record"]
+        self.assertEqual(record["values"]["roadside_contact"], self.robin)
+
+    def test_records_leave_out_links_the_helper_cannot_follow(self):
+        one = self.get(f"/api/v1/tables/vehicles__vehicles/records/{self.car}")
+        listing = self.get("/api/v1/tables/vehicles__vehicles/records")
+        for response in (one, listing):
+            self.leaks(response)
+        values = [one.get_json()["record"]["values"]] + [r["values"] for r in listing.get_json()["records"]]
+        for found in values:
+            self.assertFalse({"roadside_contact", "parked_at", "emergency_kit"} & set(found))
+        self.assertEqual(values[0]["name"], "Blue hatchback")
+
+    def test_a_hidden_link_is_refused_the_same_way_whether_or_not_the_record_exists(self):
+        answers = []
+        for value in (self.robin, 99999, "Robin Example", None):
+            body = {"request_key": f"car-{len(answers)}", "why": "From the logbook",
+                    "entries": [{"table": "vehicles__vehicles", "values": {"name": "Trailer", "roadside_contact": value}}]}
+            response = self.post(body)
+            self.assertEqual(response.status_code, 403)
+            self.leaks(response)
+            answers.append(response.get_json())
+        self.assertEqual(answers[0]["error"], "not_allowed")
+        self.assertTrue(all(a == answers[0] for a in answers))
+        self.assertEqual(self.conn.execute("SELECT COUNT(*) FROM core__proposals").fetchone()[0], 0)
+
+    def test_a_table_that_needs_a_hidden_link_cannot_be_suggested_into(self):
+        loans = {t["table"]: t for t in self.get("/api/v1/tables").get_json()["tables"]}["lent_out__loans"]
+        self.assertFalse(loans["can_suggest"])
+        self.assertEqual(loans["reason"], "This table needs a link to a part of the records this helper was not "
+                                          "given, so it cannot add to it.")
+        self.assertNotIn("borrower", [c["name"] for c in loans["columns"]])
+        response = self.post({"request_key": "loan-1", "why": "Lent the ladder", "entries": [
+            {"table": "lent_out__loans", "values": {"name": "Ladder", "due_back": "2026-12-01"}}]})
+        self.assertEqual(response.status_code, 422)
+        self.assertIn("needs a link to a part of the records", response.get_json()["problems"][0]["message"])
+        self.leaks(response)
+
+    def test_attention_does_not_say_whether_a_hidden_link_is_filled_in(self):
+        mine = self.get("/api/v1/attention")
+        self.leaks(mine)
+        self.assertNotIn("broke down", mine.get_data(as_text=True))
+        both = self.get("/api/v1/attention", self.both_key).get_data(as_text=True)
+        self.assertIn("Who would you call if Old van broke down?", both)  # it can be answered with People
+
+    def test_a_hidden_link_kept_from_before_cannot_be_accepted(self):
+        response = self.post({"request_key": "old", "why": "From the logbook",
+                              "entries": [{"table": "vehicles__vehicles", "values": {"name": "Trailer"}}]})
+        pid = response.get_json()["proposals"][0]["id"]
+        self.conn.execute("UPDATE core__proposals SET values_json = ?",
+                          (json.dumps({"name": "Trailer", "roadside_contact": self.robin}),))
+        self.conn.commit()
+        with self.assertRaises(PlainError) as caught:
+            proposals.accept(self.conn, self.registry, pid)
+        self.assertIn("a part of your records the helper was not given", str(caught.exception))
+        self.assertEqual(self.store.count("vehicles__vehicles"), 2)
+        batch = self.get(f"/api/v1/batches/{response.get_json()['batch_id']}")
+        self.assertEqual(batch.get_json()["proposals"][0]["status"], "pending")
+        self.leaks(batch)
 
 
 class OtherPartsStayHiddenTests(TempDirTestCase):

@@ -1,6 +1,7 @@
 """Tests for helpers' suggestions: they wait in their own place, and reach the records only when a person accepts."""
 import json
 import shutil
+from unittest import mock
 
 from support import ROOT, TempDirTestCase
 from dashboard.core import db, helpers, proposals, records, startup, watch
@@ -192,6 +193,74 @@ class ProposalTests(TempDirTestCase):
                 self.refused(body, 400, "bad_request")
         self.assertEqual(self.count("core__helper_batches"), 0)
 
+    # ----- text that is never kept (decision 0074) -------------------------------------------------------------
+    def test_something_that_looks_like_a_helper_key_is_refused_and_never_kept(self):
+        key = "dph_" + "Ab3-_x" * 7  # made up, shaped like a real key
+        good = {"request_key": "k1", "why": REASON, "entries": [self.bought(1)]}
+        cases = {"in why": dict(good, why=f"My key is {key}"), "as the request key": dict(good, request_key=key),
+                 "in a value": dict(good, entries=[self.bought(1, note=key)]),
+                 "as a field name": dict(good, entries=[self.bought(1, **{key: "x"})]),
+                 "as a table name": dict(good, entries=[{"table": key, "values": {}}])}
+        for what, body in cases.items():
+            with self.subTest(what):
+                error = self.refused(body, 400, "looks_like_a_key")
+                self.assertEqual(str(error), "That looks like a helper key. Keys belong only in the Authorization header.")
+                self.assertEqual(error.problems, [])
+        self.assertEqual(self.count("core__helper_batches"), 0)
+        self.assertEqual(self.count("core__proposals"), 0)
+
+    def test_hidden_or_text_reversing_characters_are_refused(self):
+        good = {"request_key": "k1", "why": REASON, "entries": [self.bought(1)]}
+        for character in ("\u202e", "\u202a", "\u2066", "\u2069", "\x00", "\t", "\r", "\x1b", "\x7f", "\x85"):
+            for where, body in {"why": dict(good, why=f"Receipt {character}total"),
+                                "value": dict(good, entries=[self.bought(1, note=f"tin{character}s")])}.items():
+                with self.subTest(character=repr(character), where=where):
+                    error = self.refused(body, 400, "hidden_characters")
+                    self.assertNotIn(character, str(error))
+        self.assertEqual(self.count("core__helper_batches"), 0)
+
+    def test_a_line_break_in_why_is_fine(self):
+        result, created = self.send([self.bought(1)], why="From the receipt.\nTwo tins were dented.")
+        self.assertTrue(created)
+        self.assertEqual(result["why"], "From the receipt.\nTwo tins were dented.")
+
+    # ----- one decision only (decision 0074) ----------------------------------------------------------------------
+    def test_two_decisions_at_the_same_moment_make_exactly_one(self):
+        """Both clicks read the suggestion as waiting before either is saved: only the first may win."""
+        result, _ = self.send([self.bought(3)])
+        pid = result["proposals"][0]["id"]
+        seen_waiting = proposals._load(self.conn, pid)
+        proposals.accept(self.conn, self.registry, pid)
+        with mock.patch.object(proposals, "_load", lambda conn, proposal_id: seen_waiting):
+            for second in (lambda: proposals.accept(self.conn, self.registry, pid),
+                           lambda: proposals.reject(self.conn, pid)):
+                with self.assertRaises(PlainError) as caught:
+                    second()
+                self.assertIn("already been decided", str(caught.exception))
+        self.assertEqual(self.count(), 1)
+        self.assertEqual(self.quantity(), 8)  # the stock moved once
+        self.assertEqual(self.conn.execute("SELECT status FROM core__proposals").fetchone()[0], "accepted")
+        decisions = [r[0] for r in self.conn.execute(
+            "SELECT action FROM core__audit WHERE action IN ('accept', 'reject')")]
+        self.assertEqual(decisions, ["accept"])
+
+    def test_a_reject_at_the_same_moment_as_an_accept_adds_nothing(self):
+        result, _ = self.send([self.bought(3)])
+        pid = result["proposals"][0]["id"]
+        seen_waiting = proposals._load(self.conn, pid)
+        proposals.reject(self.conn, pid)
+        with mock.patch.object(proposals, "_load", lambda conn, proposal_id: seen_waiting):
+            with self.assertRaises(PlainError):
+                proposals.accept(self.conn, self.registry, pid)
+        self.assertEqual((self.count(), self.quantity()), (0, 5))
+        self.assertEqual(self.conn.execute("SELECT status FROM core__proposals").fetchone()[0], "rejected")
+
+    def test_accepting_a_whole_batch_twice_adds_each_row_once(self):
+        result, _ = self.send([self.bought(1), self.bought(2)])
+        self.assertEqual(proposals.accept_batch(self.conn, self.registry, result["batch_id"]), (2, []))
+        self.assertEqual(proposals.accept_batch(self.conn, self.registry, result["batch_id"]), (0, []))
+        self.assertEqual(self.count(), 2)
+
     # ----- what may be sent ----------------------------------------------------------------------------------
     def test_system_fields_and_odd_field_names_are_refused_and_tables_stay_intact(self):
         for field in ("review_status", "source", "edited_by_person", "id", "batch_id", "deleted_at",
@@ -214,8 +283,9 @@ class ProposalTests(TempDirTestCase):
 
     def test_tables_outside_the_grant_or_unknown_are_refused(self):
         narrow, _ = helpers.issue(self.conn, self.data, "Narrow", "suggest", ["people"])
-        self.refused([self.bought(1)], 403, "not_allowed", helper=narrow)
-        self.refused([{"table": "nope__nothing", "values": {}}], 404, "not_found")
+        hidden = self.refused([self.bought(1)], 404, "not_found", helper=narrow)
+        unknown = self.refused([{"table": "nope__nothing", "values": {}}], 404, "not_found")
+        self.assertEqual(str(hidden), str(unknown))
 
     # ----- switched-off parts ---------------------------------------------------------------------------------
     def test_a_suggestion_for_a_switched_off_module_can_only_be_rejected(self):

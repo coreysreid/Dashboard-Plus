@@ -48,8 +48,7 @@ Follow the INDEX.md in a folder before opening its files. Hidden files are not l
 | decisions/ | One record per technical choice, with downsides | questioning or reversing a choice |
 
 ## docs/decisions/  (summary: why each technical choice was made)
-One record per decision, from `TEMPLATE.md`. Never deleted; reversed ones are
-marked Superseded. Each lists downsides, cost to undo, and the sign it was wrong.
+One record per decision, from `TEMPLATE.md`. Never deleted; reversed ones are marked Superseded. Each lists downsides, cost to undo, and the sign it was wrong.
 
 | Record | Decision | Status |
 |---|---|---|
@@ -126,6 +125,7 @@ marked Superseded. Each lists downsides, cost to undo, and the sign it was wrong
 | [0071](0071-private-sheet-opens-only-by-choice.md) | The private sheet opens only from its Show button (a POST), never from a link such as ?show=1 | Accepted |
 | [0072](0072-reminders-skip-finished-rows-and-sheets-print-linked-contacts.md) | Due-date reminders can skip finished rows (`where` on `expiring`); sheets print a linked contact's phone from a required module, never a private column | Accepted |
 | [0073](0073-lent-out-promoted.md) | Things lent out switched on from Lane B's draft: borrowers in People, reminders only while still out, Stock count untouched | Accepted |
+| [0074](0074-agent-api-hardening.md) | Agent API hardening: links into parts a helper was not given are invisible, one 404 for "not yours" and "not there", hidden characters and key-like text refused, 120 requests a minute, one decision per suggestion | Accepted |
 | [TEMPLATE](TEMPLATE.md) | Blank record to copy for a new decision | recording a decision |
 
 ## docs/plans/  (summary: build plans for larger pieces of work, written before building)
