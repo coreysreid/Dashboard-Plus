@@ -114,6 +114,7 @@ marked Superseded. Each lists downsides, cost to undo, and the sign it was wrong
 | [0060](0060-garden-example-outside-installed-modules.md) | Keep the worked garden outside installed modules | Accepted |
 | [0061](0061-public-reporting-and-contribution-rules.md) | Public contribution and private security reporting routes | Accepted |
 | [0062](0062-documents-promoted.md) | Important documents switched on from Lane B's draft: places and people linked, no document numbers stored | Accepted |
+| [0063](0063-home-care-promoted.md) | Home care switched on from Lane B's draft: jobs at your places, done by your People, on dates you type; no repeats invented | Accepted |
 | [TEMPLATE](TEMPLATE.md) | Blank record to copy for a new decision | recording a decision |
 
 ## docs/releases/  (summary: release checks, one file per milestone)
@@ -186,6 +187,7 @@ numbered migrations. See docs/DESIGN.md section 6 for the module contract.
 | Entry | What it is | Open it when |
 |---|---|---|
 | documents/ | Where important papers are kept, whose they are and the review or renewal dates you choose; a review dates sheet | changing document records |
+| home_care/ | Jobs around the home, where each is, who usually does it, last done and do again by; work done; a Home care sheet | changing home care jobs |
 | home_layout/ | Ways out, shut-offs, smoke alarms and safety equipment, meters, each at one of your places; an Our home sheet | changing home layout records |
 | medical/ | First aid kits and where they are, kit checks, first aid training renewals; a first aid sheet | changing first aid records |
 | people/ | Who lives here, who to call, important details, emergency sheets | changing people, contacts or the emergency sheet |
@@ -208,6 +210,22 @@ Generate the next one with: python tools/make_migration.py documents --name <wha
 | Entry | What it is | Open it when |
 |---|---|---|
 | 0001_first_tables.sql | The module's first table, generated from tables.toml | checking how the table is stored |
+
+## modules/home_care/  (summary: the Home care module, files only; built on Lane B's draft, linking to People and Household stock)
+| Entry | What it is | Open it when |
+|---|---|---|
+| module.toml | Name, version, description; requires People (who does it) and Household stock (places) | changing the module's details |
+| tables.toml | Home care jobs with a do-again-by date and one gap question, and the work done on each | adding a field or a gap question |
+| labels.toml | Friendly labels, help text, form and list order, which list is main on home | changing wording or order |
+| sheets.toml | Home care sheet: each job, where, who usually does it and its dates, with no notes | changing what prints |
+| migrations/ | Numbered database changes | after changing tables.toml |
+
+## modules/home_care/migrations/  (summary: this module's numbered database changes; never edit a released one)
+Generate the next one with: python tools/make_migration.py home_care --name <what_changed>
+
+| Entry | What it is | Open it when |
+|---|---|---|
+| 0001_first_tables.sql | The module's first tables, generated from tables.toml | checking how the tables are stored |
 
 ## modules/home_layout/  (summary: the Home layout module, files only; built on Lane B's draft, using Household stock's places)
 | Entry | What it is | Open it when |

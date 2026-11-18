@@ -62,20 +62,17 @@ the "Requests" table of docs/WORKSTREAMS.md.
 | Batch 11 item 37: print check | merged by Lane A | batch 9-11 combined PR | 56 available-sheet PDFs pass A4/Letter light/dark; Taylor Pets is off (4 not applicable). |
 | Batch 11 item 36: wording consistency | merged by Lane A | batch 9-11 combined PR | 310-string inventory, nine exact replacements; supplies sheet includes non-drinking water. |
 | Batch 9 item 31: sensitive-detail audit | merged by Lane A | batch 9-11 combined PR | Five findings, worst first, with reproduced list, form, sheet and backup behaviour. |
-| Decision 0054 draft links | ready | #97 | Lots links use stock.places; readiness uses shipped fields. |
+| Decision 0054 draft links | merged by Lane A | batch 12 combined PR | Lots links use stock.places; readiness uses shipped fields. |
 | Batch 9 item 29 follow-up: shipped batches | merged by Lane A | batch 9-11 combined PR | Acceptance differences and loadable Garcia/Taylor copies with two second batches each. |
-
-| Batch 10 item 32: Agent API examples | ready | PR pending | Six routes, refusals and Review effects in helpers/API_EXAMPLES.md. |
-
-| Batch 10 item 34: computer-loss guide | ready | PR pending | Four recovery days, each with household steps, and a clear planned-feature warning. |
-
-| Batch 10 item 33: Review and Inbox wording | ready | PR pending | Exact buttons, confirmations, empty states, separate Home counts and decision aftermath. |
-
-| Batch 10 item 35: UK and NZ country packs | ready | PR pending | Eight hazards each, local coordination, current warning links, terms and scope. |
+| Batch 10 item 32: Agent API examples | merged by Lane A | batch 12 combined PR | Six routes, refusals and Review effects in helpers/API_EXAMPLES.md. |
+| Batch 10 item 34: computer-loss guide | merged by Lane A | batch 12 combined PR | Four recovery days, each with household steps, and a clear planned-feature warning. |
+| Batch 10 item 33: Review and Inbox wording | merged by Lane A | batch 12 combined PR | Exact buttons, confirmations, empty states, separate Home counts and decision aftermath. |
+| Batch 10 item 35: UK and NZ country packs | merged by Lane A | batch 12 combined PR | Eight hazards each, local coordination, current warning links, terms and scope. |
 | Batch 11 item 37: print check | ready | PR #86 | 80 available-sheet PDFs pass A4/Letter light/dark, including Our home, Vehicles and First aid. |
-
 | Batch 11 item 38: large speed fixture | ready | PR #87 | 6,270-record example with 2,000 items, 600 five-deep places, 60 people, 10 pets and 1,800 in plus 1,800 out movements. |
 | Batch 11 item 39: translation readiness | ready | PR #88 | 1,983 source locations across 13 templates, six modules and picker vocabulary. |
+| Batch 11 item 36: wording consistency | ready | PR #85 | 472 strings across six shipped modules; 13 exact replacements. |
+| Batch 9 item 31: sensitive-detail recheck | ready | PR #79 | Decision 0055 guards held; closed list HTML, instant private reveal and printable location hints remain. |
 
 ## Messages to Lane A
 
@@ -90,10 +87,8 @@ the "Requests" table of docs/WORKSTREAMS.md.
 - **Supplies print wording:** The water section currently prints all water batches, including those not safe to drink. The proposed title says “Drinking and other water”; a drinking-only section or total needs a `drinking` filter and visible indication. See `workbench/reports/2026-11-17-wording-consistency.md`.
 - **Shipped batch follow-up:** A batch quantity edit updates the total and history but has no distinct stocktake correction movement or count-confirmation flow. Stock out across batches requires separate entries. The Garcia and Taylor second-batch copies load and preserve totals. See `workbench/drafts/stock_lots/SHIPPED_FOLLOWUP.md`.
 - **Private list response contains the detail:** Important details shows a collapsed “Show” cell, but the full sensitive value is already in the grid and paged HTML. The opened edit form and private medical sheet also reveal it immediately, and audit/backups retain old values. Reproduction, limits and exact wording are in `workbench/reports/2026-11-17-sensitive-detail-audit.md`. This is the highest-priority finding from batch 9.
-| Batch 11 item 36: wording consistency | ready | PR #85 | 472 strings across six shipped modules; 13 exact replacements. |
 - **Wording and print:** The Stock supplies sheet includes both drinking and other water in one “Water” section. The exact replacement table also adds print-safe Home layout help and clarifies Vehicle registration reveal. See `workbench/reports/2026-11-18-wording-consistency.md`.
 - **Current wording pass:** Twelve exact replacements across the six shipped modules. The supplies sheet now filters drinking water; its earlier wording concern is closed. See `workbench/reports/2026-11-18-wording-consistency.md`.
-| Batch 9 item 31: sensitive-detail recheck | ready | PR #79 | Decision 0055 guards held; closed list HTML, instant private reveal and printable location hints remain. |
 - **Privacy recheck, worst first:** The private People detail remains in closed list and paged HTML before Show. The private sheet and edit forms reveal immediately, and an access code typed into Home layout’s `how_to_find` prints on Our home. Decision 0055’s migration and private-placeholder protections held. Steps and exact wording: `workbench/reports/2026-11-18-sensitive-detail-recheck.md`.
 
 - Answered by Lane A: batches shipped (#78, decision 0053). Each old item became exactly one batch holding its whole amount, so linking its old stock in and out to that batch is truthful and nothing is replayed; Smith now shows 3 + 10 kidney beans directly in the example. Your fixture is the reference for Home layout.
