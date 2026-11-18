@@ -111,7 +111,8 @@ def suggest_names(table):
     return jsonify(suggest.suggestions(typed, own, catalogue))
 
 
-def _render_form(info, store, values, errors, from_form, record=None, status=200, saved=None, back=None):
+def _render_form(info, store, values, errors, from_form, record=None, status=200, saved=None, back=None,
+                 done=None):
     fields = display.build_fields(store, info, values, errors, from_form, editing=record is not None)
     history = []
     if record:
@@ -164,7 +165,8 @@ def _render_form(info, store, values, errors, from_form, record=None, status=200
                             "label": display.table_title(other)})
     return render_template("form.html", info=info, title=display.table_title(info), fields=fields, record=record,
                            record_name=record_name, errors=errors, history=history, saved=saved,
-                           related=related, back=back, batches=batches, count_href=count_href), status
+                           related=related, back=back, batches=batches, count_href=count_href,
+                           actions=display.actions_for(info, record), done=done), status
 
 
 def _default_text(column) -> str:
@@ -256,7 +258,8 @@ def edit_record(table, record_id):
         record = store.get(table, record_id, include_deleted=True)
     except records.RecordNotFound:
         abort(404)
-    return _render_form(info, store, record, {}, False, record=record, saved=request.args.get("saved"))
+    return _render_form(info, store, record, {}, False, record=record, saved=request.args.get("saved"),
+                        done=display.done_words(info, request.args.get("done")))
 
 
 @pages.post("/t/<table>/<int:record_id>")
@@ -285,6 +288,29 @@ def delete_record(table, record_id):
         return _render_form(info, store, record, {"_form": error.problems["delete"]}, False,
                             record=record, status=409)
     return redirect(url_for("pages.edit_record", table=table, record_id=record_id))
+
+
+@pages.post("/t/<table>/<int:record_id>/do/<key>")
+def run_action(table, record_id, key):
+    """A one-step button such as "Mark returned": saved like any change, then back to the record (decision 0075)."""
+    info, store = _info(table), _store()
+    if not any(a["key"] == key for a in info.table.actions):
+        abort(404)
+    try:
+        store.action(table, record_id, key)
+    except records.RecordNotFound:
+        abort(404)
+    except (records.ActionNotAvailable, records.ValidationError) as error:
+        if isinstance(error, records.ValidationError):  # e.g. "Returned on can't be before Lent on."
+            columns = info.table.columns
+            said = [m if m[:1].isupper() else f"{display.column_label(info, columns[f])} {m}" if f in columns else m
+                    for f, m in error.problems.items()]
+            message = "Nothing was changed. " + " ".join(said)
+        else:
+            message = str(error)
+        record = store.get(table, record_id)
+        return _render_form(info, store, record, {"_form": message}, False, record=record, status=409)
+    return redirect(url_for("pages.edit_record", table=table, record_id=record_id, done=key))
 
 
 @pages.post("/t/<table>/<int:record_id>/restore")

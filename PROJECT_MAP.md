@@ -122,6 +122,7 @@ marked Superseded. Each lists downsides, cost to undo, and the sign it was wrong
 | [0071](0071-private-sheet-opens-only-by-choice.md) | The private sheet opens only from its Show button (a POST), never from a link such as ?show=1 | Accepted |
 | [0072](0072-reminders-skip-finished-rows-and-sheets-print-linked-contacts.md) | Due-date reminders can skip finished rows (`where` on `expiring`); sheets print a linked contact's phone from a required module, never a private column | Accepted |
 | [0073](0073-lent-out-promoted.md) | Things lent out switched on from Lane B's draft: borrowers in People, reminders only while still out, Stock count untouched | Accepted |
+| [0075](0075-one-step-actions-and-date-order.md) | One-step buttons declared in tables.toml (Mark returned), saved through the ordinary change path and refused when pressed twice; `not_before` keeps one date from coming before another | Accepted |
 | [TEMPLATE](TEMPLATE.md) | Blank record to copy for a new decision | recording a decision |
 
 ## docs/plans/  (summary: build plans for larger pieces of work, written before building)
@@ -260,7 +261,7 @@ Generate the next one with: python tools/make_migration.py home_layout --name <w
 | Entry | What it is | Open it when |
 |---|---|---|
 | module.toml | Name, version, description; requires People (the borrower) and Household stock (the item) | changing the module's details |
-| tables.toml | Loans with a due-back reminder only while still out, and one question about reaching the borrower | adding a field or a gap question |
+| tables.toml | Loans with a due-back reminder only while still out, a Mark returned button, and one question about reaching the borrower | adding a field or a gap question |
 | labels.toml | Friendly labels, help text, form and list order, main list on home | changing wording or order |
 | sheets.toml | Things still lent out sheet: what, who, their phone from People and the dates, with no notes | changing what prints |
 | migrations/ | Numbered database changes | after changing tables.toml |
@@ -441,6 +442,7 @@ How to run them is in AGENTS.md.
 | test_db.py | Tests for opening the database safely, transactions, statement splitting and backups. | changing the database layer |
 | test_migrations.py | Tests for numbered migrations: tracks, checksums, newer databases, rollback and backups. | changing migrations |
 | test_modules.py | Tests for loading module folders and the plain-language problems they report. | changing module rules |
+| test_actions.py | Tests for one-step actions (buttons like Mark returned) and the date order rule `not_before` (decision 0075). | changing actions or date order |
 | test_example_garden.py | Exercise the garden example with a temporary database and synthetic harvest. | changing the garden example |
 | test_records.py | Tests for saving, checking, linking, deleting and restoring records, and their history. | changing how records are saved |
 | test_schema.py | Tests for turning declared tables into SQL and generating the next migration. | changing table building |
@@ -490,6 +492,6 @@ How to run them is in AGENTS.md.
 | load_example.py | Load a made-up example household into an empty data folder, for demos, screenshots and testing. | demonstrating or testing with realistic data |
 | make_screenshots.py | Make the example screenshots: run each example household through every stage of using the dashboard. | the screens changed and the gallery needs remaking |
 | screenshots.js | Browser steps for make_screenshots.py (Node and Playwright) | changing how screenshots are taken |
-| browser_check.py | Click through the real dashboard in Chromium (setup, dates, stock in, stocktake, private details, closing) and fail loudly. | a screen or its browser code changed |
+| browser_check.py | Click through the real dashboard in Chromium (setup, dates, stock in, stocktake, Mark returned, private details, closing) and fail loudly. | a screen or its browser code changed |
 | browser_check.js | Browser steps for browser_check.py (Node and Playwright): what is clicked and checked | changing what the browser check clicks |
 | make_project_map.py | Build PROJECT_MAP.md from every INDEX.md in the repository. | changing the map format |

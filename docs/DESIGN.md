@@ -414,6 +414,41 @@ counts = { more = "counted_more", less = "counted_less", note = "notes" }  # sto
   amount, use-by date and place; earlier stock in and out is linked to it, not
   replayed. A backup is made first (startup, decision 0050).
 
+### 5.8 One-step actions and date order
+
+A table can offer a one-press button on a record's page that sets a few fields
+(decision 0075):
+
+```toml
+[[tables.loans.actions]]
+key = "returned"                                     # in the address: /t/lent_out__loans/3/do/returned
+label = "Mark returned"                              # the button
+show_when = { status = "out" }                       # shown only while every filter matches
+set = { status = "returned", returned_on = "today" } # fixed values; "today" / "now" for dates and times
+done = "Marked as returned today."                   # the notice afterwards
+
+columns.returned_on = { type = "date", not_before = "lent_on" }
+```
+
+- All five action settings are needed. Checked when the module loads: `set`
+  and `show_when` name columns of this table; choices are real choices; values
+  fit the column; links, files, private columns and columns worked out from
+  other records (batch totals, amounts changed by stock in and out) can't be
+  set; private columns can't decide when a button shows; `set` must change a
+  `show_when` column, so the button goes away once pressed; and it must fill in
+  any field its values make `required_when`.
+- labels.toml can reword a declared action:
+  `actions.returned = { label = "Back now", done = "Marked as back." }`.
+- The button is a small POST form with the page's token, on the record's page
+  only (not the list). Saving goes through the ordinary change: every check,
+  history, batches and totals, in one transaction. If the record no longer
+  matches `show_when` (a double click or an old page), nothing changes and the
+  page says so.
+- `not_before` (on a date column, naming another date column of the same
+  table) refuses an earlier date when adding, editing or pressing an action:
+  "Returned on can't be before Lent on.", from the labels. The same day is
+  fine; a blank date is not compared.
+
 ## 6. Modules
 
 A module is a folder:
@@ -422,7 +457,8 @@ A module is a folder:
 modules/<name>/
   module.toml       name, version, description, core_api needed,
                     requires, outbound hosts
-  tables.toml       tables, columns, types, dropdown values, links
+  tables.toml       tables, columns, types, dropdown values, links,
+                    one-step actions (5.8)
   labels.toml       friendly names and form layout
   migrations/       numbered migration files for this module's own track
   sources.py        optional: pulls data in

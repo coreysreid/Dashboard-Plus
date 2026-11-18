@@ -73,4 +73,5 @@ marked Superseded. Each lists downsides, cost to undo, and the sign it was wrong
 | [0071](0071-private-sheet-opens-only-by-choice.md) | The private sheet opens only from its Show button (a POST), never from a link such as ?show=1 | Accepted |
 | [0072](0072-reminders-skip-finished-rows-and-sheets-print-linked-contacts.md) | Due-date reminders can skip finished rows (`where` on `expiring`); sheets print a linked contact's phone from a required module, never a private column | Accepted |
 | [0073](0073-lent-out-promoted.md) | Things lent out switched on from Lane B's draft: borrowers in People, reminders only while still out, Stock count untouched | Accepted |
+| [0075](0075-one-step-actions-and-date-order.md) | One-step buttons declared in tables.toml (Mark returned), saved through the ordinary change path and refused when pressed twice; `not_before` keeps one date from coming before another | Accepted |
 | [TEMPLATE](TEMPLATE.md) | Blank record to copy for a new decision | recording a decision |
