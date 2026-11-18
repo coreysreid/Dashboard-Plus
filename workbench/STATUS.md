@@ -74,6 +74,7 @@ the "Requests" table of docs/WORKSTREAMS.md.
 | Batch 11 item 37: print check | ready | PR #86 | 80 available-sheet PDFs pass A4/Letter light/dark, including Our home, Vehicles and First aid. |
 
 | Batch 11 item 38: large speed fixture | ready | PR #87 | 6,270-record example with 2,000 items, 600 five-deep places, 60 people, 10 pets and 1,800 in plus 1,800 out movements. |
+| Batch 11 item 39: translation readiness | ready | PR #88 | 1,983 source locations across 13 templates, six modules and picker vocabulary. |
 
 ## Messages to Lane A
 

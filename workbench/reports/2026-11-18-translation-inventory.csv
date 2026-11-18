@@ -71,6 +71,27 @@ Record form,src/dashboard/web/templates/form.html,line 106,Add to □,HTML text;
 Record form,src/dashboard/web/templates/form.html,line 111,Delete,HTML text; □ marks a dynamic value
 Record form,src/dashboard/web/templates/form.html,line 117,History,HTML text; □ marks a dynamic value
 Record form,src/dashboard/web/templates/form.html,line 120,"· □ □: □ (private)from ""□"" to ""□"";",HTML text; □ marks a dynamic value
+Record form,src/dashboard/web/templates/form.html,line 48 @placeholder,Type to find…,HTML attribute
+Record form,src/dashboard/web/templates/form.html,line 48 @aria-label,Find □,HTML attribute
+Record form,src/dashboard/web/templates/form.html,line 51,Choose…□,HTML text; □ marks a dynamic value
+Record form,src/dashboard/web/templates/form.html,line 55,There is nothing to choose yet.,HTML text; □ marks a dynamic value
+Record form,src/dashboard/web/templates/form.html,line 59,There is nothing to choose yet.,HTML text; □ marks a dynamic value
+Record form,src/dashboard/web/templates/form.html,line 74,Private: hidden in lists until you choose to show it.,HTML text; □ marks a dynamic value
+Record form,src/dashboard/web/templates/form.html,line 79,Save changes,HTML text; □ marks a dynamic value
+Record form,src/dashboard/web/templates/form.html,line 82 @value,back,HTML attribute
+Record form,src/dashboard/web/templates/form.html,line 82,Save,HTML text; □ marks a dynamic value
+Record form,src/dashboard/web/templates/form.html,line 83 @value,another,HTML attribute
+Record form,src/dashboard/web/templates/form.html,line 83,Save and add another,HTML text; □ marks a dynamic value
+Record form,src/dashboard/web/templates/form.html,line 85 @value,another,HTML attribute
+Record form,src/dashboard/web/templates/form.html,line 85,Save and add another,HTML text; □ marks a dynamic value
+Record form,src/dashboard/web/templates/form.html,line 86 @value,done,HTML attribute
+Record form,src/dashboard/web/templates/form.html,line 86,Save,HTML text; □ marks a dynamic value
+Record form,src/dashboard/web/templates/form.html,line 89,Cancel,HTML text; □ marks a dynamic value
+Record form,src/dashboard/web/templates/form.html,line 96,None recorded yet.,HTML text; □ marks a dynamic value
+Record form,src/dashboard/web/templates/form.html,line 99,Add to □,HTML text; □ marks a dynamic value
+Record form,src/dashboard/web/templates/form.html,line 104,Delete,HTML text; □ marks a dynamic value
+Record form,src/dashboard/web/templates/form.html,line 110,History,HTML text; □ marks a dynamic value
+Record form,src/dashboard/web/templates/form.html,line 113,"· □ □: □ (private)from ""□"" to ""□"";",HTML text; □ marks a dynamic value
 Record list,src/dashboard/web/templates/grid.html,line 1,□ · Dashboard Plus,HTML text; □ marks a dynamic value
 Record list,src/dashboard/web/templates/grid.html,line 4,Home,HTML text; □ marks a dynamic value
 Record list,src/dashboard/web/templates/grid.html,line 7,Add,HTML text; □ marks a dynamic value
@@ -122,6 +143,7 @@ System report,src/dashboard/web/templates/report.html,line 8,"It contains the pr
 System report,src/dashboard/web/templates/report.html,line 10,The report could not be saved.,HTML text; □ marks a dynamic value
 System report,src/dashboard/web/templates/report.html,line 12,Go to the home page,HTML text; □ marks a dynamic value
 Linked record rows,src/dashboard/web/templates/rows.html,line 4 @aria-label,Show □ for □,HTML attribute
+Linked record rows,src/dashboard/web/templates/rows.html,line 4 @aria-label,Show □,HTML attribute
 Linked record rows,src/dashboard/web/templates/rows.html,line 4,Show,HTML text; □ marks a dynamic value
 Linked record rows,src/dashboard/web/templates/rows.html,line 6 @aria-label,Open □,HTML attribute
 Linked record rows,src/dashboard/web/templates/rows.html,line 6,Open,HTML text; □ marks a dynamic value
@@ -221,6 +243,16 @@ Record form,src/dashboard/web/templates/form.html,line 301 JavaScript,"Use DD/MM
 Record form,src/dashboard/web/templates/form.html,line 301 JavaScript,"Use MM/DD/YY, for example 05/20/27.",Constructed client-side text; {value} is entered data
 Record form,src/dashboard/web/templates/form.html,line 302 JavaScript,"Use YYYY-MM-DD, for example 2027-05-20.",Constructed client-side text; {value} is entered data
 Record form,src/dashboard/web/templates/form.html,line 323 JavaScript,Not a real date,Constructed client-side text; {value} is entered data
+Record form,src/dashboard/web/templates/form.html,line 101 JavaScript,Delete this record? It can be restored later.,Constructed client-side text; {value} is entered data
+Record form,src/dashboard/web/templates/form.html,line 159 JavaScript,(you already have this: open it),Constructed client-side text; {value} is entered data
+Record form,src/dashboard/web/templates/form.html,line 166 JavaScript,Keep “{value}” as you typed it,Constructed client-side text; {value} is entered data
+Record form,src/dashboard/web/templates/form.html,line 172 JavaScript,"No match. Keep “{value}” as a new item, then choose its kind and unit.",Constructed client-side text; {value} is entered data
+Record form,src/dashboard/web/templates/form.html,line 235 JavaScript,Not on the list? Add “{value}” as a new one,Constructed client-side text; {value} is entered data
+Record form,src/dashboard/web/templates/form.html,line 244 JavaScript,January; February; March; April; May; June; July; August; September; October; November; December,Constructed client-side text; {value} is entered data
+Record form,src/dashboard/web/templates/form.html,line 246 JavaScript,"Use DD/MM/YY, for example 20/05/27.",Constructed client-side text; {value} is entered data
+Record form,src/dashboard/web/templates/form.html,line 246 JavaScript,"Use MM/DD/YY, for example 05/20/27.",Constructed client-side text; {value} is entered data
+Record form,src/dashboard/web/templates/form.html,line 247 JavaScript,"Use YYYY-MM-DD, for example 2027-05-20.",Constructed client-side text; {value} is entered data
+Record form,src/dashboard/web/templates/form.html,line 268 JavaScript,Not a real date,Constructed client-side text; {value} is entered data
 First-run setup,src/dashboard/web/templates/setup.html,line 162 JavaScript,(choose),Constructed client-side text; {value} is entered data
 Home module list,modules/people/module.toml,title,People,
 Home module list,modules/people/module.toml,description,"Who lives here, who to call, and the important details to keep on hand.",
@@ -355,6 +387,8 @@ Stock record form / list,modules/stock/labels.toml,tables.movements.columns.plac
 Stock print sheet,modules/stock/sheets.toml,sheet[0].title,Emergency supplies,
 Stock print sheet,modules/stock/sheets.toml,sheet[0].intro,"Drinking water, first aid, power and pantry food recorded here, batch by batch, and where each is kept. Water not safe to drink and other kinds of stock are not shown. Check use-by dates and amounts when you print a new copy.",
 Stock print sheet,modules/stock/sheets.toml,sheet[0].section[0].title,Drinking water (litres),
+Stock print sheet,modules/stock/sheets.toml,sheet[0].intro,"Water, first aid, power and pantry food recorded here, batch by batch, and where each is kept. Other kinds of stock are not shown. Check use-by dates and amounts when you print a new copy.",
+Stock print sheet,modules/stock/sheets.toml,sheet[0].section[0].title,Water (litres),
 Stock print sheet,modules/stock/sheets.toml,sheet[0].section[1].title,First aid and medical,
 Stock print sheet,modules/stock/sheets.toml,sheet[0].section[2].title,"Batteries, torches and power",
 Stock print sheet,modules/stock/sheets.toml,sheet[0].section[3].title,Food,

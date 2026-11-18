@@ -25,3 +25,5 @@ expected, actual, severity (blocker, important, minor), suggested change.
 | 2026-11-17-sensitive-detail-audit.md | Read-only audit of private fields in shipped screens, history and backups. | tightening privacy before M2 helpers and export |
 | 2026-11-18-print-check.md | A4/Letter light/dark results including Home layout, Vehicles and Medical sheets. | checking printable sheets |
 | 2026-11-18-print-matrix.csv | 84 route and PDF combinations, four expected unavailable. | reproducing print results |
+| 2026-11-18-translation-readiness.md | Screen-grouped extraction plan including Home layout and Vehicles. | preparing other languages |
+| 2026-11-18-translation-inventory.csv | 1,983 literal locations, picker names and search aliases. | extracting locale messages |

@@ -1,6 +1,7 @@
 # Visible words to prepare for other languages
 
 Checked 18 November 2026 against all **14 shipped web templates** and the six shipped modules (People, Household stock, Pets, Medical, Home layout, Vehicles) on main `e188229`. [The screen-grouped inventory](2026-11-18-translation-inventory.csv) gives source file, line or TOML path, string and context. No translations or shipped code changes are in this pass.
+Checked 18 November 2026 against all **13 shipped web templates** and the six shipped modules (People, Household stock, Pets, Medical, Home layout, Vehicles) on main `95c8754`. [The screen-grouped inventory](2026-11-18-translation-inventory.csv) gives source file, line or TOML path, string and context. No translations or shipped code changes are in this pass.
 
 | Screen group | Source and what needs extracting |
 |---|---|
@@ -14,6 +15,8 @@ Checked 18 November 2026 against all **14 shipped web templates** and the six sh
 | Picker vocabulary | Stock `catalogue.csv` and `places.csv`: **925 displayed names** plus **437 aliases** used to find them. Aliases are marked “Search alias; not displayed” in the inventory. |
 
 The CSV contains **1,992 source-location rows**: 223 template strings, 407 module TOML strings and 1,362 picker names/aliases. Counts include repeated words where they occur in distinct screens; the job is to extract each source occurrence, not translate a deduplicated word list. The template inventory marks inserted data as `□`. It includes HTML text and accessibility attributes, plus client-side picker, confirmation, month and date-format messages. Fallback field names and choice labels produced from schema keys are listed too, because they will otherwise remain English after authored labels are translated.
+| Print sheets | `sheet.html` and all module `sheets.toml`, including Our home and Vehicles: titles, intros, section headings, print action and privacy line. |
+The CSV contains **1,983 source-location rows**: 214 template strings, 407 module TOML strings and 1,362 picker names/aliases. Counts include repeated words where they occur in distinct screens; the job is to extract each source occurrence, not translate a deduplicated word list. The template inventory marks inserted data as `□`. It includes HTML text and accessibility attributes, plus client-side picker, confirmation, month and date-format messages. Fallback field names and choice labels produced from schema keys are listed too, because they will otherwise remain English after authored labels are translated.
 
 ## Extraction needs before translation
 
@@ -23,5 +26,6 @@ The CSV contains **1,992 source-location rows**: 223 template strings, 407 modul
 4. **Picker search.** Display names need localized versions. Search aliases need locale-aware matching even though they are not shown. Keep the stable catalogue key; a translated name or alias must not create a new household item accidentally.
 5. **Accessibility and print.** Translate `aria-label`, placeholders, title attributes, private-detail notices and printable sheet intros along with visible buttons. Set `<html lang>` from the chosen locale; it is hard-coded `en` today.
 6. **Client-side words.** `form.html` assembles “Keep … as you typed it”, “No match …”, “Not on the list …”, batch selection notes and date errors; `setup.html` adds “(choose)”. These need message entries with placeholders and escaping, not literal English in scripts.
+6. **Client-side words.** `form.html` assembles “Keep … as you typed it”, “No match …”, “Not on the list …” and date errors; `setup.html` adds “(choose)”. These need message entries with placeholders and escaping, not literal English in scripts.
 
 **Scope limit:** This includes the newly shipped Home layout and Vehicles files and grouped Home template text. It is every identified literal in the requested template/module files, including their picker CSVs. Core Python also creates user-facing validation, backup and date messages; those are outside this item's requested file scope and need a separate extraction before another language can ship. Runtime data entered by a household is not translated. The inventory is a preparation list, not a claim that a localization system exists. Source: shipped files named in the CSV and `src/dashboard/web/display.py` fallback-label rule, checked 18 November 2026.
