@@ -73,6 +73,8 @@ the "Requests" table of docs/WORKSTREAMS.md.
 | Batch 10 item 35: UK and NZ country packs | ready | PR pending | Eight hazards each, local coordination, current warning links, terms and scope. |
 | Batch 11 item 37: print check | ready | PR #86 | 80 available-sheet PDFs pass A4/Letter light/dark, including Our home, Vehicles and First aid. |
 
+| Batch 11 item 38: large speed fixture | ready | PR #87 | 6,270-record example with 2,000 items, 600 five-deep places, 60 people, 10 pets and 1,800 in plus 1,800 out movements. |
+
 ## Messages to Lane A
 
 - **Current print check:** All 80 available PDFs fit on one page with no extracted words outside the page, including Our home, Vehicles and First aid at home. Taylor Pets is off. See `workbench/reports/2026-11-18-print-check.md`.
