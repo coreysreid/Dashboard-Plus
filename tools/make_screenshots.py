@@ -84,6 +84,10 @@ STAGES = [
     ("18i-documents-sheet", "Document review dates sheet", "As it prints: names, kinds and dates only, with no "
      "places or document numbers.", {"goto": "/sheet/documents/document_review", "media": "print",
                                      "module": "documents"}),
+    ("18j-home-care", "Home care jobs", "Each job around the home, where it is, who usually does it, when it was "
+     "last done and the date the household chose to do it again.", {"goto": "/t/home_care__jobs", "module": "home_care"}),
+    ("18k-home-care-sheet", "Home care sheet", "As it prints: the jobs and the household's own dates, with no "
+     "notes.", {"goto": "/sheet/home_care/home_care", "media": "print", "module": "home_care"}),
     ("19-needs-attention", "Needs attention", "Days of water with the working shown, running low, use-by "
      "and due dates, and details worth filling in.", {"goto": "/attention"}),
     ("20-supplies-sheet", "Emergency supplies sheet", "As it prints: water, first aid, power and food, and "

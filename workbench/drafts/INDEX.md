@@ -9,6 +9,7 @@ and made-up example rows. Add a row here for each draft folder you create.
 | readiness/ | 49 source-linked "Have you thought about…?" questions | reviewing readiness prompts |
 | country-packs/ | Sourced AU, US, UK and NZ content | reviewing country packs |
 | home_care/ | Household checks and jobs with due-date history | reviewing home checks |
+| documents/ | Where important papers are, with renewal dates | reviewing document records |
 | wine/ | A compact wine collection module | reviewing or promoting it |
 | grab_list/ | Household leave-in-a-hurry list and one-page print design | building M3 grab lists |
 | seasonal_checklists/ | Source-linked bushfire, cyclone, winter, heat and hurricane questions | building M3 seasonal reviews |

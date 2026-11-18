@@ -574,6 +574,16 @@ number and the core can load both for a transition period.
   "Where is it kept?"; a household with no papers listed is asked nothing; a
   **Document review dates** sheet prints names, kinds and dates only, never
   where papers are kept.
+- **Home care** (declarative; requires People and Household stock; shipped,
+  decision 0063). Tables: home care jobs (what kind, which of the household's
+  `stock.places` it is at, who usually does it, a link to `people.people`;
+  last done; do again by) and work done (a dated note of each time, and who
+  did it). Behaviour: a job is *due* on the date the household typed, never
+  one worked out for it; logging work done changes no dates, so the household
+  types the next "do again by" itself (the core has no repeat engine yet); one
+  gap asks where a job is done; smoke alarms and extinguishers stay in Home
+  layout; a **Home care** sheet prints the jobs and dates without notes. No
+  field holds alarm codes or how to get in.
 - **Readiness** (declarative; the home of the prompts in section 10.5).
   Tables: plans (a situation the household has thought through: what we would
   do, who does what, the answer to "could we get down from upstairs?"), drills

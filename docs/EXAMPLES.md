@@ -181,6 +181,12 @@ Where each important paper is kept, whose it is and the review or renewal date t
 As it prints: names, kinds and dates only, with no places or document numbers.
 
 ![Document review dates sheet](screenshots/smith/18i-documents-sheet.png)
+### Home care jobs
+Each job around the home, where it is, who usually does it, when it was last done and the date the household chose to do it again.
+![Home care jobs](screenshots/smith/18j-home-care.png)
+### Home care sheet
+As it prints: the jobs and the household's own dates, with no notes.
+![Home care sheet](screenshots/smith/18k-home-care-sheet.png)
 
 ### Needs attention
 
@@ -385,6 +391,12 @@ Where each important paper is kept, whose it is and the review or renewal date t
 As it prints: names, kinds and dates only, with no places or document numbers.
 
 ![Document review dates sheet](screenshots/garcia/18i-documents-sheet.png)
+### Home care jobs
+Each job around the home, where it is, who usually does it, when it was last done and the date the household chose to do it again.
+![Home care jobs](screenshots/garcia/18j-home-care.png)
+### Home care sheet
+As it prints: the jobs and the household's own dates, with no notes.
+![Home care sheet](screenshots/garcia/18k-home-care-sheet.png)
 
 ### Needs attention
 
@@ -571,6 +583,12 @@ Where each important paper is kept, whose it is and the review or renewal date t
 As it prints: names, kinds and dates only, with no places or document numbers.
 
 ![Document review dates sheet](screenshots/taylor/18i-documents-sheet.png)
+### Home care jobs
+Each job around the home, where it is, who usually does it, when it was last done and the date the household chose to do it again.
+![Home care jobs](screenshots/taylor/18j-home-care.png)
+### Home care sheet
+As it prints: the jobs and the household's own dates, with no notes.
+![Home care sheet](screenshots/taylor/18k-home-care-sheet.png)
 
 ### Needs attention
 
