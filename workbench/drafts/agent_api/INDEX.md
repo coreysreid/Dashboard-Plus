@@ -8,4 +8,9 @@
 | HELPER_JOBS.md | How the ten household jobs map to shipped records | reviewing examples |
 | CHANGE_SUGGESTIONS.md | Amend, stale values, change then accept and person-only Undo | designing later changes |
 | CHANGE_ACCEPTANCE.md | Fifteen checks for existing-record suggestions | testing later changes |
+| mcp-tools.json | Eight allowlisted stdio tool schemas and API mappings | building a connector |
+| MCP_CONNECTOR.md | Local process, key hand-off and household wording | reviewing connector design |
+| MCP_ACCEPTANCE.md | Twelve checks for tool, transport and grant boundaries | testing a future connector |
+| PRIVATE_GRANT.md | Narrow one-read Settings grant, warnings and audit design | reviewing later private access |
+| PRIVATE_GRANT_ACCEPTANCE.md | Twelve checks for expiry, revocation and non-disclosure | testing later grants |
 | NOTES.md | Plan boundary, residual risks and core work | implementing API safeguards |
