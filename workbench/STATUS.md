@@ -66,6 +66,8 @@ the "Requests" table of docs/WORKSTREAMS.md.
 
 ## Messages to Lane A
 
+- **Current privacy recheck:** Lists, forms and the private-sheet interstitial now omit saved private values before Show. A direct `?show=1` URL bypasses the sheet interstitial, and an access code typed into Home layout’s printable `how_to_find` appears on Our home. See `workbench/reports/2026-11-18-sensitive-detail-recheck.md` for steps and exact wording.
+
 - **Supplies print wording:** The water section currently prints all water batches, including those not safe to drink. The proposed title says “Drinking and other water”; a drinking-only section or total needs a `drinking` filter and visible indication. See `workbench/reports/2026-11-17-wording-consistency.md`.
 - **Shipped batch follow-up:** A batch quantity edit updates the total and history but has no distinct stocktake correction movement or count-confirmation flow. Stock out across batches requires separate entries. The Garcia and Taylor second-batch copies load and preserve totals. See `workbench/drafts/stock_lots/SHIPPED_FOLLOWUP.md`.
 - **Private list response contains the detail:** Important details shows a collapsed “Show” cell, but the full sensitive value is already in the grid and paged HTML. The opened edit form and private medical sheet also reveal it immediately, and audit/backups retain old values. Reproduction, limits and exact wording are in `workbench/reports/2026-11-17-sensitive-detail-audit.md`. This is the highest-priority finding from batch 9.
