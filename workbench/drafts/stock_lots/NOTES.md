@@ -2,7 +2,7 @@
 
 The original pre-shipping fixture and exact old-item mapping are in [`MIGRATION_FIXTURE.md`](MIGRATION_FIXTURE.md), [`example_lots.toml`](example_lots.toml) and [`ITEM_TO_LOT.csv`](ITEM_TO_LOT.csv). Batches now ship; see [`SHIPPED_FOLLOWUP.md`](SHIPPED_FOLLOWUP.md) for actual behavior and the two loadable household copies. The paragraphs below preserve the earlier design proposal for comparison.
 
-This is a **design draft**, not a loadable module. The target schema in `tables.toml` shows the new items, lots and movements after Lane A integrates them into Household stock and Home layout. The current core cannot maintain a derived item amount or show a shared full-path place, so shipping a fake standalone module would hide the gap.
+This is a **historical design draft**, not a loadable module. Batches now ship in Household stock, and Home layout uses the existing `stock.places` (decisions 0053 and 0054). Compare the target sketch with `modules/stock/tables.toml` before using it; the remainder of this note preserves the pre-shipping proposal and its still-open screen ideas.
 
 ## The example on screen
 

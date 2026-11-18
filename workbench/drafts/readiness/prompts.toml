@@ -16,7 +16,7 @@ group = "fire"
 question = "If the stairs were blocked, have you thought about how everyone upstairs would leave?"
 why = "Upper floors need a route that accounts for a blocked stairway."
 fits = {storeys_min =2}
-answered_by = "home_layout.homes.upstairs_way_out"
+answered_by = "none"
 review_every = 12
 source = { url = "https://www.usfa.fema.gov/prevention/home-fires/prepare-for-fire/home-fire-escape-plans/", checked = "2026-11-16" }
 
@@ -246,7 +246,7 @@ group = "heat"
 question = "Have you thought about where your household's drinking water would come from during very hot weather?"
 why = "Water plans should include the conditions your home may face."
 fits = {hazards =["heat"]}
-answered_by = "stock.items.place"
+answered_by = "stock.lots.place"
 review_every = 12
 source = { url = "https://www.cdc.gov/extreme-heat/prevention/", checked = "2026-11-16" }
 
