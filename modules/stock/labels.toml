@@ -15,20 +15,20 @@ columns.drinking = { label = "Is this water safe to drink now?", help = "Only dr
 columns.unit = { label = "Unit", help = "Use litres for water; for other things, a unit such as tins, kg or packs." }
 columns.minimum = { label = "Keep at least", help = "You'll see it under Needs attention when it drops below this." }
 columns.place = { label = "Where it is" }
-columns.expires = { label = "Use by", help = "For several use-by dates, add the item with one, then add a batch for each of the others." }
+columns.expires = { label = "Use by", help = "For several use-by dates, add one batch for each date." }
 
 [tables.lots]
 empty = "Batches appear when you add an item or record stock in. Each has its own amount, use-by date and place."
 form = ["item", "quantity", "expires", "place", "notes"]
 list = ["item", "quantity", "expires", "place"]
-columns.quantity = { label = "How many", help = "In the item's own unit. After a stocktake, change it to what you counted." }
+columns.quantity = { label = "Amount in this batch", help = "In the item's own unit. After a stocktake, change it to what you counted." }
 columns.expires = { label = "Use by" }
 columns.place = { label = "Where it is" }
 
 [tables.movements]
 form = ["item", "reason", "amount", "happened_on", "lot", "expires", "place", "notes"]
 list = ["happened_on", "item", "reason", "amount", "lot", "notes"]
-columns.amount = { label = "How many", help = "In the item's own unit. The batch's count, and the item's, change by this much." }
+columns.amount = { label = "Amount to add or use", help = "In the item's own unit. The batch's count, and the item's, change by this much." }
 columns.happened_on = { label = "Date" }
 columns.lot = { label = "Which batch", help = "Only this item's batches are listed. Choose one to add to it or take from it.", blank = { takes = "Use the batch with the earliest use-by date" } }
 columns.expires = { label = "Use by", help = "For the new batch.", show_when = { reason = "bought" } }

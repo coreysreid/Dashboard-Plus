@@ -177,9 +177,11 @@ function expect(condition, message) { if (!condition) throw new Failed(message);
     const p = plan.private;
     await goto('/sheet/people/emergency_medical');
     expect(!(await html()).includes(p.secret), 'The private medical sheet sent private details before being asked.');
+    await goto('/sheet/people/emergency_medical?show=1');  // decision 0071: a link cannot skip the question
+    expect(!(await html()).includes(p.secret), 'A "?show=1" link opened the private sheet without the Show private sheet button.');
     await Promise.all([page.waitForNavigation(), page.click('text=Show private sheet')]);
     expect((await html()).includes(p.secret), 'After "Show private sheet" the sheet does not show the private details.');
-    ok('private medical sheet asks first, then shows');
+    ok('private medical sheet asks first (a ?show=1 link does not skip it), then shows');
   }
 
   async function checkClose() {

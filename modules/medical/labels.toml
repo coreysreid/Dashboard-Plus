@@ -3,7 +3,7 @@ empty = "Add a first aid kit and where to find it."
 form = ["name", "kept", "place", "last_checked", "next_check", "notes"]
 list = ["name", "kept", "place", "last_checked", "next_check"]
 columns.kept = { label = "Usually kept", help = "A kit in the car is not there when the car is out." }
-columns.place = { label = "Where it is", help = "Choose a place recorded in Household stock. Keep first aid supplies in Stock too." }
+columns.place = { label = "Where it is", help = "Choose the place where this kit is kept. Keep first aid supplies in Stock too." }
 columns.last_checked = { label = "Last checked", help = "The date someone checked this kit's contents." }
 columns.next_check = { label = "Check again by", help = "Choose a date from your household plan or kit guidance. The dashboard will remind you a month before." }
 columns.notes = { help = "For example, what needs replacing. Keep medicine and care details in People." }
@@ -13,7 +13,7 @@ empty = "Log a check after you look through a kit. Update Stock separately for a
 form = ["kit", "checked_on", "next_check", "checked_by", "notes"]
 list = ["checked_on", "kit", "next_check", "checked_by", "notes"]
 columns.checked_on = { label = "Checked on" }
-columns.next_check = { label = "Next check planned", help = "For this check record only. Also update the kit's current Check again by date." }
+columns.next_check = { label = "Check again by", help = "The date planned at this check. Also update the kit's current Check again by date." }
 columns.checked_by = { label = "Checked by" }
 columns.notes = { label = "What you found", help = "Record missing or expired supplies here; update their amounts and dates in Household stock." }
 

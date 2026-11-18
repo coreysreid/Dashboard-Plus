@@ -71,7 +71,10 @@ class PeopleModuleTests(TempDirTestCase):
         first = client.get("/sheet/people/emergency_medical", base_url=BASE).get_data(as_text=True)
         self.assertNotIn("Synthetic allergy note", first)  # privacy audit: shown only by choice
         self.assertIn("Show it only when you mean to print or share it", first)
-        medical = client.get("/sheet/people/emergency_medical?show=1", base_url=BASE).get_data(as_text=True)
+        shortcut = client.get("/sheet/people/emergency_medical?show=1", base_url=BASE).get_data(as_text=True)
+        self.assertNotIn("Synthetic allergy note", shortcut, "decision 0071: a link cannot skip the question")
+        medical = client.post("/sheet/people/emergency_medical", data={"_csrf": app.config["CSRF_TOKEN"]},
+                              base_url=BASE).get_data(as_text=True)
         self.assertIn("Synthetic allergy note", medical)
         self.assertIn("includes private details", medical)
 
