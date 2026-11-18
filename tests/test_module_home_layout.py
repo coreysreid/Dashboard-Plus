@@ -15,6 +15,7 @@ WATER = "Where is the water shut-off? It is not written down yet."
 POWER = "Where is the power board (switchboard or fuse box)? It is not written down yet."
 EXITS = "Which ways out of your home would you use? None is written down yet."
 ALARMS = "Where are your smoke alarms? None is written down yet."
+CODE = "SYNTH-4417"
 
 
 class HomeLayoutModuleTests(TempDirTestCase):
@@ -138,6 +139,41 @@ class HomeLayoutModuleTests(TempDirTestCase):
             self.assertIn(shown, page)
         for private in ("Key is with Person B", "Needs the long spanner", "Bought second-hand"):
             self.assertNotIn(private, page)
+
+    def test_access_details_are_private_and_never_on_the_sheet_or_a_list_before_show(self):
+        """Decision 0077: a code goes in the private box, which is hidden until Show and never printed."""
+        for table in ("exits", "shutoffs", "equipment", "meters"):
+            column = modules.load_module(ROOT / "modules" / "home_layout").tables[table].columns["access_details"]
+            self.assertTrue(column.sensitive, table)
+        sheet_text = (ROOT / "modules" / "home_layout" / "sheets.toml").read_text(encoding="utf-8")
+        self.assertNotIn("access_details", sheet_text)
+        garage = self.place("Garage")
+        ids = {
+            "exits": self.records.create("home_layout__exits", {"name": "Front door", "place": garage,
+                                                               "access_details": CODE + "-door"}),
+            "shutoffs": self.records.create("home_layout__shutoffs", {"name": "Water main", "kind": "water",
+                                                                      "place": garage, "access_details": CODE + "-water"}),
+            "equipment": self.records.create("home_layout__equipment", {"name": "Alarm panel", "kind": "other",
+                                                                        "place": garage, "access_details": CODE + "-alarm"}),
+            "meters": self.records.create("home_layout__meters", {"name": "Electricity meter", "kind": "electricity",
+                                                                  "place": garage, "access_details": CODE + "-meter"}),
+        }
+        settings.put(self.conn, "setup.done", True)
+        app = create_app("t", lambda: None, self.report, data_dir=self.data, session_key="k")
+        app.config["PORT"] = PORT
+        client = app.test_client()
+        client.get("/?key=k", base_url=BASE)
+        paths = ["/sheet/home_layout/our_home", "/attention", "/"] + [f"/t/home_layout__{t}" for t in ids]
+        paths += [f"/t/home_layout__{t}/{i}" for t, i in ids.items()]
+        for path in paths:
+            with self.subTest(path=path):
+                self.assertNotIn(CODE, client.get(path, base_url=BASE).get_data(as_text=True))
+        for table, record in ids.items():
+            shown = client.get(f"/t/home_layout__{table}/{record}/reveal?column=access_details", base_url=BASE).get_json()
+            self.assertEqual(shown["value"], f"{CODE}-{ {'exits': 'door', 'shutoffs': 'water', 'equipment': 'alarm', 'meters': 'meter'}[table] }")
+        form = client.get(f"/t/home_layout__exits/{ids['exits']}", base_url=BASE).get_data(as_text=True)
+        self.assertIn("Codes or access details (private)", form)
+        self.assertIn("Kept private: shown only when you press Show, never printed.", form)
 
     def test_moving_a_cupboard_updates_the_sheet(self):
         """Lane B check 4: move the parent and every path shown follows; nothing else changes."""

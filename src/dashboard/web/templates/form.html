@@ -8,6 +8,7 @@
 <h1>Add to {{ title | lower }}</h1>
 {% endif %}
 {% if saved %}<p class="notice" role="status">{% if record %}Saved.{% else %}Saved "{{ saved }}". Add the next one.{% endif %}</p>{% endif %}
+{% if done %}<p class="notice" role="status">{{ done }}</p>{% endif %}
 {% if errors and errors._form %}<p class="problem" role="alert">{{ errors._form }}</p>
 {% elif errors %}
 <div class="problem" role="alert" id="error-summary" tabindex="-1">
@@ -24,6 +25,16 @@
   <button type="submit">Restore it</button>
 </form>
 {% else %}
+{% if actions %}
+<div class="actions">{# one-step buttons declared in tables.toml, such as Mark returned (decision 0075) #}
+  {% for a in actions %}
+  <form method="post" action="/t/{{ info.name }}/{{ record.id }}/do/{{ a.key }}" style="display:inline">
+    <input type="hidden" name="_csrf" value="{{ csrf_token }}">
+    <button type="submit" data-action="{{ a.key }}">{{ a.label }}</button>
+  </form>
+  {% endfor %}
+</div>
+{% endif %}
 <form class="record" method="post" action="{% if record %}/t/{{ info.name }}/{{ record.id }}{% else %}/t/{{ info.name }}/new{% endif %}">
   <input type="hidden" name="_csrf" value="{{ csrf_token }}">
   {% for f in fields %}

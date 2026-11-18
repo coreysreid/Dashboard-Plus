@@ -33,6 +33,10 @@ class RecordNotFound(PlainError):
     """The record does not exist (or has been deleted)."""
 
 
+class ActionNotAvailable(PlainError):
+    """A one-step action no longer applies to the record (pressed twice, or from an old page); nothing changed."""
+
+
 class CountOutOfDate(ValidationError):
     """A batch changed after its count was reviewed; `current` is the amount it holds now (decision 0070)."""
 
@@ -59,12 +63,16 @@ def build_registry(modules: list[Module]) -> dict[str, TableInfo]:
 
 def resolve_default(column: Column):
     """A column's default value, with "today" and "now" turned into the actual date or time."""
-    default = column.default
-    if column.type == "date" and default == "today":
+    return resolve_word(column, column.default)
+
+
+def resolve_word(column: Column, value):
+    """"today" and "now" as the date or time on the household's computer; any other value as it is."""
+    if column.type == "date" and value == "today":
         return date.today().isoformat()
-    if column.type == "datetime" and default == "now":
+    if column.type == "datetime" and value == "now":
         return datetime.now().isoformat(timespec="minutes")
-    return default
+    return value
 
 
 def _plain_number(value) -> str:
@@ -374,6 +382,17 @@ class Records:
         if problems:
             raise ValidationError(problems)
 
+    def _check_date_order(self, info: TableInfo, record: dict) -> None:
+        """Refuse a date before the date it may not come before, like "Returned on" before "Lent on"."""
+        problems = {}
+        for column in info.table.columns.values():
+            first = record.get(column.not_before) if column.not_before else None
+            if first and record.get(column.name) and str(record[column.name]) < str(first):
+                problems[column.name] = (f"{self._label(info, column.name)} can't be before "
+                                         f"{self._label(info, column.not_before)}.")
+        if problems:
+            raise ValidationError(problems)
+
     def create(self, name: str, values: dict, actor: str = "person", review_status: str = "confirmed",
                batch_id: int | None = None) -> int:
         """Save a new record and return its id."""
@@ -434,6 +453,7 @@ class Records:
             values.pop(column, None)  # worked out from the batches
         cleaned = self.clean(info, values, creating=True)
         self._check_required_when(info, cleaned)
+        self._check_date_order(info, cleaned)
         self._check_nesting(info, None, cleaned)
         self._choose_batch(info, cleaned, None, actor, review_status, batch_id)
         stored = {k: v for k, v in cleaned.items() if info.table.columns[k].type != "links"}
@@ -664,45 +684,69 @@ class Records:
         self._check_actor(actor)
         info = self.info(name)
         with db.transaction(self.conn):
+            return self._update(info, record_id, values, actor)
+
+    def action(self, name: str, record_id: int, key: str, actor: str = "person") -> dict:
+        """Press a one-step button declared in tables.toml, such as "Mark returned" (decision 0075).
+
+        Its fields are saved through the same checks, history and totals as any change, all in one go.
+        If the record no longer matches the action's `show_when` (pressed twice, or from an old page),
+        ActionNotAvailable is raised and nothing changes. Returns what changed, like `update`."""
+        self._check_actor(actor)
+        info = self.info(name)
+        action = next((a for a in info.table.actions if a["key"] == key), None)
+        if action is None:
+            raise RecordNotFound(f"There is no '{key}' action for {info.table.title.lower()}.")
+        with db.transaction(self.conn):
             current = self._row(info, record_id)
-            cleaned = self.clean(info, values, creating=False)
-            self._check_required_when(info, dict(current, **cleaned))
-            self._check_nesting(info, record_id, cleaned)
-            self._choose_batch(info, cleaned, current, actor)
-            changed = {k: v for k, v in cleaned.items() if current.get(k) != v}
-            total = info.table.total
-            if total and total["link"] in changed and self._has_movements(info, record_id):
-                raise ValidationError({total["link"]: "can't change once stock in or out is recorded for this "
-                                                      "batch. Record it as used or given away here, and as bought "
-                                                      "on the other item."})
-            derived = self._derived(info) & set(changed)
-            if derived:
-                raise ValidationError({c: "is worked out from its batches. Change a batch, or record stock in "
-                                          "or out." for c in derived})
-            if not changed:
-                return {}
-            stored = {k: v for k, v in changed.items() if info.table.columns[k].type != "links"}
-            assignments = dict(stored, updated_at=self.clock())
-            if actor == "person":
-                assignments["edited_by_person"] = 1
-            self.conn.execute(
-                f"UPDATE {info.name} SET {', '.join(f'{k} = ?' for k in assignments)} WHERE id = ?",
-                list(assignments.values()) + [record_id])
-            self._write_links(info, record_id, changed)
-            self._audit(actor, "update", info, record_id, {k: current.get(k) for k in changed}, changed)
-            rule = info.table.adjusts
-            if rule and any(k in changed for k in (rule["link"], rule["amount"], rule["direction"])):
-                old, new = self._effect(info, current), self._effect(info, self._row(info, record_id))
-                if old and new and old[0] == new[0]:
-                    self._shift(info, new[0], new[1] - old[1], actor, undoing=False)  # one net change
-                else:
-                    self._adjust(info, current, -1, actor)
-                    self._adjust(info, self._row(info, record_id), +1, actor)
-            if info.table.total:
-                link = info.table.total["link"]
-                self._retotal(info, current.get(link), actor)
-                if changed.get(link, current.get(link)) != current.get(link):
-                    self._retotal(info, changed[link], actor)
+            if any(current.get(k) != v for k, v in action["show_when"].items()):
+                raise ActionNotAvailable("That was already done, or the record changed since this page was opened. "
+                                         "Nothing was changed.")
+            values = {k: resolve_word(info.table.columns[k], v) for k, v in action["set"].items()}
+            return self._update(info, record_id, values, actor)
+
+    def _update(self, info: TableInfo, record_id: int, values: dict, actor: str) -> dict:
+        """`update` inside a transaction the caller has already started."""
+        current = self._row(info, record_id)
+        cleaned = self.clean(info, values, creating=False)
+        self._check_required_when(info, dict(current, **cleaned))
+        self._check_date_order(info, dict(current, **cleaned))
+        self._check_nesting(info, record_id, cleaned)
+        self._choose_batch(info, cleaned, current, actor)
+        changed = {k: v for k, v in cleaned.items() if current.get(k) != v}
+        total = info.table.total
+        if total and total["link"] in changed and self._has_movements(info, record_id):
+            raise ValidationError({total["link"]: "can't change once stock in or out is recorded for this "
+                                                  "batch. Record it as used or given away here, and as bought "
+                                                  "on the other item."})
+        derived = self._derived(info) & set(changed)
+        if derived:
+            raise ValidationError({c: "is worked out from its batches. Change a batch, or record stock in "
+                                      "or out." for c in derived})
+        if not changed:
+            return {}
+        stored = {k: v for k, v in changed.items() if info.table.columns[k].type != "links"}
+        assignments = dict(stored, updated_at=self.clock())
+        if actor == "person":
+            assignments["edited_by_person"] = 1
+        self.conn.execute(
+            f"UPDATE {info.name} SET {', '.join(f'{k} = ?' for k in assignments)} WHERE id = ?",
+            list(assignments.values()) + [record_id])
+        self._write_links(info, record_id, changed)
+        self._audit(actor, "update", info, record_id, {k: current.get(k) for k in changed}, changed)
+        rule = info.table.adjusts
+        if rule and any(k in changed for k in (rule["link"], rule["amount"], rule["direction"])):
+            old, new = self._effect(info, current), self._effect(info, self._row(info, record_id))
+            if old and new and old[0] == new[0]:
+                self._shift(info, new[0], new[1] - old[1], actor, undoing=False)  # one net change
+            else:
+                self._adjust(info, current, -1, actor)
+                self._adjust(info, self._row(info, record_id), +1, actor)
+        if info.table.total:
+            link = info.table.total["link"]
+            self._retotal(info, current.get(link), actor)
+            if changed.get(link, current.get(link)) != current.get(link):
+                self._retotal(info, changed[link], actor)
         return {k: [current.get(k), v] for k, v in changed.items()}
 
     def _dependents(self, info: TableInfo):

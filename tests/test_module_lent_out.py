@@ -147,6 +147,50 @@ class LentOutModuleTests(TempDirTestCase):
         self.assertNotIn("Charger is in the blue bag", sheet)
         self.assertNotIn("private details", sheet)
 
+    def test_mark_returned_is_one_press_on_a_loan_still_out(self):
+        """The button shows only while it is out, saves Yes and today, says so, and a second press changes nothing."""
+        loan = self.loan(lent_on=self.day(-10), due_back=self.day(-2))
+        client = self.client()
+        csrf = client.application.config["CSRF_TOKEN"]
+        path = f"/t/lent_out__loans/{loan}"
+        page = client.get(path, base_url=BASE).get_data(as_text=True)
+        self.assertIn(f'action="{path}/do/returned"', page)
+        self.assertIn(">Mark returned</button>", page)
+        self.assertEqual(client.post(f"{path}/do/returned", base_url=BASE).status_code, 400)  # no form token
+        self.assertEqual(self.records.get("lent_out__loans", loan)["status"], "out")
+        answer = client.post(f"{path}/do/returned", data={"_csrf": csrf}, base_url=BASE)
+        self.assertEqual(answer.status_code, 302)
+        self.assertTrue(answer.headers["Location"].endswith(f"{path}?done=returned"), answer.headers["Location"])
+        row = self.records.get("lent_out__loans", loan)
+        self.assertEqual((row["status"], row["returned_on"]), ("returned", self.day(0)))
+        self.assertEqual(self.due(), {})  # no longer overdue
+        page = client.get(f"{path}?done=returned", base_url=BASE).get_data(as_text=True)
+        self.assertIn("Marked as returned today.", page)
+        self.assertNotIn(">Mark returned</button>", page)
+        self.assertIn('from "No, still out" to "Yes, returned"', page)  # in the loan's history like any change
+        history = len(self.records.history("lent_out__loans", loan))
+        again = client.post(f"{path}/do/returned", data={"_csrf": csrf}, base_url=BASE)  # a double click
+        self.assertEqual(again.status_code, 409)
+        self.assertIn("Nothing was changed", again.get_data(as_text=True))
+        self.assertEqual(len(self.records.history("lent_out__loans", loan)), history)
+        self.assertEqual(client.post(f"{path}/do/lost", data={"_csrf": csrf}, base_url=BASE).status_code, 404)
+
+    def test_mark_returned_refuses_a_loan_lent_after_today(self):
+        loan = self.loan(lent_on=self.day(2), due_back=self.day(9))
+        client = self.client()
+        answer = client.post(f"/t/lent_out__loans/{loan}/do/returned",
+                             data={"_csrf": client.application.config["CSRF_TOKEN"]}, base_url=BASE)
+        self.assertEqual(answer.status_code, 409)
+        self.assertIn("Nothing was changed. Returned on can&#39;t be before Lent on.", answer.get_data(as_text=True))
+        self.assertEqual(self.records.get("lent_out__loans", loan)["status"], "out")
+
+    def test_returned_on_cannot_be_before_lent_on(self):
+        loan = self.loan(lent_on=self.day(-5))
+        with self.assertRaises(records.ValidationError) as caught:
+            self.records.update("lent_out__loans", loan, {"status": "returned", "returned_on": self.day(-6)})
+        self.assertEqual(caught.exception.problems, {"returned_on": "Returned on can't be before Lent on."})
+        self.returned(loan, -5)  # back the same day is fine
+
     def test_the_form_says_nothing_is_sent_and_stock_is_not_changed(self):
         page = self.page("/t/lent_out__loans/new")
         self.assertIn("Who borrowed it", page)

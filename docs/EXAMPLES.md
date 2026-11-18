@@ -206,6 +206,18 @@ As it prints: only the loans still out, with the borrower's phone from People an
 
 ![Things still lent out sheet](screenshots/smith/18m-lent-out-sheet.png)
 
+### Vegetable garden jobs
+
+Garden jobs with the date the household chose; a finished job is no longer a reminder.
+
+![Vegetable garden jobs](screenshots/smith/18n-garden.png)
+
+### Garden plan sheet
+
+As it prints: beds and where they are, plantings and the jobs not yet done, with no notes.
+
+![Garden plan sheet](screenshots/smith/18o-garden-sheet.png)
+
 ### Needs attention
 
 Days of water with the working shown, running low, use-by and due dates, and details worth filling in.
@@ -434,6 +446,18 @@ As it prints: only the loans still out, with the borrower's phone from People an
 
 ![Things still lent out sheet](screenshots/garcia/18m-lent-out-sheet.png)
 
+### Vegetable garden jobs
+
+Garden jobs with the date the household chose; a finished job is no longer a reminder.
+
+![Vegetable garden jobs](screenshots/garcia/18n-garden.png)
+
+### Garden plan sheet
+
+As it prints: beds and where they are, plantings and the jobs not yet done, with no notes.
+
+![Garden plan sheet](screenshots/garcia/18o-garden-sheet.png)
+
 ### Needs attention
 
 Days of water with the working shown, running low, use-by and due dates, and details worth filling in.
@@ -643,6 +667,18 @@ What was lent, who borrowed it, when, the date it is due back and when it came b
 As it prints: only the loans still out, with the borrower's phone from People and no notes.
 
 ![Things still lent out sheet](screenshots/taylor/18m-lent-out-sheet.png)
+
+### Vegetable garden jobs
+
+Garden jobs with the date the household chose; a finished job is no longer a reminder.
+
+![Vegetable garden jobs](screenshots/taylor/18n-garden.png)
+
+### Garden plan sheet
+
+As it prints: beds and where they are, plantings and the jobs not yet done, with no notes.
+
+![Garden plan sheet](screenshots/taylor/18o-garden-sheet.png)
 
 ### Needs attention
 

@@ -1,0 +1,766 @@
+{
+  "source": "docs/plans/agent-api-v1.md and shipped example households",
+  "checked": "2026-11-18",
+  "status": "draft before api.py merge",
+  "jobs": [
+    {
+      "number": 1,
+      "household": "smith",
+      "job": "Stock in and out",
+      "helper_grant": [
+        "stock"
+      ],
+      "look_up_first": [
+        "GET /api/v1/tables/stock__items/records/6 → Kidney beans",
+        "GET /api/v1/tables/stock__places/records/3 → Garage"
+      ],
+      "request": {
+        "method": "POST",
+        "path": "/api/v1/proposals",
+        "headers": {
+          "Authorization": "Bearer <key shown once in Settings>",
+          "Content-Type": "application/json"
+        },
+        "body": {
+          "request_key": "smith-stock-in-and-out-20261118",
+          "why": "Copied two invented tins from a paper receipt.",
+          "entries": [
+            {
+              "table": "stock__movements",
+              "values": {
+                "item": 6,
+                "reason": "bought",
+                "amount": 2,
+                "happened_on": "2026-11-18",
+                "expires": "2027-11-20",
+                "place": 3
+              }
+            }
+          ]
+        }
+      },
+      "response": {
+        "status": 201,
+        "body": {
+          "batch_id": 31,
+          "state": "waiting",
+          "why": "Copied two invented tins from a paper receipt.",
+          "proposals": [
+            {
+              "id": 91,
+              "position": 0,
+              "table": "stock__movements",
+              "status": "pending"
+            }
+          ],
+          "message": "1 suggestion is waiting for the household to review. Nothing changes until they accept it."
+        }
+      },
+      "review": {
+        "before": "Add to Stock in and out: Kidney beans · Bought or added · 2 tins · Garage · use by 20/11/27.",
+        "buttons": [
+          "Accept",
+          "Reject"
+        ],
+        "decision": "accept",
+        "result": "Added to Stock in and out."
+      },
+      "after_review_request": {
+        "method": "GET",
+        "path": "/api/v1/batches/31"
+      },
+      "after_review_response": {
+        "status": 200,
+        "body": {
+          "id": 31,
+          "why": "Copied two invented tins from a paper receipt.",
+          "created_at": "2026-11-18T09:01:00Z",
+          "totals": {
+            "total": 1,
+            "pending": 0,
+            "accepted": 1,
+            "rejected": 0
+          },
+          "proposals": [
+            {
+              "id": 91,
+              "position": 0,
+              "table": "stock__movements",
+              "status": "accepted",
+              "record_id": 7,
+              "reason": null
+            }
+          ]
+        }
+      },
+      "effect": "Only acceptance creates a new batch. Smith Kidney beans rises from 13 to 15 tins; the receipt image/text is not an API attachment."
+    },
+    {
+      "number": 2,
+      "household": "garcia",
+      "job": "Weigh-ins",
+      "helper_grant": [
+        "pets",
+        "people"
+      ],
+      "look_up_first": [
+        "GET /api/v1/tables/pets__pets/records/1 → Luna"
+      ],
+      "request": {
+        "method": "POST",
+        "path": "/api/v1/proposals",
+        "headers": {
+          "Authorization": "Bearer <key shown once in Settings>",
+          "Content-Type": "application/json"
+        },
+        "body": {
+          "request_key": "garcia-weigh-ins-20261118",
+          "why": "Copied Luna’s invented paper weight log.",
+          "entries": [
+            {
+              "table": "pets__weigh_ins",
+              "values": {
+                "pet": 1,
+                "day": "2026-11-18",
+                "weight": 4.3
+              }
+            }
+          ]
+        }
+      },
+      "response": {
+        "status": 201,
+        "body": {
+          "batch_id": 32,
+          "state": "waiting",
+          "why": "Copied Luna’s invented paper weight log.",
+          "proposals": [
+            {
+              "id": 92,
+              "position": 0,
+              "table": "pets__weigh_ins",
+              "status": "pending"
+            }
+          ],
+          "message": "1 suggestion is waiting for the household to review. Nothing changes until they accept it."
+        }
+      },
+      "review": {
+        "before": "Add to Weigh-ins: Luna · 18 Nov 2026 · 4.3 kg.",
+        "buttons": [
+          "Accept",
+          "Reject"
+        ],
+        "decision": "accept",
+        "result": "Added to Weigh-ins."
+      },
+      "after_review_request": {
+        "method": "GET",
+        "path": "/api/v1/batches/32"
+      },
+      "after_review_response": {
+        "status": 200,
+        "body": {
+          "id": 32,
+          "why": "Copied Luna’s invented paper weight log.",
+          "created_at": "2026-11-18T09:01:00Z",
+          "totals": {
+            "total": 1,
+            "pending": 0,
+            "accepted": 1,
+            "rejected": 0
+          },
+          "proposals": [
+            {
+              "id": 92,
+              "position": 0,
+              "table": "pets__weigh_ins",
+              "status": "accepted",
+              "record_id": 3,
+              "reason": null
+            }
+          ]
+        }
+      },
+      "effect": "Only acceptance creates Luna’s dated weight entry. No weight chart or medical inference is created."
+    },
+    {
+      "number": 3,
+      "household": "taylor",
+      "job": "What is running low",
+      "helper_grant": [
+        "stock"
+      ],
+      "look_up_first": [
+        "GET /api/v1/tables/stock__items/records/9 → AA batteries, 2 on hand, minimum 4"
+      ],
+      "request": {
+        "method": "GET",
+        "path": "/api/v1/attention",
+        "headers": {
+          "Authorization": "Bearer <key shown once in Settings>"
+        }
+      },
+      "response": {
+        "status": 200,
+        "body": {
+          "running_low": [
+            {
+              "table": "stock__items",
+              "record_id": 9,
+              "name": "AA batteries",
+              "quantity": 2,
+              "minimum": 4,
+              "unit": "batteries"
+            }
+          ],
+          "expiring": [],
+          "supplies": [],
+          "gaps": []
+        },
+        "status_note": "Illustrative minimal response for this job; /attention envelope and full fixture output must be confirmed after api.py merges."
+      },
+      "review": {
+        "before": "No suggestion is waiting; Review is unchanged.",
+        "buttons": [],
+        "decision": "none",
+        "result": "Nothing was added."
+      },
+      "effect": "The helper can say “AA batteries: 2 recorded, keep at least 4” from Taylor’s own numbers. It does not recommend an emergency target or change Stock."
+    },
+    {
+      "number": 4,
+      "household": "smith",
+      "job": "Document review reminders",
+      "helper_grant": [
+        "documents",
+        "people",
+        "stock"
+      ],
+      "look_up_first": [
+        "GET /api/v1/tables/documents__documents/records/1 → Home insurance policy, review/renew by 2026-12-14"
+      ],
+      "request": {
+        "method": "GET",
+        "path": "/api/v1/attention",
+        "headers": {
+          "Authorization": "Bearer <key shown once in Settings>"
+        }
+      },
+      "response": {
+        "status": 200,
+        "body": {
+          "running_low": [],
+          "expiring": [
+            {
+              "table": "documents__documents",
+              "record_id": 1,
+              "name": "Home insurance policy",
+              "date": "2026-12-14",
+              "wording": "due"
+            }
+          ],
+          "supplies": [],
+          "gaps": []
+        },
+        "status_note": "Illustrative minimal response for this job; /attention envelope and full fixture output must be confirmed after api.py merges."
+      },
+      "review": {
+        "before": "No suggestion is waiting; Review is unchanged.",
+        "buttons": [],
+        "decision": "none",
+        "result": "Nothing was added."
+      },
+      "effect": "The helper can repeat the household-entered 14 Dec reminder. It cannot infer an insurance renewal rule or add a new date."
+    },
+    {
+      "number": 5,
+      "household": "garcia",
+      "job": "Work done",
+      "helper_grant": [
+        "home_care",
+        "people",
+        "stock"
+      ],
+      "look_up_first": [
+        "GET /api/v1/tables/home_care__jobs/records/1 → Air conditioner filter"
+      ],
+      "request": {
+        "method": "POST",
+        "path": "/api/v1/proposals",
+        "headers": {
+          "Authorization": "Bearer <key shown once in Settings>",
+          "Content-Type": "application/json"
+        },
+        "body": {
+          "request_key": "garcia-work-done-20261118",
+          "why": "Copied a fictional dated home-care note.",
+          "entries": [
+            {
+              "table": "home_care__work_done",
+              "values": {
+                "job": 1,
+                "done_on": "2026-11-18",
+                "notes": "Invented paper note: filter checked."
+              }
+            }
+          ]
+        }
+      },
+      "response": {
+        "status": 201,
+        "body": {
+          "batch_id": 35,
+          "state": "waiting",
+          "why": "Copied a fictional dated home-care note.",
+          "proposals": [
+            {
+              "id": 95,
+              "position": 0,
+              "table": "home_care__work_done",
+              "status": "pending"
+            }
+          ],
+          "message": "1 suggestion is waiting for the household to review. Nothing changes until they accept it."
+        }
+      },
+      "review": {
+        "before": "Add to Work done: Air conditioner filter · 18 Nov 2026 · filter checked.",
+        "buttons": [
+          "Accept",
+          "Reject"
+        ],
+        "decision": "accept",
+        "result": "Added to Work done."
+      },
+      "after_review_request": {
+        "method": "GET",
+        "path": "/api/v1/batches/35"
+      },
+      "after_review_response": {
+        "status": 200,
+        "body": {
+          "id": 35,
+          "why": "Copied a fictional dated home-care note.",
+          "created_at": "2026-11-18T09:01:00Z",
+          "totals": {
+            "total": 1,
+            "pending": 0,
+            "accepted": 1,
+            "rejected": 0
+          },
+          "proposals": [
+            {
+              "id": 95,
+              "position": 0,
+              "table": "home_care__work_done",
+              "status": "accepted",
+              "record_id": 2,
+              "reason": null
+            }
+          ]
+        }
+      },
+      "effect": "Only acceptance adds a history row. It does not update the job’s Last done or Do again by date; those require a separate household edit."
+    },
+    {
+      "number": 6,
+      "household": "taylor",
+      "job": "Vehicle services and checks",
+      "helper_grant": [
+        "vehicles",
+        "people",
+        "stock"
+      ],
+      "look_up_first": [
+        "GET /api/v1/tables/vehicles__vehicles/records/1 → Small car"
+      ],
+      "request": {
+        "method": "POST",
+        "path": "/api/v1/proposals",
+        "headers": {
+          "Authorization": "Bearer <key shown once in Settings>",
+          "Content-Type": "application/json"
+        },
+        "body": {
+          "request_key": "taylor-vehicle-services-and-checks-20261118",
+          "why": "Suggested a fictional vehicle reminder for review.",
+          "entries": [
+            {
+              "table": "vehicles__services",
+              "values": {
+                "vehicle": 1,
+                "name": "Example tyre check",
+                "next_due": "2027-02-20"
+              }
+            }
+          ]
+        }
+      },
+      "response": {
+        "status": 201,
+        "body": {
+          "batch_id": 36,
+          "state": "waiting",
+          "why": "Suggested a fictional vehicle reminder for review.",
+          "proposals": [
+            {
+              "id": 96,
+              "position": 0,
+              "table": "vehicles__services",
+              "status": "pending"
+            }
+          ],
+          "message": "1 suggestion is waiting for the household to review. Nothing changes until they accept it."
+        }
+      },
+      "review": {
+        "before": "Add to Vehicle services and checks: Small car · Example tyre check · due 20/02/27.",
+        "buttons": [
+          "Accept",
+          "Reject"
+        ],
+        "decision": "reject",
+        "result": "Rejected. Nothing was added to Vehicle services and checks."
+      },
+      "after_review_request": {
+        "method": "GET",
+        "path": "/api/v1/batches/36"
+      },
+      "after_review_response": {
+        "status": 200,
+        "body": {
+          "id": 36,
+          "why": "Suggested a fictional vehicle reminder for review.",
+          "created_at": "2026-11-18T09:01:00Z",
+          "totals": {
+            "total": 1,
+            "pending": 0,
+            "accepted": 0,
+            "rejected": 1
+          },
+          "proposals": [
+            {
+              "id": 96,
+              "position": 0,
+              "table": "vehicles__services",
+              "status": "rejected",
+              "record_id": null,
+              "reason": null
+            }
+          ]
+        }
+      },
+      "effect": "The person rejects this example; no vehicle service row or due reminder is added."
+    },
+    {
+      "number": 7,
+      "household": "smith",
+      "job": "Kit checks",
+      "helper_grant": [
+        "medical",
+        "stock"
+      ],
+      "look_up_first": [
+        "GET /api/v1/tables/medical__kits/records/1 → Car first aid kit"
+      ],
+      "request": {
+        "method": "POST",
+        "path": "/api/v1/proposals",
+        "headers": {
+          "Authorization": "Bearer <key shown once in Settings>",
+          "Content-Type": "application/json"
+        },
+        "body": {
+          "request_key": "smith-kit-checks-20261118",
+          "why": "Copied an invented kit-check note.",
+          "entries": [
+            {
+              "table": "medical__kit_checks",
+              "values": {
+                "kit": 1,
+                "checked_on": "2026-11-18"
+              }
+            }
+          ]
+        }
+      },
+      "response": {
+        "status": 201,
+        "body": {
+          "batch_id": 37,
+          "state": "waiting",
+          "why": "Copied an invented kit-check note.",
+          "proposals": [
+            {
+              "id": 97,
+              "position": 0,
+              "table": "medical__kit_checks",
+              "status": "pending"
+            }
+          ],
+          "message": "1 suggestion is waiting for the household to review. Nothing changes until they accept it."
+        }
+      },
+      "review": {
+        "before": "Add to Kit checks: Car first aid kit · checked on 18 Nov 2026.",
+        "buttons": [
+          "Accept",
+          "Reject"
+        ],
+        "decision": "accept",
+        "result": "Added to Kit checks."
+      },
+      "after_review_request": {
+        "method": "GET",
+        "path": "/api/v1/batches/37"
+      },
+      "after_review_response": {
+        "status": 200,
+        "body": {
+          "id": 37,
+          "why": "Copied an invented kit-check note.",
+          "created_at": "2026-11-18T09:01:00Z",
+          "totals": {
+            "total": 1,
+            "pending": 0,
+            "accepted": 1,
+            "rejected": 0
+          },
+          "proposals": [
+            {
+              "id": 97,
+              "position": 0,
+              "table": "medical__kit_checks",
+              "status": "accepted",
+              "record_id": 2,
+              "reason": null
+            }
+          ]
+        }
+      },
+      "effect": "Only acceptance creates the check history. It does not change Stock supplies or the kit’s current Check again by date."
+    },
+    {
+      "number": 8,
+      "household": "garcia",
+      "job": "Important documents",
+      "helper_grant": [
+        "documents",
+        "stock"
+      ],
+      "look_up_first": [
+        "GET /api/v1/tables/stock__places/records/7 → Hall closet"
+      ],
+      "request": {
+        "method": "POST",
+        "path": "/api/v1/proposals",
+        "headers": {
+          "Authorization": "Bearer <key shown once in Settings>",
+          "Content-Type": "application/json"
+        },
+        "body": {
+          "request_key": "garcia-important-documents-20261118",
+          "why": "Copied an invented warranty reminder without a document number.",
+          "entries": [
+            {
+              "table": "documents__documents",
+              "values": {
+                "name": "Example appliance warranty",
+                "kind": "warranty",
+                "place": 7,
+                "renew_by": "2027-05-20"
+              }
+            }
+          ]
+        }
+      },
+      "response": {
+        "status": 201,
+        "body": {
+          "batch_id": 38,
+          "state": "waiting",
+          "why": "Copied an invented warranty reminder without a document number.",
+          "proposals": [
+            {
+              "id": 98,
+              "position": 0,
+              "table": "documents__documents",
+              "status": "pending"
+            }
+          ],
+          "message": "1 suggestion is waiting for the household to review. Nothing changes until they accept it."
+        }
+      },
+      "review": {
+        "before": "Add to Important documents: Example appliance warranty · Hallway › Hall closet · review or renew by 05/20/27.",
+        "buttons": [
+          "Accept",
+          "Reject"
+        ],
+        "decision": "accept",
+        "result": "Added to Important documents."
+      },
+      "after_review_request": {
+        "method": "GET",
+        "path": "/api/v1/batches/38"
+      },
+      "after_review_response": {
+        "status": 200,
+        "body": {
+          "id": 38,
+          "why": "Copied an invented warranty reminder without a document number.",
+          "created_at": "2026-11-18T09:01:00Z",
+          "totals": {
+            "total": 1,
+            "pending": 0,
+            "accepted": 1,
+            "rejected": 0
+          },
+          "proposals": [
+            {
+              "id": 98,
+              "position": 0,
+              "table": "documents__documents",
+              "status": "accepted",
+              "record_id": 4,
+              "reason": null
+            }
+          ]
+        }
+      },
+      "effect": "Only acceptance adds a generic document pointer. The helper has both Documents and Stock grants for the linked place; it never sees a private document number."
+    },
+    {
+      "number": 9,
+      "household": "taylor",
+      "job": "Drinking water basis",
+      "helper_grant": [
+        "stock"
+      ],
+      "look_up_first": [
+        "GET /api/v1/tables/stock__items/records/1 → 12 litres, drinking true",
+        "GET /api/v1/tables/stock__items/records/2 → 1 litre, drinking false"
+      ],
+      "request": {
+        "method": "GET",
+        "path": "/api/v1/attention",
+        "headers": {
+          "Authorization": "Bearer <key shown once in Settings>"
+        }
+      },
+      "response": {
+        "status": 200,
+        "body": {
+          "running_low": [],
+          "expiring": [],
+          "supplies": [
+            {
+              "table": "stock__items",
+              "label": "drinking water",
+              "counted": 12,
+              "unit": "litres",
+              "not_counted": 1
+            }
+          ],
+          "gaps": []
+        },
+        "status_note": "Illustrative minimal response for this job; /attention envelope and full fixture output must be confirmed after api.py merges."
+      },
+      "review": {
+        "before": "No suggestion is waiting; Review is unchanged.",
+        "buttons": [],
+        "decision": "none",
+        "result": "Nothing was added."
+      },
+      "effect": "The helper can say Taylor has 12 recorded drinkable litres and one litre excluded. It cannot change the Safe to drink answer or call the water safe without the household’s confirmation."
+    },
+    {
+      "number": 10,
+      "household": "taylor",
+      "job": "Places",
+      "helper_grant": [
+        "stock"
+      ],
+      "look_up_first": [
+        "GET /api/v1/tables/stock__places/records/7 → Outside › Bike shed"
+      ],
+      "request": {
+        "method": "POST",
+        "path": "/api/v1/proposals",
+        "headers": {
+          "Authorization": "Bearer <key shown once in Settings>",
+          "Content-Type": "application/json"
+        },
+        "body": {
+          "request_key": "taylor-places-20261118",
+          "why": "Copied an invented storage box from a paper stocktake.",
+          "entries": [
+            {
+              "table": "stock__places",
+              "values": {
+                "name": "Example blue box",
+                "inside": 7
+              }
+            }
+          ]
+        }
+      },
+      "response": {
+        "status": 201,
+        "body": {
+          "batch_id": 40,
+          "state": "waiting",
+          "why": "Copied an invented storage box from a paper stocktake.",
+          "proposals": [
+            {
+              "id": 100,
+              "position": 0,
+              "table": "stock__places",
+              "status": "pending"
+            }
+          ],
+          "message": "1 suggestion is waiting for the household to review. Nothing changes until they accept it."
+        }
+      },
+      "review": {
+        "before": "Add to Places: Example blue box · inside Outside › Bike shed.",
+        "buttons": [
+          "Accept",
+          "Reject"
+        ],
+        "decision": "accept",
+        "result": "Added to Places."
+      },
+      "after_review_request": {
+        "method": "GET",
+        "path": "/api/v1/batches/40"
+      },
+      "after_review_response": {
+        "status": 200,
+        "body": {
+          "id": 40,
+          "why": "Copied an invented storage box from a paper stocktake.",
+          "created_at": "2026-11-18T09:01:00Z",
+          "totals": {
+            "total": 1,
+            "pending": 0,
+            "accepted": 1,
+            "rejected": 0
+          },
+          "proposals": [
+            {
+              "id": 100,
+              "position": 0,
+              "table": "stock__places",
+              "status": "accepted",
+              "record_id": 8,
+              "reason": null
+            }
+          ]
+        }
+      },
+      "effect": "Only acceptance creates the place; its displayed full path becomes Outside › Bike shed › Example blue box."
+    }
+  ]
+}

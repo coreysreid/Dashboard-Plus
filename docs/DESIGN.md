@@ -414,6 +414,41 @@ counts = { more = "counted_more", less = "counted_less", note = "notes" }  # sto
   amount, use-by date and place; earlier stock in and out is linked to it, not
   replayed. A backup is made first (startup, decision 0050).
 
+### 5.8 One-step actions and date order
+
+A table can offer a one-press button on a record's page that sets a few fields
+(decision 0075):
+
+```toml
+[[tables.loans.actions]]
+key = "returned"                                     # in the address: /t/lent_out__loans/3/do/returned
+label = "Mark returned"                              # the button
+show_when = { status = "out" }                       # shown only while every filter matches
+set = { status = "returned", returned_on = "today" } # fixed values; "today" / "now" for dates and times
+done = "Marked as returned today."                   # the notice afterwards
+
+columns.returned_on = { type = "date", not_before = "lent_on" }
+```
+
+- All five action settings are needed. Checked when the module loads: `set`
+  and `show_when` name columns of this table; choices are real choices; values
+  fit the column; links, files, private columns and columns worked out from
+  other records (batch totals, amounts changed by stock in and out) can't be
+  set; private columns can't decide when a button shows; `set` must change a
+  `show_when` column, so the button goes away once pressed; and it must fill in
+  any field its values make `required_when`.
+- labels.toml can reword a declared action:
+  `actions.returned = { label = "Back now", done = "Marked as back." }`.
+- The button is a small POST form with the page's token, on the record's page
+  only (not the list). Saving goes through the ordinary change: every check,
+  history, batches and totals, in one transaction. If the record no longer
+  matches `show_when` (a double click or an old page), nothing changes and the
+  page says so.
+- `not_before` (on a date column, naming another date column of the same
+  table) refuses an earlier date when adding, editing or pressing an action:
+  "Returned on can't be before Lent on.", from the labels. The same day is
+  fine; a blank date is not compared.
+
 ## 6. Modules
 
 A module is a folder:
@@ -422,7 +457,8 @@ A module is a folder:
 modules/<name>/
   module.toml       name, version, description, core_api needed,
                     requires, outbound hosts
-  tables.toml       tables, columns, types, dropdown values, links
+  tables.toml       tables, columns, types, dropdown values, links,
+                    one-step actions (5.8)
   labels.toml       friendly names and form layout
   migrations/       numbered migration files for this module's own track
   sources.py        optional: pulls data in
@@ -579,7 +615,9 @@ number and the core can load both for a transition period.
   for a way out, the water shut-off, the power board and a smoke alarm (not
   gas, which many homes lack); a check is *due* on the date the household
   chose, never one worked out for it; an **Our home** sheet prints everything
-  with full place paths and no notes.
+  with full place paths and no notes. Each of the four lists also has an
+  optional private `access_details` box for alarm codes and key-safe numbers
+  (`sensitive`, shown only on Show, never in the sheet; decision 0077).
 - **Vehicles** (declarative; requires People and Household stock; shipped,
   decision 0058). Tables: vehicles (registration or plate number, marked
   `sensitive`; registration or vehicle tax due; who to call if it breaks
@@ -610,6 +648,13 @@ number and the core can load both for a transition period.
   gap asks where a job is done; smoke alarms and extinguishers stay in Home
   layout; a **Home care** sheet prints the jobs and dates without notes. No
   field holds alarm codes or how to get in.
+- **Vegetable garden** (declarative; requires Household stock; shipped,
+  decision 0076). Tables: beds (a link to `stock.places`), crops, plantings
+  (a name, bed, crop, planted on, quantity), harvests (a planting, a date, an
+  amount) and jobs (a due date and "Done?"). Behaviour: a job is "due" from two
+  weeks before its date, only while not done (`where` on `expiring`, decision
+  0072); one gap asks where a bed is; a **Garden plan** sheet prints beds,
+  plantings and jobs not done, without notes. No growing advice is stored.
 - **Things lent out** (declarative; requires People and Household stock;
   shipped, decision 0073). Table: loans (what was lent; an optional
   `stock.items` link that changes no count; the borrower, a link to

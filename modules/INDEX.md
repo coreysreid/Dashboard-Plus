@@ -5,6 +5,7 @@ numbered migrations. See docs/DESIGN.md section 6 for the module contract.
 | Entry | What it is | Open it when |
 |---|---|---|
 | documents/ | Where important papers are kept, whose they are and the review or renewal dates you choose; a review dates sheet | changing document records |
+| garden/ | Vegetable garden: beds at your places, crops, plantings, harvests and jobs with a due date; a Garden plan sheet | changing garden records |
 | home_care/ | Jobs around the home, where each is, who usually does it, last done and do again by; work done; a Home care sheet | changing home care jobs |
 | home_layout/ | Ways out, shut-offs, smoke alarms and safety equipment, meters, each at one of your places; an Our home sheet | changing home layout records |
 | lent_out/ | Things lent out: what, to whom (one of your People), lent on, due back and returned on; a Things still lent out sheet | changing loans |
