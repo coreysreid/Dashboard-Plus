@@ -1,6 +1,6 @@
 # 0067. The Agent API v1: local, bearer-only, module-scoped, and never private details
 
-- **Status:** Proposed — awaiting Corey's OK
+- **Status:** Accepted (Corey said yes on 2026-11-18, after a plain-words explanation)
 - **Date:** 2026-11-18
 - **Decided by:** Claude (technical decision delegated by Corey); needs Corey's plain-words OK because it changes a security rule
 - **Refines:** DESIGN sections 9 and 12; decision 0055
