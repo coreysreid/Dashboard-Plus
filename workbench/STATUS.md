@@ -76,6 +76,8 @@ the "Requests" table of docs/WORKSTREAMS.md.
 
 ## Messages to Lane A
 
+- **Batch 13 item 48, Agent API abuse cases:** Twenty-two ranked cases cover key loss, browser and local-program access, hidden modules, replay, Review text and flooding. Highest priority: cross-module link IDs and guessed-link validation can expose a module outside a helper grant. The plan also leaves read throttling, persistent secret text, bidi/instruction display and known-ungranted table enumeration open. See `workbench/drafts/agent_api/ABUSE_CASES.md`.
+
 - **Current print check:** All 80 available PDFs fit on one page with no extracted words outside the page, including Our home, Vehicles and First aid at home. Taylor Pets is off. See `workbench/reports/2026-11-18-print-check.md`.
 - **Current translation inventory:** 1,992 locations across 14 templates, six shipped modules and picker vocabularies; includes the private sheet warning and batch selection notes. See `workbench/reports/2026-11-18-translation-readiness.md`.
 - **Batch 12 item 41 test:** The solo Windows script now totals 60 minutes across eleven tasks, including a second batch, Our home, Vehicles and deliberate private Show checks. `workbench/drafts/corey_test/FEEDBACK.md` still gives paste-ready rows for `docs/BACKLOG.md`.
