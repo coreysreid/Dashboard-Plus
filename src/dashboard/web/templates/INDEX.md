@@ -19,3 +19,4 @@
 | helpers.html | Settings, Helpers: the helper list, the address, and the form that makes a key | changing the Helpers settings page |
 | helper_key.html | The one page that shows a new helper key, with a Copy button and a warning to keep it private | changing the new-key page |
 | review.html | Review suggestions: each helper's waiting suggestions with Accept and Reject | changing the Review page |
+| export.html | Settings, Export my records: what is in the export and the download button | changing the Export page |

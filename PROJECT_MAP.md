@@ -129,6 +129,7 @@ One record per decision, from `TEMPLATE.md`. Never deleted; reversed ones are ma
 | [0075](0075-one-step-actions-and-date-order.md) | One-step buttons declared in tables.toml (Mark returned), saved through the ordinary change path and refused when pressed twice; `not_before` keeps one date from coming before another | Accepted |
 | [0076](0076-garden-promoted.md) | Vegetable garden switched on from Lane B's draft: beds at your Places, job reminders only while not done, no growing advice | Accepted |
 | [0077](0077-home-layout-private-access-details.md) | Home layout gets a private "Codes or access details" box, hidden until Show and never printed | Accepted |
+| [0078](0078-export-my-records.md) | Export my records: one zip of spreadsheet files for the household, private details left out, text guarded against formulas, read from one moment | Accepted |
 | [TEMPLATE](TEMPLATE.md) | Blank record to copy for a new decision | recording a decision |
 
 ## docs/plans/  (summary: build plans for larger pieces of work, written before building)
@@ -419,6 +420,7 @@ Generate the next one with: python tools/make_migration.py vehicles --name <what
 | startup.py | Prepare the database at start-up: load modules, back up if needed, and migrate. | changing what happens at start-up |
 | helpers.py | Helpers the household has given a key to: making a key, checking it, and turning it off. | changing how helper keys work |
 | proposals.py | Suggestions from helpers: checked, kept waiting in their own table, and added only when a person accepts. | changing suggestions, limits or accepting |
+| export.py | Export my records: one zip with a spreadsheet file for every table, a manifest and a plain-words README. | changing what the export contains |
 
 ## src/dashboard/core/migrations/  (summary: the core's numbered database changes; never edit a released one)
 Add a new file with the next number instead of changing an old one.
@@ -444,6 +446,7 @@ Add a new file with the next number instead of changing an old one.
 | api.py | The helper API (/api/v1): programs the household gave a key to can look at records and suggest new ones. | changing what helpers can read or send |
 | review.py | The Review screen: helpers' suggested new records, waiting for a person to accept or reject each one. | changing the Review page |
 | helper_settings.py | Settings, Helpers: give an assistant a key, choose what it may do, and turn its access off. | changing the Helpers settings page |
+| export_page.py | Settings, Export my records: a page and a button that downloads a zip of spreadsheet files. | changing the Export page |
 
 ## src/dashboard/web/templates/  (summary: HTML pages; base.html holds the shared look)
 | Entry | What it is | Open it when |
@@ -466,6 +469,7 @@ Add a new file with the next number instead of changing an old one.
 | helpers.html | Settings, Helpers: the helper list, the address, and the form that makes a key | changing the Helpers settings page |
 | helper_key.html | The one page that shows a new helper key, with a Copy button and a warning to keep it private | changing the new-key page |
 | review.html | Review suggestions: each helper's waiting suggestions with Accept and Reject | changing the Review page |
+| export.html | Settings, Export my records: what is in the export and the download button | changing the Export page |
 
 ## tests/  (summary: automatic tests; synthetic data only)
 How to run them is in AGENTS.md.
@@ -510,6 +514,7 @@ How to run them is in AGENTS.md.
 | test_repofiles.py | Tests for the shared list of repository files, including during a merge with conflicts. | a tool counts a file twice |
 | test_repository.py | Tests that this repository passes its own checks. | CI fails on the repo itself |
 | test_helper_*.py | Tests for helpers: keys, suggestions waiting for a person, the /api/v1 door, and the Settings and Review screens | changing helpers, the helper API or Review |
+| test_export.py | Tests for Export my records: every table of an example household, private details, formula safety and the download. | changing the export |
 
 ## tools/  (summary: scripts that check, lock and build the project; run by CI)
 | Entry | What it is | Open it when |

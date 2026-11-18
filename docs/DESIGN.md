@@ -1119,11 +1119,22 @@ only to choose which pack applies; nothing is looked up online.
   date of the last good copy (decision 0046).
 - **Restore.** One click on the Backups screen. Restoring first backs up the
   current state, so a restore can be undone too.
-- **Export everything.** One click writes a folder: one CSV per table (with
-  dropdown labels and keys, link columns resolved to readable names), the
-  attachments, the notes and annotations as plain text/Markdown, and a
-  `README.txt` explaining each file. Nothing in it requires this program.
-
+- **Export my records** (decision 0078, built). Settings has a page with one
+  button that downloads `dashboard-plus-export-YYYY-MM-DD.zip`: one CSV per
+  installed table, a `manifest.json` (app and module versions, tables, row
+  counts, every column's heading and internal name, and which columns were
+  left out as private, by label only) and a `README.txt` in plain words.
+  Headings are the household's labels; links show the record's name (the full
+  path for nested places) and its id in a separate column; dates are ISO,
+  money is in whole units, yes/no is Yes/No and choices are their labels.
+  Deleted records are left out unless a checkbox asks for them, and then get a
+  "Deleted on" column. **Private (`sensitive`) columns and `data/secrets/` are
+  never exported**; the export is not the place for them, and it is a copy for
+  spreadsheets, not a backup. Text cells that begin with `=`, `+`, `-`, `@`,
+  a tab or a line return get a leading apostrophe so a spreadsheet cannot run
+  them. It is read inside one read transaction, so every file is from the same
+  moment. Not built yet: writing a folder with attachments, notes and the
+  change history, and a way to export private details deliberately.
 ## 12. Security and privacy
 
 - **Local only.** The web server binds to `127.0.0.1`, never `0.0.0.0`.

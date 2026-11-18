@@ -191,6 +191,7 @@ def create_app(shutdown_token: str, on_shutdown: Callable[[], None], report=None
         return render_template("report.html", path=path)
 
     from dashboard.web.api import helper_api
+    from dashboard.web.export_page import export_pages
     from dashboard.web.helper_settings import helper_settings
     from dashboard.web.pages import pages
     from dashboard.web.review import review_pages
@@ -200,6 +201,7 @@ def create_app(shutdown_token: str, on_shutdown: Callable[[], None], report=None
     app.register_blueprint(sheet_pages)
     app.register_blueprint(setup_pages)
     app.register_blueprint(helper_settings)
+    app.register_blueprint(export_pages)
     app.register_blueprint(review_pages)
     app.register_blueprint(helper_api)
 

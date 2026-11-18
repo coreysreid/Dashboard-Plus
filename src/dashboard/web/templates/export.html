@@ -1,0 +1,36 @@
+{% extends "base.html" %}
+{% block title %}Export my records · Dashboard Plus{% endblock %}
+{% block body %}
+<p class="muted"><a href="/settings">Settings</a></p>
+<h1>Export my records</h1>
+<p class="lead">Get a copy of your records to open in a spreadsheet such as Excel or Google Sheets.</p>
+
+<div class="card">
+  <h2 style="margin-top:0">What you get</h2>
+  <p>One download (a zip file) with a spreadsheet file for each list below, a short <code>README.txt</code> that explains the
+  columns, and a <code>manifest.json</code> for anyone who wants exact names.</p>
+  {% if tables %}
+  <ul>{% for t in tables %}<li>{{ t.title }} <span class="muted">({{ t.module }})</span></li>{% endfor %}</ul>
+  {% else %}<p class="muted">Nothing is switched on yet, so there is nothing to export.</p>{% endif %}
+</div>
+
+<div class="card">
+  <h2 style="margin-top:0">Private details are left out</h2>
+  <p>Anything you marked private, such as medical notes or access codes, is not in the export. The program's own keys and
+  passwords are never in it either. Everything else is: names, phone numbers, addresses and where things are kept. Keep the
+  file somewhere private, and do not email it.</p>
+</div>
+
+<div class="card">
+  <h2 style="margin-top:0">This is not a backup</h2>
+  <p>An export is a copy for reading and sorting in a spreadsheet. You cannot restore Dashboard Plus from it. Your backups
+  are made for you automatically; see <a href="/settings">Settings</a>, section Backups.</p>
+</div>
+
+<form method="post" action="/settings/export" class="record">
+  <input type="hidden" name="_csrf" value="{{ csrf_token }}">
+  <div><label style="font-weight:400"><input type="checkbox" name="include_deleted" value="yes"> Also include records I deleted</label>
+    <p class="help">They get an extra column, "Deleted on". Left off, deleted records stay out.</p></div>
+  <div class="actions"><button type="submit">Download my records</button> <a href="/settings">Cancel</a></div>
+</form>
+{% endblock %}
