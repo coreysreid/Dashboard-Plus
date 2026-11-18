@@ -118,6 +118,7 @@ marked Superseded. Each lists downsides, cost to undo, and the sign it was wrong
 | [0063](0063-home-care-promoted.md) | Home care switched on from Lane B's draft: jobs at your places, done by your People, on dates you type; no repeats invented | Accepted |
 | [0064](0064-real-browser-check.md) | A real-browser check clicks through setup, dates, stock in, private details and closing in Chromium (Linux CI job); a refused save keeps a private detail | Accepted |
 | [0065](0065-agpl-licence.md) | Licence changed to GNU AGPL v3 or later (from MIT) | Accepted |
+| [0070](0070-stocktake-corrections.md) | Count this batch saves the difference as one stocktake correction in Stock in and out; never the count on top; an out-of-date review is refused | Accepted |
 | [TEMPLATE](TEMPLATE.md) | Blank record to copy for a new decision | recording a decision |
 
 ## docs/plans/  (summary: build plans for larger pieces of work, written before building)
@@ -386,6 +387,7 @@ Add a new file with the next number instead of changing an old one.
 | app.py | Build the Flask web application and its local-only protections. | changing sign-in, protections or reports |
 | pages.py | Pages built from module declarations: the record grid, add and edit forms, and history. | changing the grid or forms |
 | setup.py | The first-run wizard and the settings page: who lives here, the home, modules and backups. | changing setup questions or settings |
+| count.py | Count this batch: a stocktake of one batch, reviewed and then saved as one stocktake correction. | changing the stocktake screens |
 | home.py | Group the home page by area: each module's main lists shown large, its other lists as one line of links. | changing how the home page is grouped or ordered |
 | sheets.py | One-page printable sheets declared by modules, such as the emergency sheet. | changing printable sheets |
 | display.py | Turn declared tables and stored values into friendly labels, form fields and text. | changing how values look |
@@ -397,6 +399,7 @@ Add a new file with the next number instead of changing an old one.
 | base.html | Shared layout, colours (light and dark), header and footer | changing the overall look |
 | home.html | Home page: days of cover, needs attention, tables with counts, backup and data file status | changing the home screen |
 | attention.html | Running low, expiring soon, days of cover with the working shown, and gaps worth filling in | changing the attention page |
+| count.html | Count this batch: the count, its review and what was saved | changing the stocktake wording |
 | grid.html | A table's records, a page at a time, sortable | changing the list of records |
 | rows.html | One page of grid rows (also loaded as you scroll) | changing a row |
 | form.html | Add and edit forms, delete and restore, and history | changing the form |
@@ -431,6 +434,7 @@ How to run them is in AGENTS.md.
 | test_suggest.py | Tests for suggestions while typing: matching, the household's own records first, and module catalogues. | changing picking from a list |
 | test_dates.py | Tests for dates the household's way (Lane B's stock lots acceptance checks 8 to 11, decision 0052). | changing how dates are typed or shown |
 | test_stock_batches.py | Tests for batches: layered use-by dates in Household stock (decision 0053, DESIGN.md 5.7). | changing batches, stock in and out or use-by warnings |
+| test_stocktake_corrections.py | Tests for stocktake corrections: "Count this batch" saves one correction, never the count on top (decision 0070). | changing Count this batch or stocktake corrections |
 | test_data_safety.py | Tests for the data-safety fixes from the November 2026 review: restore, stock counts, decimals and backups. | changing delete, restore, stock counts or backups |
 | test_robustness.py | Tests for the robustness fixes from the November 2026 review: modules, switching off, long lists, privacy. | changing module loading, settings or long lists |
 | test_adjusts.py | Tests for records that change a linked quantity (stock in and out), and the checks on `adjusts`. | changing stock in and out |
@@ -464,6 +468,6 @@ How to run them is in AGENTS.md.
 | load_example.py | Load a made-up example household into an empty data folder, for demos, screenshots and testing. | demonstrating or testing with realistic data |
 | make_screenshots.py | Make the example screenshots: run each example household through every stage of using the dashboard. | the screens changed and the gallery needs remaking |
 | screenshots.js | Browser steps for make_screenshots.py (Node and Playwright) | changing how screenshots are taken |
-| browser_check.py | Click through the real dashboard in Chromium (setup, dates, stock in, private details, closing) and fail loudly. | a screen or its browser code changed |
+| browser_check.py | Click through the real dashboard in Chromium (setup, dates, stock in, stocktake, private details, closing) and fail loudly. | a screen or its browser code changed |
 | browser_check.js | Browser steps for browser_check.py (Node and Playwright): what is clicked and checked | changing what the browser check clicks |
 | make_project_map.py | Build PROJECT_MAP.md from every INDEX.md in the repository. | changing the map format |

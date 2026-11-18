@@ -221,6 +221,7 @@ def input_value(column: Column, value):
 
 BLANK_STARTS_NEW = "Start a new batch"
 BLANK_KEEPS = "Keep the batch it has"
+BLANK_COUNTED = "Choose the batch you counted"
 
 
 def owner_field(records: Records, info: TableInfo, column: Column, on_form: list[Column]) -> tuple[str, str] | None:
@@ -264,7 +265,11 @@ def blank_choice(records: Records, info: TableInfo, column: Column, on_form: lis
         date_label = column_label(target, target.table.columns[rule["oldest_first"]]).lower()
         takes = f"Use the batch with the earliest {date_label} date"
     adds, takes = own.get("adds", BLANK_STARTS_NEW), own.get("takes", takes)
-    return direction.name, {c.key: adds if c.key in rule["adds"] else takes for c in direction.choices}
+    words = {c.key: adds if c.key in rule["adds"] else takes for c in direction.choices}
+    for key in (rule.get("counts") or {}).values():  # a stocktake correction always names its batch
+        if key in words:
+            words[key] = BLANK_COUNTED
+    return direction.name, words
 
 
 def build_fields(records: Records, info: TableInfo, values: dict, errors: dict, from_form: bool,

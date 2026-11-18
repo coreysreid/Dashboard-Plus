@@ -29,8 +29,9 @@ MODULE_KEYS = ("name", "title", "version", "description", "core_api", "kind", "r
 MODULE_REQUIRED = ("name", "title", "version", "description", "core_api", "kind")
 TABLE_KEYS = ("title", "description", "columns", "watch", "adjusts", "parent", "total", "record_name")
 ADJUST_KEYS = ("link", "quantity", "amount", "direction", "adds")
-# Optional, for batches (DESIGN.md 5.7): the record a batch belongs to, and how to pick or start one.
-ADJUST_BATCH_KEYS = ("belongs_to", "new_batch", "oldest_first")
+# Optional, for batches (DESIGN.md 5.7): the record a batch belongs to, how to pick or start one,
+# and the two reasons a stocktake count records its difference with (decision 0070).
+ADJUST_BATCH_KEYS = ("belongs_to", "new_batch", "oldest_first", "counts")
 TOTAL_KEYS = ("link", "amount", "into", "earliest", "starts_from")
 WATCH_KEYS = ("running_low", "expiring", "supply", "gaps")
 GAP_KEYS = ("missing", "none", "where", "message")
@@ -421,8 +422,20 @@ def _check_adjusts(file: str, table: Table, tables: dict[str, Table], problems: 
             problems.append(f"{where}: 'oldest_first' must name a date column of '{link.to}'.")
             return {}
         rule["oldest_first"] = oldest
-    elif any(k in raw for k in ("new_batch", "oldest_first")):
-        problems.append(f"{where}: 'new_batch' and 'oldest_first' need 'belongs_to'.")
+        if "counts" in raw:  # a stocktake count of one batch (decision 0070)
+            counts = raw["counts"]
+            note = counts.get("note") if isinstance(counts, dict) else None
+            if not isinstance(counts, dict) or not {"more", "less"} <= set(counts) <= {"more", "less", "note"} or \
+                    counts.get("more") not in adds or counts.get("less") not in keys or counts["less"] in adds or \
+                    (note is not None and (note not in columns or columns[note].type not in ("text", "longtext"))):
+                problems.append(f"{where}: 'counts' names the reason for counting more than recorded (one that "
+                                f"adds), the reason for counting less (one that takes away) and, if wanted, a "
+                                f"text column for the count, like "
+                                f"{{ more = \"counted_more\", less = \"counted_less\", note = \"notes\" }}.")
+                return {}
+            rule["counts"] = {"more": counts["more"], "less": counts["less"], "note": note}
+    elif any(k in raw for k in ("new_batch", "oldest_first", "counts")):
+        problems.append(f"{where}: 'new_batch', 'oldest_first' and 'counts' need 'belongs_to'.")
         return {}
     return rule
 

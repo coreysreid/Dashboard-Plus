@@ -21,7 +21,7 @@ columns.expires = { label = "Use by", help = "For several use-by dates, add the 
 empty = "Batches appear when you add an item or record stock in. Each has its own amount, use-by date and place."
 form = ["item", "quantity", "expires", "place", "notes"]
 list = ["item", "quantity", "expires", "place"]
-columns.quantity = { label = "How many", help = "In the item's own unit. After a stocktake, change it to what you counted." }
+columns.quantity = { label = "How many", help = "In the item's own unit. After a stocktake, use Count this batch on the saved batch instead, so the difference shows in Stock in and out." }
 columns.expires = { label = "Use by" }
 columns.place = { label = "Where it is" }
 

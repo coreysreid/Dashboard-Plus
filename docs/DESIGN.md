@@ -357,12 +357,23 @@ link = "lot"
 belongs_to = "item"
 new_batch = { expires = "expires", place = "place" }
 oldest_first = "expires"
+counts = { more = "counted_more", less = "counted_less", note = "notes" }  # stocktake (decision 0070)
 # plus quantity, amount, direction and adds as in 5.3
 ```
 
 - The item's amount and Use by are worked out, never typed over: changing them
   directly is refused with "is worked out from its batches". A stocktake
   correction changes the batch, and the item follows, both in history.
+- **Count this batch** (decision 0070), on a batch whose table is the target of
+  an `adjusts` rule with `counts`: the person types what they counted; a review
+  says "You counted 5 tins; 3 tins are recorded here. This adds 2 tins as a
+  stocktake correction"; Save records one movement of the difference with the
+  `more` or `less` reason, the batch, the item and a note of both amounts. The
+  count is never added on top. Saving compares the amount the review showed with
+  the batch now and refuses an out-of-date review; a batch that already holds
+  the count saves nothing (so a second click adds nothing). A `counts` reason
+  with no batch chosen is refused. Undo, edit and restore move only the
+  difference, as for any movement. The item total has no count form.
 - Stock in with no batch chosen starts a new batch with the use-by date and
   place given. Adding to an existing batch is an explicit choice of that batch.
 - Using some with no batch chosen takes from the batch with the earliest known

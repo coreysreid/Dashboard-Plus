@@ -99,9 +99,14 @@
 {% for b in batches %}
 <h2>{{ b.title }}</h2>
 <p><strong>{{ b.summary }}</strong></p>
-{% if b.rows %}<ul>{% for r in b.rows %}<li><a href="{{ r.href }}">{{ r.name }}</a></li>{% endfor %}</ul>
+{% if b.rows %}<ul>{% for r in b.rows %}<li><a href="{{ r.href }}">{{ r.name }}</a>{% if r.count %} · <a href="{{ r.count }}" aria-label="Count {{ r.name }}">Count</a>{% endif %}</li>{% endfor %}</ul>
 {% else %}<p class="muted">None recorded yet.</p>{% endif %}
 {% endfor %}
+{% if count_href %}
+<h2>Stocktake</h2>
+<p>Counted this batch? Record what you found; the difference is saved as a stocktake correction in Stock in and out.</p>
+<div class="actions"><a class="button" href="{{ count_href }}">Count this batch</a></div>
+{% endif %}
 {% if related %}
 <div class="actions">{% for r in related %}<a class="button quiet" href="{{ r.href }}">Add to {{ r.label | lower }}</a>{% endfor %}</div>
 {% endif %}
