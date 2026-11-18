@@ -796,6 +796,22 @@ credited to `agent:<helper>`, marked `edited_by_person`; if it can no longer be
 added it stays waiting with the reason. Rejected rows stay in history. The
 `review_status` column is not used by helpers.
 
+### Importing from a spreadsheet
+
+Rows from a CSV file wait on the same Review screen (decision 0080). Settings,
+*Import from a spreadsheet* (`/settings/import`): choose a list, upload a CSV
+(UTF-8, comma or semicolon, up to 1 MB and 2,000 rows), match each column to a
+field (guessed from the headings by label or key; any can be changed or
+skipped), and see a dry run: "38 rows ready, 2 need fixing" with the plain
+problem for each row by its spreadsheet row number. The dry run converts each
+cell (dates the household's way or ISO; links by name, places by full path)
+and then runs the same `check_create` as a helper's suggestion. *Send to
+Review* stages the ready rows as one batch with `kind = 'import'`, no helper
+and `source_name` set to the file's name; each row keeps its `source_row`.
+Accepting creates the record credited to `import:<file name>`. Helpers never
+see import batches. The file is read in memory and never written to disk;
+private (sensitive) columns cannot be imported.
+
 ### Inbox
 
 The **Inbox** holds unsorted items: a photo, a pasted note, a forwarded email's
@@ -1105,8 +1121,8 @@ only to choose which pack applies; nothing is looked up online.
 ## 11. Audit, backup, export
 
 - **Audit.** `core__audit(id, at, actor, action, table, record_id, before,
-  after, batch_id)`. The actor is `person`, `agent:<name>`, `module:<name>` or
-  `system`. Every write goes through core services, so every write is audited.
+  after, batch_id)`. The actor is `person`, `agent:<name>`, `import:<file>`,
+  `module:<name>` or `system`. Every write goes through core services, so every write is audited.
   A history panel on each record shows what changed.
 - **Undo.** Undo reverses a person's last change, or an agent's batch,
   using the audit before/after. Undo is itself audited.

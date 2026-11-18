@@ -39,6 +39,10 @@ is new: keep a copy of anything important somewhere else too. See
   Settings so it can look at the parts of your records you choose and suggest
   new ones. Nothing is added until you accept it on the Review page. Private
   details are never shared with helpers.
+- **Import from a spreadsheet:** bring rows from a CSV file into any list
+  (Settings). You see which rows are ready and what is wrong with the rest
+  before anything is sent, and nothing is added until you accept it on the
+  Review page.
 - **Automatic backups**, every day and every time you close it safely, and
   **Restore from a backup** in Settings: check a backup and compare it with
   now, put it back, and undo that if it was the wrong one.

@@ -1,4 +1,4 @@
-"""The Review screen: helpers' suggested new records, waiting for a person to accept or reject each one."""
+"""The Review screen: helpers' suggested new records and imported rows, waiting for a person to accept or reject each one."""
 from __future__ import annotations
 
 from flask import Blueprint, current_app, redirect, render_template, request, url_for
@@ -74,6 +74,10 @@ def _message(args) -> tuple[str, str] | None:
     if done == "rejected_many":
         n = count("count")
         return "notice", f"Rejected {n} suggestion{'' if n == 1 else 's'}. Nothing was added."
+    if done == "imported":
+        n = count("count")
+        return "notice", (f"Sent {n} row{'' if n == 1 else 's'} from your spreadsheet to Review. Nothing is added to "
+                          f"{title} until you accept {'it' if n == 1 else 'them'}.")
     if done == "cannot":
         return "problem", "That suggestion could not be added. The reason is shown on it below."
     return ("notice", MESSAGES[done]) if done in MESSAGES else None

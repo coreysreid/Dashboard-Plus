@@ -2,19 +2,24 @@
 {% block title %}Review · Dashboard Plus{% endblock %}
 {% block body %}
 <h1>Review suggestions</h1>
-<p class="lead">Helpers can suggest new records. Nothing is added to your records until you accept it.</p>
+<p class="lead">Helpers can suggest new records, and you can <a href="/settings/import">import rows from a spreadsheet</a>. Nothing is added to your records until you accept it.</p>
 {% if message %}<p class="{{ message[0] }}" role="status">{{ message[1] }}</p>{% endif %}
 {% if not batches %}
 <p class="card">No suggestions to review.</p>
 {% endif %}
 {% for b in batches %}
 <section class="card" aria-labelledby="batch-{{ b.id }}">
+  {% if b.kind == "import" %}
+  <h2 id="batch-{{ b.id }}" style="margin-top:0">{{ b.helper }} · {{ b.proposals | length }} row{{ "" if b.proposals | length == 1 else "s" }} waiting</h2>
+  <p class="muted" style="margin:.2rem 0">You imported these rows from the spreadsheet <bdi>{{ b.source_name }}</bdi> on {{ b.when }}. Check them before you accept: each is added as a new record.</p>
+  {% else %}
   <h2 id="batch-{{ b.id }}" style="margin-top:0">{{ b.helper }} · {{ b.proposals | length }} suggestion{{ "" if b.proposals | length == 1 else "s" }}</h2>
   <p class="muted" style="margin:.2rem 0">Suggested {{ b.when }}. The reason and the values below were written by {{ b.helper }}, not by Dashboard Plus: check them before you accept.</p>
   <figure class="helper-text" style="margin:.4rem 0">
     <figcaption class="muted">{{ b.helper }} says why:</figcaption>
     <blockquote style="margin:.2rem 0;padding:.3rem .8rem;border-left:3px solid var(--line);white-space:pre-line"><bdi>{{ b.why }}</bdi></blockquote>
   </figure>
+  {% endif %}
   {% if b.helper_off %}<p class="muted">This helper's access is off. Its earlier suggestions still need your decision.</p>{% endif %}
   <ul style="list-style:none;padding:0;margin:1rem 0">
   {% for p in b.proposals %}
@@ -22,7 +27,7 @@
       {% if p.text.off %}
       <p style="margin:0">This is for {{ p.text.module }}, which is switched off.</p>
       {% else %}
-      <p style="margin:0">{{ b.helper }} suggests adding to <strong>{{ p.text.table }}</strong>: <span class="helper-text">{% for label, text in p.text.parts %}{{ label }}: <bdi>{{ text }}</bdi>{% if not loop.last %} · {% endif %}{% endfor %}</span></p>
+      <p style="margin:0">{% if b.kind == "import" %}Row {{ p.source_row }} would add to{% else %}{{ b.helper }} suggests adding to{% endif %} <strong>{{ p.text.table }}</strong>: <span class="helper-text">{% for label, text in p.text.parts %}{{ label }}: <bdi>{{ text }}</bdi>{% if not loop.last %} · {% endif %}{% endfor %}</span></p>
       {% endif %}
       {% if p.reason %}<p class="problem" role="alert" style="margin:.4rem 0">{{ p.reason }}</p>{% endif %}
       <div class="actions" style="margin:.4rem 0 0">
