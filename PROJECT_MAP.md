@@ -113,6 +113,7 @@ marked Superseded. Each lists downsides, cost to undo, and the sign it was wrong
 | [0059](0059-private-details-only-when-asked.md) | Private details sent to the screen only when the person asks (lists, records, private sheets) | Accepted |
 | [0060](0060-garden-example-outside-installed-modules.md) | Keep the worked garden outside installed modules | Accepted |
 | [0061](0061-public-reporting-and-contribution-rules.md) | Public contribution and private security reporting routes | Accepted |
+| [0064](0064-real-browser-check.md) | A real-browser check clicks through setup, dates, stock in, private details and closing in Chromium (Linux CI job); a refused save keeps a private detail | Accepted |
 | [TEMPLATE](TEMPLATE.md) | Blank record to copy for a new decision | recording a decision |
 
 ## docs/releases/  (summary: release checks, one file per milestone)
@@ -397,6 +398,7 @@ How to run them is in AGENTS.md.
 | test_module_*.py | Tests that run a real module end to end, one file per module | changing a module |
 | test_workbench_drafts.py | Check every draft module in workbench/drafts: it loads, its migrations match, and it starts cleanly. | a draft module fails |
 | test_web.py | Tests for the screens: sign-in by launch link, grid paging, forms, history and reports. | changing a screen |
+| test_browser_check.py | Run the real-browser check (tools/browser_check.py) when Node, Playwright and Chromium are here; skip otherwise. | changing a screen or its browser code |
 | test_main.py | Tests for the command-line entry point and its plain-language messages. | changing the command line |
 | test_home_page.py | Tests for the grouped home page: one group per area, main lists large, other lists as links, all reachable. | changing the home page or `home` in labels.toml |
 | test_build_portable.py | Tests for the portable Windows build, using a stand-in for the Python download. | changing the build |
@@ -419,4 +421,6 @@ How to run them is in AGENTS.md.
 | load_example.py | Load a made-up example household into an empty data folder, for demos, screenshots and testing. | demonstrating or testing with realistic data |
 | make_screenshots.py | Make the example screenshots: run each example household through every stage of using the dashboard. | the screens changed and the gallery needs remaking |
 | screenshots.js | Browser steps for make_screenshots.py (Node and Playwright) | changing how screenshots are taken |
+| browser_check.py | Click through the real dashboard in Chromium (setup, dates, stock in, private details, closing) and fail loudly. | a screen or its browser code changed |
+| browser_check.js | Browser steps for browser_check.py (Node and Playwright): what is clicked and checked | changing what the browser check clicks |
 | make_project_map.py | Build PROJECT_MAP.md from every INDEX.md in the repository. | changing the map format |
