@@ -34,3 +34,4 @@ expected, actual, severity (blocker, important, minor), suggested change.
 | 2026-11-18-translation-inventory.csv | 1,983 literal locations, picker names and search aliases. | extracting locale messages |
 | 2026-11-18-wording-consistency.md | Exact replacement table across six shipped modules. | polishing household words |
 | 2026-11-18-wording-inventory.csv | 472 module strings with current and proposed words. | applying wording replacements |
+| 2026-11-18-sensitive-detail-recheck.md | Decision 0055 verification and remaining private-detail findings. | reviewing privacy after security fixes |
