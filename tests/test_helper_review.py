@@ -120,7 +120,7 @@ class ReviewScreenTests(TempDirTestCase):
         self.assertIn("Receipt helper · 1 suggestion", page)
         self.assertIn("Why: Copied from Saturday&#39;s receipt", page)
         self.assertRegex(page, r"Add to <strong>Stock in and out</strong>: Item: Kidney beans.* · Reason: Bought or added")
-        self.assertIn("How many: 4", page)
+        self.assertIn("Amount to add or use: 4", page)
         self.assertIn("Accept", page)
         self.assertIn("Reject", page)
 

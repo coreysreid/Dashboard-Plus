@@ -5,7 +5,7 @@
 [tables.loans]
 title = "Things lent out"
 description = "Each thing you lent, who borrowed it, when it is due back and when it came back."
-record_name = "{name}, lent to {borrower}"
+record_name = "{name}[, lent to {borrower}]"
 columns.name = { type = "text", required = true }
 columns.stock_item = { type = "link", to = "stock.items", on_delete = "clear" }
 columns.borrower = { type = "link", to = "people.people", required = true, on_delete = "restrict" }

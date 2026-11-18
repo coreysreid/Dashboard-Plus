@@ -386,3 +386,31 @@ class SuggestingTests(ApiTestCase):
                 self.assertIn(response.status_code, (404, 405))
         self.assertEqual(self.store.get("demo__items", self.item)["name"], "Torch")
         self.assertEqual(self.conn.execute("SELECT status FROM core__proposals").fetchone()[0], "pending")
+
+
+class OtherPartsStayHiddenTests(TempDirTestCase):
+    """A helper given one part never learns names from a part it was not given (decision 0067)."""
+
+    def test_a_loan_helper_never_sees_who_borrowed_it(self):
+        for name in ("people", "stock", "lent_out"):
+            shutil.copytree(ROOT / "modules" / name, self.tmp / "modules" / name)
+        data = self.tmp / "data"
+        report = startup.prepare(data, self.tmp / "modules")
+        self.assertEqual(report.module_problems, {})
+        conn = db.connect(data / "dashboard.db")
+        self.addCleanup(conn.close)
+        settings.put(conn, "setup.done", True)
+        store = records.Records(conn, records.build_registry(report.loaded))
+        borrower = store.create("people__people", {"name": "Robin Example"})
+        store.create("lent_out__loans", {"name": "Ladder", "borrower": borrower, "lent_on": "2026-01-01",
+                                         "due_back": "2026-01-02", "status": "out"})
+        _, key = helpers.issue(conn, data, "Loans helper", "read", ["lent_out"])
+        app = create_app("shutdown-token", lambda: None, report, data_dir=data, session_key="session-key")
+        app.config["PORT"] = PORT
+        reply = app.test_client().get("/api/v1/attention", base_url=BASE, headers={"Authorization": f"Bearer {key}"})
+        self.assertEqual(reply.status_code, 200)
+        body = reply.get_data(as_text=True)
+        self.assertIn("Ladder", body)
+        self.assertNotIn("Robin", body)
+        self.assertNotIn("lent to", body)
+        self.assertEqual(reply.get_json()["gaps"], [])  # the borrower's phone is in People, not this helper's part

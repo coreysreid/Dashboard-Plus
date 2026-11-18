@@ -266,6 +266,8 @@ def _show(info: TableInfo, registry: dict[str, TableInfo], conn: sqlite3.Connect
     if col.type == "link":
         target = registry.get(schema.target_table(info.module.name, col))
         row = conn.execute(f"SELECT * FROM {target.name} WHERE id = ?", (value,)).fetchone() if target else None
+        if target is None:
+            return "(in another list)"  # a part this reader may not see: never its name (decision 0067)
         return _name(target, row) if row is not None else "(deleted)"
     if col.type in ("integer", "decimal", "measure"):
         return _number(value)
