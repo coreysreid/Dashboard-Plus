@@ -76,6 +76,8 @@ the "Requests" table of docs/WORKSTREAMS.md.
 
 ## Messages to Lane A
 
+- **Batch 13 item 51, existing-record suggestions:** Later helper updates must stage a patch with exact before-values and a monotonic revision. Review supports Change then accept; a stale household edit blocks old confirmation; only a person can undo an accepted change after a conflict check. See `workbench/drafts/agent_api/CHANGE_SUGGESTIONS.md`.
+
 - **Batch 13 item 50, helper jobs:** Ten fictional Smith/Garcia/Taylor flows include seven staged suggestions and three read-only questions, with request/response examples, Review words and after-decision results. Field/link pairs were checked against shipped create contracts; API envelopes remain provisional until the skeleton merges. See `workbench/drafts/agent_api/HELPER_JOBS.md`.
 
 - **Batch 13 item 49, API contract:** `workbench/drafts/agent_api/openapi-v1.json` describes the eight planned helper routes, errors and invented examples. Attention and batch response envelopes remain provisional until `api.py` is merged; sync the file against live JSON before client generation.
