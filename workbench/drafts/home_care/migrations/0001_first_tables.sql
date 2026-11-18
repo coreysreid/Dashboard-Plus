@@ -13,11 +13,13 @@ CREATE TABLE home_care__jobs (
     deleted_at TEXT,
     name TEXT,
     kind TEXT,
-    place TEXT,
+    place INTEGER REFERENCES stock__places(id) ON DELETE RESTRICT,
     last_done TEXT,
     next_due TEXT,
     notes TEXT
 );
+
+CREATE INDEX home_care__jobs__place__idx ON home_care__jobs(place);
 
 CREATE INDEX home_care__jobs__last_done__idx ON home_care__jobs(last_done);
 
