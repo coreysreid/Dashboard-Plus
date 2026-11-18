@@ -27,3 +27,5 @@ expected, actual, severity (blocker, important, minor), suggested change.
 | 2026-11-18-print-matrix.csv | 84 route and PDF combinations, four expected unavailable. | reproducing print results |
 | 2026-11-18-translation-readiness.md | Screen-grouped extraction plan including Home layout and Vehicles. | preparing other languages |
 | 2026-11-18-translation-inventory.csv | 1,983 literal locations, picker names and search aliases. | extracting locale messages |
+| 2026-11-18-wording-consistency.md | Exact replacement table across six shipped modules. | polishing household words |
+| 2026-11-18-wording-inventory.csv | 472 module strings with current and proposed words. | applying wording replacements |
