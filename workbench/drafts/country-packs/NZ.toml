@@ -17,6 +17,11 @@ name = "National Emergency Management Agency"
 scope = "national"
 source = { url = "https://www.civildefence.govt.nz/about/what-we-do", checked = "2026-11-16" }
 
+[[body]]
+name = "Local Civil Defence Emergency Management groups"
+scope = "16 CDEM areas; choose the household's own group"
+source = { url = "https://www.civildefence.govt.nz/about/contact-us/find-your-emergency-management-committee", checked = "2026-11-17" }
+
 [water]
 amount_per_person_per_day = 3
 unit = "litres"
@@ -42,4 +47,24 @@ source = { url = "https://getready.govt.nz/emergency/", checked = "2026-11-16" }
 name = "tsunami"
 scope = "Get Ready emergency topics"
 source = { url = "https://getready.govt.nz/emergency/", checked = "2026-11-16" }
+
+[[hazard]]
+name = "volcanic activity"
+scope = "Get Ready emergency topic, not an address-level risk"
+source = { url = "https://getready.govt.nz/emergency/volcanic-activity", checked = "2026-11-17" }
+
+[[hazard]]
+name = "landslides"
+scope = "Get Ready emergency topic, not an address-level risk"
+source = { url = "https://getready.govt.nz/emergency/landslides", checked = "2026-11-17" }
+
+[[hazard]]
+name = "heat"
+scope = "Get Ready emergency topics, not an address-level risk"
+source = { url = "https://getready.govt.nz/emergency/", checked = "2026-11-17" }
+
+[[hazard]]
+name = "wildfires"
+scope = "Get Ready emergency topics, not an address-level risk"
+source = { url = "https://getready.govt.nz/emergency/", checked = "2026-11-17" }
 
