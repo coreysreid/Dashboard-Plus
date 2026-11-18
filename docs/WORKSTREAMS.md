@@ -368,14 +368,10 @@ asked (0059). Work down this list, one pull request per item, as before.
 41. **Update Corey's one-hour test** (`workbench/drafts/corey_test/`) for
     batches, Home layout, Vehicles and the private Show steps; keep it to 60
     minutes.
-42. **Documents, final promotion pass.** Bring `workbench/drafts/documents/`
-    up to the standard of Medical's final draft: shipped contracts only,
-    places link `stock.places`, private fields marked, no private column in a
-    question or name, examples matching the three households, acceptance
-    checks. Lane A promotes it next.
-43. **Home care, final promotion pass.** The same for
-    `workbench/drafts/home_care/`, including how a repeating job's next date
-    is entered by the household (no invented intervals).
+42. **Documents, final promotion pass.** Done differently: Lane A switched Documents on (decision 0062). Check it instead as part of item 40.
+
+43. **Home care, final promotion pass.** Done differently: Lane A switched Home care on (decision 0063). Check it instead as part of item 40.
+
 44. **Stocktake corrections, designed.** Your batch follow-up noted a count
     change has no correction movement. Design the "You counted 5; 3 recorded
     here. Update this batch?" flow, the movement it records, and checks.
