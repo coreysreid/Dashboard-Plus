@@ -7,6 +7,7 @@ and made-up example rows. Add a row here for each draft folder you create.
 | catalogue/ | 800 common goods after round three, with water-count rules | reviewing stocktake choices |
 | private_erase/ | Private-field erase scope, warnings and backup checks | designing erase |
 | stocktake_corrections/ | Batch count flow and explicit correction movements | designing counted amounts |
+| agent_api/ | Agent API misuse, contracts and helper flows | reviewing M2 helpers |
 | stock_lots/ | Item lots (layered use-by dates), screen flows and core needs | planning layered stock dates |
 | readiness/ | 49 source-linked "Have you thought about…?" questions | reviewing readiness prompts |
 | country-packs/ | Sourced AU, US, UK and NZ content | reviewing country packs |
