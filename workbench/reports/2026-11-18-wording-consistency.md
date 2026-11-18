@@ -14,6 +14,7 @@ Checked 18 November 2026 against each shipped module's `module.toml`, `tables.to
 | A completed event | **Checked on**, **Date given**, **Completed on** | These are history dates, not deadlines. |
 
 ## Thirteen exact changes
+## Twelve exact changes
 
 | Module and field | Current → proposed | Finding |
 |---|---|---|
@@ -34,3 +35,6 @@ Checked 18 November 2026 against each shipped module's `module.toml`, `tables.to
 The other 459 strings have identical current/proposed values in the CSV. They either already match these terms or name distinct concepts. The inventory includes generated fallback labels; for example, the code derives a label from a column key if no explicit label exists. It does not audit general core templates or future module drafts; item 39 inventories translation strings separately. New Home layout and Vehicles words are included, and the Home layout privacy hints follow the item 31 recheck.
 
 **Important sheet behavior:** A label alone cannot let the reader tell safe drinking water from other water in the printed section. If Lane A wants separate totals or an emergency drinking-water sheet, the sheet query needs a filter on the linked item's `drinking` value and a visible “safe to drink” indication. Do not sum all water litres as drinking water. The proposed title is the accurate minimal fix for the current query. Source: shipped `modules/stock/sheets.toml`, `modules/stock/tables.toml` and `modules/stock/labels.toml`, checked 18 November 2026.
+| Vehicles, registration help | “Private: hidden on lists and never printed. Leave blank if you would rather keep it with the vehicle's papers.” → “Private: hidden until you choose Show, and never printed. Leave blank if you would rather keep it with the vehicle's papers.” | Decision 0059 now hides the edit value until Show. |
+The other 460 strings have identical current/proposed values in the CSV. They either already match these terms or name distinct concepts. The inventory includes generated fallback labels; for example, the code derives a label from a column key if no explicit label exists. It does not audit general core templates or future module drafts; item 39 inventories translation strings separately. New Home layout and Vehicles words are included, and the Home layout privacy hints follow the item 31 recheck.
+**Water sheet recheck:** Decision 0059 and the later supplies-sheet fix now filter the water section to linked items marked safe to drink. The earlier water-title recommendation is withdrawn. Source: shipped `modules/stock/sheets.toml`, checked 18 November 2026.
