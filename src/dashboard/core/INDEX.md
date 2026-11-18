@@ -6,6 +6,7 @@
 | db.py | Open the SQLite database with settings that are safe on USB drives. | changing how the data file is opened or backed up |
 | dates.py | Dates the household's way: typed and shown as 20/05/27 or 05/20/27, always stored as 2027-05-20. | changing how dates are typed or shown |
 | naming.py | What to call a record wherever it appears: its name, or for a batch "Kidney beans, 3 tins". | changing how records are named |
+| units.py | Say an amount of 1 with its unit in the singular: "1 tube", not "1 tubes". | changing how amounts and units read |
 | migrations.py | Apply numbered migrations, one track for the core and one per module. | changing how database changes are applied |
 | migrations/ | The core's own numbered database changes | adding a core table |
 | modules.py | Find module folders, check their files, and explain any mistakes in plain words. | changing what module files may say |

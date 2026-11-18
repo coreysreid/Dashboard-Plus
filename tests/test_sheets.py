@@ -117,7 +117,19 @@ class SheetPageTests(TempDirTestCase):
     def test_sheet_with_private_column_says_so(self):
         self.app.config["LOADED"][0].sheets[0]["sections"].append(
             {"title": "Medical", "table": "important_info", "where": {}, "columns": ["detail"], "order_by": "id"})
-        self.assertIn("includes private details", self.get("/sheet/people/emergency?show=1").get_data(as_text=True))
+        self.assertNotIn("includes private details", self.get("/sheet/people/emergency?show=1").get_data(as_text=True))
+        self.assertIn("includes private details", self.post("/sheet/people/emergency", {}).get_data(as_text=True))
+
+    def test_private_sheet_needs_the_button_not_a_link(self):
+        self.app.config["LOADED"][0].sheets[0]["sections"].append(
+            {"title": "Medical", "table": "important_info", "where": {}, "columns": ["detail"], "order_by": "id"})
+        asked = self.get("/sheet/people/emergency?show=1").get_data(as_text=True)
+        self.assertIn("Show private sheet", asked)
+        self.assertNotIn("window.print()", asked)
+        self.assertEqual(self.client.post("/sheet/people/emergency", data={}, base_url=BASE).status_code, 400,
+                         "the button's form carries the page's own token")
+        shown = self.post("/sheet/people/emergency", {}).get_data(as_text=True)
+        self.assertIn("window.print()", shown, "the revealed sheet still prints")
 
     def test_unknown_or_switched_off_sheet_is_not_found(self):
         self.assertEqual(self.get("/sheet/people/nothing").status_code, 404)

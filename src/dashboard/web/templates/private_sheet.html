@@ -6,7 +6,10 @@
 <div class="card">
   <p>This sheet includes private health and care details. Show it only when you mean to print or share it.</p>
   <div class="actions">
-    <a class="button" href="/sheet/{{ module }}/{{ name }}?show=1">Show private sheet</a>
+    <form method="post" action="/sheet/{{ module }}/{{ name }}">
+      <input type="hidden" name="_csrf" value="{{ csrf_token }}">
+      <button class="button" type="submit">Show private sheet</button>
+    </form>
     <a class="button quiet" href="/">Back to Home</a>
   </div>
 </div>

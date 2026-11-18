@@ -29,7 +29,7 @@ def _where_value(value):
     return int(value) if isinstance(value, bool) else value
 
 
-@sheet_pages.get("/sheet/<module>/<name>")
+@sheet_pages.route("/sheet/<module>/<name>", methods=["GET", "POST"])
 def show_sheet(module, name):
     registry = current_app.config["REGISTRY_FOR_REQUEST"]()
     modules = {info.module.name: info.module for info in registry.values()}
@@ -87,8 +87,9 @@ def show_sheet(module, name):
 
         sections.append({"title": section["title"], "headings": [c[0] for c in columns],
                          "rows": [[value(dict(r), c) for c in columns] for r in rows]})
-    if private and request.args.get("show") != "1":
-        # A sheet with private details opens only by choice, so a mistaken click shows none of them.
+    if private and request.method != "POST":
+        # A sheet with private details opens only by choice (decision 0071): the button POSTs, so no
+        # address, bookmark or shared link can open it, and ?show=1 does nothing.
         return render_template("private_sheet.html", sheet=sheet, module=module, name=name)
     return render_template("sheet.html", sheet=sheet, sections=sections, private=private,
                            printed=date.today().strftime("%d %B %Y"))
