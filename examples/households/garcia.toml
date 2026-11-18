@@ -16,7 +16,7 @@ home_type = "apartment"
 storeys = 1
 mobility_needs = true
 hazards = ["earthquake", "heat", "power"]
-modules = ["home_layout", "medical", "people", "pets", "stock", "vehicles"]
+modules = ["home_care", "home_layout", "medical", "people", "pets", "stock", "vehicles"]
 
 # ---- People -----------------------------------------------------------------
 
@@ -653,3 +653,29 @@ vehicle = "Household car"
 name = "Oil change and inspection"
 last_done = "today-100"
 next_due = "today+75"
+
+# ---- Home care ----------------------------------------------------------------
+# Smoke alarms and the extinguisher are in Home layout above. Every date is one the household chose.
+
+[[home_care.jobs]]
+name = "Air conditioner filter"
+kind = "heating_cooling"
+place = "Hallway"
+who_does_it = "Carlos Garcia"
+last_done = "today-45"
+next_due = "today+45"
+notes = "Wash it before the summer heat. Rosa's room needs the air conditioning most."
+
+[[home_care.jobs]]
+name = "Dryer vent clean"
+kind = "other"
+place = "Basement"
+who_does_it = "Building manager"
+next_due = "today+150"
+notes = "The building arranges it; the manager sends the date."
+
+[[home_care.work_done]]
+job = "Air conditioner filter"
+done_on = "today-45"
+done_by = "Carlos Garcia"
+notes = "Washed and dried the filter."

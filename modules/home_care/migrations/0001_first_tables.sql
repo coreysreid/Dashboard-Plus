@@ -13,11 +13,16 @@ CREATE TABLE home_care__jobs (
     deleted_at TEXT,
     name TEXT,
     kind TEXT,
-    place TEXT,
+    place INTEGER REFERENCES stock__places(id) ON DELETE RESTRICT,
+    who_does_it INTEGER REFERENCES people__people(id) ON DELETE SET NULL,
     last_done TEXT,
     next_due TEXT,
     notes TEXT
 );
+
+CREATE INDEX home_care__jobs__place__idx ON home_care__jobs(place);
+
+CREATE INDEX home_care__jobs__who_does_it__idx ON home_care__jobs(who_does_it);
 
 CREATE INDEX home_care__jobs__last_done__idx ON home_care__jobs(last_done);
 
@@ -35,10 +40,12 @@ CREATE TABLE home_care__work_done (
     deleted_at TEXT,
     job INTEGER REFERENCES home_care__jobs(id) ON DELETE CASCADE,
     done_on TEXT,
-    done_by TEXT,
+    done_by INTEGER REFERENCES people__people(id) ON DELETE SET NULL,
     notes TEXT
 );
 
 CREATE INDEX home_care__work_done__job__idx ON home_care__work_done(job);
 
 CREATE INDEX home_care__work_done__done_on__idx ON home_care__work_done(done_on);
+
+CREATE INDEX home_care__work_done__done_by__idx ON home_care__work_done(done_by);

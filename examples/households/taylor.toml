@@ -17,7 +17,7 @@ home_type = "apartment"
 storeys = 1
 mobility_needs = false
 hazards = ["flood", "snow", "storm"]
-modules = ["home_layout", "medical", "people", "stock", "vehicles"]
+modules = ["home_care", "home_layout", "medical", "people", "stock", "vehicles"]
 
 # ---- People -----------------------------------------------------------------
 
@@ -277,3 +277,19 @@ vehicle = "Small car"
 name = "MOT test"
 last_done = "today-345"
 next_due = "today+20"
+
+# ---- Home care ----------------------------------------------------------------
+# Sam rents, so the letting agent arranges the boiler service. One job has no place yet, so the dashboard asks.
+
+[[home_care.jobs]]
+name = "Boiler service"
+kind = "heating_cooling"
+place = "Hall cupboard"
+who_does_it = "Northgate Lettings"
+next_due = "today+40"
+notes = "The letting agent books the engineer and sends the date."
+
+[[home_care.jobs]]
+name = "Bleed the radiators"
+kind = "heating_cooling"
+who_does_it = "Sam Taylor"

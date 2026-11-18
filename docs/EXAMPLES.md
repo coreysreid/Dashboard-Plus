@@ -170,6 +170,18 @@ As it prints: the vehicles and the dates the household chose, with no plate or p
 
 ![Vehicles sheet](screenshots/smith/18g-vehicle-sheet.png)
 
+### Home care jobs
+
+Each job around the home, where it is, who usually does it, when it was last done and the date the household chose to do it again.
+
+![Home care jobs](screenshots/smith/18j-home-care.png)
+
+### Home care sheet
+
+As it prints: the jobs and the household's own dates, with no notes.
+
+![Home care sheet](screenshots/smith/18k-home-care-sheet.png)
+
 ### Needs attention
 
 Days of water with the working shown, running low, use-by and due dates, and details worth filling in.
@@ -362,6 +374,18 @@ As it prints: the vehicles and the dates the household chose, with no plate or p
 
 ![Vehicles sheet](screenshots/garcia/18g-vehicle-sheet.png)
 
+### Home care jobs
+
+Each job around the home, where it is, who usually does it, when it was last done and the date the household chose to do it again.
+
+![Home care jobs](screenshots/garcia/18j-home-care.png)
+
+### Home care sheet
+
+As it prints: the jobs and the household's own dates, with no notes.
+
+![Home care sheet](screenshots/garcia/18k-home-care-sheet.png)
+
 ### Needs attention
 
 Days of water with the working shown, running low, use-by and due dates, and details worth filling in.
@@ -535,6 +559,18 @@ Each vehicle, when its registration is due, who to call if it breaks down, where
 As it prints: the vehicles and the dates the household chose, with no plate or policy numbers.
 
 ![Vehicles sheet](screenshots/taylor/18g-vehicle-sheet.png)
+
+### Home care jobs
+
+Each job around the home, where it is, who usually does it, when it was last done and the date the household chose to do it again.
+
+![Home care jobs](screenshots/taylor/18j-home-care.png)
+
+### Home care sheet
+
+As it prints: the jobs and the household's own dates, with no notes.
+
+![Home care sheet](screenshots/taylor/18k-home-care-sheet.png)
 
 ### Needs attention
 
