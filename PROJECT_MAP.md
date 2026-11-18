@@ -132,6 +132,7 @@ One record per decision, from `TEMPLATE.md`. Never deleted; reversed ones are ma
 | [0078](0078-export-my-records.md) | Export my records: one zip of spreadsheet files for the household, private details left out, text guarded against formulas, read from one moment | Accepted |
 | [0079](0079-restore-from-a-backup.md) | Restore from a backup: copies checked read-only, the chosen one prepared on a new file, a checked before-restore copy, an atomic swap while no page holds the file, and an Undo that survives a restart | Accepted |
 | [0080](0080-import-from-a-spreadsheet.md) | Import from a spreadsheet (CSV) in Settings: columns matched, every row checked like a helper's suggestion, ready rows wait on Review as one batch by "Import '<file>'"; the file is never kept; private details not imported | Accepted |
+| [0081](0081-household-sharing-options.md) | Sharing with the household, three options designed (A: take turns through a shared folder; B: one home base, others use a browser on home Wi-Fi; C: every copy syncs), a mode label on every page, default "On this computer only"; changes the privacy and security rules | Proposed — Corey to choose an option |
 | [0082](0082-every-page-shows-the-connection-mode.md) | Every page says "On this computer only" and how many helpers can look; the footer no longer says nothing is ever sent | Accepted |
 | [TEMPLATE](TEMPLATE.md) | Blank record to copy for a new decision | recording a decision |
 
@@ -139,6 +140,7 @@ One record per decision, from `TEMPLATE.md`. Never deleted; reversed ones are ma
 | Entry | What it is | Open it when |
 |---|---|---|
 | agent-api-v1.md | The Agent API skeleton plan: helper keys, read routes, suggestions held for Review, security model, tests | building or reviewing the Agent API |
+| household-sharing.md | Sharing with your household: three options (shared folder, home base on Wi-Fi, true sync), the mode label on every page, a recommendation and questions for Corey | choosing or building household sharing |
 
 ## docs/releases/  (summary: release checks, one file per milestone)
 | Entry | What it is | Open it when |
