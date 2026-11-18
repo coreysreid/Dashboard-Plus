@@ -1,0 +1,8 @@
+name = "documents"
+title = "Important documents"
+version = "1.0.0"
+description = "Where important papers such as passports, insurance policies, wills and warranties are kept, and the review or renewal dates you choose."
+core_api = "1"
+kind = "declarative"
+requires = ["people", "stock"]
+outbound_hosts = []

@@ -33,6 +33,30 @@ jobs:
           PYTHONPATH: src
         run: python -m unittest discover -s tests -v
 
+  browser:
+    # Clicks through the real program in Chromium (decision 0064). Linux only: Windows runs the same
+    # test file, which skips itself because Playwright is not installed there.
+    name: Real-browser check (Linux, Chromium)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - name: Install the pinned libraries (checksums verified)
+        run: python -m pip install --require-hashes -r requirements.lock
+      - name: Install Playwright (exact version) and its Chromium
+        run: |
+          npm install --no-save --no-package-lock playwright@=1.63.0  # "=": exactly this version
+          npx playwright install --with-deps chromium
+      - name: Click through setup, dates, stock in, private details and closing
+        env:
+          PYTHONPATH: src
+        run: python tools/browser_check.py
+
   portable:
     name: Portable Windows build
     needs: checks

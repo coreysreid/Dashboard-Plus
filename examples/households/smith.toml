@@ -16,7 +16,7 @@ home_type = "house"
 storeys = 2
 mobility_needs = false
 hazards = ["bushfire", "heat", "storm"]
-modules = ["home_layout", "medical", "people", "pets", "stock", "vehicles"]
+modules = ["documents", "home_care", "home_layout", "medical", "people", "pets", "stock", "vehicles"]
 
 # ---- People -----------------------------------------------------------------
 
@@ -313,6 +313,10 @@ name = "Front hall"
 
 [[stock.places]]
 name = "Upstairs hall"
+
+[[stock.places]]
+name = "Study"
+notes = "The small room off the upstairs hall."
 
 # Amounts are what is on hand today, after the stock in and out below.
 [[stock.items]]
@@ -711,3 +715,59 @@ vehicle = "Family car"
 name = "Routine service"
 last_done = "today-170"
 next_due = "today+12"
+
+# ---- Important documents --------------------------------------------------------
+# Where the papers are and the dates the family chose. No document numbers are written down.
+
+[[documents.documents]]
+name = "Home insurance policy"
+kind = "insurance"
+place = "Study"
+renew_by = "today+25"
+notes = "The renewal letter comes by email a month before."
+
+[[documents.documents]]
+name = "Family passports"
+kind = "passport"
+place = "Study"
+notes = "Check each person's passport separately before travel."
+
+[[documents.documents]]
+name = "Car service book"
+kind = "other"
+holder = "John Smith"
+place = "Car"
+
+# ---- Home care ----------------------------------------------------------------
+# Smoke alarms and the extinguisher are in Home layout above. Every "do again by" is a date the family
+# chose; logging work done does not change it, so they typed the next date on the job themselves.
+
+[[home_care.jobs]]
+name = "Clean the gutters"
+kind = "gutters"
+place = "Backyard"
+who_does_it = "John Smith"
+last_done = "today-150"
+next_due = "today+18"
+notes = "Use the tall ladder from the garage. Clear them before bushfire season."
+
+[[home_care.jobs]]
+name = "Hot water system service"
+kind = "water_heater"
+place = "Backyard"
+who_does_it = "Dave Wilson"
+last_done = "today-300"
+next_due = "today+65"
+notes = "The tank is on the side wall of the house, by the gate."
+
+[[home_care.work_done]]
+job = "Clean the gutters"
+done_on = "today-150"
+done_by = "John Smith"
+notes = "Cleared leaves from the back gutters and the downpipe by the laundry."
+
+[[home_care.work_done]]
+job = "Hot water system service"
+done_on = "today-300"
+done_by = "Dave Wilson"
+notes = "Replaced the relief valve. The invoice is with the house papers."

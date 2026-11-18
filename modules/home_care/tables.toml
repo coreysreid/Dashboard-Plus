@@ -1,0 +1,39 @@
+# Each job is at one of the household's own Places (Household stock), and whoever usually does it is
+# one of its People, so a tradesperson's number is kept in one place (decision 0063). Smoke alarms and
+# fire extinguishers stay in Home layout, so their test dates are kept once. No interval is assumed and
+# nothing repeats by itself: the household types each "do again by" date, and logging work done changes
+# no dates. There is no field for alarm codes or how to get in.
+
+[tables.jobs]
+title = "Home care jobs"
+description = "Jobs around the home you want to remember, when each was last done and when you want to do it again."
+columns.name = { type = "text", required = true }
+columns.kind = { type = "choice", required = true, choices = [
+  { key = "gutters", label = "Gutters and downpipes" },
+  { key = "water_heater", label = "Hot water system or water heater" },
+  { key = "heating_cooling", label = "Heating or air conditioning" },
+  { key = "outside", label = "Outside: roof, paths, fences or trees" },
+  "other",
+] }
+columns.place = { type = "link", to = "stock.places", on_delete = "restrict" }
+columns.who_does_it = { type = "link", to = "people.people", on_delete = "clear" }
+columns.last_done = { type = "date" }
+columns.next_due = { type = "date" }
+columns.notes = { type = "longtext" }
+
+[tables.jobs.watch]
+expiring = { date = "next_due", warn_days = 30, wording = "due", what = "job" }
+
+# Asked for each job written down, never "do you have any jobs?".
+[[tables.jobs.watch.gaps]]
+missing = "place"
+message = "Where is {name} done? Choose one of your places."
+
+[tables.work_done]
+title = "Work done"
+description = "A dated note each time a job is done, and who did it."
+record_name = "{job}, done {done_on}"
+columns.job = { type = "link", to = "jobs", required = true, on_delete = "cascade" }
+columns.done_on = { type = "date", required = true, default = "today" }
+columns.done_by = { type = "link", to = "people.people", on_delete = "clear" }
+columns.notes = { type = "longtext" }

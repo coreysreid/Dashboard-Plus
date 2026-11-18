@@ -88,10 +88,15 @@ def check_name(path: str) -> list[Finding]:
     return [Finding(path, 0, p) for p in problems]
 
 
+CONFLICT_MARKER = re.compile(r"^(<{7}|>{7}) ")  # left behind by an unfinished merge
+
+
 def check_text(path: str, text: str) -> list[Finding]:
-    """Flag secrets, personal paths and real email addresses inside a text file."""
+    """Flag secrets, personal paths, real email addresses and unfinished merges inside a text file."""
     problems: list[Finding] = []
     for number, line in enumerate(text.splitlines(), start=1):
+        if CONFLICT_MARKER.match(line):
+            problems.append(Finding(path, number, "an unfinished merge (conflict marker)", line[:20]))
         for label, pattern in SECRET_PATTERNS:
             match = pattern.search(line)
             if match:

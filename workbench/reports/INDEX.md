@@ -12,10 +12,27 @@ expected, actual, severity (blocker, important, minor), suggested change.
 | 2026-11-17-picking-water-ux.md | Batch 4 stock picking and drinking-water check in four temporary households. | reviewing picker and water defaults |
 | 2026-11-17-accessibility.md | WCAG 2.2 review of all example screens, with live keyboard and narrow-view checks. | fixing screen access and reflow |
 | 2026-11-17-medical-dates-ux.md | J1–J5 check after Medical and local dates, including a car-only kit gap. | refining Medical and date entry |
+| 2026-11-18-print-check.md | 84 A4/Letter light/dark checks including Our home, Vehicles and First aid at home. | reviewing print output |
+| 2026-11-18-print-matrix.csv | PDF layout and path evidence across the three fictional households. | reproducing print results |
+| 2026-11-18-sensitive-detail-recheck.md | Checks decisions 0055/0059 and ranks remaining private-detail risks. | reviewing current privacy behavior |
 | 2026-11-17-print-check.md | A4/Letter light/dark results for three fictional households. | checking printable sheets |
 | 2026-11-17-print-matrix.csv | Sixty route and PDF combinations, including four expected unavailable routes. | reproducing print results |
+| 2026-11-18-translation-readiness.md | 14-template, six-module extraction plan for other languages. | preparing localization |
+| 2026-11-18-translation-inventory.csv | 1,992 visible string locations and picker search terms. | extracting messages |
 | 2026-11-17-translation-readiness.md | Screen-grouped extraction plan for shipped template and module words. | preparing other languages |
 | 2026-11-17-translation-inventory.csv | 1,845 literal locations, picker names and search aliases. | extracting locale messages |
+| 2026-11-18-wording-consistency.md | Six-module wording pass after Home layout, Vehicles, batches and private reveal. | applying exact replacements |
+| 2026-11-18-wording-inventory.csv | 472 current strings and twelve exact proposed changes. | reviewing wording locations |
 | 2026-11-17-wording-consistency.md | Exact shipped-module wording replacements and term rules. | polishing module words |
 | 2026-11-17-wording-inventory.csv | All 310 authored or rendered module strings with exact proposals. | applying the wording table |
+| 2026-11-18-current-build-ux.md | Batch 12 three-household UX check with exact findings and 320px pass. | refining current screens |
+| 2026-11-18-ux-route-matrix.csv | 39 route, status and phone-width measurements. | reproducing the phone pass |
+| ux_2026_11_18/ | Seven invented-household 320px screenshots. | seeing the current UI |
 | 2026-11-17-sensitive-detail-audit.md | Read-only audit of private fields in shipped screens, history and backups. | tightening privacy before M2 helpers and export |
+| 2026-11-18-print-check.md | A4/Letter light/dark results including Home layout, Vehicles and Medical sheets. | checking printable sheets |
+| 2026-11-18-print-matrix.csv | 84 route and PDF combinations, four expected unavailable. | reproducing print results |
+| 2026-11-18-translation-readiness.md | Screen-grouped extraction plan including Home layout and Vehicles. | preparing other languages |
+| 2026-11-18-translation-inventory.csv | 1,983 literal locations, picker names and search aliases. | extracting locale messages |
+| 2026-11-18-wording-consistency.md | Exact replacement table across six shipped modules. | polishing household words |
+| 2026-11-18-wording-inventory.csv | 472 module strings with current and proposed words. | applying wording replacements |
+| 2026-11-18-sensitive-detail-recheck.md | Decision 0055 verification and remaining private-detail findings. | reviewing privacy after security fixes |

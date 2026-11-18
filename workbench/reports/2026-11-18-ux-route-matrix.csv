@@ -1,0 +1,40 @@
+household,route,status,document_width,viewport,title,body_chars,horizontal_overflow
+smith,/,200,320,320,Dashboard Plus,1555,0
+smith,/attention,200,320,320,"Needs attention · Dashboard Plus <h2>Worth filling in</h2> <ul><li>What is Dave Wilson's phone number? They are in Who to call (Tradesperson), but no number is saved. <a href=""/t/people__people/11"">Fill this in</a></li><li>No first aid kit is recorded at home. Add one, or check where your kits are kept. <a href=""/t/medical__kits/new?kept=home"">Fill this in</a></li></ul>",1700,0
+smith,/t/stock__items,200,320,320,Stock items · Dashboard Plus,1624,0
+smith,/t/stock__places,200,320,320,Places · Dashboard Plus,679,0
+smith,/t/stock__lots,200,320,320,Batches · Dashboard Plus,1671,0
+smith,/t/stock__movements/new,200,320,320,Stock in and out · Dashboard Plus,3111,0
+smith,/t/home_layout__exits,200,320,320,Ways out · Dashboard Plus,445,0
+smith,/t/home_layout__shutoffs,200,320,320,Shut-offs and power board · Dashboard Plus,447,0
+smith,/sheet/home_layout/our_home,200,320,320,Our home · Dashboard Plus,1481,0
+smith,/t/vehicles__vehicles,200,320,320,Vehicles · Dashboard Plus,350,0
+smith,/sheet/vehicles/vehicles,200,320,320,Vehicles · Dashboard Plus,919,0
+smith,/t/people__important_info,200,320,320,Important details · Dashboard Plus,325,0
+smith,/sheet/people/emergency_medical,200,320,320,Emergency sheet with private medical details · Dashboard Plus,310,0
+garcia,/,200,320,320,Dashboard Plus,1631,0
+garcia,/attention,200,320,320,"Needs attention · Dashboard Plus <h2>Worth filling in</h2> <ul><li>What is Dr Kevin Kim's phone number? They are in Who to call (Dentist), but no number is saved. <a href=""/t/people__people/9"">Fill this in</a></li></ul>",1517,0
+garcia,/t/stock__items,200,320,320,Stock items · Dashboard Plus,1528,0
+garcia,/t/stock__places,200,320,320,Places · Dashboard Plus,579,0
+garcia,/t/stock__lots,200,320,320,Batches · Dashboard Plus,1479,0
+garcia,/t/stock__movements/new,200,320,320,Stock in and out · Dashboard Plus,2779,0
+garcia,/t/home_layout__exits,200,320,320,Ways out · Dashboard Plus,362,0
+garcia,/t/home_layout__shutoffs,200,320,320,Shut-offs and power board · Dashboard Plus,557,0
+garcia,/sheet/home_layout/our_home,200,320,320,Our home · Dashboard Plus,1426,0
+garcia,/t/vehicles__vehicles,200,320,320,Vehicles · Dashboard Plus,348,0
+garcia,/sheet/vehicles/vehicles,200,320,320,Vehicles · Dashboard Plus,927,0
+garcia,/t/people__important_info,200,320,320,Important details · Dashboard Plus,406,0
+garcia,/sheet/people/emergency_medical,200,320,320,Emergency sheet with private medical details · Dashboard Plus,310,0
+taylor,/,200,320,320,Dashboard Plus,1518,0
+taylor,/attention,200,320,320,"Needs attention · Dashboard Plus <h2>Worth filling in</h2> <ul><li>Where is the water shut-off? It is not written down yet. <a href=""/t/home_layout__shutoffs/new?kind=water"">Fill this in</a></li><li>Where is the power board (switchboard or fuse box)? It is not written down yet. <a href=""/t/home_layout__shutoffs/new?kind=power"">Fill this in</a></li><li>Where are your smoke alarms? None is written down yet. <a href=""/t/home_layout__equipment/new?kind=smoke_alarm"">Fill this in</a></li><li>Is there a doctor or medical centre you would call? None is listed in Who to call yet. <a href=""/t/people__roles/new?role=doctor"">Fill this in</a></li><li>What is Chris Taylor's phone number? They are in Who to call (Emergency contact), but no number is saved. <a href=""/t/people__people/2"">Fill this in</a></li><li>When do you plan to check Small first aid kit again? <a href=""/t/medical__kits/1"">Fill this in</a></li><li>Who would you call if Small car broke down? It can be a roadside service, a garage or someone you know. <a href=""/t/vehicles__vehicles/1"">Fill this in</a></li></ul>",1518,0
+taylor,/t/stock__items,200,320,320,Stock items · Dashboard Plus,836,0
+taylor,/t/stock__places,200,320,320,Places · Dashboard Plus,394,0
+taylor,/t/stock__lots,200,320,320,Batches · Dashboard Plus,813,0
+taylor,/t/stock__movements/new,200,320,320,Stock in and out · Dashboard Plus,1719,0
+taylor,/t/home_layout__exits,200,320,320,Ways out · Dashboard Plus,307,0
+taylor,/t/home_layout__shutoffs,200,320,320,Shut-offs and power board · Dashboard Plus,222,0
+taylor,/sheet/home_layout/our_home,200,320,320,Our home · Dashboard Plus,779,0
+taylor,/t/vehicles__vehicles,200,320,320,Vehicles · Dashboard Plus,303,0
+taylor,/sheet/vehicles/vehicles,200,320,320,Vehicles · Dashboard Plus,803,0
+taylor,/t/people__important_info,200,320,320,Important details · Dashboard Plus,223,0
+taylor,/sheet/people/emergency_medical,200,320,320,Emergency sheet with private medical details · Dashboard Plus,310,0

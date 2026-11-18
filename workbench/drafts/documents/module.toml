@@ -1,8 +1,0 @@
-name = "documents"
-title = "Important documents"
-version = "1.0.0"
-description = "Know where important papers are and when they need attention."
-core_api = "1"
-kind = "declarative"
-requires = []
-outbound_hosts = []

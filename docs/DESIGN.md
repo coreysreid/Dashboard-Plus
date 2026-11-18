@@ -564,6 +564,26 @@ number and the core can load both for a transition period.
   vehicle, "Who would you call if it broke down?"; a household with no
   vehicle is asked nothing; a **Vehicles** sheet prints the vehicles and
   dates without plate or policy numbers.
+- **Important documents** (declarative; requires People and Household stock;
+  shipped, decision 0062). A list of where papers are kept, not a document
+  vault. One table: documents (name, kind such as passport, insurance, will
+  or warranty; whose it is, a link to `people.people`; where it is kept, a
+  link to `stock.places`; a review or renew-by date; notes). There is no
+  field for a document number, password or copy of the paper. Behaviour: the
+  date is *due* on the day the household chose; one gap asks, per paper,
+  "Where is it kept?"; a household with no papers listed is asked nothing; a
+  **Document review dates** sheet prints names, kinds and dates only, never
+  where papers are kept.
+- **Home care** (declarative; requires People and Household stock; shipped,
+  decision 0063). Tables: home care jobs (what kind, which of the household's
+  `stock.places` it is at, who usually does it, a link to `people.people`;
+  last done; do again by) and work done (a dated note of each time, and who
+  did it). Behaviour: a job is *due* on the date the household typed, never
+  one worked out for it; logging work done changes no dates, so the household
+  types the next "do again by" itself (the core has no repeat engine yet); one
+  gap asks where a job is done; smoke alarms and extinguishers stay in Home
+  layout; a **Home care** sheet prints the jobs and dates without notes. No
+  field holds alarm codes or how to get in.
 - **Readiness** (declarative; the home of the prompts in section 10.5).
   Tables: plans (a situation the household has thought through: what we would
   do, who does what, the answer to "could we get down from upstairs?"), drills
@@ -1128,6 +1148,13 @@ changed later.
   parsing, naming the module and showing the failing field. This is how
   outside changes get noticed without anyone watching. It also checks that every
   country-pack link still works and flags packs past their `review_by` date.
+- **Real-browser check (decision 0064).** `tools/browser_check.py` starts the real program on a
+  throwaway data folder and clicks through it in Chromium (en-AU and en-US): the setup wizard, Home,
+  typing dates the household's way, stock in with batches, private details and sheets, and Save and
+  exit, failing on any browser console error or refused request. It runs in its own Linux CI job;
+  `tests/test_browser_check.py` runs it locally when Node.js and Playwright are installed and skips
+  with the reason otherwise. The Flask test client cannot see browser behaviour such as the
+  `Origin: null` that a `no-referrer` policy causes.
 - **Portable build test.** The built zip is unpacked in a clean runner
   and started; the acceptance list in `CORE.md` is checked where it can be
   automated.

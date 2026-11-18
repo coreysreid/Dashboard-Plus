@@ -113,6 +113,9 @@ marked Superseded. Each lists downsides, cost to undo, and the sign it was wrong
 | [0059](0059-private-details-only-when-asked.md) | Private details sent to the screen only when the person asks (lists, records, private sheets) | Accepted |
 | [0060](0060-garden-example-outside-installed-modules.md) | Keep the worked garden outside installed modules | Accepted |
 | [0061](0061-public-reporting-and-contribution-rules.md) | Public contribution and private security reporting routes | Accepted |
+| [0062](0062-documents-promoted.md) | Important documents switched on from Lane B's draft: places and people linked, no document numbers stored | Accepted |
+| [0063](0063-home-care-promoted.md) | Home care switched on from Lane B's draft: jobs at your places, done by your People, on dates you type; no repeats invented | Accepted |
+| [0064](0064-real-browser-check.md) | A real-browser check clicks through setup, dates, stock in, private details and closing in Chromium (Linux CI job); a refused save keeps a private detail | Accepted |
 | [0065](0065-agpl-licence.md) | Licence changed to GNU AGPL v3 or later (from MIT) | Accepted |
 | [TEMPLATE](TEMPLATE.md) | Blank record to copy for a new decision | recording a decision |
 
@@ -185,12 +188,46 @@ numbered migrations. See docs/DESIGN.md section 6 for the module contract.
 
 | Entry | What it is | Open it when |
 |---|---|---|
+| documents/ | Where important papers are kept, whose they are and the review or renewal dates you choose; a review dates sheet | changing document records |
+| home_care/ | Jobs around the home, where each is, who usually does it, last done and do again by; work done; a Home care sheet | changing home care jobs |
 | home_layout/ | Ways out, shut-offs, smoke alarms and safety equipment, meters, each at one of your places; an Our home sheet | changing home layout records |
 | medical/ | First aid kits and where they are, kit checks, first aid training renewals; a first aid sheet | changing first aid records |
 | people/ | Who lives here, who to call, important details, emergency sheets | changing people, contacts or the emergency sheet |
 | pets/ | Pets, their vet, treatments and medicine with due dates, weigh-ins, vet visits; a pet details sheet | changing pets |
 | stock/ | Pantry, water, first aid, tools and hardware, with places, minimums and use-by dates | changing stock, running low or days of water |
 | vehicles/ | Each vehicle, who to call if it breaks down, registration, insurance and service dates; a Vehicles sheet | changing vehicle records |
+
+## modules/documents/  (summary: the Important documents module, files only; built on Lane B's draft, linking to People and Household stock)
+| Entry | What it is | Open it when |
+|---|---|---|
+| module.toml | Name, version, description; requires People (whose paper) and Household stock (places) | changing the module's details |
+| tables.toml | Where each paper is kept, whose it is and its review or renewal date, with one gap question; no document numbers | adding a field or a gap question |
+| labels.toml | Friendly labels, help text, form and list order | changing wording or order |
+| sheets.toml | Document review dates sheet: names, kinds and dates only, no places or numbers | changing what prints |
+| migrations/ | Numbered database changes | after changing tables.toml |
+
+## modules/documents/migrations/  (summary: this module's numbered database changes; never edit a released one)
+Generate the next one with: python tools/make_migration.py documents --name <what_changed>
+
+| Entry | What it is | Open it when |
+|---|---|---|
+| 0001_first_tables.sql | The module's first table, generated from tables.toml | checking how the table is stored |
+
+## modules/home_care/  (summary: the Home care module, files only; built on Lane B's draft, linking to People and Household stock)
+| Entry | What it is | Open it when |
+|---|---|---|
+| module.toml | Name, version, description; requires People (who does it) and Household stock (places) | changing the module's details |
+| tables.toml | Home care jobs with a do-again-by date and one gap question, and the work done on each | adding a field or a gap question |
+| labels.toml | Friendly labels, help text, form and list order, which list is main on home | changing wording or order |
+| sheets.toml | Home care sheet: each job, where, who usually does it and its dates, with no notes | changing what prints |
+| migrations/ | Numbered database changes | after changing tables.toml |
+
+## modules/home_care/migrations/  (summary: this module's numbered database changes; never edit a released one)
+Generate the next one with: python tools/make_migration.py home_care --name <what_changed>
+
+| Entry | What it is | Open it when |
+|---|---|---|
+| 0001_first_tables.sql | The module's first tables, generated from tables.toml | checking how the tables are stored |
 
 ## modules/home_layout/  (summary: the Home layout module, files only; built on Lane B's draft, using Household stock's places)
 | Entry | What it is | Open it when |
@@ -398,6 +435,7 @@ How to run them is in AGENTS.md.
 | test_module_*.py | Tests that run a real module end to end, one file per module | changing a module |
 | test_workbench_drafts.py | Check every draft module in workbench/drafts: it loads, its migrations match, and it starts cleanly. | a draft module fails |
 | test_web.py | Tests for the screens: sign-in by launch link, grid paging, forms, history and reports. | changing a screen |
+| test_browser_check.py | Run the real-browser check (tools/browser_check.py) when Node, Playwright and Chromium are here; skip otherwise. | changing a screen or its browser code |
 | test_main.py | Tests for the command-line entry point and its plain-language messages. | changing the command line |
 | test_home_page.py | Tests for the grouped home page: one group per area, main lists large, other lists as links, all reachable. | changing the home page or `home` in labels.toml |
 | test_build_portable.py | Tests for the portable Windows build, using a stand-in for the Python download. | changing the build |
@@ -420,4 +458,6 @@ How to run them is in AGENTS.md.
 | load_example.py | Load a made-up example household into an empty data folder, for demos, screenshots and testing. | demonstrating or testing with realistic data |
 | make_screenshots.py | Make the example screenshots: run each example household through every stage of using the dashboard. | the screens changed and the gallery needs remaking |
 | screenshots.js | Browser steps for make_screenshots.py (Node and Playwright) | changing how screenshots are taken |
+| browser_check.py | Click through the real dashboard in Chromium (setup, dates, stock in, private details, closing) and fail loudly. | a screen or its browser code changed |
+| browser_check.js | Browser steps for browser_check.py (Node and Playwright): what is clicked and checked | changing what the browser check clicks |
 | make_project_map.py | Build PROJECT_MAP.md from every INDEX.md in the repository. | changing the map format |
