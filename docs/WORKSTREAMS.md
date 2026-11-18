@@ -418,6 +418,44 @@ skeleton is merged (look for `src/dashboard/web/api.py`). Work in
 54. **UX check of the skeleton** once merged: make a key, connect with curl,
     suggest, Review, accept, reject, turn the key off; worst first.
 
+### Batch 14: after the 18 November build (M1 polish, M2)
+
+Merged on 18 November: stocktake corrections (0070), the private sheet by
+choice (0071), reminders that skip finished rows and linked phones on sheets
+(0072), Things lent out (0073). Being built now: Agent API hardening from
+your abuse catalogue (0074), one-step buttons such as Mark returned and a
+date-order rule (0075), Garden switched on (0076) and a private access-details
+field in Home layout (0077). Check the merged ones first; the others as they
+land.
+
+55. **UX check: lent out, stocktake and Garden.** Run all three example
+    households through Things lent out (lend, remind, return), Count this
+    batch, and Garden once merged, at 320px and on a desktop; worst first,
+    with exact steps and the words you would change.
+56. **Abuse catalogue, rechecked.** Once 0074 merges, go through your 22
+    cases against the real code and mark each held, partly held or open,
+    with a reproduction for anything open. Read-only; no code.
+57. **Mark done for Home care, designed.** One button that logs the work done
+    and asks for the next date (or offers one from a household-chosen
+    repeat). Exact words, what is saved, how it is undone, acceptance checks.
+58. **Next promotions, ready-checked.** For Collections, Wine, Utilities and
+    Home inventory: what each still needs from core (privacy, links, actions)
+    now that 0072 and 0075 exist; update each NOTES.md and say which one is
+    ready first.
+59. **Corey's one-hour test, refreshed.** Fold Things lent out, stocktake,
+    Garden and (once merged) making a helper key into the solo script; keep
+    it to 60 minutes and give paste-ready feedback rows.
+60. **Helper quick-start for a household.** One page a non-technical person
+    could follow to connect an AI assistant: make a key, what to paste where,
+    what the helper can and can't see, how to turn it off. Draft in
+    `workbench/drafts/agent_api/`.
+61. **Receipt entry with helpers.** Update the receipt-entry draft so a
+    helper does the reading and sends suggestions; the household only
+    reviews. Exact Review words and what happens for an unknown item.
+62. **Wording pass on new screens.** Count this batch, Review, Settings →
+    Helpers, Mark returned: every label, help line and message; exact
+    replacements only.
+
 ## Brief for Lane B, batch 3 (done)
 
 > You are Lane B, the checker and drafter. You have full internet access for
