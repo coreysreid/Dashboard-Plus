@@ -8,7 +8,6 @@ and made-up example rows. Add a row here for each draft folder you create.
 | stock_lots/ | Item lots (layered use-by dates), screen flows and core needs | planning layered stock dates |
 | readiness/ | 49 source-linked "Have you thought about…?" questions | reviewing readiness prompts |
 | country-packs/ | Sourced AU, US, UK and NZ content | reviewing country packs |
-| documents/ | Where important papers are, with renewal dates | reviewing document records |
 | home_care/ | Household checks and jobs with due-date history | reviewing home checks |
 | wine/ | A compact wine collection module | reviewing or promoting it |
 | grab_list/ | Household leave-in-a-hurry list and one-page print design | building M3 grab lists |

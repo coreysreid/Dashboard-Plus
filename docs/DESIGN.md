@@ -564,6 +564,16 @@ number and the core can load both for a transition period.
   vehicle, "Who would you call if it broke down?"; a household with no
   vehicle is asked nothing; a **Vehicles** sheet prints the vehicles and
   dates without plate or policy numbers.
+- **Important documents** (declarative; requires People and Household stock;
+  shipped, decision 0062). A list of where papers are kept, not a document
+  vault. One table: documents (name, kind such as passport, insurance, will
+  or warranty; whose it is, a link to `people.people`; where it is kept, a
+  link to `stock.places`; a review or renew-by date; notes). There is no
+  field for a document number, password or copy of the paper. Behaviour: the
+  date is *due* on the day the household chose; one gap asks, per paper,
+  "Where is it kept?"; a household with no papers listed is asked nothing; a
+  **Document review dates** sheet prints names, kinds and dates only, never
+  where papers are kept.
 - **Readiness** (declarative; the home of the prompts in section 10.5).
   Tables: plans (a situation the household has thought through: what we would
   do, who does what, the answer to "could we get down from upstairs?"), drills

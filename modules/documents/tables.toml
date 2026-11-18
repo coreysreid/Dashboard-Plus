@@ -1,0 +1,30 @@
+# A list of where papers are kept, not a document vault (decision 0062). There is no field for a
+# document number, password or copy of the paper. Whose document it is links to People, and where it is
+# kept links to the household's own Places, shared with Household stock. No renewal interval is assumed:
+# the date is one the household types from the document itself or chooses as a reminder.
+
+[tables.documents]
+title = "Important documents"
+description = "Where important papers, or copies of them, are kept, and when to review or renew them. Do not enter document numbers here."
+columns.name = { type = "text", required = true }
+columns.kind = { type = "choice", required = true, choices = [
+    { key = "passport", label = "Passport" },
+    { key = "identity", label = "Birth certificate, licence or other identity paper" },
+    { key = "insurance", label = "Insurance policy" },
+    { key = "will", label = "Will or power of attorney" },
+    { key = "property", label = "Deed, lease or tenancy agreement" },
+    { key = "warranty", label = "Warranty or receipt" },
+    { key = "other", label = "Other" },
+] }
+columns.holder = { type = "link", to = "people.people", on_delete = "clear" }
+columns.place = { type = "link", to = "stock.places", on_delete = "restrict" }
+columns.renew_by = { type = "date" }
+columns.notes = { type = "longtext" }
+
+[tables.documents.watch]
+expiring = { date = "renew_by", warn_days = 30, wording = "due", what = "review or renewal" }
+
+# Asked for each paper written down, never "do you have a will?": that depends on the household.
+[[tables.documents.watch.gaps]]
+missing = "place"
+message = "Where is {name} kept? Choosing one of your places is enough."

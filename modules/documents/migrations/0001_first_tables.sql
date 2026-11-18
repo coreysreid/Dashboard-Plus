@@ -13,10 +13,14 @@ CREATE TABLE documents__documents (
     deleted_at TEXT,
     name TEXT,
     kind TEXT,
-    holder TEXT,
-    place TEXT,
+    holder INTEGER REFERENCES people__people(id) ON DELETE SET NULL,
+    place INTEGER REFERENCES stock__places(id) ON DELETE RESTRICT,
     renew_by TEXT,
     notes TEXT
 );
+
+CREATE INDEX documents__documents__holder__idx ON documents__documents(holder);
+
+CREATE INDEX documents__documents__place__idx ON documents__documents(place);
 
 CREATE INDEX documents__documents__renew_by__idx ON documents__documents(renew_by);

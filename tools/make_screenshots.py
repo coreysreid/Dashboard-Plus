@@ -79,6 +79,11 @@ STAGES = [
      "where it is kept and its car kit.", {"goto": "/t/vehicles__vehicles", "module": "vehicles"}),
     ("18g-vehicle-sheet", "Vehicles sheet", "As it prints: the vehicles and the dates the household chose, with "
      "no plate or policy numbers.", {"goto": "/sheet/vehicles/vehicles", "media": "print", "module": "vehicles"}),
+    ("18h-documents", "Important documents", "Where each important paper is kept, whose it is and the review "
+     "or renewal date the household chose.", {"goto": "/t/documents__documents", "module": "documents"}),
+    ("18i-documents-sheet", "Document review dates sheet", "As it prints: names, kinds and dates only, with no "
+     "places or document numbers.", {"goto": "/sheet/documents/document_review", "media": "print",
+                                     "module": "documents"}),
     ("19-needs-attention", "Needs attention", "Days of water with the working shown, running low, use-by "
      "and due dates, and details worth filling in.", {"goto": "/attention"}),
     ("20-supplies-sheet", "Emergency supplies sheet", "As it prints: water, first aid, power and food, and "

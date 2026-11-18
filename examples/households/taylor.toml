@@ -17,7 +17,7 @@ home_type = "apartment"
 storeys = 1
 mobility_needs = false
 hazards = ["flood", "snow", "storm"]
-modules = ["home_layout", "medical", "people", "stock", "vehicles"]
+modules = ["documents", "home_layout", "medical", "people", "stock", "vehicles"]
 
 # ---- People -----------------------------------------------------------------
 
@@ -277,3 +277,18 @@ vehicle = "Small car"
 name = "MOT test"
 last_done = "today-345"
 next_due = "today+20"
+
+# ---- Important documents --------------------------------------------------------
+# Sam has started the list. The warranty has no place yet, so the dashboard asks where it is kept.
+
+[[documents.documents]]
+name = "Tenancy agreement"
+kind = "property"
+holder = "Sam Taylor"
+place = "Hall cupboard"
+
+[[documents.documents]]
+name = "Bicycle warranty"
+kind = "warranty"
+holder = "Sam Taylor"
+renew_by = "today+120"

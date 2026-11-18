@@ -32,13 +32,14 @@ class ExampleHouseholdTests(TempDirTestCase):
                                          "Tinned tomatoes"])
         self.assertEqual(result["expiring"], ["Muesli bars", "Monthly flea and tick chew", "Long-life milk",
                                               "Upstairs hall smoke alarm", "Family car: Routine service", "Sunscreen SPF 50", "Rex", "Adrenaline auto-injector (Emily)",
-                                              "Kidney beans"])  # the 3 tins on Shelf 3, not the 10 in the garage
+                                              "Home insurance policy", "Kidney beans"])  # the 3 tins on Shelf 3, not the 10 in the garage
         beans = result["conn"].execute("SELECT quantity FROM stock__items WHERE name = 'Kidney beans'").fetchone()
         self.assertEqual(beans[0], 13)
         self.assertEqual(result["gaps"], 2)  # their only first aid kit is in the car; Home layout is filled in
         details = {i.name: i.detail for i in watch.expiring(result["conn"], result["registry"], TODAY)}
         self.assertTrue(details["Upstairs hall smoke alarm"].startswith("check due"), details)
         self.assertTrue(details["Family car: Routine service"].startswith("service or check due"), details)
+        self.assertTrue(details["Home insurance policy"].startswith("review or renewal due"), details)
         gaps = [g.message for g in watch.gaps(result["conn"], result["registry"])]
         self.assertIn("No first aid kit is recorded at home. Add one, or check where your kits are kept.", gaps)
 
@@ -56,7 +57,7 @@ class ExampleHouseholdTests(TempDirTestCase):
         result = self.summary("taylor")
         self.assertEqual((result["days"], result["need"]), (4.0, 3))
         self.assertEqual(result["low"], ["AA batteries", "Tinned soup"])
-        self.assertEqual(result["gaps"], 7)  # Home layout asks about the rest; nobody to call for the car yet
+        self.assertEqual(result["gaps"], 8)  # Home layout asks about the rest; nobody to call for the car; one paper's place
         self.assertEqual(result["expiring"], ["Oat milk", "Small car: MOT test"])
         gaps = [g.message for g in watch.gaps(result["conn"], result["registry"])]
         for question in ("Where is the water shut-off? It is not written down yet.",
@@ -66,6 +67,7 @@ class ExampleHouseholdTests(TempDirTestCase):
         self.assertIn("When do you plan to check Small first aid kit again?", gaps)
         self.assertIn("Who would you call if Small car broke down? It can be a roadside service, a garage or "
                       "someone you know.", gaps)
+        self.assertIn("Where is Bicycle warranty kept? Choosing one of your places is enough.", gaps)
 
     def test_amounts_end_where_the_file_says_after_stock_in_and_out(self):
         _, conn, _ = self.open("garcia")
