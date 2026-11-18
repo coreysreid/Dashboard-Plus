@@ -78,6 +78,7 @@ the "Requests" table of docs/WORKSTREAMS.md.
 ## Messages to Lane A
 
 - **Current print check:** All 80 available PDFs fit on one page with no extracted words outside the page, including Our home, Vehicles and First aid at home. Taylor Pets is off. See `workbench/reports/2026-11-18-print-check.md`.
+- **Current translation inventory:** 1,992 locations across 14 templates, six shipped modules and picker vocabularies; includes the private sheet warning and batch selection notes. See `workbench/reports/2026-11-18-translation-readiness.md`.
 
 - **Supplies print wording:** The water section currently prints all water batches, including those not safe to drink. The proposed title says “Drinking and other water”; a drinking-only section or total needs a `drinking` filter and visible indication. See `workbench/reports/2026-11-17-wording-consistency.md`.
 - **Shipped batch follow-up:** A batch quantity edit updates the total and history but has no distinct stocktake correction movement or count-confirmation flow. Stock out across batches requires separate entries. The Garcia and Taylor second-batch copies load and preserve totals. See `workbench/drafts/stock_lots/SHIPPED_FOLLOWUP.md`.
