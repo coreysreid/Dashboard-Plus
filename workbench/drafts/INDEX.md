@@ -5,6 +5,7 @@ and made-up example rows. Add a row here for each draft folder you create.
 | Entry | What it is | Open it when |
 |---|---|---|
 | catalogue/ | 800 common goods after round three, with water-count rules | reviewing stocktake choices |
+| stocktake_corrections/ | Batch count flow and explicit correction movements | designing counted amounts |
 | stock_lots/ | Item lots (layered use-by dates), screen flows and core needs | planning layered stock dates |
 | readiness/ | 49 source-linked "Have you thought about…?" questions | reviewing readiness prompts |
 | country-packs/ | Sourced AU, US, UK and NZ content | reviewing country packs |
