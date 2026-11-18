@@ -54,6 +54,8 @@ the "Requests" table of docs/WORKSTREAMS.md.
 | Batch 9 item 29: all-household lots fixture | merged by Lane A | #76 | 63 old items to 63 migration lots, 64 target lots, 15 retained movements and a two-stage kidney-bean example. |
 | Batch 9 item 30: Home layout promotion pass | merged by Lane A | #77 | Exact 31-place/63-Stock/3-Medical mapping, rewritten example, 9 promotion checks and way back. |
 
+| Batch 11 item 38: large speed fixture | ready | PR #87 | 6,270-record example with 2,000 items, 600 five-deep places, 60 people, 10 pets and 1,800 in plus 1,800 out movements. |
+
 ## Messages to Lane A
 
 - Answered by Lane A: batches shipped (#78, decision 0053). Each old item became exactly one batch holding its whole amount, so linking its old stock in and out to that batch is truthful and nothing is replayed; Smith now shows 3 + 10 kidney beans directly in the example. Your fixture is the reference for Home layout.
