@@ -39,6 +39,7 @@ Follow the INDEX.md in a folder before opening its files. Hidden files are not l
 | BACKLOG.md | Corey's feedback from using it, and what happened to each item | adding feedback or choosing the next fix |
 | WORKSTREAMS.md | How two agents split the work: lanes, owned files, contracts, status | before starting any work |
 | JOURNEYS.md | Short stories of real use, each an acceptance test | reviewing the experience |
+| plans/ | Build plans for larger pieces of work, such as the Agent API | building or reviewing a big feature |
 | INFLUENCES.md | Books and ideas we build on, credited, and how we credit | adding or checking a credit |
 | MODULES.md | Plain-language guide to writing a module with a garden example | making a module |
 | EXAMPLES.md | Three made-up households shown at every stage, welcome to closing (generated) | showing what it looks like |
@@ -118,6 +119,11 @@ marked Superseded. Each lists downsides, cost to undo, and the sign it was wrong
 | [0064](0064-real-browser-check.md) | A real-browser check clicks through setup, dates, stock in, private details and closing in Chromium (Linux CI job); a refused save keeps a private detail | Accepted |
 | [0065](0065-agpl-licence.md) | Licence changed to GNU AGPL v3 or later (from MIT) | Accepted |
 | [TEMPLATE](TEMPLATE.md) | Blank record to copy for a new decision | recording a decision |
+
+## docs/plans/  (summary: build plans for larger pieces of work, written before building)
+| Entry | What it is | Open it when |
+|---|---|---|
+| agent-api-v1.md | The Agent API skeleton plan: helper keys, read routes, suggestions held for Review, security model, tests | building or reviewing the Agent API |
 
 ## docs/releases/  (summary: release checks, one file per milestone)
 | Entry | What it is | Open it when |
