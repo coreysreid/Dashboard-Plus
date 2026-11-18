@@ -182,3 +182,18 @@ class PrivateFieldKeptTests(WebTests):
         record = re.search(r"/t/demo__items/(\d+)", self.get("/t/demo__items").get_data(as_text=True)).group(1)
         self.post(f"/t/demo__items/{record}", {"name": "Gloves (box)", "kind": "first_aid", "_keep_private": "secret"})
         self.assertEqual(self.get(f"/t/demo__items/{record}/reveal?column=secret").get_json()["value"], "keep me")
+
+    def test_a_refused_save_still_keeps_an_unopened_private_detail(self):
+        # Found by the real-browser check (decision 0064): after a save was refused for another answer, the
+        # form came back with the private box empty and open, so the next save quietly erased the detail.
+        self.sign_in()
+        self.post("/t/demo__items/new", {"name": "Gloves", "kind": "first_aid", "secret": "keep me"})
+        record = re.search(r"/t/demo__items/(\d+)", self.get("/t/demo__items").get_data(as_text=True)).group(1)
+        refused = self.post(f"/t/demo__items/{record}", {"name": "", "secret": "", "_keep_private": "secret"})
+        self.assertEqual(refused.status_code, 422)
+        page = refused.get_data(as_text=True)
+        self.assertIn("Show private detail", page)
+        self.assertIn('name="_keep_private" value="secret"', page)
+        self.assertNotIn("keep me", page)
+        self.post(f"/t/demo__items/{record}", {"name": "Gloves", "secret": "", "_keep_private": "secret"})
+        self.assertEqual(self.get(f"/t/demo__items/{record}/reveal?column=secret").get_json()["value"], "keep me")
