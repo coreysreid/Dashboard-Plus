@@ -1,6 +1,6 @@
-# Target data model, not a loadable module. The current core cannot derive an
-# item's amount from its lots or link Stock to a draft Home layout place.
-# Lane A will integrate these tables into Household stock after core support.
+# Historical target data model, not a loadable module. Batches now ship in
+# Household stock; Home layout uses the same stock.places records (decision 0054).
+# Compare this sketch with the shipped Stock schema before reusing any field.
 
 [tables.items]
 title = "Stock items"
@@ -17,7 +17,7 @@ title = "Batches and use-by dates"
 columns.item = { type = "link", to = "items", required = true, on_delete = "cascade" }
 columns.quantity = { type = "decimal", required = true, min = 0 }
 columns.use_by = { type = "date" }
-columns.place = { type = "link", to = "home_layout.places", on_delete = "restrict" }
+columns.place = { type = "link", to = "stock.places", on_delete = "restrict" }
 columns.package_size = { type = "text" }
 columns.notes = { type = "text" }
 # Same item + place + use-by can be combined only after the person confirms.
