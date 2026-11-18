@@ -1,6 +1,6 @@
 # 0014. MIT licence
 
-- **Status:** Accepted
+- **Status:** Superseded by [0065](0065-agpl-licence.md) on 2026-11-18
 - **Date:** 2026-11-06
 - **Decided by:** Claude (technical decision delegated by Corey)
 
