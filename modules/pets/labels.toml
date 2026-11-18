@@ -6,7 +6,7 @@ columns.species = { label = "Kind of animal" }
 columns.microchip = { label = "Microchip number", help = "On the registration papers or the vet's records. Useful if the pet goes missing." }
 columns.owner = { label = "Looked after by", help = "The person in the household who looks after this pet day to day." }
 columns.vet = { help = "Add the vet in People first, with their phone number." }
-columns.vaccinations_due = { label = "Vaccinations due", help = "You'll see it under Needs attention a month before." }
+columns.vaccinations_due = { label = "Vaccinations due by", help = "You'll see it under Needs attention a month before." }
 
 [tables.treatments]
 form = ["pet", "name", "kind", "dose", "every_days", "next_due", "notes"]
@@ -15,7 +15,7 @@ columns.name = { label = "Treatment or medicine", help = "For example \"Monthly 
 columns.kind = { label = "What kind" }
 columns.dose = { help = "How much, as on the label or the vet's instructions." }
 columns.every_days = { label = "Every (days)", help = "For example 30 for monthly. Leave blank if it isn't regular." }
-columns.next_due = { label = "Next due", help = "You'll see it under Needs attention a week before." }
+columns.next_due = { label = "Give again by", help = "You'll see it under Needs attention a week before." }
 
 [tables.given]
 form = ["treatment", "given_on", "notes"]

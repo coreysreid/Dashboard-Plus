@@ -6,7 +6,7 @@ list = ["name", "floor", "place", "route"]
 columns.name = { help = "For example, Front door or Back door." }
 columns.floor = { label = "Floor", help = "For example, Ground floor. Leave blank if your home has one floor." }
 columns.place = { label = "Where it is", help = "Choose one of your Places, or add the room first. Places are shared with Household stock." }
-columns.route = { label = "How to get there", help = "In your own words, including the way from upstairs if you have one. Keep it current if the layout changes." }
+columns.route = { label = "How to get there", help = "In your own words, including the way from upstairs if you have one. This prints on Our home. Don't write alarm codes or key-safe numbers here." }
 columns.notes = { help = "Do not write down where a spare key is hidden or an alarm code." }
 
 [tables.shutoffs]
@@ -17,7 +17,7 @@ list = ["name", "kind", "place", "how_to_find"]
 columns.name = { help = "For example, Water main or Power board." }
 columns.kind = { label = "What it turns off" }
 columns.place = { label = "Where it is", help = "Choose one of your Places, or add the room or area first. Places are shared with Household stock." }
-columns.how_to_find = { label = "How to find it", help = "A landmark helps someone who has never looked for it, such as: behind the grey shelves." }
+columns.how_to_find = { label = "How to find it", help = "A landmark helps someone who has never looked for it, such as: behind the grey shelves. This prints on Our home. Don't write alarm codes or key-safe numbers here." }
 
 [tables.equipment]
 empty = "Add a smoke alarm and where it is."

@@ -13,6 +13,7 @@ from decimal import Decimal
 
 from dashboard.core import dates
 from dashboard.core.schema import target_table
+from dashboard.core.units import unit_for
 
 PATH_SEPARATOR = " › "
 
@@ -69,6 +70,14 @@ def _from_template(conn, registry, info, row, style, depth, leave_out=()) -> str
     style = style or dates.household_style(conn)
     template = info.table.record_name
 
+    def amount_in(text: str):
+        """The number a unit in this part sits beside, so "1 tin" can be told from "3 tins"."""
+        for _, f, _, _ in string.Formatter().parse(text):
+            column = info.table.columns.get(f) if f else None
+            if column is not None and column.type in ("decimal", "measure", "integer"):
+                return row.get(f)
+        return None
+
     def fill(text: str) -> str | None:
         out = text
         for _, field_spec, _, _ in string.Formatter().parse(text):
@@ -80,6 +89,8 @@ def _from_template(conn, registry, info, row, style, depth, leave_out=()) -> str
                 target, linked = _linked(conn, registry, info, column, row.get(link))
                 value = _text(conn, registry, target, target.table.columns[field_name], linked.get(field_name),
                               style, depth) if linked else ""
+                if value and field_name == "unit":
+                    value = unit_for(amount_in(template), value)
             else:
                 value = _text(conn, registry, info, column, row.get(link), style, depth)
             out = out.replace("{" + field_spec + "}", value)

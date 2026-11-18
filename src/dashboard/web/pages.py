@@ -4,6 +4,7 @@ from __future__ import annotations
 from flask import Blueprint, abort, current_app, jsonify, redirect, render_template, request, url_for
 
 from dashboard.core import dates, records, schema, suggest
+from dashboard.core.units import unit_for
 from dashboard.web import display
 
 pages = Blueprint("pages", __name__)
@@ -143,6 +144,7 @@ def _render_form(info, store, values, errors, from_form, record=None, status=200
             into = info.table.columns[rule["into"]]
             amount = display.Formatter(store).text(info, into, record.get(rule["into"])) or "0"
             unit = record.get("unit") if "unit" in info.table.columns else None
+            unit = unit_for(record.get(rule["into"]), unit) if unit else unit
             held = sum(1 for r in rows if r[rule["amount"]])
             summary = (f"{display.column_label(info, into)}: {amount}{' ' + unit if unit else ''}, "
                        f"in {held} batch{'es' if held != 1 else ''}")
