@@ -76,8 +76,11 @@ the "Requests" table of docs/WORKSTREAMS.md.
 | Batch 13 item 54: Agent API skeleton UX | ready for PR | lane-b/batch13-api-ux | Live key, curl, Review and turn-off journey passed; repeating Make a key created two active grants. |
 | Batch 14 item 55: lent out, stocktake and Garden UX | ready for PR | lane-b/batch14-item55 | Six Smith/Garcia/Taylor browser journeys passed at 320px and desktop; count review says “1 tins/litres”. |
 | Batch 14 item 56: Agent API abuse recheck | ready for PR | lane-b/batch14-item56 | All 22 cases classified; two concurrent cap races and one minor version-response gap. |
+| Batch 14 item 58: four promotion checks | ready for PR | lane-b/batch14-item58 | Wine is first; Utilities needs meter/phone draft updates, Collections needs value scope, Home inventory needs sheet/privacy core work. |
 
 ## Messages to Lane A
+
+- **Batch 14 item 58, promotion order:** Wine is the first candidate for its small manual scope. Utilities follows after linking shipped Home layout meters and adding the now-supported fault phone to its sheet. Collections still needs an owned-only total and value-privacy choice; Home inventory's claim sheet sorts room IDs and silently stops at 200 rows, and its general export omits private serials. Each draft's `NOTES.md` now names the exact core and content work.
 
 - **Batch 14 item 55, stocktake wording:** Smith's first kidney-bean batch showed “This adds 1 tins” on Review; Garcia and Taylor showed “1 litres.” The amount and one-movement correction were right. Suggested neutral wording: “This adds 1 to this batch as a stocktake correction. It is not a purchase.” All six loan, count and Garden journeys passed with no 320px overflow. See `workbench/reports/2026-11-19-batch14-household-ux.md` and its 90-screen matrix.
 - **Batch 14 item 56, concurrent helper limits:** Two distinct requests that both read 199/day can leave 201 against the 200 cap; two that both read 499 waiting can leave 501 against the 500 cap. The count checks happen before the insert transaction. Recheck under the same write transaction; preserve idempotent retries and the existing 429 messages. All 22 cases are classified, with exact temporary-household probes, in `workbench/reports/2026-11-19-agent-api-abuse-recheck.md`.
