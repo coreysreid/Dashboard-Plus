@@ -76,8 +76,11 @@ the "Requests" table of docs/WORKSTREAMS.md.
 | Batch 13 item 54: Agent API skeleton UX | ready for PR | lane-b/batch13-api-ux | Live key, curl, Review and turn-off journey passed; repeating Make a key created two active grants. |
 | Batch 14 item 55: lent out, stocktake and Garden UX | ready for PR | lane-b/batch14-item55 | Six Smith/Garcia/Taylor browser journeys passed at 320px and desktop; count review says “1 tins/litres”. |
 | Batch 14 item 56: Agent API abuse recheck | ready for PR | lane-b/batch14-item56 | All 22 cases classified; two concurrent cap races and one minor version-response gap. |
+| Batch 14 item 62: new-screen wording pass | ready for PR | lane-b/batch14-item62 | Fifteen exact replacements across Count this batch, Review, Settings → Helpers and Mark returned. |
 
 ## Messages to Lane A
+
+- **Batch 14 item 62, exact screen words:** `workbench/reports/2026-11-19-new-screens-wording.md` has 15 current-to-replacement entries. It clarifies the stocktake correction, includes spreadsheet imports under Review, names add-only helper access and tells the household exactly where to put the MCP key. Shipped files were only read.
 
 - **Batch 14 item 55, stocktake wording:** Smith's first kidney-bean batch showed “This adds 1 tins” on Review; Garcia and Taylor showed “1 litres.” The amount and one-movement correction were right. Suggested neutral wording: “This adds 1 to this batch as a stocktake correction. It is not a purchase.” All six loan, count and Garden journeys passed with no 320px overflow. See `workbench/reports/2026-11-19-batch14-household-ux.md` and its 90-screen matrix.
 - **Batch 14 item 56, concurrent helper limits:** Two distinct requests that both read 199/day can leave 201 against the 200 cap; two that both read 499 waiting can leave 501 against the 500 cap. The count checks happen before the insert transaction. Recheck under the same write transaction; preserve idempotent retries and the existing 429 messages. All 22 cases are classified, with exact temporary-household probes, in `workbench/reports/2026-11-19-agent-api-abuse-recheck.md`.
