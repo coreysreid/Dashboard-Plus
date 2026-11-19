@@ -40,3 +40,4 @@ expected, actual, severity (blocker, important, minor), suggested change.
 | 2026-11-19-batch14-household-ux.md | Three-household loan, batch-count and Garden check at phone and desktop widths. | refining new household flows |
 | 2026-11-19-batch14-ux-matrix.csv | Ninety route, response and document-width observations. | reproducing batch 14 UX results |
 | ux_2026_11_19/ | Smith phone and desktop captures of stocktake wording. | seeing the singular-unit finding |
+| 2026-11-19-agent-api-abuse-recheck.md | All 22 misuse cases checked against shipped code; concurrent cap race reproduced. | hardening the Agent API |
