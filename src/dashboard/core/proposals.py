@@ -18,6 +18,7 @@ from dashboard.errors import PlainError
 
 MAX_ENTRIES = 50
 MAX_PER_DAY = 200
+MAX_WAITING = 500  # suggestions one helper may have waiting on Review at once (decision 0085)
 MAX_WHY = 300
 MAX_KEY = 100
 REQUEST_KEY = re.compile(r"^[A-Za-z0-9._:-]+$")
@@ -57,6 +58,13 @@ def used_today(conn: sqlite3.Connection, helper: helpers.Helper) -> int:
     return conn.execute(
         "SELECT COUNT(*) FROM core__proposals p JOIN core__helper_batches b ON b.id = p.batch_id "
         "WHERE b.helper_id = ? AND p.created_at >= ?", (helper.id, midnight)).fetchone()[0]
+
+
+def waiting_for(conn: sqlite3.Connection, helper: helpers.Helper) -> int:
+    """How many of this helper's suggested rows are still waiting on Review. Imported rows never count."""
+    return conn.execute(
+        "SELECT COUNT(*) FROM core__proposals p JOIN core__helper_batches b ON b.id = p.batch_id "
+        "WHERE b.helper_id = ? AND p.status = 'pending'", (helper.id,)).fetchone()[0]
 
 
 def _texts(body):
@@ -173,11 +181,13 @@ def _invalid(registry: dict, problems: list[dict]) -> ProposalError:
     return ProposalError(422, "invalid", f"{lead} values could not be used. Nothing was saved.", problems)
 
 
-def submit(conn: sqlite3.Connection, registry: dict, helper: helpers.Helper, body) -> tuple[dict, bool]:
+def submit(conn: sqlite3.Connection, registry: dict, helper: helpers.Helper, body,
+           queue_limit: int = MAX_WAITING) -> tuple[dict, bool]:
     """Check a helper's request and keep it waiting for the household. Returns (result, newly_created).
 
     All or nothing: if any entry is wrong, nothing is stored. The same `request_key` with the same body
-    returns the first answer again. `registry` holds every table switched on."""
+    returns the first answer again. `registry` holds every table switched on. A request that would leave the
+    helper with more than `queue_limit` suggestions waiting is refused whole (decision 0085)."""
     if not helper.may_suggest:
         raise ProposalError(403, "look_only", "This helper may look but not suggest changes. "
                                               "Ask the household to change its access in Settings.")
@@ -190,6 +200,11 @@ def submit(conn: sqlite3.Connection, registry: dict, helper: helpers.Helper, bod
     if used_today(conn, helper) + len(entries) > MAX_PER_DAY:
         raise ProposalError(429, "daily_limit", f"This helper has reached {MAX_PER_DAY} suggestions today. "
                                                 f"Try again tomorrow.")
+    waiting = waiting_for(conn, helper)
+    if waiting + len(entries) > queue_limit:
+        raise ProposalError(429, "review_queue_full",
+                            f"{waiting} suggestion{' from this helper is' if waiting == 1 else 's from this helper are'} "
+                            f"already waiting on Review. Ask the household to look at them first.")
     _check_tables(helper, registry, entries)
     problems = _shape_problems(helper, registry, entries)
     if not problems:

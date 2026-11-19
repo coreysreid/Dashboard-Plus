@@ -9,21 +9,24 @@ import time
 from collections import deque
 from dataclasses import asdict
 from decimal import Decimal
+from pathlib import Path
 
 from flask import Blueprint, Response, current_app, g, request
 
 from dashboard import __version__
 from dashboard.core import helpers, proposals, records, schema, watch
-from dashboard.core.proposals import MAX_ENTRIES, MAX_PER_DAY, ProposalError
+from dashboard.core.proposals import MAX_ENTRIES, MAX_PER_DAY, MAX_WAITING, ProposalError
 from dashboard.web import display
 
 log = logging.getLogger("dashboard.helpers")
 helper_api = Blueprint("helper_api", __name__, url_prefix="/api/v1")
 PREFIX = "/api/v1/"
+OPENAPI_FILE = Path(__file__).with_name("openapi-v1.json")  # served as is at /api/v1/openapi.json (decision 0084)
 MAX_BODY = 65536
 DEFAULT_PAGE, MAX_PAGE = 50, 200
 JSON_TYPE = "application/json; charset=utf-8"
 REQUESTS_PER_MINUTE = 120  # per helper; app.config["HELPER_REQUESTS_PER_MINUTE"] can change it (decision 0074)
+QUEUE_LIMIT_KEY = "HELPER_REVIEW_QUEUE_LIMIT"  # app.config can change MAX_WAITING (decision 0085)
 NOT_FOUND = "That table or record could not be found. GET /api/v1/tables lists what this helper may use."
 _recent_lock = threading.Lock()
 
@@ -85,6 +88,10 @@ def _too_soon(helper) -> int:
             return max(1, math.ceil(60 - (now - recent[0])))
         recent.append(now)
     return 0
+
+
+def _queue_limit() -> int:
+    return current_app.config.get(QUEUE_LIMIT_KEY, MAX_WAITING)
 
 
 def _full() -> dict:
@@ -183,6 +190,8 @@ def me():
                   "private_details": False,
                   "limits": {"entries_per_call": MAX_ENTRIES, "suggestions_per_day": MAX_PER_DAY,
                              "suggestions_left_today": max(0, MAX_PER_DAY - proposals.used_today(conn, helper)),
+                             "review_queue_limit": _queue_limit(),
+                             "suggestions_waiting": proposals.waiting_for(conn, helper),
                              "max_body_bytes": MAX_BODY,
                              "requests_per_minute": current_app.config.get("HELPER_REQUESTS_PER_MINUTE",
                                                                            REQUESTS_PER_MINUTE)},
@@ -246,7 +255,8 @@ def attention():
 def suggest():
     body = request.get_json(silent=True)
     try:
-        result, created = proposals.submit(current_app.config["CONNECT"](), _full(), g.helper, body)
+        result, created = proposals.submit(current_app.config["CONNECT"](), _full(), g.helper, body,
+                                            _queue_limit())
     except ProposalError as error:
         extra = {"problems": error.problems} if error.problems else {}
         return api_error(error.status, error.code, str(error), **extra)
@@ -267,3 +277,9 @@ def one_batch(batch_id):
     if not proposals.owns(conn, g.helper, batch_id):
         return api_error(404, "not_found", "That batch could not be found.")
     return reply(proposals.batch_result(conn, batch_id, detail=True))
+
+
+@helper_api.get("/openapi.json")
+def openapi():
+    """The published description of this API (decision 0084): read-only, and behind the same key as every route."""
+    return Response(OPENAPI_FILE.read_bytes(), content_type=JSON_TYPE)

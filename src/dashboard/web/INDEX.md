@@ -16,3 +16,4 @@
 | helper_settings.py | Settings, Helpers: give an assistant a key, choose what it may do, and turn its access off. | changing the Helpers settings page |
 | export_page.py | Settings, Export my records: a page and a button that downloads a zip of spreadsheet files. | changing the Export page |
 | restore.py | Settings, Backups: the list of backups, a preview of one, putting it back, and Undo restore. | changing the restore pages |
+| openapi-v1.json | The published OpenAPI 3.1 description of the helper API, served at GET /api/v1/openapi.json. | changing a helper route, reply or error code (edit it too) |

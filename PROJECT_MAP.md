@@ -134,6 +134,8 @@ One record per decision, from `TEMPLATE.md`. Never deleted; reversed ones are ma
 | [0080](0080-import-from-a-spreadsheet.md) | Import from a spreadsheet (CSV) in Settings: columns matched, every row checked like a helper's suggestion, ready rows wait on Review as one batch by "Import '<file>'"; the file is never kept; private details not imported | Accepted |
 | [0081](0081-household-sharing-options.md) | Sharing with the household, three options designed (A: take turns through a shared folder; B: one home base, others use a browser on home Wi-Fi; C: every copy syncs), a mode label on every page, default "On this computer only"; changes the privacy and security rules | Proposed — Corey to choose an option |
 | [0082](0082-every-page-shows-the-connection-mode.md) | Every page says "On this computer only" and how many helpers can look; the footer no longer says nothing is ever sent | Accepted |
+| [0084](0084-published-api-description.md) | A published OpenAPI 3.1 description of the helper API, served read-only at /api/v1/openapi.json behind the same key as every route, and held to the real routes, errors and replies by a contract test | Accepted |
+| [0085](0085-review-queue-cap.md) | A helper may have at most 500 suggestions waiting on Review (a setting); a batch that would go over is refused whole with 429 `review_queue_full`; imports do not count; accepting or rejecting frees room | Accepted |
 | [TEMPLATE](TEMPLATE.md) | Blank record to copy for a new decision | recording a decision |
 
 ## docs/plans/  (summary: build plans for larger pieces of work, written before building)
@@ -457,6 +459,7 @@ Add a new file with the next number instead of changing an old one.
 | helper_settings.py | Settings, Helpers: give an assistant a key, choose what it may do, and turn its access off. | changing the Helpers settings page |
 | export_page.py | Settings, Export my records: a page and a button that downloads a zip of spreadsheet files. | changing the Export page |
 | restore.py | Settings, Backups: the list of backups, a preview of one, putting it back, and Undo restore. | changing the restore pages |
+| openapi-v1.json | The published OpenAPI 3.1 description of the helper API, served at GET /api/v1/openapi.json. | changing a helper route, reply or error code (edit it too) |
 
 ## src/dashboard/web/templates/  (summary: HTML pages; base.html holds the shared look)
 | Entry | What it is | Open it when |
@@ -529,6 +532,7 @@ How to run them is in AGENTS.md.
 | test_helper_*.py | Tests for helpers: keys, suggestions waiting for a person, the /api/v1 door, and the Settings and Review screens | changing helpers, the helper API or Review |
 | test_export.py | Tests for Export my records: every table of an example household, private details, formula safety and the download. | changing the export |
 | test_restore.py | Tests for restoring a backup: checks that change nothing, the safe swap, Undo after a restart, and refusals. | changing restore or Undo |
+| test_api_contract.py | Tests that the published API description (openapi-v1.json) matches the real /api/v1 routes, errors and replies. | changing a helper route, reply or error code |
 
 ## tools/  (summary: scripts that check, lock and build the project; run by CI)
 | Entry | What it is | Open it when |

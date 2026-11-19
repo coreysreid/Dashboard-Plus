@@ -1,0 +1,2245 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "Dashboard Plus helper API",
+    "version": "1.0.0",
+    "summary": "Let a program look at parts of the household's records and suggest new ones.",
+    "description": "The helper API of Dashboard Plus, a local-first household records app. It runs on this computer only (127.0.0.1) and the port changes each time the app opens: Settings, Helpers shows the address. Every route needs `Authorization: Bearer <key>`, a key the household made for one helper. Helpers can look at the tables they were given and suggest NEW records; nothing is added until a person accepts it on Review. Private details are never shared. Requests from web pages are refused. This description is itself served at GET /api/v1/openapi.json and needs the same key. All examples are invented."
+  },
+  "servers": [
+    {
+      "url": "http://127.0.0.1:{port}",
+      "description": "This computer only.",
+      "variables": {
+        "port": {
+          "default": "5199",
+          "description": "Shown in Settings, Helpers; changes at each start."
+        }
+      }
+    }
+  ],
+  "security": [
+    {
+      "helperKey": []
+    }
+  ],
+  "tags": [
+    {
+      "name": "Looking"
+    },
+    {
+      "name": "Suggesting"
+    },
+    {
+      "name": "About this API"
+    }
+  ],
+  "paths": {
+    "/api/v1/me": {
+      "get": {
+        "operationId": "getMe",
+        "tags": [
+          "Looking"
+        ],
+        "summary": "Who am I, what may I use, and what are my limits?",
+        "responses": {
+          "200": {
+            "description": "Success.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Me"
+                },
+                "example": {
+                  "name": "Pet diary helper",
+                  "access": "suggest",
+                  "modules": [
+                    {
+                      "name": "pets",
+                      "title": "Pets"
+                    }
+                  ],
+                  "message": "Pet diary helper may use: Pets. Ask the household to change its access in Settings.",
+                  "private_details": false,
+                  "limits": {
+                    "entries_per_call": 50,
+                    "suggestions_per_day": 200,
+                    "suggestions_left_today": 196,
+                    "review_queue_limit": 500,
+                    "suggestions_waiting": 4,
+                    "max_body_bytes": 65536,
+                    "requests_per_minute": 120
+                  },
+                  "api_version": "1",
+                  "program_version": "0.0.0"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "No key, a wrong key, a key turned off, or a key sent anywhere but the Authorization header (`no_key`).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                },
+                "example": {
+                  "error": "no_key",
+                  "message": "This helper's access key is missing or no longer works. Ask the household to check Helpers in Settings."
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "The request carried an Origin header (`from_a_web_page`), or named a host other than this computer (`forbidden`).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                },
+                "examples": {
+                  "from_a_web_page": {
+                    "value": {
+                      "error": "from_a_web_page",
+                      "message": "The helper API cannot be used from a web page."
+                    }
+                  },
+                  "forbidden": {
+                    "value": {
+                      "error": "forbidden",
+                      "message": "This request was refused because it did not come from this computer."
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "More than `limits.requests_per_minute` requests in a minute (`too_many_requests`). Wait as long as Retry-After says.",
+            "headers": {
+              "Retry-After": {
+                "description": "Seconds to wait before trying again.",
+                "schema": {
+                  "type": "integer"
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                },
+                "example": {
+                  "error": "too_many_requests",
+                  "message": "This helper is sending requests too quickly. Wait 12 seconds, then try again."
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "An unexpected problem (`server_error`). Nothing was changed.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                },
+                "example": {
+                  "error": "server_error",
+                  "message": "Something went wrong. Nothing was changed."
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/tables": {
+      "get": {
+        "operationId": "listTables",
+        "tags": [
+          "Looking"
+        ],
+        "summary": "The tables this helper may use, with their columns",
+        "description": "Private columns are left out and only counted. Links into parts the helper was not given are left out without saying where they lead.",
+        "responses": {
+          "200": {
+            "description": "Success.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Tables"
+                },
+                "example": {
+                  "tables": [
+                    {
+                      "table": "pets__weigh_ins",
+                      "module": "pets",
+                      "title": "Weigh-ins",
+                      "can_suggest": true,
+                      "columns": [
+                        {
+                          "name": "pet",
+                          "label": "Pet",
+                          "type": "link",
+                          "required": true,
+                          "help": null,
+                          "unit": null,
+                          "min": null,
+                          "max": null,
+                          "can_suggest": true,
+                          "to": "pets__pets"
+                        },
+                        {
+                          "name": "day",
+                          "label": "Day",
+                          "type": "date",
+                          "required": true,
+                          "help": null,
+                          "unit": null,
+                          "min": null,
+                          "max": null,
+                          "can_suggest": true
+                        },
+                        {
+                          "name": "weight",
+                          "label": "Weight",
+                          "type": "measure",
+                          "required": true,
+                          "help": "Weigh before breakfast",
+                          "unit": "kg",
+                          "min": 0,
+                          "max": null,
+                          "can_suggest": true
+                        }
+                      ],
+                      "worked_out": [],
+                      "private_columns_left_out": 0
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "No key, a wrong key, a key turned off, or a key sent anywhere but the Authorization header (`no_key`).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                },
+                "example": {
+                  "error": "no_key",
+                  "message": "This helper's access key is missing or no longer works. Ask the household to check Helpers in Settings."
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "The request carried an Origin header (`from_a_web_page`), or named a host other than this computer (`forbidden`).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                },
+                "examples": {
+                  "from_a_web_page": {
+                    "value": {
+                      "error": "from_a_web_page",
+                      "message": "The helper API cannot be used from a web page."
+                    }
+                  },
+                  "forbidden": {
+                    "value": {
+                      "error": "forbidden",
+                      "message": "This request was refused because it did not come from this computer."
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "More than `limits.requests_per_minute` requests in a minute (`too_many_requests`). Wait as long as Retry-After says.",
+            "headers": {
+              "Retry-After": {
+                "description": "Seconds to wait before trying again.",
+                "schema": {
+                  "type": "integer"
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                },
+                "example": {
+                  "error": "too_many_requests",
+                  "message": "This helper is sending requests too quickly. Wait 12 seconds, then try again."
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "An unexpected problem (`server_error`). Nothing was changed.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                },
+                "example": {
+                  "error": "server_error",
+                  "message": "Something went wrong. Nothing was changed."
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/tables/{table}/records": {
+      "get": {
+        "operationId": "listRecords",
+        "tags": [
+          "Looking"
+        ],
+        "summary": "Records of one table, oldest first, paged by id",
+        "parameters": [
+          {
+            "name": "table",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "A table name from GET /tables, like `pets__weigh_ins`."
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 200,
+              "default": 50
+            },
+            "description": "How many to return, 1 to 200. Values outside the range are brought into it."
+          },
+          {
+            "name": "after",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "description": "The `next_after` of the previous page."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RecordPage"
+                },
+                "example": {
+                  "table": "pets__weigh_ins",
+                  "records": [
+                    {
+                      "id": 7,
+                      "created_at": "2026-11-10T08:30:00",
+                      "updated_at": "2026-11-10T08:30:00",
+                      "source": "person",
+                      "values": {
+                        "pet": 3,
+                        "day": "2026-11-10",
+                        "weight": 4.3
+                      }
+                    }
+                  ],
+                  "next_after": null
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "No such table, record or batch for this helper. A table in a part this helper was not given answers exactly like a table that does not exist (`not_found`).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                },
+                "example": {
+                  "error": "not_found",
+                  "message": "That table or record could not be found. GET /api/v1/tables lists what this helper may use."
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "No key, a wrong key, a key turned off, or a key sent anywhere but the Authorization header (`no_key`).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                },
+                "example": {
+                  "error": "no_key",
+                  "message": "This helper's access key is missing or no longer works. Ask the household to check Helpers in Settings."
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "The request carried an Origin header (`from_a_web_page`), or named a host other than this computer (`forbidden`).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                },
+                "examples": {
+                  "from_a_web_page": {
+                    "value": {
+                      "error": "from_a_web_page",
+                      "message": "The helper API cannot be used from a web page."
+                    }
+                  },
+                  "forbidden": {
+                    "value": {
+                      "error": "forbidden",
+                      "message": "This request was refused because it did not come from this computer."
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "More than `limits.requests_per_minute` requests in a minute (`too_many_requests`). Wait as long as Retry-After says.",
+            "headers": {
+              "Retry-After": {
+                "description": "Seconds to wait before trying again.",
+                "schema": {
+                  "type": "integer"
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                },
+                "example": {
+                  "error": "too_many_requests",
+                  "message": "This helper is sending requests too quickly. Wait 12 seconds, then try again."
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "An unexpected problem (`server_error`). Nothing was changed.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                },
+                "example": {
+                  "error": "server_error",
+                  "message": "Something went wrong. Nothing was changed."
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/tables/{table}/records/{record_id}": {
+      "get": {
+        "operationId": "getRecord",
+        "tags": [
+          "Looking"
+        ],
+        "summary": "One record",
+        "parameters": [
+          {
+            "name": "table",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "A table name from GET /tables, like `pets__weigh_ins`."
+          },
+          {
+            "name": "record_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RecordOne"
+                },
+                "example": {
+                  "table": "pets__weigh_ins",
+                  "record": {
+                    "id": 7,
+                    "created_at": "2026-11-10T08:30:00",
+                    "updated_at": "2026-11-10T08:30:00",
+                    "source": "person",
+                    "values": {
+                      "pet": 3,
+                      "day": "2026-11-10",
+                      "weight": 4.3
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "No such table, record or batch for this helper. A table in a part this helper was not given answers exactly like a table that does not exist (`not_found`).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                },
+                "example": {
+                  "error": "not_found",
+                  "message": "That table or record could not be found. GET /api/v1/tables lists what this helper may use."
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "No key, a wrong key, a key turned off, or a key sent anywhere but the Authorization header (`no_key`).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                },
+                "example": {
+                  "error": "no_key",
+                  "message": "This helper's access key is missing or no longer works. Ask the household to check Helpers in Settings."
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "The request carried an Origin header (`from_a_web_page`), or named a host other than this computer (`forbidden`).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                },
+                "examples": {
+                  "from_a_web_page": {
+                    "value": {
+                      "error": "from_a_web_page",
+                      "message": "The helper API cannot be used from a web page."
+                    }
+                  },
+                  "forbidden": {
+                    "value": {
+                      "error": "forbidden",
+                      "message": "This request was refused because it did not come from this computer."
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "More than `limits.requests_per_minute` requests in a minute (`too_many_requests`). Wait as long as Retry-After says.",
+            "headers": {
+              "Retry-After": {
+                "description": "Seconds to wait before trying again.",
+                "schema": {
+                  "type": "integer"
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                },
+                "example": {
+                  "error": "too_many_requests",
+                  "message": "This helper is sending requests too quickly. Wait 12 seconds, then try again."
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "An unexpected problem (`server_error`). Nothing was changed.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                },
+                "example": {
+                  "error": "server_error",
+                  "message": "Something went wrong. Nothing was changed."
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/attention": {
+      "get": {
+        "operationId": "getAttention",
+        "tags": [
+          "Looking"
+        ],
+        "summary": "What is running low, expiring, short of supplies or missing a detail",
+        "description": "Only for the tables this helper may use.",
+        "responses": {
+          "200": {
+            "description": "Success.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Attention"
+                },
+                "example": {
+                  "running_low": [
+                    {
+                      "table": "stock__items",
+                      "record_id": 2,
+                      "name": "Torch batteries",
+                      "detail": "2 of 6 each"
+                    }
+                  ],
+                  "expiring": [
+                    {
+                      "table": "stock__batches",
+                      "record_id": 5,
+                      "name": "Tinned tomatoes",
+                      "detail": "use by 2026-12-01"
+                    }
+                  ],
+                  "supplies": [
+                    {
+                      "table": "stock__items",
+                      "title": "Water",
+                      "unit": "litres",
+                      "total": 20.0,
+                      "daily_need": 7.0,
+                      "days": 2.9,
+                      "target_days": 14.0,
+                      "shortfall": 78.0,
+                      "working": "20 litres at 7 a day",
+                      "needs_household": false,
+                      "label": "supplies",
+                      "rows": 2,
+                      "basis": "3 litres per person a day",
+                      "not_counted": 0,
+                      "wrong_unit": [],
+                      "notes": []
+                    }
+                  ],
+                  "gaps": [
+                    {
+                      "table": "pets__pets",
+                      "record_id": 3,
+                      "message": "Miso has no vet recorded."
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "No key, a wrong key, a key turned off, or a key sent anywhere but the Authorization header (`no_key`).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                },
+                "example": {
+                  "error": "no_key",
+                  "message": "This helper's access key is missing or no longer works. Ask the household to check Helpers in Settings."
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "The request carried an Origin header (`from_a_web_page`), or named a host other than this computer (`forbidden`).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                },
+                "examples": {
+                  "from_a_web_page": {
+                    "value": {
+                      "error": "from_a_web_page",
+                      "message": "The helper API cannot be used from a web page."
+                    }
+                  },
+                  "forbidden": {
+                    "value": {
+                      "error": "forbidden",
+                      "message": "This request was refused because it did not come from this computer."
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "More than `limits.requests_per_minute` requests in a minute (`too_many_requests`). Wait as long as Retry-After says.",
+            "headers": {
+              "Retry-After": {
+                "description": "Seconds to wait before trying again.",
+                "schema": {
+                  "type": "integer"
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                },
+                "example": {
+                  "error": "too_many_requests",
+                  "message": "This helper is sending requests too quickly. Wait 12 seconds, then try again."
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "An unexpected problem (`server_error`). Nothing was changed.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                },
+                "example": {
+                  "error": "server_error",
+                  "message": "Something went wrong. Nothing was changed."
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/proposals": {
+      "post": {
+        "operationId": "suggestRecords",
+        "tags": [
+          "Suggesting"
+        ],
+        "summary": "Suggest new records (all or nothing)",
+        "description": "Suggestions only ever ADD records, and only wait on Review until a person accepts or rejects each one. Up to 50 entries and 65,536 bytes per request, 200 suggested rows per helper per UTC day, and at most `limits.review_queue_limit` of the helper's suggestions waiting on Review at once. Send the same `request_key` and body again to retry safely: you get the first answer (200) and nothing is added twice. A request that would take the helper over its Review limit is refused whole with `review_queue_full`.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ProposalRequest"
+              },
+              "example": {
+                "request_key": "weigh-2026-11-17",
+                "why": "Read from the weigh-in card on the fridge",
+                "entries": [
+                  {
+                    "table": "pets__weigh_ins",
+                    "values": {
+                      "pet": 3,
+                      "day": "2026-11-17",
+                      "weight": 4.3
+                    }
+                  }
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Kept, waiting for the household.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Batch"
+                },
+                "example": {
+                  "batch_id": 12,
+                  "state": "waiting",
+                  "why": "Read from the weigh-in card on the fridge",
+                  "proposals": [
+                    {
+                      "id": 31,
+                      "position": 0,
+                      "table": "pets__weigh_ins",
+                      "status": "pending"
+                    }
+                  ],
+                  "message": "1 suggestion is waiting for the household to review. Nothing changes until they accept it."
+                }
+              }
+            }
+          },
+          "200": {
+            "description": "The same request_key and body were sent before: the first answer, nothing new added.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Batch"
+                },
+                "example": {
+                  "batch_id": 12,
+                  "state": "waiting",
+                  "why": "Read from the weigh-in card on the fridge",
+                  "proposals": [
+                    {
+                      "id": 31,
+                      "position": 0,
+                      "table": "pets__weigh_ins",
+                      "status": "pending"
+                    }
+                  ],
+                  "message": "1 suggestion is waiting for the household to review. Nothing changes until they accept it."
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "The body could not be read (`bad_request`), or contains something that looks like a helper key (`looks_like_a_key`) or hidden characters (`hidden_characters`). None of it is kept or repeated.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                },
+                "examples": {
+                  "bad_request": {
+                    "value": {
+                      "error": "bad_request",
+                      "message": "Give this request a key so a retry cannot add the same rows twice."
+                    }
+                  },
+                  "looks_like_a_key": {
+                    "value": {
+                      "error": "looks_like_a_key",
+                      "message": "That looks like a helper key. Keys belong only in the Authorization header."
+                    }
+                  },
+                  "hidden_characters": {
+                    "value": {
+                      "error": "hidden_characters",
+                      "message": "This request contains hidden control characters, such as marks that turn text around on screen. Remove them and send it again. Line breaks are fine."
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "From a web page (`from_a_web_page`); a helper that may only look (`look_only`); a field linking into a part not given (`not_allowed`, the same answer whatever the value); or a private detail named (`private_detail`).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                },
+                "examples": {
+                  "from_a_web_page": {
+                    "value": {
+                      "error": "from_a_web_page",
+                      "message": "The helper API cannot be used from a web page."
+                    }
+                  },
+                  "look_only": {
+                    "value": {
+                      "error": "look_only",
+                      "message": "This helper may look but not suggest changes. Ask the household to change its access in Settings."
+                    }
+                  },
+                  "not_allowed": {
+                    "value": {
+                      "error": "not_allowed",
+                      "message": "This helper may not set roadside_contact: it links to a part of the records this helper was not given. Leave it out."
+                    }
+                  },
+                  "private_detail": {
+                    "value": {
+                      "error": "private_detail",
+                      "message": "Private details are never shared with helpers. Leave out: allergies."
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "A table that does not exist, or is in a part this helper was not given (`not_found`; the two answer identically).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                },
+                "example": {
+                  "error": "not_found",
+                  "message": "That table or record could not be found. GET /api/v1/tables lists what this helper may use."
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "The same `request_key` was sent with different suggestions (`request_key_reused`).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                },
+                "example": {
+                  "error": "request_key_reused",
+                  "message": "This request key was already used for different suggestions. Check the earlier batch, then use a new key."
+                }
+              }
+            }
+          },
+          "413": {
+            "description": "The body is over 65,536 bytes (`too_large`).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                },
+                "example": {
+                  "error": "too_large",
+                  "message": "This request is too large. Send fewer suggestions at a time."
+                }
+              }
+            }
+          },
+          "415": {
+            "description": "The body is not JSON (`needs_json`).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                },
+                "example": {
+                  "error": "needs_json",
+                  "message": "Send the body as JSON (Content-Type: application/json)."
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "A suggestion is not valid (`invalid`). The whole request is refused; `problems` names each entry, table and field and never repeats a submitted value.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                },
+                "example": {
+                  "error": "invalid",
+                  "message": "Weigh-ins: some values could not be used. Nothing was saved.",
+                  "problems": [
+                    {
+                      "entry": 0,
+                      "table": "pets__weigh_ins",
+                      "field": "weight",
+                      "message": "must be at least 0."
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Too many requests in a minute (`too_many_requests`, with Retry-After); the helper has used its suggestions for today (`daily_limit`); or too many of its suggestions are already waiting on Review (`review_queue_full`). Whichever it is, nothing was saved. `review_queue_full` has no Retry-After: it clears when the household accepts or rejects suggestions, so stop sending and tell them.",
+            "headers": {
+              "Retry-After": {
+                "description": "Only with `too_many_requests`: seconds to wait.",
+                "schema": {
+                  "type": "integer"
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                },
+                "examples": {
+                  "too_many_requests": {
+                    "value": {
+                      "error": "too_many_requests",
+                      "message": "This helper is sending requests too quickly. Wait 12 seconds, then try again."
+                    }
+                  },
+                  "daily_limit": {
+                    "value": {
+                      "error": "daily_limit",
+                      "message": "This helper has reached 200 suggestions today. Try again tomorrow."
+                    }
+                  },
+                  "review_queue_full": {
+                    "value": {
+                      "error": "review_queue_full",
+                      "message": "500 suggestions from this helper are already waiting on Review. Ask the household to look at them first."
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "No key, a wrong key, a key turned off, or a key sent anywhere but the Authorization header (`no_key`).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                },
+                "example": {
+                  "error": "no_key",
+                  "message": "This helper's access key is missing or no longer works. Ask the household to check Helpers in Settings."
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "An unexpected problem (`server_error`). Nothing was changed.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                },
+                "example": {
+                  "error": "server_error",
+                  "message": "Something went wrong. Nothing was changed."
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/batches": {
+      "get": {
+        "operationId": "listBatches",
+        "tags": [
+          "Suggesting"
+        ],
+        "summary": "This helper's own batches, newest first",
+        "parameters": [
+          {
+            "name": "limit",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 100,
+              "default": 20
+            },
+            "description": "How many to return, 1 to 100. Values outside the range are brought into it."
+          },
+          {
+            "name": "after",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "description": "The `next_after` of the previous page."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BatchList"
+                },
+                "example": {
+                  "batches": [
+                    {
+                      "id": 12,
+                      "request_key": "weigh-2026-11-17",
+                      "why": "Read from the weigh-in card on the fridge",
+                      "created_at": "2026-11-17T18:40:05",
+                      "state": "waiting",
+                      "total": 1,
+                      "pending": 1,
+                      "accepted": 0,
+                      "rejected": 0
+                    }
+                  ],
+                  "next_after": null
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "No key, a wrong key, a key turned off, or a key sent anywhere but the Authorization header (`no_key`).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                },
+                "example": {
+                  "error": "no_key",
+                  "message": "This helper's access key is missing or no longer works. Ask the household to check Helpers in Settings."
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "The request carried an Origin header (`from_a_web_page`), or named a host other than this computer (`forbidden`).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                },
+                "examples": {
+                  "from_a_web_page": {
+                    "value": {
+                      "error": "from_a_web_page",
+                      "message": "The helper API cannot be used from a web page."
+                    }
+                  },
+                  "forbidden": {
+                    "value": {
+                      "error": "forbidden",
+                      "message": "This request was refused because it did not come from this computer."
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "More than `limits.requests_per_minute` requests in a minute (`too_many_requests`). Wait as long as Retry-After says.",
+            "headers": {
+              "Retry-After": {
+                "description": "Seconds to wait before trying again.",
+                "schema": {
+                  "type": "integer"
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                },
+                "example": {
+                  "error": "too_many_requests",
+                  "message": "This helper is sending requests too quickly. Wait 12 seconds, then try again."
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "An unexpected problem (`server_error`). Nothing was changed.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                },
+                "example": {
+                  "error": "server_error",
+                  "message": "Something went wrong. Nothing was changed."
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/batches/{batch_id}": {
+      "get": {
+        "operationId": "getBatch",
+        "tags": [
+          "Suggesting"
+        ],
+        "summary": "One of this helper's batches, with each row's state",
+        "parameters": [
+          {
+            "name": "batch_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BatchDetail"
+                },
+                "example": {
+                  "batch_id": 12,
+                  "state": "decided",
+                  "why": "Read from the weigh-in card on the fridge",
+                  "proposals": [
+                    {
+                      "id": 31,
+                      "position": 0,
+                      "table": "pets__weigh_ins",
+                      "status": "accepted",
+                      "record_id": 8,
+                      "reason": null,
+                      "decided_at": "2026-11-18T19:02:11"
+                    }
+                  ],
+                  "message": "The household has decided on every suggestion in this batch.",
+                  "request_key": "weigh-2026-11-17",
+                  "created_at": "2026-11-17T18:40:05"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "No such batch for this helper (`not_found`). Another helper's batch answers the same.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                },
+                "example": {
+                  "error": "not_found",
+                  "message": "That batch could not be found."
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "No key, a wrong key, a key turned off, or a key sent anywhere but the Authorization header (`no_key`).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                },
+                "example": {
+                  "error": "no_key",
+                  "message": "This helper's access key is missing or no longer works. Ask the household to check Helpers in Settings."
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "The request carried an Origin header (`from_a_web_page`), or named a host other than this computer (`forbidden`).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                },
+                "examples": {
+                  "from_a_web_page": {
+                    "value": {
+                      "error": "from_a_web_page",
+                      "message": "The helper API cannot be used from a web page."
+                    }
+                  },
+                  "forbidden": {
+                    "value": {
+                      "error": "forbidden",
+                      "message": "This request was refused because it did not come from this computer."
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "More than `limits.requests_per_minute` requests in a minute (`too_many_requests`). Wait as long as Retry-After says.",
+            "headers": {
+              "Retry-After": {
+                "description": "Seconds to wait before trying again.",
+                "schema": {
+                  "type": "integer"
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                },
+                "example": {
+                  "error": "too_many_requests",
+                  "message": "This helper is sending requests too quickly. Wait 12 seconds, then try again."
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "An unexpected problem (`server_error`). Nothing was changed.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                },
+                "example": {
+                  "error": "server_error",
+                  "message": "Something went wrong. Nothing was changed."
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/openapi.json": {
+      "get": {
+        "operationId": "getOpenApi",
+        "tags": [
+          "About this API"
+        ],
+        "summary": "This description",
+        "description": "Read-only and needs the same key as every other route (decision 0084).",
+        "responses": {
+          "200": {
+            "description": "This OpenAPI 3.1 document.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "No key, a wrong key, a key turned off, or a key sent anywhere but the Authorization header (`no_key`).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                },
+                "example": {
+                  "error": "no_key",
+                  "message": "This helper's access key is missing or no longer works. Ask the household to check Helpers in Settings."
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "The request carried an Origin header (`from_a_web_page`), or named a host other than this computer (`forbidden`).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                },
+                "examples": {
+                  "from_a_web_page": {
+                    "value": {
+                      "error": "from_a_web_page",
+                      "message": "The helper API cannot be used from a web page."
+                    }
+                  },
+                  "forbidden": {
+                    "value": {
+                      "error": "forbidden",
+                      "message": "This request was refused because it did not come from this computer."
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "More than `limits.requests_per_minute` requests in a minute (`too_many_requests`). Wait as long as Retry-After says.",
+            "headers": {
+              "Retry-After": {
+                "description": "Seconds to wait before trying again.",
+                "schema": {
+                  "type": "integer"
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                },
+                "example": {
+                  "error": "too_many_requests",
+                  "message": "This helper is sending requests too quickly. Wait 12 seconds, then try again."
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "An unexpected problem (`server_error`). Nothing was changed.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                },
+                "example": {
+                  "error": "server_error",
+                  "message": "Something went wrong. Nothing was changed."
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "securitySchemes": {
+      "helperKey": {
+        "type": "http",
+        "scheme": "bearer",
+        "description": "A key starting `dph_`, made in Settings, Helpers and shown once. Only the Authorization header is read."
+      }
+    },
+    "schemas": {
+      "Error": {
+        "type": "object",
+        "properties": {
+          "error": {
+            "type": "string",
+            "enum": [
+              "no_key",
+              "from_a_web_page",
+              "forbidden",
+              "bad_request",
+              "looks_like_a_key",
+              "hidden_characters",
+              "not_allowed",
+              "private_detail",
+              "look_only",
+              "not_found",
+              "method_not_allowed",
+              "request_key_reused",
+              "too_large",
+              "needs_json",
+              "invalid",
+              "daily_limit",
+              "review_queue_full",
+              "too_many_requests",
+              "refused",
+              "server_error"
+            ],
+            "description": "A short code to act on: `no_key`: The key is missing, wrong or turned off. `from_a_web_page`: The request carried an Origin header, so it came from a web page. `forbidden`: The request named a host other than this computer. `bad_request`: The request could not be read, or a field of it is missing or the wrong kind. `looks_like_a_key`: Some text looked like a helper key. It is never kept or repeated. `hidden_characters`: Some text had hidden or text-reversing characters. Line breaks are fine. `not_allowed`: A field links into a part of the records this helper was not given. `private_detail`: A suggestion named a private detail, which helpers never share. `look_only`: This helper may look but not suggest. `not_found`: No such table, record or batch for this helper. A table in a part the helper was not given answers exactly like one that does not exist. `method_not_allowed`: That address does not accept this method. `request_key_reused`: The request key was already used for different suggestions. `too_large`: The body is over 65,536 bytes. `needs_json`: The body must be JSON with Content-Type application/json. `invalid`: Some values could not be used. Nothing was saved. `problems` names entry, table and field. `daily_limit`: The helper has already sent its suggestions for today (UTC). `review_queue_full`: Too many of this helper's suggestions are already waiting on Review. Nothing was saved. No Retry-After: the wait is for a person, not a clock. `too_many_requests`: More requests in a minute than allowed. See the Retry-After header. `refused`: Any other refusal the web server itself makes. `server_error`: Something went wrong. Nothing was changed."
+          },
+          "message": {
+            "type": "string",
+            "description": "A plain sentence. Safe to show to the household."
+          },
+          "problems": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Problem"
+            },
+            "description": "Only with `invalid`."
+          }
+        },
+        "required": [
+          "error",
+          "message"
+        ]
+      },
+      "Problem": {
+        "type": "object",
+        "properties": {
+          "entry": {
+            "type": "integer",
+            "description": "Position of the entry in the request, from 0."
+          },
+          "table": {
+            "type": "string"
+          },
+          "field": {
+            "type": "string",
+            "description": "Empty when the whole table is the problem."
+          },
+          "message": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "entry",
+          "table",
+          "field",
+          "message"
+        ]
+      },
+      "Me": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "access": {
+            "type": "string",
+            "enum": [
+              "read",
+              "suggest"
+            ]
+          },
+          "modules": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "name": {
+                  "type": "string"
+                },
+                "title": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "name",
+                "title"
+              ]
+            }
+          },
+          "message": {
+            "type": "string",
+            "description": "What this helper may use, in a plain sentence."
+          },
+          "private_details": {
+            "type": "boolean",
+            "description": "Always false in v1: private details are never shared."
+          },
+          "limits": {
+            "type": "object",
+            "properties": {
+              "entries_per_call": {
+                "type": "integer",
+                "description": "Most entries in one POST /proposals."
+              },
+              "suggestions_per_day": {
+                "type": "integer",
+                "description": "Most suggested rows per UTC day."
+              },
+              "suggestions_left_today": {
+                "type": "integer"
+              },
+              "review_queue_limit": {
+                "type": "integer",
+                "description": "Most suggestions from this helper that may wait on Review at once. A POST that would go over is refused whole (`review_queue_full`)."
+              },
+              "suggestions_waiting": {
+                "type": "integer",
+                "description": "How many of this helper's suggestions are waiting on Review now. Spreadsheet imports never count."
+              },
+              "max_body_bytes": {
+                "type": "integer"
+              },
+              "requests_per_minute": {
+                "type": "integer"
+              }
+            },
+            "required": [
+              "entries_per_call",
+              "suggestions_per_day",
+              "suggestions_left_today",
+              "review_queue_limit",
+              "suggestions_waiting",
+              "max_body_bytes",
+              "requests_per_minute"
+            ]
+          },
+          "api_version": {
+            "type": "string",
+            "enum": [
+              "1"
+            ]
+          },
+          "program_version": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "name",
+          "access",
+          "modules",
+          "message",
+          "private_details",
+          "limits",
+          "api_version",
+          "program_version"
+        ]
+      },
+      "Choice": {
+        "type": "object",
+        "properties": {
+          "key": {
+            "type": "string"
+          },
+          "label": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "key",
+          "label"
+        ]
+      },
+      "Column": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "label": {
+            "type": "string"
+          },
+          "type": {
+            "type": "string",
+            "description": "text, number, measure, money, boolean, date, choice, link, links, file and so on."
+          },
+          "required": {
+            "type": "boolean"
+          },
+          "help": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "unit": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "min": {
+            "type": [
+              "number",
+              "null"
+            ]
+          },
+          "max": {
+            "type": [
+              "number",
+              "null"
+            ]
+          },
+          "can_suggest": {
+            "type": "boolean"
+          },
+          "to": {
+            "type": "string",
+            "description": "Link columns: the table linked to."
+          },
+          "choices": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Choice"
+            }
+          },
+          "note": {
+            "type": "string",
+            "description": "Money columns: send and read whole units, like 12.50."
+          }
+        },
+        "required": [
+          "name",
+          "label",
+          "type",
+          "required",
+          "help",
+          "unit",
+          "min",
+          "max",
+          "can_suggest"
+        ]
+      },
+      "TableSpec": {
+        "type": "object",
+        "properties": {
+          "table": {
+            "type": "string"
+          },
+          "module": {
+            "type": "string"
+          },
+          "title": {
+            "type": "string"
+          },
+          "can_suggest": {
+            "type": "boolean"
+          },
+          "columns": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Column"
+            }
+          },
+          "worked_out": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Columns the program works out itself; never suggest them."
+          },
+          "private_columns_left_out": {
+            "type": "integer",
+            "description": "How many private columns exist. Their names are not given."
+          },
+          "reason": {
+            "type": "string",
+            "description": "Why `can_suggest` is false, when it is."
+          }
+        },
+        "required": [
+          "table",
+          "module",
+          "title",
+          "can_suggest",
+          "columns",
+          "worked_out",
+          "private_columns_left_out"
+        ]
+      },
+      "Tables": {
+        "type": "object",
+        "properties": {
+          "tables": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/TableSpec"
+            }
+          }
+        },
+        "required": [
+          "tables"
+        ]
+      },
+      "Value": {
+        "type": [
+          "string",
+          "number",
+          "boolean",
+          "null",
+          "array"
+        ],
+        "description": "Text, a number, true/false, null, or a list of record ids for a `links` column. Dates are ISO (2026-11-17). Money is whole units, like 12.50. Choices are their key."
+      },
+      "Record": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer"
+          },
+          "created_at": {
+            "type": "string"
+          },
+          "updated_at": {
+            "type": "string"
+          },
+          "source": {
+            "type": "string",
+            "description": "Who added it: a person, `import:<file>` or `agent:<helper>`."
+          },
+          "values": {
+            "type": "object",
+            "additionalProperties": {
+              "$ref": "#/components/schemas/Value"
+            },
+            "description": "Column name to value. GET /tables says which names to expect. Private columns and links into parts not given are never here."
+          }
+        },
+        "required": [
+          "id",
+          "created_at",
+          "updated_at",
+          "source",
+          "values"
+        ]
+      },
+      "RecordPage": {
+        "type": "object",
+        "properties": {
+          "table": {
+            "type": "string"
+          },
+          "records": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Record"
+            }
+          },
+          "next_after": {
+            "type": [
+              "integer",
+              "null"
+            ],
+            "description": "Pass as `after` for the next page, or null at the end."
+          }
+        },
+        "required": [
+          "table",
+          "records",
+          "next_after"
+        ]
+      },
+      "RecordOne": {
+        "type": "object",
+        "properties": {
+          "table": {
+            "type": "string"
+          },
+          "record": {
+            "$ref": "#/components/schemas/Record"
+          }
+        },
+        "required": [
+          "table",
+          "record"
+        ]
+      },
+      "WatchItem": {
+        "type": "object",
+        "properties": {
+          "table": {
+            "type": "string"
+          },
+          "record_id": {
+            "type": "integer"
+          },
+          "name": {
+            "type": "string"
+          },
+          "detail": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "table",
+          "record_id",
+          "name",
+          "detail"
+        ]
+      },
+      "Supply": {
+        "type": "object",
+        "properties": {
+          "table": {
+            "type": "string"
+          },
+          "title": {
+            "type": "string"
+          },
+          "unit": {
+            "type": "string"
+          },
+          "total": {
+            "type": "number"
+          },
+          "daily_need": {
+            "type": "number"
+          },
+          "days": {
+            "type": [
+              "number",
+              "null"
+            ]
+          },
+          "target_days": {
+            "type": "number"
+          },
+          "shortfall": {
+            "type": "number"
+          },
+          "working": {
+            "type": "string"
+          },
+          "needs_household": {
+            "type": "boolean"
+          },
+          "label": {
+            "type": "string"
+          },
+          "rows": {
+            "type": "integer"
+          },
+          "basis": {
+            "type": "string"
+          },
+          "not_counted": {
+            "type": "number"
+          },
+          "wrong_unit": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "notes": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        },
+        "required": [
+          "table",
+          "title",
+          "unit",
+          "total",
+          "daily_need",
+          "days",
+          "target_days",
+          "shortfall",
+          "working",
+          "needs_household",
+          "label",
+          "rows",
+          "basis",
+          "not_counted",
+          "wrong_unit",
+          "notes"
+        ]
+      },
+      "Gap": {
+        "type": "object",
+        "properties": {
+          "table": {
+            "type": "string"
+          },
+          "record_id": {
+            "type": [
+              "integer",
+              "null"
+            ]
+          },
+          "message": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "table",
+          "record_id",
+          "message"
+        ]
+      },
+      "Attention": {
+        "type": "object",
+        "properties": {
+          "running_low": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/WatchItem"
+            }
+          },
+          "expiring": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/WatchItem"
+            }
+          },
+          "supplies": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Supply"
+            }
+          },
+          "gaps": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Gap"
+            }
+          }
+        },
+        "required": [
+          "running_low",
+          "expiring",
+          "supplies",
+          "gaps"
+        ]
+      },
+      "Entry": {
+        "type": "object",
+        "properties": {
+          "table": {
+            "type": "string",
+            "description": "A table name from GET /tables, like `pets__weigh_ins`."
+          },
+          "values": {
+            "type": "object",
+            "additionalProperties": {
+              "$ref": "#/components/schemas/Value"
+            },
+            "description": "Column name to value, as GET /tables describes. Never private, worked-out or system fields."
+          }
+        },
+        "required": [
+          "table",
+          "values"
+        ]
+      },
+      "ProposalRequest": {
+        "type": "object",
+        "properties": {
+          "request_key": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 100,
+            "pattern": "^[A-Za-z0-9._:-]+$",
+            "description": "Your own label for this request. Sending the same key and body again returns the first answer and adds nothing."
+          },
+          "why": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 300,
+            "description": "One sentence for the household: where this came from."
+          },
+          "entries": {
+            "type": "array",
+            "minItems": 1,
+            "maxItems": 50,
+            "items": {
+              "$ref": "#/components/schemas/Entry"
+            }
+          }
+        },
+        "required": [
+          "request_key",
+          "why",
+          "entries"
+        ],
+        "additionalProperties": false
+      },
+      "ProposalRow": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer"
+          },
+          "position": {
+            "type": "integer"
+          },
+          "table": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "pending",
+              "accepted",
+              "rejected"
+            ]
+          }
+        },
+        "required": [
+          "id",
+          "position",
+          "table",
+          "status"
+        ]
+      },
+      "ProposalRowDetail": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer"
+          },
+          "position": {
+            "type": "integer"
+          },
+          "table": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "pending",
+              "accepted",
+              "rejected"
+            ]
+          },
+          "record_id": {
+            "type": [
+              "integer",
+              "null"
+            ]
+          },
+          "reason": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "decided_at": {
+            "type": [
+              "string",
+              "null"
+            ]
+          }
+        },
+        "required": [
+          "id",
+          "position",
+          "table",
+          "status",
+          "record_id",
+          "reason",
+          "decided_at"
+        ]
+      },
+      "Batch": {
+        "type": "object",
+        "properties": {
+          "batch_id": {
+            "type": "integer"
+          },
+          "state": {
+            "type": "string",
+            "enum": [
+              "waiting",
+              "decided"
+            ]
+          },
+          "why": {
+            "type": "string"
+          },
+          "proposals": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ProposalRow"
+            }
+          },
+          "message": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "batch_id",
+          "state",
+          "why",
+          "proposals",
+          "message"
+        ]
+      },
+      "BatchDetail": {
+        "type": "object",
+        "properties": {
+          "batch_id": {
+            "type": "integer"
+          },
+          "state": {
+            "type": "string",
+            "enum": [
+              "waiting",
+              "decided"
+            ]
+          },
+          "why": {
+            "type": "string"
+          },
+          "proposals": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ProposalRowDetail"
+            }
+          },
+          "message": {
+            "type": "string"
+          },
+          "request_key": {
+            "type": "string"
+          },
+          "created_at": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "batch_id",
+          "state",
+          "why",
+          "proposals",
+          "message",
+          "request_key",
+          "created_at"
+        ]
+      },
+      "BatchSummary": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer"
+          },
+          "request_key": {
+            "type": "string"
+          },
+          "why": {
+            "type": "string"
+          },
+          "created_at": {
+            "type": "string"
+          },
+          "state": {
+            "type": "string",
+            "enum": [
+              "waiting",
+              "decided"
+            ]
+          },
+          "total": {
+            "type": "integer"
+          },
+          "pending": {
+            "type": "integer"
+          },
+          "accepted": {
+            "type": "integer"
+          },
+          "rejected": {
+            "type": "integer"
+          }
+        },
+        "required": [
+          "id",
+          "request_key",
+          "why",
+          "created_at",
+          "state",
+          "total",
+          "pending",
+          "accepted",
+          "rejected"
+        ]
+      },
+      "BatchList": {
+        "type": "object",
+        "properties": {
+          "batches": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/BatchSummary"
+            }
+          },
+          "next_after": {
+            "type": [
+              "integer",
+              "null"
+            ]
+          }
+        },
+        "required": [
+          "batches",
+          "next_after"
+        ]
+      }
+    }
+  }
+}

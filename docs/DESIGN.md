@@ -827,7 +827,8 @@ API; the core does not call an AI service by itself.
 Assistants, whether AI or human helpers, enter data through the API and never
 touch the database. The API is part of the same local server (`127.0.0.1`
 only) under `/api/v1/`. The port changes at each start, so Settings, Helpers
-shows the current address (decisions 0066 to 0068, hardened by 0074).
+shows the current address (decisions 0066 to 0068, hardened by 0074, with a
+published description in 0084 and a Review queue limit in 0085).
 
 ### Authentication
 
@@ -850,6 +851,7 @@ fields are never read for a key.
 | `GET /api/v1/attention` | Running low, expiring, supplies and gaps for allowed modules |
 | `POST /api/v1/proposals` | Suggest new records (below) |
 | `GET /api/v1/batches`, `/batches/<id>` | The helper's own batches and their state |
+| `GET /api/v1/openapi.json` | The published description of this API (OpenAPI 3.1), read-only, same key (0084) |
 
 `POST /api/v1/proposals` body: `request_key`, `why`, `entries` (each
 `{"table", "values"}`).
@@ -873,6 +875,11 @@ fields are never read for a key.
   without being repeated; so are invisible control characters and marks that
   turn text around (400). Review shows the reason and values as the named
   helper's own words.
+- At most **500 of a helper's suggestions waiting on Review** at once (setting
+  `HELPER_REVIEW_QUEUE_LIMIT`). A request that would go over is refused whole
+  (429 `review_queue_full`, no `Retry-After`: only a person's decision frees
+  room); accepting or rejecting frees room, imported spreadsheet rows never
+  count, and `/me` shows `review_queue_limit` and `suggestions_waiting` (0085).
 - At most **120 requests per helper per minute** (429 `too_many_requests` with
   `Retry-After`). Accept and Reject decide a suggestion once, even if two clicks
   arrive together.
@@ -880,6 +887,10 @@ fields are never read for a key.
   from batches (a stock item's amount) cannot be suggested; suggest a Stock in.
 - A helper can never accept, change or delete records, see history, see other
   helpers, or reach settings, backups, files or keys: there are no such routes.
+- The API is described by one file, `src/dashboard/web/openapi-v1.json`, served
+  at `/api/v1/openapi.json` behind the same key as every route. A contract test
+  (`tests/test_api_contract.py`) fails when a route, method, error code or reply
+  shape in the code is missing from it, or the reverse (0084).
 - Deferred: suggested changes and deletions, amend and undo, a private-details
   grant, per-table scope, a command-line tool, forgetting request keys.
 

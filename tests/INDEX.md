@@ -44,3 +44,4 @@ How to run them is in AGENTS.md.
 | test_helper_*.py | Tests for helpers: keys, suggestions waiting for a person, the /api/v1 door, and the Settings and Review screens | changing helpers, the helper API or Review |
 | test_export.py | Tests for Export my records: every table of an example household, private details, formula safety and the download. | changing the export |
 | test_restore.py | Tests for restoring a backup: checks that change nothing, the safe swap, Undo after a restart, and refusals. | changing restore or Undo |
+| test_api_contract.py | Tests that the published API description (openapi-v1.json) matches the real /api/v1 routes, errors and replies. | changing a helper route, reply or error code |

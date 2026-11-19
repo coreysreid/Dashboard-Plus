@@ -16,7 +16,7 @@ from werkzeug.exceptions import HTTPException
 from dashboard import __version__
 from dashboard.core import backups, db, proposals, records, watch
 from dashboard.core.startup import database_path
-from dashboard.web.api import REQUESTS_PER_MINUTE, api_error
+from dashboard.web.api import QUEUE_LIMIT_KEY, REQUESTS_PER_MINUTE, api_error
 
 log = logging.getLogger("dashboard.web")
 SESSION_COOKIE = "dashboard_session"
@@ -48,6 +48,7 @@ def create_app(shutdown_token: str, on_shutdown: Callable[[], None], report=None
     app.config["REPORT"] = report
     app.config["LOADED"] = report.loaded if report else []
     app.config["HELPER_REQUESTS_PER_MINUTE"] = REQUESTS_PER_MINUTE  # tests may lower it (decision 0074)
+    app.config[QUEUE_LIMIT_KEY] = proposals.MAX_WAITING  # suggestions per helper waiting on Review (decision 0085)
 
     def allowed_hosts() -> set[str]:
         port = app.config["PORT"]
