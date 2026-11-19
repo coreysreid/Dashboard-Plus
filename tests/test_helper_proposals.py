@@ -338,6 +338,38 @@ class ProposalTests(TempDirTestCase):
             self.send_capped(count, key, helper)
         return caught.exception
 
+    def test_limits_are_checked_again_inside_the_write_lock(self):
+        """Lane B's recheck, case 11: two requests at the same moment must not both pass a cap (0088).
+
+        The first look sees room; another request fills the queue before this one takes the write lock."""
+        self.send_capped(3, "first")
+        real = proposals.waiting_for
+        looks = []
+
+        def racing(conn, helper):
+            looks.append(1)
+            return 0 if len(looks) == 1 else real(conn, helper) + 2  # room at first, full by the time it writes
+        proposals.waiting_for = racing
+        self.addCleanup(setattr, proposals, "waiting_for", real)
+        error = self.refused_capped(1, "second")
+        self.assertEqual(error.code, "review_queue_full")
+        self.assertEqual(len(looks), 2)
+        self.assertEqual(self.count("core__helper_batches"), 1)
+
+    def test_the_daily_limit_is_checked_again_inside_the_write_lock(self):
+        real = proposals.used_today
+        looks = []
+
+        def racing(conn, helper):
+            looks.append(1)
+            return 0 if len(looks) == 1 else proposals.MAX_PER_DAY
+        proposals.used_today = racing
+        self.addCleanup(setattr, proposals, "used_today", real)
+        with self.assertRaises(ProposalError) as caught:
+            self.send_capped(1, "late", limit=500)
+        self.assertEqual(caught.exception.code, "daily_limit")
+        self.assertEqual(self.count("core__helper_batches"), 0)
+
     def test_queue_cap_message_is_singular_for_one_waiting(self):
         self.send_capped(1, "a")
         self.assertEqual(str(self.refused_capped(5, "b")), "1 suggestion from this helper is already waiting on "

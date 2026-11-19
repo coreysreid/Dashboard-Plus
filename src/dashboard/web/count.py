@@ -7,6 +7,7 @@ from flask import abort, redirect, render_template, request, url_for
 
 from dashboard.core import dates, records, schema
 from dashboard.web import display
+from dashboard.core.units import unit_for
 from dashboard.web.pages import _info, _store, pages
 
 
@@ -15,7 +16,7 @@ def _amount(value, unit: str | None) -> str:
     number = Decimal(str(value or 0))
     text = f"{number:f}"
     text = text.rstrip("0").rstrip(".") if "." in text else text
-    return f"{text} {unit}" if unit else text
+    return f"{text} {unit_for(number, unit)}" if unit else text  # "1 tin", "2 tins" (Lane B, batch 14 item 55)
 
 
 def _context(store, info, batch_id):

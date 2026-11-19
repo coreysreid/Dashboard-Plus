@@ -90,4 +90,5 @@ One record per decision, from `TEMPLATE.md`. Never deleted; reversed ones are ma
 | [0085](0085-review-queue-cap.md) | A helper may have at most 500 suggestions waiting on Review (a setting); a batch that would go over is refused whole with 429 `review_queue_full`; imports do not count; accepting or rejecting frees room | Accepted |
 | [0086](0086-connector-checks-it-is-really-dashboard.md) | Before every request the connector asks `POST /api/v1/hello` (no key) to prove it is the Dashboard that made its key: an HMAC over a fresh nonce and host:port from the kept fingerprint; only on a match does the key go, down the same connection | Accepted |
 | [0087](0087-add-a-helper-form-makes-one-key.md) | An Add a helper form makes one key even if sent twice: a one-use form token, and plain words on a repeat | Accepted |
+| [0088](0088-limits-hold-under-simultaneous-requests.md) | Helper limits are checked again inside the write lock; other API versions answer plain 404 JSON; count pages say "1 tin" | Accepted |
 | [TEMPLATE](TEMPLATE.md) | Blank record to copy for a new decision | recording a decision |
