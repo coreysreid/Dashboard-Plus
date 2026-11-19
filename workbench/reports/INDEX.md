@@ -36,3 +36,4 @@ expected, actual, severity (blocker, important, minor), suggested change.
 | 2026-11-18-wording-consistency.md | Exact replacement table across six shipped modules. | polishing household words |
 | 2026-11-18-wording-inventory.csv | 472 module strings with current and proposed words. | applying wording replacements |
 | 2026-11-18-sensitive-detail-recheck.md | Decision 0055 verification and remaining private-detail findings. | reviewing privacy after security fixes |
+| 2026-11-19-agent-api-skeleton-ux.md | Live key, curl, suggestion and Review journey, including duplicate-grant finding. | refining the merged Agent API |
