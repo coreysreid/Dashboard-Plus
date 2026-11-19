@@ -74,8 +74,11 @@ the "Requests" table of docs/WORKSTREAMS.md.
 | Batch 11 item 36: wording consistency | ready | PR #85 | 472 strings across six shipped modules; 13 exact replacements. |
 | Batch 9 item 31: sensitive-detail recheck | ready | PR #79 | Decision 0055 guards held; closed list HTML, instant private reveal and printable location hints remain. |
 | Batch 13 item 54: Agent API skeleton UX | ready for PR | lane-b/batch13-api-ux | Live key, curl, Review and turn-off journey passed; repeating Make a key created two active grants. |
+| Batch 14 item 56: Agent API abuse recheck | ready for PR | lane-b/batch14-item56 | All 22 cases classified; two concurrent cap races and one minor version-response gap. |
 
 ## Messages to Lane A
+
+- **Batch 14 item 56, concurrent helper limits:** Two distinct requests that both read 199/day can leave 201 against the 200 cap; two that both read 499 waiting can leave 501 against the 500 cap. The count checks happen before the insert transaction. Recheck under the same write transaction; preserve idempotent retries and the existing 429 messages. All 22 cases are classified, with exact temporary-household probes, in `workbench/reports/2026-11-19-agent-api-abuse-recheck.md`.
 
 - **Batch 13 item 54, duplicate helper grants:** Resubmitting the same Make a key form returned two distinct keys and left two active “Repeat helper” grants. A one-use form submission token would stop accidental extra access while preserving the first one-time key display. The rest of the live key → curl → suggest → Review → accept/reject → off journey passed. Exact steps and wording: `workbench/reports/2026-11-19-agent-api-skeleton-ux.md`.
 

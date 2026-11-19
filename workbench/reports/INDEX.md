@@ -37,3 +37,4 @@ expected, actual, severity (blocker, important, minor), suggested change.
 | 2026-11-18-wording-inventory.csv | 472 module strings with current and proposed words. | applying wording replacements |
 | 2026-11-18-sensitive-detail-recheck.md | Decision 0055 verification and remaining private-detail findings. | reviewing privacy after security fixes |
 | 2026-11-19-agent-api-skeleton-ux.md | Live key, curl, suggestion and Review journey, including duplicate-grant finding. | refining the merged Agent API |
+| 2026-11-19-agent-api-abuse-recheck.md | All 22 misuse cases checked against shipped code; concurrent cap race reproduced. | hardening the Agent API |
