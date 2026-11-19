@@ -486,6 +486,43 @@ Corey's choice; don't build it.
     option A and list what still needs deciding before it could be built, with
     acceptance checks. Design only; Corey has not chosen yet.
 
+### Batch 16: household sync, designed (M3) — do this first
+
+Corey (19 November) wants sync "similar to Anki's sync or maybe even like
+git": push and pull, with merge requests; his copy is "main" (or a home server
+later); his partner pulls from main from anywhere, as long as main is running.
+USB/file bundles are the offline option for households that want nothing
+online. It should use the same secret-key process as helpers. Lane A has told
+him: never open a router port to the public internet; reach main through a
+private device network (Tailscale-style WireGuard mesh, or self-hosted
+WireGuard/Headscale), listening there only while sharing is on; the partner
+gets a separate "household member" key kind, not a helper key; a push arrives
+on main's Review as one change request with per-row accept/reject and
+side-by-side conflicts; the mode badge (0082) shows "Syncing with … · last
+synced …". Work in `workbench/drafts/sync/`. Design only; no code. Lane A
+turns it into decision 0089 for Corey's OK.
+
+69. **Household sync design.** Read `docs/plans/household-sharing.md` and
+    decisions 0055, 0066–0069, 0074, 0079–0083, 0086–0088 first. Cover:
+    roles (main, members, moving main to a home server and running the
+    portable build headless there); reaching main from anywhere (compare
+    Tailscale, Headscale/WireGuard, ZeroTier; why not port forwarding or a
+    public tunnel; HTTPS on the private network and certificate pinning at
+    pairing; which address Dashboard listens on, auto-off); member keys
+    (Settings words, private details on/off, turn off, a "prove you are
+    really main" check both ways like 0086); the data model (stable global
+    IDs for every record, per-row versions or hybrid clocks, a change log
+    from or beside the audit history, deletes); pull (first full, then
+    changes since last pull, backup before first pull); push as a merge
+    request on Review (conflict rules: field edits side by side, stock in
+    and out always kept, stocktake counts rechecked as in 0070, delete vs
+    edit); module version mismatch between copies; USB bundles (same format,
+    encrypted with the pairing secret); threat model (stolen laptop, lost
+    key, a member's mistakes, someone else on the private network); badge,
+    Settings, Review and error words; a staged build plan with sizes and
+    acceptance checks; short questions for Corey. Cite sources with dates and
+    mark anything unsure.
+
 ## Brief for Lane B, batch 3 (done)
 
 > You are Lane B, the checker and drafter. You have full internet access for
