@@ -891,6 +891,9 @@ everyone (`HELLOS_PER_MINUTE`), separate from each helper's.
   (429 `review_queue_full`, no `Retry-After`: only a person's decision frees
   room); accepting or rejecting frees room, imported spreadsheet rows never
   count, and `/me` shows `review_queue_limit` and `suggestions_waiting` (0085).
+  Both this cap and the daily limit are checked again inside the write lock, so
+  requests sent at the same moment cannot pass them (0088). Any `/api/` address
+  other than `/api/v1/` answers 404 JSON `not_found`, never a page (0088).
 - At most **120 requests per helper per minute** (429 `too_many_requests` with
   `Retry-After`). Accept and Reject decide a suggestion once, even if two clicks
   arrive together.

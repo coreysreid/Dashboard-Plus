@@ -230,6 +230,13 @@ class StocktakeTests(TempDirTestCase):
         self.assertIn("Recorded here: 3 tins", page)
         self.assertEqual(page.count('name="counted"'), 1)
 
+    def test_a_difference_of_one_reads_in_the_singular(self):  # Lane B, batch 14 item 55
+        client = self.client()
+        path = f"/t/stock__lots/{self.first}/count"
+        review = self.post(client, path, step="review", counted="4", recorded="3").get_data(as_text=True)
+        self.assertIn("This adds <strong>1 tin</strong> as a <strong>stocktake correction</strong>.", review)
+        self.assertNotIn("1 tins", review)
+
     def test_review_then_save_a_higher_count(self):  # checks 2 and 8
         client = self.client()
         path = f"/t/stock__lots/{self.first}/count"

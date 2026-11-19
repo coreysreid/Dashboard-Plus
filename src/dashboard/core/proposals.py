@@ -197,14 +197,7 @@ def submit(conn: sqlite3.Connection, registry: dict, helper: helpers.Helper, bod
                           (helper.id, key)).fetchone()
     if stored:
         return _same_or_refuse(conn, stored, digest), False
-    if used_today(conn, helper) + len(entries) > MAX_PER_DAY:
-        raise ProposalError(429, "daily_limit", f"This helper has reached {MAX_PER_DAY} suggestions today. "
-                                                f"Try again tomorrow.")
-    waiting = waiting_for(conn, helper)
-    if waiting + len(entries) > queue_limit:
-        raise ProposalError(429, "review_queue_full",
-                            f"{waiting} suggestion{' from this helper is' if waiting == 1 else 's from this helper are'} "
-                            f"already waiting on Review. Ask the household to look at them first.")
+    _check_limits(conn, helper, len(entries), queue_limit)
     _check_tables(helper, registry, entries)
     problems = _shape_problems(helper, registry, entries)
     if not problems:
@@ -216,6 +209,8 @@ def submit(conn: sqlite3.Connection, registry: dict, helper: helpers.Helper, bod
     now = _now()
     try:
         with db.transaction(conn):
+            # Checked again inside the write lock, so two requests at the same moment cannot both pass (0088).
+            _check_limits(conn, helper, len(entries), queue_limit)
             batch_id = conn.execute(
                 "INSERT INTO core__helper_batches (helper_id, request_key, body_hash, why, created_at) "
                 "VALUES (?, ?, ?, ?, ?)", (helper.id, key, digest, why, now)).lastrowid
@@ -233,6 +228,18 @@ def submit(conn: sqlite3.Connection, registry: dict, helper: helpers.Helper, bod
             raise
         return _same_or_refuse(conn, stored, digest), False
     return batch_result(conn, batch_id), True
+
+
+def _check_limits(conn: sqlite3.Connection, helper: helpers.Helper, adding: int, queue_limit: int) -> None:
+    """The daily limit and the Review queue cap (decision 0085), refused whole if either would be passed."""
+    if used_today(conn, helper) + adding > MAX_PER_DAY:
+        raise ProposalError(429, "daily_limit", f"This helper has reached {MAX_PER_DAY} suggestions today. "
+                                                f"Try again tomorrow.")
+    waiting = waiting_for(conn, helper)
+    if waiting + adding > queue_limit:
+        raise ProposalError(429, "review_queue_full",
+                            f"{waiting} suggestion{' from this helper is' if waiting == 1 else 's from this helper are'} "
+                            f"already waiting on Review. Ask the household to look at them first.")
 
 
 def _same_or_refuse(conn, stored, digest: str) -> dict:

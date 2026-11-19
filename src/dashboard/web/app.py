@@ -65,6 +65,9 @@ def create_app(shutdown_token: str, on_shutdown: Callable[[], None], report=None
         if request.path.startswith("/api/v1/"):
             from dashboard.web.api import authenticate
             return authenticate()
+        if request.path.startswith("/api/") and request.path not in OPEN_PATHS:
+            # Any other API address (such as /api/v2/me) is a plain refusal, never a page (Lane B, batch 14 item 56).
+            return api_error(404, "not_found", "There is no such helper address. Helpers use /api/v1/.")
         # Writes must come from our own pages, not from another website.
         if request.method == "POST":
             origin = request.headers.get("Origin")

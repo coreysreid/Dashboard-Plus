@@ -669,3 +669,13 @@ class ModeBadgeTests(ApiTestCase):
         page = self.signed_in_page()
         self.assertIn(">On this computer only</a>", page)
         self.assertNotIn("can look", page)
+
+
+class OtherApiVersionsTests(ApiTestCase):
+    def test_an_unsupported_api_version_is_a_plain_refusal_not_a_page(self):  # Lane B recheck, case 21
+        for path in ("/api/v2/me", "/api/v1", "/api/nope"):
+            with self.subTest(path=path):
+                response = self.api_get(path)
+                self.assertEqual(response.status_code, 404)
+                self.assertEqual(response.get_json()["error"], "not_found")
+                self.assertNotIn("Location", response.headers)
