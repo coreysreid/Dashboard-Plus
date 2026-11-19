@@ -35,8 +35,16 @@ class ReviewScreenTests(TempDirTestCase):
     def text(self, path):
         return self.get(path).get_data(as_text=True)
 
-    def post(self, path, data=None, token=True):
-        return self.client.post(path, data=dict(data or {}, **({"_csrf": self.csrf} if token else {})), base_url=BASE)
+    def form_token(self):
+        """The one-use token of a freshly opened Add a helper form (decision 0087)."""
+        page = self.client.get("/settings/helpers", base_url=BASE).get_data(as_text=True)
+        return re.search(r'name="form_token" value="([^"]+)"', page).group(1)
+
+    def post(self, path, data=None, token=True, form_token=None):
+        data = dict(data or {}, **({"_csrf": self.csrf} if token else {}))
+        if path == "/settings/helpers" and "form_token" not in data:
+            data["form_token"] = form_token or self.form_token()
+        return self.client.post(path, data=data, base_url=BASE)
 
     def suggest(self, entries, key="r1", why="Copied from Saturday's receipt"):
         result, _ = proposals.submit(self.conn, self.registry, self.helper,
@@ -80,6 +88,37 @@ class ReviewScreenTests(TempDirTestCase):
         self.assertEqual(self.client.get("/api/v1/me", base_url=BASE, headers={"Authorization": f"Bearer {key}"}).status_code, 200)
         log = self.data / "logs"
         self.assertFalse(log.exists() and key in "".join(p.read_text(errors="replace") for p in log.glob("*")))
+
+    def test_sending_the_same_add_a_helper_form_twice_makes_one_key(self):
+        """Lane B's UX check: a resent form must not make a second working key (decision 0087)."""
+        form_token = self.form_token()
+        data = {"name": "Repeat helper", "access": "read", "modules": ["stock"]}
+        first = self.post("/settings/helpers", data, form_token=form_token)
+        self.assertEqual(first.status_code, 201)
+        again = self.post("/settings/helpers", data, form_token=form_token)
+        self.assertEqual(again.status_code, 409)
+        page = again.get_data(as_text=True)
+        self.assertIn("A key was already made from this form. It cannot be shown again.", page)
+        self.assertNotIn("dph_", page)
+        self.assertEqual([h.name for h in helpers.all_helpers(self.conn)].count("Repeat helper"), 1)
+        self.assertEqual(self.post("/settings/helpers", data).status_code, 201)  # a fresh form, on purpose
+        self.assertEqual([h.name for h in helpers.all_helpers(self.conn)].count("Repeat helper"), 2)
+
+    def test_a_form_from_before_a_restart_makes_no_key_and_keeps_what_was_typed(self):
+        response = self.post("/settings/helpers", {"name": "Old form", "access": "read", "modules": ["stock"]},
+                             form_token="not-a-form-this-dashboard-showed")
+        self.assertEqual(response.status_code, 409)
+        page = response.get_data(as_text=True)
+        self.assertIn("This form is out of date, so no key was made.", page)
+        self.assertIn('value="Old form"', page)
+        self.assertNotIn("Old form", [h.name for h in helpers.all_helpers(self.conn)])
+
+    def test_a_refused_form_can_be_corrected_and_sent_again(self):
+        form_token = self.form_token()
+        self.assertEqual(self.post("/settings/helpers", {"name": "", "access": "read", "modules": ["stock"]},
+                                   form_token=form_token).status_code, 422)
+        self.assertEqual(self.post("/settings/helpers", {"name": "Fixed", "access": "read", "modules": ["stock"]},
+                                   form_token=form_token).status_code, 201)
 
     def test_making_a_key_needs_the_pages_own_token(self):
         response = self.post("/settings/helpers", {"name": "X", "access": "read", "modules": ["stock"]}, token=False)

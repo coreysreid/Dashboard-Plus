@@ -828,7 +828,8 @@ Assistants, whether AI or human helpers, enter data through the API and never
 touch the database. The API is part of the same local server (`127.0.0.1`
 only) under `/api/v1/`. The port changes at each start, so Settings, Helpers
 shows the current address (decisions 0066 to 0068, hardened by 0074, with a
-published description in 0084 and a Review queue limit in 0085).
+published description in 0084, a Review queue limit in 0085, and a check that
+the address is really Dashboard in 0086).
 
 ### Authentication
 
@@ -839,6 +840,15 @@ and kept only as a SHA-256 fingerprint in `data/secrets/helper_keys.json`
 (mode 0600), never in the database. A request carrying an `Origin` header is
 refused (helpers are programs, not web pages). Cookies, query strings and form
 fields are never read for a key.
+
+**Checking it is really Dashboard (0086).** `POST /api/v1/hello` is the one
+route without a key. A program sends `key_name` (`SHA-256("dph-id:" +
+fingerprint)`, which cannot be worked back) and a fresh 32-byte `nonce`;
+Dashboard answers `proof` = `HMAC-SHA256(SHA-256("dph-hello:" + fingerprint),
+"dashboard-plus-hello-v1|" + nonce + "|" + host:port)`. An unknown or
+turned-off name gets the same shape, signed with a secret made at each start.
+Origin and Host rules apply; 1 KB body; its own limit of 600 a minute shared by
+everyone (`HELLOS_PER_MINUTE`), separate from each helper's.
 
 ### Routes
 
@@ -852,6 +862,7 @@ fields are never read for a key.
 | `POST /api/v1/proposals` | Suggest new records (below) |
 | `GET /api/v1/batches`, `/batches/<id>` | The helper's own batches and their state |
 | `GET /api/v1/openapi.json` | The published description of this API (OpenAPI 3.1), read-only, same key (0084) |
+| `POST /api/v1/hello` | No key: proves this is the Dashboard that made a key, before the key is sent (0086) |
 
 `POST /api/v1/proposals` body: `request_key`, `why`, `entries` (each
 `{"table", "values"}`).
@@ -893,6 +904,35 @@ fields are never read for a key.
   shape in the code is missing from it, or the reverse (0084).
 - Deferred: suggested changes and deletions, amend and undo, a private-details
   grant, per-table scope, a command-line tool, forgetting request keys.
+
+### Connecting an AI assistant (MCP)
+
+`python -m dashboard.connector` is a small local program an assistant's app
+starts (decision 0083). It speaks MCP over stdio (JSON-RPC 2.0, one message
+per line, protocol `2025-06-18`), opens no port, and uses no library beyond
+Python's own. Its eight tools map one to one to the routes above:
+`dashboard_me`, `dashboard_tables`, `dashboard_list_records`,
+`dashboard_get_record`, `dashboard_attention`,
+`dashboard_suggest_new_records`, `dashboard_list_suggestion_batches`,
+`dashboard_get_suggestion_batch`. It can do nothing the key does not allow.
+
+- The address and key come only from `DASHBOARD_PLUS_URL` and
+  `DASHBOARD_PLUS_KEY` or a `--config` file, never from a tool's arguments.
+  Only `http://127.0.0.1:<port>` or `http://localhost:<port>` is accepted.
+- Before every request it sends the hello above on a new connection; only if
+  the proof matches (`hmac.compare_digest`) does the request, with the key, go
+  down that same connection. Otherwise the tool fails with "This address is
+  not Dashboard Plus, or it is an old address..." and the key is never sent;
+  the other program's words are never passed on (0086).
+- Requests have a timeout, ignore proxy settings and never follow a redirect.
+  The key, and anything shaped like a key, is removed from everything it
+  writes; stderr has one-line notes, never a stack trace.
+- Every result says it is household data, not instructions, then gives the
+  API's JSON (as text, and as `structuredContent`). API refusals become tool
+  errors with the API's own message; nothing is retried with wider access.
+- Settings, Helpers and the new-key page show "Connect an AI assistant":
+  settings to paste into the assistant's app with `YOUR-KEY-HERE` in place of
+  the key, and the warning that an online assistant sees what the helper reads.
 
 ## 10. Annotations and the question loop
 

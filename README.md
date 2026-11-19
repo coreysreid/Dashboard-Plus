@@ -39,6 +39,12 @@ is new: keep a copy of anything important somewhere else too. See
   Settings so it can look at the parts of your records you choose and suggest
   new ones. Nothing is added until you accept it on the Review page. Private
   details are never shared with helpers.
+- **Connect an AI assistant:** assistant apps that support MCP can use a
+  helper through the connector that comes with Dashboard Plus
+  (`python -m dashboard.connector`). Settings, Helpers shows the settings to
+  paste in. The key is a password, and an online assistant sees what the
+  helper reads. Before sending the key, the connector checks that the address
+  really is your Dashboard Plus, so an old address cannot catch it.
 - **Import from a spreadsheet:** bring rows from a CSV file into any list
   (Settings). You see which rows are ready and what is wrong with the rest
   before anything is sent, and nothing is added until you accept it on the

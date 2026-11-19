@@ -12,6 +12,8 @@
   <p class="muted" style="margin-bottom:0">This address changes each time Dashboard opens; copy it again after reopening.</p>
 </div>
 
+{% include "helper_connect.html" %}
+
 <h2>Your helpers</h2>
 {% if rows %}
 {% for h in rows %}
@@ -38,6 +40,7 @@
 {% if parts %}
 <form class="record" method="post" action="/settings/helpers">
   <input type="hidden" name="_csrf" value="{{ csrf_token }}">
+  <input type="hidden" name="form_token" value="{{ form_token }}">
   <div class="{% if error %}has-error{% endif %}"><label for="helper-name">Name</label>
     <input type="text" id="helper-name" name="name" maxlength="40" value="{{ values.name or '' }}">
     <p class="help">For example "Pet diary helper".</p></div>

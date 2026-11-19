@@ -5,7 +5,7 @@ import shutil
 import stat
 
 from support import ROOT, TempDirTestCase
-from dashboard.core import db, helpers, records, startup
+from dashboard.core import db, hello, helpers, records, startup
 from dashboard.errors import PlainError
 
 
@@ -48,6 +48,18 @@ class HelperKeyTests(TempDirTestCase):
         if os.name == "posix":
             self.assertEqual(stat.S_IMODE(path.stat().st_mode), 0o600)
             self.assertEqual(stat.S_IMODE(path.parent.stat().st_mode), 0o700)
+
+    def test_the_public_name_and_hello_secret_come_from_the_kept_fingerprint_only(self):
+        _helper, key = self.issue()
+        kept = helpers.active_fingerprints(self.data)
+        self.assertEqual(kept, [helpers.fingerprint(key)])
+        self.assertEqual(hello.fingerprint(key), helpers.fingerprint(key))  # both sides agree (decision 0086)
+        name, secret = hello.key_name(kept[0]), hello.shared_secret(kept[0])
+        self.assertNotIn(name, (kept[0], hello.fingerprint(key)))
+        self.assertNotEqual(secret.hex(), name)
+        self.assertNotIn(key, name)
+        self.assertEqual(hello.answer(kept, name, "ab" * 32, "127.0.0.1:5123", b"x" * 32),
+                         hello.proof(secret, "ab" * 32, "127.0.0.1:5123"))
 
     def test_the_right_key_is_accepted_and_wrong_ones_are_refused(self):
         helper, key = self.issue()
