@@ -7,3 +7,4 @@
 | server.py | Start and stop the local web server, and remember how to reach it. | changing startup, closing or ports |
 | core/ | Core services: records, links, review, audit, backups | changing anything topic-neutral |
 | web/ | Web layer: pages, forms, Agent API | changing screens or the API |
+| connector/ | The local connector an AI assistant's app starts to use the helper API (MCP over stdio) | changing how assistants connect |

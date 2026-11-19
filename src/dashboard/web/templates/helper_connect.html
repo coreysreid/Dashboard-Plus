@@ -1,0 +1,17 @@
+<section class="card" aria-labelledby="connect-heading">
+  <h2 id="connect-heading" style="margin-top:0">Connect an AI assistant</h2>
+  <p>Some AI assistant apps can use a helper through a small connector that comes with Dashboard Plus (it uses a standard called MCP). Paste these settings where your assistant's app lists its MCP servers, then replace <code>YOUR-KEY-HERE</code> with the helper's key.</p>
+  <pre id="assistant-settings" tabindex="0" style="overflow-x:auto;max-width:100%;white-space:pre;background:var(--bg);border:1px solid var(--line);padding:.75rem;border-radius:6px">{{ assistant }}</pre>
+  <div class="actions"><button type="button" id="copy-settings">Copy these settings</button><span id="settings-copied" class="muted" role="status"></span></div>
+  <p><strong>The key is a password.</strong> Your assistant's app keeps these settings in a file on this computer, so anyone who can open that file can use the key. Don't paste the key into a chat.</p>
+  <p>If the assistant is an online service, that service will see what the helper reads. Anything it suggests still waits for you on the <a href="/review">Review</a> page.</p>
+  <p class="muted" style="margin-bottom:0">The address changes each time Dashboard opens: update it in the assistant's settings after reopening. To disconnect, turn the helper's access off here and remove the "dashboard-plus" lines from the assistant's settings.</p>
+</section>
+<script>
+  document.getElementById("copy-settings").addEventListener("click", function () {
+    var text = document.getElementById("assistant-settings").textContent;
+    var say = function (words) { document.getElementById("settings-copied").textContent = words; };
+    if (navigator.clipboard) { navigator.clipboard.writeText(text).then(function () { say("Copied."); }, function () { say("Select the settings and copy them."); }); }
+    else { say("Select the settings and copy them."); }
+  });
+</script>
