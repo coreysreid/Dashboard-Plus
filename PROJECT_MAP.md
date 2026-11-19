@@ -138,6 +138,7 @@ One record per decision, from `TEMPLATE.md`. Never deleted; reversed ones are ma
 | [0084](0084-published-api-description.md) | A published OpenAPI 3.1 description of the helper API, served read-only at /api/v1/openapi.json behind the same key as every route, and held to the real routes, errors and replies by a contract test | Accepted |
 | [0085](0085-review-queue-cap.md) | A helper may have at most 500 suggestions waiting on Review (a setting); a batch that would go over is refused whole with 429 `review_queue_full`; imports do not count; accepting or rejecting frees room | Accepted |
 | [0086](0086-connector-checks-it-is-really-dashboard.md) | Before every request the connector asks `POST /api/v1/hello` (no key) to prove it is the Dashboard that made its key: an HMAC over a fresh nonce and host:port from the kept fingerprint; only on a match does the key go, down the same connection | Accepted |
+| [0087](0087-add-a-helper-form-makes-one-key.md) | An Add a helper form makes one key even if sent twice: a one-use form token, and plain words on a repeat | Accepted |
 | [TEMPLATE](TEMPLATE.md) | Blank record to copy for a new decision | recording a decision |
 
 ## docs/plans/  (summary: build plans for larger pieces of work, written before building)
