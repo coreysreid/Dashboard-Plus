@@ -458,6 +458,34 @@ land.
     Helpers, Mark returned: every label, help line and message; exact
     replacements only.
 
+### Batch 15: helpers in real use, and the M2 screens (M2)
+
+Merged on 19 November: Export (0078), Restore with Undo (0079), Import from a
+spreadsheet (0080), the mode badge (0082), the AI-assistant connector (0083)
+with its "is this really Dashboard" check (0086), the published API
+description (0084), the Review cap (0085), one key per form (0087) and your
+batch 14 fixes (0088). Household sharing is designed (0081) and waits for
+Corey's choice; don't build it.
+
+63. **Connector acceptance run.** Run `MCP_ACCEPTANCE.md` against the shipped
+    connector (`python -m dashboard.connector`), worst first, with exact steps.
+64. **Restore, export and import UX check.** All three households, 320px and
+    desktop: restore then Undo, export and open in a spreadsheet, import
+    `EXAMPLE.csv` through Review. Exact words you would change.
+65. **A steady address for helpers, designed.** The helper address changes
+    each time Dashboard opens. Options (a chosen port, a connection file the
+    connector reads, a fallback), what each risks, and the Settings words.
+66. **Rotating a helper key, designed.** "Make a new key for this helper" in
+    one step: the old one stops, history stays with the helper. Words and
+    acceptance checks.
+67. **Receipt entry with the connector, end to end.** One worked example: an
+    assistant reads a photographed receipt (made up), suggests Stock in rows
+    through the connector, the household accepts on Review. Exact tool calls,
+    replies and Review words; note what failed or felt slow.
+68. **Sharing option A, ready-checked.** Read `docs/plans/household-sharing.md`
+    option A and list what still needs deciding before it could be built, with
+    acceptance checks. Design only; Corey has not chosen yet.
+
 ## Brief for Lane B, batch 3 (done)
 
 > You are Lane B, the checker and drafter. You have full internet access for
