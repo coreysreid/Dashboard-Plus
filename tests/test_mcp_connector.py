@@ -3,6 +3,7 @@ import http.client
 import http.server
 import io
 import json
+import re
 import os
 import subprocess
 import sys
@@ -651,9 +652,11 @@ class HelpersPageTests(LiveDashboard):
         self.assertNotIn("dph_", html)
 
     def test_the_new_key_page_shows_the_key_once_and_the_settings_use_a_placeholder(self):
+        form = self.page.get("/settings/helpers", base_url=self.base).get_data(as_text=True)
+        form_token = re.search(r'name="form_token" value="([^"]+)"', form).group(1)
         response = self.page.post("/settings/helpers", base_url=self.base,
                                   data={"name": "Assistant", "access": "read", "modules": ["demo"],
-                                        "_csrf": self.app.config["CSRF_TOKEN"]})
+                                        "_csrf": self.app.config["CSRF_TOKEN"], "form_token": form_token})
         self.assertEqual(response.status_code, 201)
         html = response.get_data(as_text=True)
         self.assertEqual(html.count("dph_"), 1)

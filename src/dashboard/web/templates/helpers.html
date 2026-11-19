@@ -40,6 +40,7 @@
 {% if parts %}
 <form class="record" method="post" action="/settings/helpers">
   <input type="hidden" name="_csrf" value="{{ csrf_token }}">
+  <input type="hidden" name="form_token" value="{{ form_token }}">
   <div class="{% if error %}has-error{% endif %}"><label for="helper-name">Name</label>
     <input type="text" id="helper-name" name="name" maxlength="40" value="{{ values.name or '' }}">
     <p class="help">For example "Pet diary helper".</p></div>
