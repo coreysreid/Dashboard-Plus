@@ -130,8 +130,10 @@ class ToolListTests(LiveDashboard):
             path = "/api/v1" + tool.route({k: samples[k] for k in tool.schema["properties"]}).split("?")[0]
             endpoint, _ = adapter.match(path, method=tool.method)
             reached.add((endpoint, tool.method))
+        # The API's own description (decision 0084) is for programmers, not a household tool.
         routes = {(rule.endpoint, method) for rule in self.app.url_map.iter_rules()
-                  if rule.rule.startswith("/api/v1/") for method in rule.methods - {"HEAD", "OPTIONS"}}
+                  if rule.rule.startswith("/api/v1/") and rule.rule != "/api/v1/openapi.json"
+                  for method in rule.methods - {"HEAD", "OPTIONS"}}
         self.assertEqual(reached, routes)
 
     def test_every_tool_has_a_plain_description_and_a_closed_input_schema(self):
