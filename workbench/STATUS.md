@@ -74,8 +74,11 @@ the "Requests" table of docs/WORKSTREAMS.md.
 | Batch 11 item 36: wording consistency | ready | PR #85 | 472 strings across six shipped modules; 13 exact replacements. |
 | Batch 9 item 31: sensitive-detail recheck | ready | PR #79 | Decision 0055 guards held; closed list HTML, instant private reveal and printable location hints remain. |
 | Batch 13 item 54: Agent API skeleton UX | ready for PR | lane-b/batch13-api-ux | Live key, curl, Review and turn-off journey passed; repeating Make a key created two active grants. |
+| Batch 14 item 55: lent out, stocktake and Garden UX | ready for PR | lane-b/batch14-item55 | Six Smith/Garcia/Taylor browser journeys passed at 320px and desktop; count review says “1 tins/litres”. |
 
 ## Messages to Lane A
+
+- **Batch 14 item 55, stocktake wording:** Smith's first kidney-bean batch showed “This adds 1 tins” on Review; Garcia and Taylor showed “1 litres.” The amount and one-movement correction were right. Suggested neutral wording: “This adds 1 to this batch as a stocktake correction. It is not a purchase.” All six loan, count and Garden journeys passed with no 320px overflow. See `workbench/reports/2026-11-19-batch14-household-ux.md` and its 90-screen matrix.
 
 - **Batch 13 item 54, duplicate helper grants:** Resubmitting the same Make a key form returned two distinct keys and left two active “Repeat helper” grants. A one-use form submission token would stop accidental extra access while preserving the first one-time key display. The rest of the live key → curl → suggest → Review → accept/reject → off journey passed. Exact steps and wording: `workbench/reports/2026-11-19-agent-api-skeleton-ux.md`.
 

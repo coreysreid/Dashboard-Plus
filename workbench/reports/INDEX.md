@@ -37,3 +37,6 @@ expected, actual, severity (blocker, important, minor), suggested change.
 | 2026-11-18-wording-inventory.csv | 472 module strings with current and proposed words. | applying wording replacements |
 | 2026-11-18-sensitive-detail-recheck.md | Decision 0055 verification and remaining private-detail findings. | reviewing privacy after security fixes |
 | 2026-11-19-agent-api-skeleton-ux.md | Live key, curl, suggestion and Review journey, including duplicate-grant finding. | refining the merged Agent API |
+| 2026-11-19-batch14-household-ux.md | Three-household loan, batch-count and Garden check at phone and desktop widths. | refining new household flows |
+| 2026-11-19-batch14-ux-matrix.csv | Ninety route, response and document-width observations. | reproducing batch 14 UX results |
+| ux_2026_11_19/ | Smith phone and desktop captures of stocktake wording. | seeing the singular-unit finding |
