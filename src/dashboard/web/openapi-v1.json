@@ -4,7 +4,7 @@
     "title": "Dashboard Plus helper API",
     "version": "1.0.0",
     "summary": "Let a program look at parts of the household's records and suggest new ones.",
-    "description": "The helper API of Dashboard Plus, a local-first household records app. It runs on this computer only (127.0.0.1) and the port changes each time the app opens: Settings, Helpers shows the address. Every route needs `Authorization: Bearer <key>`, a key the household made for one helper. Helpers can look at the tables they were given and suggest NEW records; nothing is added until a person accepts it on Review. Private details are never shared. Requests from web pages are refused. This description is itself served at GET /api/v1/openapi.json and needs the same key. All examples are invented."
+    "description": "The helper API of Dashboard Plus, a local-first household records app. It runs on this computer only (127.0.0.1) and the port changes each time the app opens: Settings, Helpers shows the address. Every route needs `Authorization: Bearer <key>`, a key the household made for one helper, except POST /api/v1/hello, which lets a program check that the address really is the Dashboard Plus that made its key before it sends the key. Helpers can look at the tables they were given and suggest NEW records; nothing is added until a person accepts it on Review. Private details are never shared. Requests from web pages are refused. This description is itself served at GET /api/v1/openapi.json and needs the same key. All examples are invented."
   },
   "servers": [
     {
@@ -1302,6 +1302,149 @@
         }
       }
     },
+    "/api/v1/hello": {
+      "post": {
+        "operationId": "hello",
+        "tags": [
+          "About this API"
+        ],
+        "summary": "Check this is the real Dashboard Plus, before sending a key",
+        "description": "The only route that needs no key (decision 0086). The port changes each time Dashboard opens, so an old address may now belong to another program. Before sending its key, a program sends the key's public name and a fresh nonce; only the Dashboard Plus that made the key can answer with the right proof. Compare it in constant time, and send the key only down the same connection, so nothing can step in between. The answer tells nobody without the key anything. Requests from web pages are refused, and the check has its own limit per minute, shared by everyone, that never uses up a helper's limit. It never sets a cookie.",
+        "security": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/HelloRequest"
+              },
+              "example": {
+                "key_name": "5e1f0c2b9a7d4e3f8a6b1c0d2e4f6a8b9c1d3e5f7a9b0c2d4e6f8a1b3c5d7e9f",
+                "nonce": "0a1b2c3d4e5f60718293a4b5c6d7e8f90a1b2c3d4e5f60718293a4b5c6d7e8f9"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "The proof. Work out the same HMAC yourself and compare: send the key only if they match.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Hello"
+                },
+                "example": {
+                  "hello": "dashboard-plus-hello-v1",
+                  "proof": "9c4e2a7b1f3d5e6a8b0c2d4e6f8a1b3c5d7e9f0a2b4c6d8e0f1a3b5c7d9e1f2a"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "key_name or nonce is missing or not 64 lower-case hexadecimal characters (`bad_request`).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                },
+                "example": {
+                  "error": "bad_request",
+                  "message": "Send key_name and nonce, each 64 lower-case hexadecimal characters."
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "The request carried an Origin header (`from_a_web_page`), or named a host other than this computer (`forbidden`).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                },
+                "examples": {
+                  "from_a_web_page": {
+                    "value": {
+                      "error": "from_a_web_page",
+                      "message": "The helper API cannot be used from a web page."
+                    }
+                  },
+                  "forbidden": {
+                    "value": {
+                      "error": "forbidden",
+                      "message": "This request was refused because it did not come from this computer."
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "413": {
+            "description": "The body is over 1,024 bytes (`too_large`).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                },
+                "example": {
+                  "error": "too_large",
+                  "message": "This request is too large. A connection check is two short values."
+                }
+              }
+            }
+          },
+          "415": {
+            "description": "The body was not sent as JSON (`needs_json`).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                },
+                "example": {
+                  "error": "needs_json",
+                  "message": "Send the body as JSON (Content-Type: application/json)."
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "More than 600 checks in a minute from everyone together (`too_many_requests`). Wait as long as Retry-After says.",
+            "headers": {
+              "Retry-After": {
+                "description": "Seconds to wait before trying again.",
+                "schema": {
+                  "type": "integer"
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                },
+                "example": {
+                  "error": "too_many_requests",
+                  "message": "Too many connection checks have been sent in the last minute. Wait 12 seconds, then try again."
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "An unexpected problem (`server_error`). Nothing was changed.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                },
+                "example": {
+                  "error": "server_error",
+                  "message": "Something went wrong. Nothing was changed."
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/v1/openapi.json": {
       "get": {
         "operationId": "getOpenApi",
@@ -2238,6 +2381,46 @@
         "required": [
           "batches",
           "next_after"
+        ]
+      },
+      "HelloRequest": {
+        "type": "object",
+        "properties": {
+          "key_name": {
+            "type": "string",
+            "pattern": "^[0-9a-f]{64}$",
+            "description": "The key's public name: the lower-case hex SHA-256 of the text `dph-id:` followed by the key's fingerprint (the lower-case hex SHA-256 of the key). It cannot be worked back to the key or its fingerprint."
+          },
+          "nonce": {
+            "type": "string",
+            "pattern": "^[0-9a-f]{64}$",
+            "description": "32 fresh random bytes as lower-case hex, new for every check."
+          }
+        },
+        "required": [
+          "key_name",
+          "nonce"
+        ]
+      },
+      "Hello": {
+        "type": "object",
+        "properties": {
+          "hello": {
+            "type": "string",
+            "enum": [
+              "dashboard-plus-hello-v1"
+            ],
+            "description": "The version of this check."
+          },
+          "proof": {
+            "type": "string",
+            "pattern": "^[0-9a-f]{64}$",
+            "description": "Lower-case hex HMAC-SHA256 of `dashboard-plus-hello-v1|<nonce>|<host:port>`, where host:port is exactly the Host the request was sent to. The HMAC key is the raw SHA-256 of the text `dph-hello:` followed by the key's fingerprint. A key_name that is not a working key gets an answer of the same shape, signed with a secret only this run of Dashboard holds, so the answer never says whether a key exists."
+          }
+        },
+        "required": [
+          "hello",
+          "proof"
         ]
       }
     }

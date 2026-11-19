@@ -42,7 +42,8 @@ paste into the assistant's app, with `YOUR-KEY-HERE` where the key goes.
   with `--config` (the environment wins). Never from a tool's arguments. Only
   `http://127.0.0.1:<port>` or `http://localhost:<port>` (optionally ending in
   `/api/v1`) is accepted; anything else is refused and never contacted.
-- **The key never leaves except in its header.** Requests use `urllib` with a
+- **The key never leaves except in its header.** Requests use `urllib` (since
+  decision 0086, `http.client`, after a check that the address is Dashboard) with a
   15-second timeout, an empty proxy list (so `HTTP_PROXY` is ignored), and
   redirects refused. Every line written to stdout or stderr has the key, and
   anything shaped like a helper key, replaced by `[key hidden]`. Messages on
@@ -102,6 +103,9 @@ paste into the assistant's app, with `YOUR-KEY-HERE` where the key goes.
 - **A program now on the old port would receive the key.** If Dashboard is
   closed and another local program takes its port, the connector sends the
   key there. Only programs already running on this computer could do this.
+  Closed by [decision 0086](0086-connector-checks-it-is-really-dashboard.md):
+  the connector now asks the address to prove it is the Dashboard that made
+  the key, without sending it, before every request.
 - **Labels are a request, not a guarantee.** A model may still be swayed by
   text inside a record; the real protection is that the connector can do
   nothing beyond the key's grant and that suggestions wait for a person.

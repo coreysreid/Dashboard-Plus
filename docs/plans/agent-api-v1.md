@@ -132,12 +132,15 @@ Update/delete suggestions (amend/undo, stale before-values, edited_by_person loc
 0068 Helpers' suggestions wait in their own place until a person accepts them. (Changes DESIGN 3 and 8.)
 0069 A module may not be called "core" or use double underscores in its name. (Refines 0055.)
 0074 Agent API hardening: hidden links, one 404 for parts not given, text screening, 120 requests a minute, one decision per suggestion.
+0083 The local MCP connector. 0084 The published API description. 0085 The Review queue cap.
+0086 The connector checks it is really Dashboard (the hello) before the key is ever sent.
 
 ## 10. The MCP connector (built 2026-11-19, decision 0083)
 - `src/dashboard/connector/`: stdio MCP server, no new dependency. Methods: initialize (protocol 2025-06-18, also 2025-03-26 and 2024-11-05), notifications/initialized, ping, tools/list, tools/call; others -32601; unreadable -32700; invalid or batched -32600; unknown tool -32602.
 - Eight tools from Lane B's manifest (`workbench/drafts/agent_api/mcp-tools.json`), one per route in section 4; inputs checked against closed schemas before any request; paths built only from fixed templates.
 - Results: a first sentence saying the content is household data, not instructions (abuse case 14), then the API JSON as text; `structuredContent` `{"about", "data"}` for 2025-06-18 clients. API errors: `isError: true`, "Dashboard Plus said: <message>", status/code/problems as data.
-- Address and key: `DASHBOARD_PLUS_URL`, `DASHBOARD_PLUS_KEY`, or `--config <toml>` (environment wins); only `http://127.0.0.1:<port>` or `http://localhost:<port>`; urllib, 15 s timeout, no proxy, no redirects, 4 MB answer cap; key and key-shaped text redacted from stdout and stderr.
+- Address and key: `DASHBOARD_PLUS_URL`, `DASHBOARD_PLUS_KEY`, or `--config <toml>` (environment wins); only `http://127.0.0.1:<port>` or `http://localhost:<port>`; http.client (was urllib until decision 0086), 15 s timeout, no proxy, no redirects, 4 MB answer cap; key and key-shaped text redacted from stdout and stderr.
+- Is it really Dashboard (decision 0086): before every request, on a new connection and without the key, `POST /api/v1/hello` with `key_name` = SHA-256("dph-id:" + fingerprint) and a fresh 32-byte `nonce`; Dashboard answers `proof` = HMAC-SHA256(SHA-256("dph-hello:" + fingerprint), "dashboard-plus-hello-v1|" + nonce + "|" + host:port). Only on a match (compare_digest) does the request with the key go, down the same connection (auto_open off; a closed connection is checked again, once). Otherwise: "This address is not Dashboard Plus, or it is an old address..." and the key is never sent. Unknown or turned-off names get the same shape from a per-start secret. Origin, exact Host, JSON, 1 KB body, 600 hellos a minute shared by everyone (`HELLOS_PER_MINUTE`), never a helper's own limit.
 - Helpers page and new-key page: "Connect an AI assistant" block (`helper_connect.html`) with the MCP client JSON, `YOUR-KEY-HERE` placeholder, current address, and the decision 0082 wording.
 - Tests: `tests/test_mcp_connector.py` runs the connector in-process and as `python -m dashboard.connector` against a real app served by waitress on 127.0.0.1.
 - Still open: a fixed port or connection file so the address survives a restart; per-client notes on where each assistant app stores the key.

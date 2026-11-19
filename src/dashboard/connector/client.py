@@ -1,18 +1,23 @@
-"""Call the helper API on this computer: fixed routes only, the key only in its header, no proxy, no redirects."""
+"""Call the helper API on this computer: check it is the real Dashboard first, then send the key down that connection only."""
 from __future__ import annotations
 
+import http.client
 import json
 import socket
-import urllib.error
-import urllib.request
 from dataclasses import dataclass, field
+from urllib.parse import urlsplit
 
 from dashboard import __version__
+from dashboard.core import hello
 
 TIMEOUT = 15  # seconds
 MAX_ANSWER = 4 * 1024 * 1024  # bytes; a full page of records is far smaller
+MAX_HELLO_ANSWER = 1024  # bytes; Dashboard's answer to the check is about 120
 WHERE_ADDRESS = ("The address changes each time Dashboard opens: copy the current one from "
                  "Settings, Helpers and update the assistant's settings.")
+NOT_DASHBOARD = ("This address is not Dashboard Plus, or it is an old address. Open Dashboard Plus and copy the "
+                 "address again from Settings → Helpers. If the address is right, this helper's key may have been "
+                 "turned off: make a new one there. The key was not sent.")
 
 
 @dataclass
@@ -26,49 +31,82 @@ class Answer:
         return 200 <= self.status < 300
 
 
-class _NoRedirects(urllib.request.HTTPRedirectHandler):
-    """Never follow a redirect: it could carry the key to another address."""
-
-    def redirect_request(self, req, fp, code, msg, headers, newurl):
-        return None
-
-
-def _opener() -> urllib.request.OpenerDirector:
-    # An empty ProxyHandler ignores HTTP_PROXY and friends, so the key never goes through a proxy.
-    return urllib.request.build_opener(urllib.request.ProxyHandler({}), _NoRedirects())
-
-
 def _plain(status: int, message: str, code: str = "connector") -> Answer:
     return Answer(status, {"error": code, "message": message})
+
+
+def _headers(**extra) -> dict:
+    return {"Accept": "application/json", "User-Agent": f"dashboard-plus-connector/{__version__}", **extra}
 
 
 def call(base: str, key: str, method: str, path: str, body: dict | None = None,
          timeout: float = TIMEOUT) -> Answer:
     """Send one request to `base` + `path` and return the answer. Never raises for network or API problems.
 
-    `path` is built by the connector from a fixed list of routes, never taken from an assistant."""
-    data = None if body is None else json.dumps(body, ensure_ascii=False).encode("utf-8")
-    request = urllib.request.Request(base + path, data=data, method=method)
-    request.add_header("Authorization", f"Bearer {key}")
-    request.add_header("Accept", "application/json")
-    request.add_header("User-Agent", f"dashboard-plus-connector/{__version__}")
-    if data is not None:
-        request.add_header("Content-Type", "application/json")
+    First, on a new connection and without the key, ask the program at that address to prove it is the
+    Dashboard Plus that made this key (decision 0086). Only if it does is the request sent, with the key,
+    down that same connection, so nothing can step in between the check and the key. `path` is built by the
+    connector from a fixed list of routes, never taken from an assistant. There is no proxy (http.client
+    never uses one) and redirects are never followed."""
+    parts = urlsplit(base)
+    host, port, prefix = parts.hostname, parts.port, parts.path.rstrip("/")
+    for _attempt in range(2):
+        connection = http.client.HTTPConnection(host, port, timeout=timeout)
+        try:
+            refusal = _check(connection, key, f"{host}:{port}", prefix)
+            if refusal is not None:
+                return refusal  # the key was never sent
+            connection.auto_open = 0  # never reconnect on its own: a new connection would not be checked
+            try:
+                return _send(connection, key, method, prefix + path, body)
+            except http.client.NotConnected:
+                continue  # Dashboard closed the checked connection before the key went: check again
+        except (TimeoutError, socket.timeout):
+            return _plain(0, "Dashboard Plus did not answer in time. If this was a suggestion, try again with the "
+                             "same request_key: it cannot be added twice.", "timed_out")
+        except (http.client.HTTPException, OSError, ValueError):
+            return _plain(0, "Dashboard Plus could not be reached. Is it open on this computer? " + WHERE_ADDRESS,
+                          "not_reachable")
+        finally:
+            connection.close()
+    return _plain(0, "Dashboard Plus could not be reached. Is it open on this computer? " + WHERE_ADDRESS,
+                  "not_reachable")
+
+
+def _check(connection: http.client.HTTPConnection, key: str, host: str, prefix: str) -> Answer | None:
+    """Ask for proof that this is the real Dashboard Plus. None if it proved it; otherwise the refusal.
+
+    Sent: a fresh random nonce and the key's public name, which nobody can work back to the key."""
+    nonce = hello.new_nonce()
+    payload = json.dumps({"key_name": hello.key_name(hello.fingerprint(key)), "nonce": nonce})
+    connection.request("POST", prefix + "/hello", body=payload.encode("ascii"),
+                       headers=_headers(**{"Content-Type": "application/json"}))
+    response = connection.getresponse()
+    raw = response.read(MAX_HELLO_ANSWER + 1)
+    if response.status == 429:  # our own words: this program has not proved what it is yet
+        return _plain(0, "Dashboard Plus is getting too many connection checks. Wait a minute, then try again.",
+                      "too_many_requests")
     try:
-        with _opener().open(request, timeout=timeout) as response:
-            return _read(response.status, response)
-    except urllib.error.HTTPError as error:
-        with error:
-            if 300 <= error.code < 400:
-                return _plain(error.code, "Dashboard Plus answered with a redirect, which the connector never "
-                                          "follows. Check the address in Settings, Helpers.", "redirect_refused")
-            return _read(error.code, error)
-    except (TimeoutError, socket.timeout):
-        return _plain(0, "Dashboard Plus did not answer in time. If this was a suggestion, try again with the "
-                         "same request_key: it cannot be added twice.", "timed_out")
-    except (urllib.error.URLError, OSError, ValueError):
-        return _plain(0, "Dashboard Plus could not be reached. Is it open on this computer? " + WHERE_ADDRESS,
-                      "not_reachable")
+        said = json.loads(raw.decode("utf-8")) if len(raw) <= MAX_HELLO_ANSWER else None
+    except (UnicodeDecodeError, ValueError):
+        said = None
+    if (response.status == 200 and isinstance(said, dict) and said.get("hello") == hello.VERSION
+            and hello.matches(key, nonce, host, said.get("proof"))):
+        return None
+    return _plain(0, NOT_DASHBOARD, "not_dashboard")
+
+
+def _send(connection: http.client.HTTPConnection, key: str, method: str, path: str, body: dict | None) -> Answer:
+    data = None if body is None else json.dumps(body, ensure_ascii=False).encode("utf-8")
+    headers = _headers(Authorization=f"Bearer {key}")
+    if data is not None:
+        headers["Content-Type"] = "application/json"
+    connection.request(method, path, body=data, headers=headers)
+    response = connection.getresponse()
+    if 300 <= response.status < 400:
+        return _plain(response.status, "Dashboard Plus answered with a redirect, which the connector never "
+                                        "follows. Check the address in Settings, Helpers.", "redirect_refused")
+    return _read(response.status, response)
 
 
 def _read(status: int, response) -> Answer:

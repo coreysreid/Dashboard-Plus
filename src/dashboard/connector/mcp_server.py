@@ -134,7 +134,8 @@ class Server:
         if answer.ok:
             return self._result(DATA_NOT_INSTRUCTIONS, answer.body, False)
         message = answer.body.get("message") or "Dashboard Plus refused this request."
-        words = f"Dashboard Plus said: {message}"
+        # Status 0 is the connector's own words (not reached, or not proved to be Dashboard): never "said".
+        words = message if answer.status == 0 else f"Dashboard Plus said: {message}"
         if answer.status == 401:
             words += " (The key may have been turned off. Nothing is retried with another key.)"
         return self._result(words, {"status": answer.status, **answer.body}, True)

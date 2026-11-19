@@ -212,6 +212,31 @@ class ReplyShapeTests(ApiTestCase):
         detail = self.valid(self.api_get(f"/api/v1/batches/{batch['batch_id']}"), "/api/v1/batches/{batch_id}")
         self.assertEqual(detail["proposals"][0]["status"], "rejected")
 
+    def test_hello_and_its_refusals(self):
+        from dashboard.core import hello
+        error = SPEC["components"]["schemas"]["Error"]
+        body = {"key_name": hello.key_name(hello.fingerprint(self.key)), "nonce": hello.new_nonce()}
+        check_request = SPEC["paths"]["/api/v1/hello"]["post"]["requestBody"]["content"]["application/json"]["schema"]
+        self.assertEqual(check(body, check_request), [])
+        for name in (body["key_name"], "ab" * 32):
+            sent = self.client.post("/api/v1/hello", base_url=BASE, json=dict(body, key_name=name))
+            self.valid(sent, "/api/v1/hello", 200, "post")
+        self.assertEqual(SPEC["paths"]["/api/v1/hello"]["post"]["security"], [])
+        cases = [(self.client.post("/api/v1/hello", base_url=BASE, json={}), 400, "bad_request"),
+                 (self.client.post("/api/v1/hello", base_url=BASE, json=body, headers={"Origin": "http://evil.example"}),
+                  403, "from_a_web_page"),
+                 (self.client.post("/api/v1/hello", base_url="http://evil.example:5123", json=body), 403, "forbidden"),
+                 (self.client.post("/api/v1/hello", base_url=BASE, data="x" * 2000,
+                                   headers={"Content-Type": "application/json"}), 413, "too_large"),
+                 (self.client.post("/api/v1/hello", base_url=BASE, data="{}"), 415, "needs_json")]
+        self.app.config["HELLOS_PER_MINUTE"] = 0
+        cases.append((self.client.post("/api/v1/hello", base_url=BASE, json=body), 429, "too_many_requests"))
+        for response, status, code in cases:
+            with self.subTest(code=code):
+                self.assertEqual((response.status_code, response.get_json()["error"]), (status, code))
+                self.assertEqual(check(response.get_json(), error), [])
+                self.assertIn(f'"{code}"', json.dumps(SPEC["paths"]["/api/v1/hello"]["post"]["responses"][str(status)]))
+
     def test_every_refusal_has_the_documented_shape_and_a_documented_status(self):
         error = SPEC["components"]["schemas"]["Error"]
         cases = [

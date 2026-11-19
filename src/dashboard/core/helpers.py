@@ -1,7 +1,6 @@
 """Helpers the household has given a key to: making a key, checking it, and turning it off."""
 from __future__ import annotations
 
-import hashlib
 import hmac
 import json
 import os
@@ -12,7 +11,7 @@ from dataclasses import dataclass
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
 
-from dashboard.core import db, schema
+from dashboard.core import db, hello, schema
 from dashboard.errors import PlainError
 
 KEY_PREFIX = "dph_"
@@ -62,7 +61,7 @@ def _from_row(row) -> Helper:
 
 def fingerprint(key: str) -> str:
     """The SHA-256 of a key: all that is ever kept of it."""
-    return hashlib.sha256(key.encode("utf-8")).hexdigest()
+    return hello.fingerprint(key)
 
 
 # ----- the file of fingerprints (outside the database, so a restored backup cannot revive a key) -----
@@ -82,6 +81,11 @@ def _read_keys(data_dir: Path) -> dict[str, str]:
 def known_key_ids(data_dir: Path) -> set[str]:
     """The helpers (by key_id) whose key still works: the ones with a fingerprint in the file."""
     return set(_read_keys(data_dir).values())
+
+
+def active_fingerprints(data_dir: Path) -> list[str]:
+    """The fingerprints of every key that still works, for Dashboard's answer to a connector's hello (0086)."""
+    return list(_read_keys(data_dir))
 
 
 def _write_keys(data_dir: Path, keys: dict[str, str]) -> None:

@@ -1,4 +1,5 @@
 """Tests for the AI-assistant connector (MCP over stdio) against a real local Dashboard: tools, errors and the key."""
+import http.client
 import http.server
 import io
 import json
@@ -12,7 +13,7 @@ from waitress import create_server
 
 from support import ROOT, TempDirTestCase
 from dashboard.connector import client, config, mcp_server, tools
-from dashboard.core import db, helpers, records, settings, startup
+from dashboard.core import db, hello, helpers, records, settings, startup
 from dashboard.web.app import create_app
 import make_migration
 
@@ -130,9 +131,10 @@ class ToolListTests(LiveDashboard):
             path = "/api/v1" + tool.route({k: samples[k] for k in tool.schema["properties"]}).split("?")[0]
             endpoint, _ = adapter.match(path, method=tool.method)
             reached.add((endpoint, tool.method))
-        # The API's own description (decision 0084) is for programmers, not a household tool.
+        # The API's own description (decision 0084) is for programmers, and the hello (decision 0086) is the
+        # connector's own check before every request: neither is a household tool.
         routes = {(rule.endpoint, method) for rule in self.app.url_map.iter_rules()
-                  if rule.rule.startswith("/api/v1/") and rule.rule != "/api/v1/openapi.json"
+                  if rule.rule.startswith("/api/v1/") and rule.rule not in ("/api/v1/openapi.json", "/api/v1/hello")
                   for method in rule.methods - {"HEAD", "OPTIONS"}}
         self.assertEqual(reached, routes)
 
@@ -242,10 +244,25 @@ class ErrorTests(LiveDashboard):
         self.tool(server, "dashboard_me")
         self.assert_refused(self.tool(server, "dashboard_me"), 429, "too_many_requests")
 
-    def test_a_turned_off_key_gets_the_apis_401(self):
+    def test_a_turned_off_key_is_not_sent_and_the_person_is_told_where_to_look(self):
         server = self.connector()
+        self.assertFalse(self.tool(server, "dashboard_me")["isError"])
         helpers.turn_off(self.conn, self.data, self.helper.id)
-        result = self.tool(server, "dashboard_me")
+        result = self.tool(server, "dashboard_me")  # Dashboard can no longer prove it made this key (decision 0086)
+        self.assertTrue(result["isError"])
+        self.assertEqual(result["structuredContent"]["data"]["error"], "not_dashboard")
+        self.assertIn("key may have been turned off", result["content"][0]["text"])
+        self.assertIn("Settings → Helpers", result["content"][0]["text"])
+
+    def test_a_key_turned_off_between_the_check_and_the_request_gets_the_apis_401(self):
+        real_send = client._send
+
+        def turn_off_then_send(*args):
+            helpers.turn_off(self.conn, self.data, self.helper.id)
+            return real_send(*args)
+        client._send = turn_off_then_send
+        self.addCleanup(setattr, client, "_send", real_send)
+        result = self.tool(self.connector(), "dashboard_me")
         self.assert_refused(result, 401, "no_key")
         self.assertIn("Settings", result["content"][0]["text"])
 
@@ -402,35 +419,207 @@ class KeySafetyTests(LiveDashboard):
         self.assertNotIn(self.key, done.stdout + done.stderr)
 
 
-class _Redirecting(http.server.BaseHTTPRequestHandler):
-    def do_GET(self):
-        if self.path.endswith("/slow"):
-            time.sleep(1.5)
-        self.send_response(302)
-        self.send_header("Location", "http://example.com/steal")
+class RealDashboardCheckTests(LiveDashboard):
+    """Before the key is sent, the address must prove it is the Dashboard that made the key (decision 0086)."""
+
+    def ask_live(self, body, host=None, headers=None):
+        """Send a hello straight to the live Dashboard, as any program on this computer could."""
+        connection = http.client.HTTPConnection("127.0.0.1", self.port, timeout=5)
+        self.addCleanup(connection.close)
+        sent = {"Content-Type": "application/json", "Host": host or f"127.0.0.1:{self.port}", **(headers or {})}
+        connection.request("POST", "/api/v1/hello", body=json.dumps(body), headers=sent)
+        response = connection.getresponse()
+        return response.status, dict(response.getheaders()), json.loads(response.read())
+
+    def name_of(self, key):
+        return hello.key_name(hello.fingerprint(key))
+
+    def assert_not_dashboard(self, result):
+        self.assertTrue(result["isError"])
+        self.assertEqual(result["structuredContent"]["data"]["error"], "not_dashboard")
+        text = result["content"][0]["text"]
+        self.assertTrue(text.startswith("This address is not Dashboard Plus, or it is an old address. Open Dashboard "
+                                        "Plus and copy the address again from Settings → Helpers."))
+        self.assertNotIn("Dashboard Plus said", text)
+
+    def connector_at(self, url):
+        return self.connector(url=url)
+
+    def test_the_real_dashboard_proves_it_and_the_key_is_then_used(self):
+        nonce = hello.new_nonce()
+        status, headers, body = self.ask_live({"key_name": self.name_of(self.key), "nonce": nonce})
+        self.assertEqual(status, 200)
+        self.assertEqual(set(body), {"hello", "proof"})
+        self.assertTrue(hello.matches(self.key, nonce, f"127.0.0.1:{self.port}", body["proof"]))
+        self.assertFalse(hello.matches(self.reader_key, nonce, f"127.0.0.1:{self.port}", body["proof"]))
+        self.assertFalse(hello.matches(self.key, nonce, f"localhost:{self.port}", body["proof"]))
+        self.assertEqual(headers["Cache-Control"], "no-store")
+        self.assertNotIn("Set-Cookie", headers)
+        self.assertFalse(self.tool(self.connector(), "dashboard_me")["isError"])
+        self.assertFalse(self.tool(self.connector(url=f"http://localhost:{self.port}"), "dashboard_me")["isError"])
+
+    def test_a_program_that_accepts_anything_never_receives_the_key(self):
+        web, url = start_fake(self, lambda handler, body: (200, {"hello": hello.VERSION, "ok": True}, ()))
+        for name in ("dashboard_me", "dashboard_tables", "dashboard_attention"):
+            self.assert_not_dashboard(self.tool(self.connector_at(url), name))
+        received = b"".join(web.seen)
+        self.assertTrue(received)
+        self.assertNotIn(self.key.encode(), received)
+        self.assertNotIn(self.key[4:20].encode(), received)
+        self.assertNotIn(b"Authorization", received)
+        self.assertNotIn(hello.fingerprint(self.key).encode(), received)
+        self.assertTrue(all(s.startswith(b"POST /api/v1/hello") for s in web.seen))
+
+    def test_a_wrong_proof_is_refused(self):
+        for proof in ("0" * 64, "A" * 64, "", None, 7, "f" * 63):
+            with self.subTest(proof=proof):
+                web, url = start_fake(self, lambda h, b, p=proof: (200, {"hello": hello.VERSION, "proof": p}, ()))
+                self.assert_not_dashboard(self.tool(self.connector_at(url), "dashboard_me"))
+                self.assertNotIn(self.key.encode(), b"".join(web.seen))
+
+    def test_a_proof_kept_from_an_earlier_check_is_refused(self):
+        _, _, earlier = self.ask_live({"key_name": self.name_of(self.key), "nonce": hello.new_nonce()})
+        web, url = start_fake(self, lambda handler, body: (200, earlier, ()))
+        self.assert_not_dashboard(self.tool(self.connector_at(url), "dashboard_me"))
+        self.assertNotIn(self.key.encode(), b"".join(web.seen))
+
+    def test_passing_the_check_on_to_the_real_dashboard_is_refused(self):
+        def relay(handler, body):  # an old-port program asks the real Dashboard and repeats its answer
+            if not handler.path.endswith("/hello"):
+                return 200, {}, ()
+            status, _headers, said = self.ask_live(json.loads(body))
+            return status, said, ()
+        web, url = start_fake(self, relay)
+        self.assert_not_dashboard(self.tool(self.connector_at(url), "dashboard_me"))
+        self.assertEqual(len(web.seen), 1)
+        self.assertNotIn(self.key.encode(), b"".join(web.seen))
+
+    def test_an_unknown_key_name_gets_an_answer_of_the_same_shape(self):
+        nonce = hello.new_nonce()
+        known = self.ask_live({"key_name": self.name_of(self.key), "nonce": nonce})
+        unknown = self.ask_live({"key_name": self.name_of("dph_" + "b" * 40), "nonce": nonce})
+        helpers.turn_off(self.conn, self.data, self.reader.id)
+        turned_off = self.ask_live({"key_name": self.name_of(self.reader_key), "nonce": nonce})
+        for answer in (unknown, turned_off):
+            self.assertEqual(answer[0], known[0])
+            self.assertEqual(set(answer[1]) - {"Date"}, set(known[1]) - {"Date"})
+            self.assertEqual(answer[1]["Content-Length"], known[1]["Content-Length"])
+            self.assertEqual(set(answer[2]), set(known[2]))
+            self.assertRegex(answer[2]["proof"], "^[0-9a-f]{64}$")
+            self.assertNotEqual(answer[2]["proof"], known[2]["proof"])
+        self.assertFalse(hello.matches(self.reader_key, nonce, f"127.0.0.1:{self.port}", turned_off[2]["proof"]))
+
+    def test_a_web_page_or_another_host_cannot_ask(self):
+        body = {"key_name": self.name_of(self.key), "nonce": hello.new_nonce()}
+        status, _, said = self.ask_live(body, headers={"Origin": "http://evil.example"})
+        self.assertEqual((status, said["error"]), (403, "from_a_web_page"))
+        status, _, said = self.ask_live(body, host=f"evil.example:{self.port}")
+        self.assertEqual((status, said["error"]), (403, "forbidden"))
+        self.assertNotIn("proof", said)
+
+    def test_the_key_never_appears_in_output_when_the_address_is_wrong(self):
+        web, url = start_fake(self, lambda handler, body: (200, {"ok": True}, ()))
+        stdin = io.BytesIO(json.dumps(INIT).encode() + b"\n" + json.dumps(
+            {"jsonrpc": "2.0", "id": 1, "method": "tools/call", "params": {"name": "dashboard_me"}}).encode() + b"\n")
+        stdout, stderr = io.BytesIO(), io.StringIO()
+        mcp_server.main([], stdin=stdin, stdout=stdout, stderr=stderr,
+                        environ={config.URL_VARIABLE: url, config.KEY_VARIABLE: self.key})
+        out, err = stdout.getvalue().decode("utf-8"), stderr.getvalue()
+        self.assertIn("not Dashboard Plus", out)
+        for text in (out, err, b"".join(web.seen).decode("utf-8", "replace")):
+            self.assertNotIn(self.key, text)
+            self.assertNotIn(self.key[4:20], text)
+
+
+FAKE_KEY = "dph_" + "a" * 40  # a made-up key, for servers in these tests that are not Dashboard
+
+
+class _Fake(http.server.BaseHTTPRequestHandler):
+    """A program on this computer that is not Dashboard. It keeps everything it receives in `server.seen`
+    and answers with `server.answer(handler, body)`, which returns (status, JSON or None, extra headers)."""
+    protocol_version = "HTTP/1.1"  # keeps the connection open, as Dashboard's own server does
+
+    def do_POST(self):
+        length = int(self.headers.get("Content-Length") or 0)
+        body = self.rfile.read(length) if length else b""
+        self.server.seen.append(f"{self.command} {self.path}\n{self.headers}\n".encode() + body)
+        status, payload, extra = self.server.answer(self, body)
+        data = b"" if payload is None else json.dumps(payload).encode()
+        self.send_response(status)
+        for name, value in extra:
+            self.send_header(name, value)
+        self.send_header("Content-Type", "application/json")
+        self.send_header("Content-Length", str(len(data)))
         self.end_headers()
+        self.wfile.write(data)
+
+    do_GET = do_POST
 
     def log_message(self, *args):
         pass
 
 
+class _QuietServer(http.server.ThreadingHTTPServer):
+    def handle_error(self, request, client_address):
+        pass  # a connector that gave up (a timeout, a refusal) closes early: not worth printing
+
+
+def start_fake(test, answer):
+    """Start a fake on a free port. Returns it and the address the connector would be given."""
+    web = _QuietServer(("127.0.0.1", 0), _Fake)
+    web.seen, web.answer = [], answer
+    threading.Thread(target=web.serve_forever, daemon=True).start()
+    test.addCleanup(web.server_close)
+    test.addCleanup(web.shutdown)
+    return web, f"http://127.0.0.1:{web.server_address[1]}/api/v1"
+
+
+def proves_it_knows(key):
+    """Answer the hello correctly for `key` (as only the real Dashboard could), then hand the rest to `then`."""
+    def answer_with(then):
+        def answer(handler, body):
+            if handler.path.endswith("/hello"):
+                nonce = json.loads(body)["nonce"]
+                secret = hello.shared_secret(hello.fingerprint(key))
+                return 200, {"hello": hello.VERSION, "proof": hello.proof(secret, nonce, handler.headers["Host"])}, ()
+            return then(handler, body)
+        return answer
+    return answer_with
+
+
 class TransportTests(TempDirTestCase):
+    """How requests are sent once the address has proved it is Dashboard: these fakes know the key's secret."""
+
     def setUp(self):
         super().setUp()
-        self.web = http.server.ThreadingHTTPServer(("127.0.0.1", 0), _Redirecting)
-        threading.Thread(target=self.web.serve_forever, daemon=True).start()
-        self.addCleanup(self.web.server_close)
-        self.addCleanup(self.web.shutdown)
-        self.base = f"http://127.0.0.1:{self.web.server_address[1]}/api/v1"
+
+        def redirect(handler, _body):
+            if handler.path.endswith("/slow"):
+                time.sleep(1.5)
+            return 302, None, [("Location", "http://example.com/steal")]
+        self.web, self.base = start_fake(self, proves_it_knows(FAKE_KEY)(redirect))
 
     def test_redirects_are_never_followed(self):
-        answer = client.call(self.base, "dph_" + "a" * 40, "GET", "/me")
+        answer = client.call(self.base, FAKE_KEY, "GET", "/me")
         self.assertEqual((answer.status, answer.body["error"]), (302, "redirect_refused"))
+        self.assertEqual([s.split(b"\n", 1)[0].split(b" ") for s in self.web.seen],
+                         [[b"POST", b"/api/v1/hello"], [b"GET", b"/api/v1/me"]])
 
     def test_a_slow_answer_times_out_plainly(self):
-        answer = client.call(self.base, "dph_" + "a" * 40, "GET", "/slow", timeout=0.3)
+        answer = client.call(self.base, FAKE_KEY, "GET", "/slow", timeout=0.3)
         self.assertEqual((answer.status, answer.body["error"]), (0, "timed_out"))
         self.assertIn("same request_key", answer.body["message"])
+
+    def test_the_key_goes_only_down_the_connection_that_was_checked(self):
+        def close_after_hello(handler, body):
+            status, payload, extra = proves_it_knows(FAKE_KEY)(None)(handler, body)
+            handler.close_connection = True
+            return status, payload, [("Connection", "close")]
+        web, base = start_fake(self, close_after_hello)
+        answer = client.call(base, FAKE_KEY, "GET", "/me")
+        self.assertEqual((answer.status, answer.body["error"]), (0, "not_reachable"))
+        self.assertEqual(len(web.seen), 2)  # two checks, each on its own connection, and never the key
+        self.assertFalse(any(FAKE_KEY.encode() in s for s in web.seen))
 
     def test_proxy_settings_are_ignored(self):
         saved = {k: os.environ.get(k) for k in ("http_proxy", "HTTP_PROXY", "no_proxy", "NO_PROXY")}
@@ -440,7 +629,7 @@ class TransportTests(TempDirTestCase):
             os.environ[name] = "http://127.0.0.1:9"
         for name in ("no_proxy", "NO_PROXY"):
             os.environ.pop(name, None)
-        self.assertEqual(client.call(self.base, "dph_" + "a" * 40, "GET", "/me").status, 302)
+        self.assertEqual(client.call(self.base, FAKE_KEY, "GET", "/me").status, 302)
 
 
 class HelpersPageTests(LiveDashboard):

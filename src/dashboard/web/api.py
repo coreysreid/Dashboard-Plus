@@ -4,6 +4,7 @@ from __future__ import annotations
 import json
 import logging
 import math
+import secrets
 import threading
 import time
 from collections import deque
@@ -14,7 +15,7 @@ from pathlib import Path
 from flask import Blueprint, Response, current_app, g, request
 
 from dashboard import __version__
-from dashboard.core import helpers, proposals, records, schema, watch
+from dashboard.core import hello, helpers, proposals, records, schema, watch
 from dashboard.core.proposals import MAX_ENTRIES, MAX_PER_DAY, MAX_WAITING, ProposalError
 from dashboard.web import display
 
@@ -26,6 +27,10 @@ MAX_BODY = 65536
 DEFAULT_PAGE, MAX_PAGE = 50, 200
 JSON_TYPE = "application/json; charset=utf-8"
 REQUESTS_PER_MINUTE = 120  # per helper; app.config["HELPER_REQUESTS_PER_MINUTE"] can change it (decision 0074)
+HELLO_PATH = PREFIX + "hello"  # the one route that needs no key: it proves this is the real Dashboard (0086)
+HELLO_MAX_BODY = 1024
+HELLOS_PER_MINUTE = 600  # for everyone together; app.config["HELLOS_PER_MINUTE"] can change it (decision 0086)
+_UNKNOWN_NAME_SECRET = secrets.token_bytes(32)  # new each time Dashboard starts; signs answers for unknown keys
 QUEUE_LIMIT_KEY = "HELPER_REVIEW_QUEUE_LIMIT"  # app.config can change MAX_WAITING (decision 0085)
 NOT_FOUND = "That table or record could not be found. GET /api/v1/tables lists what this helper may use."
 _recent_lock = threading.Lock()
@@ -45,10 +50,13 @@ def authenticate():
 
     Helpers are programs, not web pages: a request that carries an Origin header (every browser adds one to
     a cross-site request) is refused, and only `Authorization: Bearer <key>` is read. Cookies, the address
-    and form fields are never looked at, and pages never look at this header."""
+    and form fields are never looked at, and pages never look at this header. The one route without a key is
+    the hello (decision 0086), which has its own small limits and reveals nothing."""
     if "Origin" in request.headers:
         return api_error(403, "from_a_web_page", "The helper API cannot be used from a web page.")
     request.max_content_length = MAX_BODY
+    if request.path == HELLO_PATH:
+        return _hello_gate()
     if current_app.config["DATA_DIR"] is None:
         return api_error(401, "no_key", "This helper's access key is missing or no longer works. "
                                         "Ask the household to check Helpers in Settings.")
@@ -74,14 +82,36 @@ def authenticate():
     return None
 
 
+def _hello_gate():
+    """The rules for the hello, which carries no key: no web pages (checked before this), a shared limit per
+    minute, and a small JSON body. It never touches a helper's own limit, so it cannot use one up."""
+    wait = _count("hello", "everyone", current_app.config.get("HELLOS_PER_MINUTE", HELLOS_PER_MINUTE))
+    if wait:
+        response = api_error(429, "too_many_requests", "Too many connection checks have been sent in the last "
+                                                       f"minute. Wait {wait} seconds, then try again.")
+        response.headers["Retry-After"] = str(wait)
+        return response
+    if request.method == "POST":
+        if (request.content_length or 0) > HELLO_MAX_BODY:
+            return api_error(413, "too_large", "This request is too large. A connection check is two short values.")
+        if request.mimetype != "application/json":
+            return api_error(415, "needs_json", "Send the body as JSON (Content-Type: application/json).")
+    return None
+
+
 def _too_soon(helper) -> int:
-    """Count this request against the helper's limit per minute. Returns 0 to carry on, or seconds to wait.
+    """Count this request against the helper's limit per minute. Returns 0 to carry on, or seconds to wait."""
+    return _count("helper_requests", helper.id,
+                  current_app.config.get("HELPER_REQUESTS_PER_MINUTE", REQUESTS_PER_MINUTE))
+
+
+def _count(bucket: str, who, limit: int) -> int:
+    """Count one request in `bucket` for `who`, at most `limit` a minute. Returns 0 to carry on, or seconds to wait.
 
     Kept in memory only: it starts again when Dashboard restarts, which is fine for one household's computer."""
-    limit = current_app.config.get("HELPER_REQUESTS_PER_MINUTE", REQUESTS_PER_MINUTE)
     now = time.monotonic()
     with _recent_lock:
-        recent = current_app.extensions.setdefault("helper_requests", {}).setdefault(helper.id, deque())
+        recent = current_app.extensions.setdefault(bucket, {}).setdefault(who, deque())
         while recent and now - recent[0] >= 60:
             recent.popleft()
         if len(recent) >= limit:
@@ -277,6 +307,23 @@ def one_batch(batch_id):
     if not proposals.owns(conn, g.helper, batch_id):
         return api_error(404, "not_found", "That batch could not be found.")
     return reply(proposals.batch_result(conn, batch_id, detail=True))
+
+
+@helper_api.post("/hello")
+def say_hello():
+    """Prove this is the real Dashboard Plus to a connector that holds a key, without the key being sent (0086).
+
+    Anyone may ask, so the answer gives nothing away: a key name that is not a working key gets an answer of
+    exactly the same shape, signed with a secret that only this run of Dashboard holds."""
+    body = request.get_json(silent=True)
+    name = body.get("key_name") if isinstance(body, dict) else None
+    nonce = body.get("nonce") if isinstance(body, dict) else None
+    if not (isinstance(name, str) and hello.HEX64.match(name) and isinstance(nonce, str) and hello.HEX64.match(nonce)):
+        return api_error(400, "bad_request", "Send key_name and nonce, each 64 lower-case hexadecimal characters.")
+    data_dir = current_app.config["DATA_DIR"]
+    known = helpers.active_fingerprints(data_dir) if data_dir is not None else []
+    return reply({"hello": hello.VERSION,
+                  "proof": hello.answer(known, name, nonce, request.host, _UNKNOWN_NAME_SECRET)})
 
 
 @helper_api.get("/openapi.json")

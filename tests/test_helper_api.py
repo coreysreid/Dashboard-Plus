@@ -5,7 +5,7 @@ import re
 import shutil
 
 from support import ROOT, TempDirTestCase
-from dashboard.core import db, helpers, proposals, records, settings, startup
+from dashboard.core import db, hello, helpers, proposals, records, settings, startup
 from dashboard.errors import PlainError
 from dashboard.web.app import create_app
 import make_migration
@@ -429,6 +429,61 @@ class RequestLimitTests(ApiTestCase):
         for _ in range(120):
             self.assertEqual(self.api_get("/api/v1/me", key=self.reader_key).status_code, 200)
         self.assertEqual(self.api_get("/api/v1/me", key=self.reader_key).status_code, 429)
+
+
+class HelloTests(ApiTestCase):
+    """POST /api/v1/hello: the one route without a key, which proves this is the real Dashboard (decision 0086)."""
+
+    def say_hello(self, body=None, headers=None, key_for=None):
+        body = body if body is not None else {"key_name": hello.key_name(hello.fingerprint(key_for or self.key)),
+                                              "nonce": hello.new_nonce()}
+        sent = {"Content-Type": "application/json", **(headers or {})}
+        data = body if isinstance(body, (str, bytes)) else json.dumps(body)
+        return self.client.post("/api/v1/hello", data=data, base_url=BASE, headers=sent)
+
+    def test_it_proves_who_it_is_for_the_key_named_without_the_key(self):
+        nonce = hello.new_nonce()
+        response = self.say_hello({"key_name": hello.key_name(hello.fingerprint(self.key)), "nonce": nonce})
+        self.assertEqual(response.status_code, 200)
+        self.assertTrue(hello.matches(self.key, nonce, f"127.0.0.1:{PORT}", response.get_json()["proof"]))
+        self.assertEqual(response.headers["Cache-Control"], "no-store")
+        self.assertNotIn("Set-Cookie", response.headers)
+        self.assertEqual(self.conn.execute("SELECT COUNT(*) FROM core__helpers WHERE last_used_at IS NOT NULL")
+                         .fetchone()[0], 0)  # asking is not using the key
+
+    def test_the_same_name_and_nonce_always_get_the_same_answer_known_or_not(self):
+        unknown = {"key_name": "ab" * 32, "nonce": "cd" * 32}
+        first, second = self.say_hello(unknown).get_json(), self.say_hello(unknown).get_json()
+        self.assertEqual(first, second)  # so asking twice does not tell an unknown name from a known one
+        other = self.say_hello(dict(unknown, nonce="ef" * 32)).get_json()
+        self.assertNotEqual(first["proof"], other["proof"])
+
+    def test_badly_formed_checks_are_refused(self):
+        name = hello.key_name(hello.fingerprint(self.key))
+        for body in ({}, {"key_name": name}, {"nonce": "ab" * 32}, {"key_name": name.upper(), "nonce": "ab" * 32},
+                     {"key_name": name, "nonce": "ab" * 31}, {"key_name": 5, "nonce": "ab" * 32}, [], "{"):
+            with self.subTest(body=body):
+                response = self.say_hello(body)
+                self.assertEqual((response.status_code, response.get_json()["error"]), (400, "bad_request"))
+        self.assertEqual(self.say_hello(headers={"Content-Type": "text/plain"}).status_code, 415)
+        self.assertEqual(self.say_hello("x" * 2000).status_code, 413)
+        self.assertEqual(self.client.get("/api/v1/hello", base_url=BASE).get_json()["error"], "method_not_allowed")
+
+    def test_checks_have_a_shared_limit_that_never_uses_up_a_helpers_own(self):
+        self.app.config["HELLOS_PER_MINUTE"] = 2
+        self.app.config["HELPER_REQUESTS_PER_MINUTE"] = 1
+        self.assertEqual(self.say_hello().status_code, 200)
+        self.assertEqual(self.say_hello(key_for=self.reader_key).status_code, 200)
+        response = self.say_hello()
+        self.assertEqual((response.status_code, response.get_json()["error"]), (429, "too_many_requests"))
+        self.assertTrue(1 <= int(response.headers["Retry-After"]) <= 60)
+        self.assertEqual(self.api_get("/api/v1/me").status_code, 200)
+
+    def test_the_usual_limit_is_six_hundred_a_minute(self):
+        body = {"key_name": "ab" * 32, "nonce": "cd" * 32}
+        for _ in range(600):
+            self.assertEqual(self.say_hello(body).status_code, 200)
+        self.assertEqual(self.say_hello(body).status_code, 429)
 
 
 class KeysInSuggestionsTests(ApiTestCase):

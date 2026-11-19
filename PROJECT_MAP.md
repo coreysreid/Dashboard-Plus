@@ -137,6 +137,7 @@ One record per decision, from `TEMPLATE.md`. Never deleted; reversed ones are ma
 | [0083](0083-local-ai-assistant-connector.md) | A local connector for AI assistants (MCP over stdio, no new library): eight tools, one per helper API route; results labelled as household data, not instructions; address and key only from the person, never echoed; Settings, Helpers shows settings to paste with a placeholder key | Accepted |
 | [0084](0084-published-api-description.md) | A published OpenAPI 3.1 description of the helper API, served read-only at /api/v1/openapi.json behind the same key as every route, and held to the real routes, errors and replies by a contract test | Accepted |
 | [0085](0085-review-queue-cap.md) | A helper may have at most 500 suggestions waiting on Review (a setting); a batch that would go over is refused whole with 429 `review_queue_full`; imports do not count; accepting or rejecting frees room | Accepted |
+| [0086](0086-connector-checks-it-is-really-dashboard.md) | Before every request the connector asks `POST /api/v1/hello` (no key) to prove it is the Dashboard that made its key: an HMAC over a fresh nonce and host:port from the kept fingerprint; only on a match does the key go, down the same connection | Accepted |
 | [TEMPLATE](TEMPLATE.md) | Blank record to copy for a new decision | recording a decision |
 
 ## docs/plans/  (summary: build plans for larger pieces of work, written before building)
@@ -416,7 +417,7 @@ Generate the next one with: python tools/make_migration.py vehicles --name <what
 | __main__.py | Start the connector: `python -m dashboard.connector [--config FILE]`, launched by an AI assistant's app. | changing how it is started |
 | mcp_server.py | The MCP server over stdio: JSON-RPC 2.0, one message per line, turning tool calls into helper API requests. | changing the protocol, errors or what results say |
 | tools.py | The eight tools an assistant may use, one per helper API route, with their inputs checked before any request. | adding or changing a tool |
-| client.py | Call the helper API on this computer: fixed routes only, the key only in its header, no proxy, no redirects. | changing how requests are sent or answers read |
+| client.py | Call the helper API on this computer: check it is the real Dashboard first, then send the key down that connection only. | changing how requests are sent or answers read |
 | config.py | Where the connector finds Dashboard Plus and its key: two environment values or a small file, checked before use. | changing where the address or key come from |
 
 ## src/dashboard/core/  (summary: core services, nothing topic-specific)
@@ -439,6 +440,7 @@ Generate the next one with: python tools/make_migration.py vehicles --name <what
 | watch.py | Work out what is running low, what expires soon, how many days of supplies are on hand, and what is worth filling in. | changing running low, expiring, days of cover or gaps |
 | startup.py | Prepare the database at start-up: load modules, back up if needed, and migrate. | changing what happens at start-up |
 | helpers.py | Helpers the household has given a key to: making a key, checking it, and turning it off. | changing how helper keys work |
+| hello.py | Proof that an address is the real Dashboard Plus, worked out from a key without ever sending it (decision 0086). | changing the check the connector makes before sending a key |
 | proposals.py | Suggestions from helpers and rows imported from a spreadsheet: checked, kept waiting, added only when a person accepts. | changing suggestions, limits or accepting |
 | export.py | Export my records: one zip with a spreadsheet file for every table, a manifest and a plain-words README. | changing what the export contains |
 | csv_import.py | Read a spreadsheet saved as CSV, match its columns to a table's fields, and check every row before it goes to Review. | changing how spreadsheets are read or matched |
