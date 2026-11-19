@@ -312,3 +312,68 @@ class ProposalTests(TempDirTestCase):
         self.assertFalse(proposals.owns(self.conn, self.other, first["batch_id"]))
         page = proposals.helper_batches(self.conn, self.helper, second["batch_id"], 20)
         self.assertEqual([b["id"] for b in page], [first["batch_id"]])
+
+    # ----- the review queue cap (decision 0085) ----------------------------------------------------------
+    def send_capped(self, count, key, helper=None, limit=5):
+        body = {"request_key": key, "why": REASON, "entries": [self.bought(1) for _ in range(count)]}
+        return proposals.submit(self.conn, self.registry, helper or self.helper, body, queue_limit=limit)
+
+    def test_queue_cap_defaults_to_five_hundred_and_reaching_it_exactly_is_allowed(self):
+        self.assertEqual(proposals.MAX_WAITING, 500)
+        self.send_capped(5, "exactly")
+        self.assertEqual(proposals.waiting_for(self.conn, self.helper), 5)
+
+    def test_queue_cap_one_over_is_refused_whole_and_nothing_is_kept(self):
+        self.send_capped(3, "first")
+        error = self.refused_capped(3, "second")  # 3 waiting + 3 would be 6, one over
+        self.assertEqual((error.status, error.code), (429, "review_queue_full"))
+        self.assertEqual(str(error), "3 suggestions from this helper are already waiting on Review. "
+                                     "Ask the household to look at them first.")
+        self.assertEqual(self.count("core__proposals"), 3)
+        self.assertEqual(self.count("core__helper_batches"), 1)
+        self.send_capped(2, "fits")  # the room that was left is still usable
+
+    def refused_capped(self, count, key, helper=None):
+        with self.assertRaises(ProposalError) as caught:
+            self.send_capped(count, key, helper)
+        return caught.exception
+
+    def test_queue_cap_message_is_singular_for_one_waiting(self):
+        self.send_capped(1, "a")
+        self.assertEqual(str(self.refused_capped(5, "b")), "1 suggestion from this helper is already waiting on "
+                                                          "Review. Ask the household to look at them first.")
+
+    def test_queue_cap_accepting_or_rejecting_frees_room(self):
+        first, _ = self.send_capped(5, "full")
+        self.refused_capped(1, "no-room")
+        proposals.reject(self.conn, first["proposals"][0]["id"])
+        self.assertEqual(proposals.waiting_for(self.conn, self.helper), 4)
+        self.send_capped(1, "room-after-reject")
+        self.refused_capped(1, "full-again")
+        proposals.accept(self.conn, self.registry, first["proposals"][1]["id"])
+        self.send_capped(1, "room-after-accept")
+
+    def test_queue_cap_a_retry_still_gets_its_first_answer_when_full(self):
+        first, _ = self.send_capped(5, "same")
+        again, created = self.send_capped(5, "same")
+        self.assertFalse(created)
+        self.assertEqual(again["batch_id"], first["batch_id"])
+
+    def test_queue_cap_is_per_helper_and_imports_use_none_of_it(self):
+        self.send_capped(5, "mine")
+        self.send_capped(5, "theirs", helper=self.other)
+        rows = [(n, "stock__movements", self.bought(1)["values"]) for n in range(2, 12)]
+        proposals.stage_import(self.conn, "pantry.csv", rows)
+        self.assertEqual(proposals.waiting_for(self.conn, self.helper), 5)
+        self.refused_capped(1, "still-full")  # waiting imported rows neither fill nor free anything
+        first = self.conn.execute("SELECT p.id FROM core__proposals p JOIN core__helper_batches b ON b.id = p.batch_id "
+                                  "WHERE b.helper_id = ? LIMIT 1", (self.helper.id,)).fetchone()[0]
+        proposals.reject(self.conn, first)
+        self.send_capped(1, "after-import")
+
+    def test_queue_cap_is_checked_before_the_entries_are(self):
+        self.send_capped(5, "fill")
+        body = {"request_key": "x", "why": REASON, "entries": [{"table": "nowhere", "values": {}}]}
+        with self.assertRaises(ProposalError) as caught:
+            proposals.submit(self.conn, self.registry, self.helper, body, queue_limit=5)
+        self.assertEqual(caught.exception.code, "review_queue_full")

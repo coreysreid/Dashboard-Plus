@@ -210,7 +210,8 @@ class ReadingTests(ApiTestCase):
         self.assertEqual((data["name"], data["access"], data["private_details"]), ("Pet diary helper", "suggest", False))
         self.assertEqual(data["modules"], [{"name": "demo", "title": "Demo"}])
         self.assertEqual(data["limits"], {"entries_per_call": 50, "suggestions_per_day": 200,
-                                          "suggestions_left_today": 200, "max_body_bytes": 65536,
+                                          "suggestions_left_today": 200, "review_queue_limit": 500,
+                                          "suggestions_waiting": 0, "max_body_bytes": 65536,
                                           "requests_per_minute": 120})
         self.assertEqual(data["message"], "Pet diary helper may use: Demo. "
                                           "Ask the household to change its access in Settings.")
