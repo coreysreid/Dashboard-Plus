@@ -10,7 +10,7 @@ from people using the earlier ones; that is the point of shipping early.
 | M2 | Restore and export, review queue, inbox, Agent API, receipt entry, spreadsheet import | Planned. Agent API skeleton built (decisions 0066 to 0069): helpers look and suggest new records, a person reviews. Export my records built (decision 0078): a zip of spreadsheet files, private details left out. Restore from a backup built, with Undo (decision 0079). Import from a spreadsheet built (decision 0080): a CSV into any list, its rows wait on Review |
 | M3 | Readiness prompts (Medical moved into M1, decision 0051), first country pack, optional data-folder passphrase, optional sharing with the household | Planned. Household sharing designed, awaiting choice (decision 0081, [plan](plans/household-sharing.md)): take turns through a shared folder, a home base on home Wi-Fi, or true sync; off by default |
 | M4 | Graphing, Analysis, the question loop, the monthly outcomes screen | Planned |
-| M5 | Wine, API connector (Pets moved into M1, decision 0047; Garden switched on, decision 0076) | Planned |
+| M5 | Wine, API connector (Pets moved into M1, decision 0047; Garden switched on, decision 0076) | Planned. The connector for AI assistants is done (decision 0083): assistant apps that support MCP can use a helper's key through `python -m dashboard.connector`. The connector that pulls data from outside services (DESIGN 6.1) is still to come |
 
 Why this order: M1 proves the riskiest promises (unzip-and-click on Windows,
 modules built from files alone) and gives real value on day one. The question

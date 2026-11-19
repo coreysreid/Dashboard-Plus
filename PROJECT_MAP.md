@@ -134,6 +134,7 @@ One record per decision, from `TEMPLATE.md`. Never deleted; reversed ones are ma
 | [0080](0080-import-from-a-spreadsheet.md) | Import from a spreadsheet (CSV) in Settings: columns matched, every row checked like a helper's suggestion, ready rows wait on Review as one batch by "Import '<file>'"; the file is never kept; private details not imported | Accepted |
 | [0081](0081-household-sharing-options.md) | Sharing with the household, three options designed (A: take turns through a shared folder; B: one home base, others use a browser on home Wi-Fi; C: every copy syncs), a mode label on every page, default "On this computer only"; changes the privacy and security rules | Proposed — Corey to choose an option |
 | [0082](0082-every-page-shows-the-connection-mode.md) | Every page says "On this computer only" and how many helpers can look; the footer no longer says nothing is ever sent | Accepted |
+| [0083](0083-local-ai-assistant-connector.md) | A local connector for AI assistants (MCP over stdio, no new library): eight tools, one per helper API route; results labelled as household data, not instructions; address and key only from the person, never echoed; Settings, Helpers shows settings to paste with a placeholder key | Accepted |
 | [TEMPLATE](TEMPLATE.md) | Blank record to copy for a new decision | recording a decision |
 
 ## docs/plans/  (summary: build plans for larger pieces of work, written before building)
@@ -404,6 +405,17 @@ Generate the next one with: python tools/make_migration.py vehicles --name <what
 | server.py | Start and stop the local web server, and remember how to reach it. | changing startup, closing or ports |
 | core/ | Core services: records, links, review, audit, backups | changing anything topic-neutral |
 | web/ | Web layer: pages, forms, Agent API | changing screens or the API |
+| connector/ | The local connector an AI assistant's app starts to use the helper API (MCP over stdio) | changing how assistants connect |
+
+## src/dashboard/connector/  (summary: the local connector an AI assistant's app starts to use the helper API; decision 0083)
+| Entry | What it is | Open it when |
+|---|---|---|
+| __init__.py | The connector for AI assistants: a small local program that lets an assistant use the helper API through MCP. | finding your way in |
+| __main__.py | Start the connector: `python -m dashboard.connector [--config FILE]`, launched by an AI assistant's app. | changing how it is started |
+| mcp_server.py | The MCP server over stdio: JSON-RPC 2.0, one message per line, turning tool calls into helper API requests. | changing the protocol, errors or what results say |
+| tools.py | The eight tools an assistant may use, one per helper API route, with their inputs checked before any request. | adding or changing a tool |
+| client.py | Call the helper API on this computer: fixed routes only, the key only in its header, no proxy, no redirects. | changing how requests are sent or answers read |
+| config.py | Where the connector finds Dashboard Plus and its key: two environment values or a small file, checked before use. | changing where the address or key come from |
 
 ## src/dashboard/core/  (summary: core services, nothing topic-specific)
 | Entry | What it is | Open it when |
@@ -479,6 +491,7 @@ Add a new file with the next number instead of changing an old one.
 | private_sheet.html | The step before a sheet with private details: show it only when you mean to print or share it | changing how private sheets open |
 | helpers.html | Settings, Helpers: the helper list, the address, and the form that makes a key | changing the Helpers settings page |
 | helper_key.html | The one page that shows a new helper key, with a Copy button and a warning to keep it private | changing the new-key page |
+| helper_connect.html | "Connect an AI assistant": settings to paste into an assistant's app, with a placeholder for the key | changing the assistant set-up words |
 | review.html | Review suggestions: each helper's waiting suggestions with Accept and Reject | changing the Review page |
 | export.html | Settings, Export my records: what is in the export and the download button | changing the Export page |
 | restore_*.html | Settings, Backups: the list of backups, the check-and-compare page, the result, and the shared Undo restore box | changing the restore pages |
@@ -527,6 +540,7 @@ How to run them is in AGENTS.md.
 | test_repofiles.py | Tests for the shared list of repository files, including during a merge with conflicts. | a tool counts a file twice |
 | test_repository.py | Tests that this repository passes its own checks. | CI fails on the repo itself |
 | test_helper_*.py | Tests for helpers: keys, suggestions waiting for a person, the /api/v1 door, and the Settings and Review screens | changing helpers, the helper API or Review |
+| test_mcp_connector.py | Tests for the AI-assistant connector (MCP over stdio) against a real local Dashboard: tools, errors and the key. | changing the connector or the helper API routes |
 | test_export.py | Tests for Export my records: every table of an example household, private details, formula safety and the download. | changing the export |
 | test_restore.py | Tests for restoring a backup: checks that change nothing, the safe swap, Undo after a restart, and refusals. | changing restore or Undo |
 

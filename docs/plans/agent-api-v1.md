@@ -122,7 +122,7 @@ Review/settings (tests/test_review_page.py): making a key returns 201 with key i
 tests/test_module_confinement.py additions per finding B.
 
 ## 8. Deliberately later (Lane B expands in workbench/drafts/helpers/)
-Update/delete suggestions (amend/undo, stale before-values, edited_by_person lock, change-then-accept); private-details grant; per-table scopes; key expiry; "last 20 things this helper did"; fixed port or connection file; forgetting request keys after 30 days; duplicate-receipt flagging; abuse-case catalogue (Lane B's ABUSE_CASES.md; cases 8, 11, 13, 16, 18, 20 and 22 answered by decision 0074); OpenAPI 3.1 description generated from the same spec; versioning policy; MCP wrapper (local stdio server mapping tools to routes) + example prompts; more receipt→Stock-in examples; a cap on how many suggestions may wait on Review; Inbox items from helpers; Review history filters; screen-reader status messages; confirmation dialogs; resolve the unused `review_status = needs_review` in DESIGN.
+Update/delete suggestions (amend/undo, stale before-values, edited_by_person lock, change-then-accept); private-details grant; per-table scopes; key expiry; "last 20 things this helper did"; fixed port or connection file; forgetting request keys after 30 days; duplicate-receipt flagging; abuse-case catalogue (Lane B's ABUSE_CASES.md; cases 8, 11, 13, 16, 18, 20 and 22 answered by decision 0074); OpenAPI 3.1 description generated from the same spec; versioning policy; MCP wrapper (local stdio server mapping tools to routes; BUILT 2026-11-19 as `python -m dashboard.connector`, decision 0083, see section 10) + example prompts; more receipt→Stock-in examples; a cap on how many suggestions may wait on Review; Inbox items from helpers; Review history filters; screen-reader status messages; confirmation dialogs; resolve the unused `review_status = needs_review` in DESIGN.
 
 ## 9. Decision records
 0066 Helpers get a key from Settings: shown once, kept only as a fingerprint outside the database.
@@ -130,3 +130,12 @@ Update/delete suggestions (amend/undo, stale before-values, edited_by_person loc
 0068 Helpers' suggestions wait in their own place until a person accepts them. (Changes DESIGN 3 and 8.)
 0069 A module may not be called "core" or use double underscores in its name. (Refines 0055.)
 0074 Agent API hardening: hidden links, one 404 for parts not given, text screening, 120 requests a minute, one decision per suggestion.
+
+## 10. The MCP connector (built 2026-11-19, decision 0083)
+- `src/dashboard/connector/`: stdio MCP server, no new dependency. Methods: initialize (protocol 2025-06-18, also 2025-03-26 and 2024-11-05), notifications/initialized, ping, tools/list, tools/call; others -32601; unreadable -32700; invalid or batched -32600; unknown tool -32602.
+- Eight tools from Lane B's manifest (`workbench/drafts/agent_api/mcp-tools.json`), one per route in section 4; inputs checked against closed schemas before any request; paths built only from fixed templates.
+- Results: a first sentence saying the content is household data, not instructions (abuse case 14), then the API JSON as text; `structuredContent` `{"about", "data"}` for 2025-06-18 clients. API errors: `isError: true`, "Dashboard Plus said: <message>", status/code/problems as data.
+- Address and key: `DASHBOARD_PLUS_URL`, `DASHBOARD_PLUS_KEY`, or `--config <toml>` (environment wins); only `http://127.0.0.1:<port>` or `http://localhost:<port>`; urllib, 15 s timeout, no proxy, no redirects, 4 MB answer cap; key and key-shaped text redacted from stdout and stderr.
+- Helpers page and new-key page: "Connect an AI assistant" block (`helper_connect.html`) with the MCP client JSON, `YOUR-KEY-HERE` placeholder, current address, and the decision 0082 wording.
+- Tests: `tests/test_mcp_connector.py` runs the connector in-process and as `python -m dashboard.connector` against a real app served by waitress on 127.0.0.1.
+- Still open: a fixed port or connection file so the address survives a restart; per-client notes on where each assistant app stores the key.

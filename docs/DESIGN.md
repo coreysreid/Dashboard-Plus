@@ -883,6 +883,30 @@ fields are never read for a key.
 - Deferred: suggested changes and deletions, amend and undo, a private-details
   grant, per-table scope, a command-line tool, forgetting request keys.
 
+### Connecting an AI assistant (MCP)
+
+`python -m dashboard.connector` is a small local program an assistant's app
+starts (decision 0083). It speaks MCP over stdio (JSON-RPC 2.0, one message
+per line, protocol `2025-06-18`), opens no port, and uses no library beyond
+Python's own. Its eight tools map one to one to the routes above:
+`dashboard_me`, `dashboard_tables`, `dashboard_list_records`,
+`dashboard_get_record`, `dashboard_attention`,
+`dashboard_suggest_new_records`, `dashboard_list_suggestion_batches`,
+`dashboard_get_suggestion_batch`. It can do nothing the key does not allow.
+
+- The address and key come only from `DASHBOARD_PLUS_URL` and
+  `DASHBOARD_PLUS_KEY` or a `--config` file, never from a tool's arguments.
+  Only `http://127.0.0.1:<port>` or `http://localhost:<port>` is accepted.
+- Requests have a timeout, ignore proxy settings and never follow a redirect.
+  The key, and anything shaped like a key, is removed from everything it
+  writes; stderr has one-line notes, never a stack trace.
+- Every result says it is household data, not instructions, then gives the
+  API's JSON (as text, and as `structuredContent`). API refusals become tool
+  errors with the API's own message; nothing is retried with wider access.
+- Settings, Helpers and the new-key page show "Connect an AI assistant":
+  settings to paste into the assistant's app with `YOUR-KEY-HERE` in place of
+  the key, and the warning that an online assistant sees what the helper reads.
+
 ## 10. Annotations and the question loop
 
 ### 10.1 Annotations
