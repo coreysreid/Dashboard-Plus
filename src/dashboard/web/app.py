@@ -106,9 +106,21 @@ def create_app(shutdown_token: str, on_shutdown: Callable[[], None], report=None
         except sqlite3.Error:
             return 0
 
+    def helpers_with_access() -> int:
+        """How many helpers can connect now, shown in the mode badge on every page (decision 0082)."""
+        if app.config["DATA_DIR"] is None:
+            return 0
+        if not hmac.compare_digest(request.cookies.get(SESSION_COOKIE, ""), app.config["SESSION_KEY"]):
+            return 0
+        try:
+            return connection().execute("SELECT COUNT(*) FROM core__helpers WHERE revoked_at IS NULL").fetchone()[0]
+        except sqlite3.Error:
+            return 0
+
     @app.context_processor
     def shared_values():
-        return {"csrf_token": app.config["CSRF_TOKEN"], "version": __version__, "review_count": waiting_suggestions()}
+        return {"csrf_token": app.config["CSRF_TOKEN"], "version": __version__, "review_count": waiting_suggestions(),
+                "helper_count": helpers_with_access()}
 
     def connection():
         if "db" not in g:

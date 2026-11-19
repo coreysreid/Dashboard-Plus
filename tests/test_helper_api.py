@@ -592,3 +592,24 @@ class OtherPartsStayHiddenTests(TempDirTestCase):
         self.assertNotIn("Robin", body)
         self.assertNotIn("lent to", body)
         self.assertEqual(reply.get_json()["gaps"], [])  # the borrower's phone is in People, not this helper's part
+
+
+class ModeBadgeTests(ApiTestCase):
+    """Every page says the records are on this computer only, and how many helpers can look (decision 0082)."""
+
+    def signed_in_page(self, path="/"):
+        self.client.get("/?key=session-key", base_url=BASE)
+        return self.client.get(path, base_url=BASE).get_data(as_text=True)
+
+    def test_every_page_says_on_this_computer_only_and_counts_helpers(self):
+        page = self.signed_in_page("/settings")
+        self.assertIn("On this computer only · 3 helpers can look", page)
+        helpers.turn_off(self.conn, self.data, self.reader.id)
+        self.assertIn("On this computer only · 2 helpers can look", self.signed_in_page("/attention"))
+
+    def test_with_no_helpers_it_says_only_on_this_computer(self):
+        self.conn.execute("UPDATE core__helpers SET revoked_at = '2026-01-01'")
+        self.conn.commit()
+        page = self.signed_in_page()
+        self.assertIn(">On this computer only</a>", page)
+        self.assertNotIn("can look", page)
