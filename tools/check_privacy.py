@@ -41,6 +41,7 @@ SECRET_PATTERNS = [
     ("Slack token", re.compile(r"\bxox[abprs]-[A-Za-z0-9-]{10,}")),
     ("Google API key", re.compile(r"\bAIza[0-9A-Za-z_-]{35}\b")),
     ("private key", re.compile("-----BEGIN" + r" (?:[A-Z]+ )*PRIVATE KEY")),
+    ("helper key", re.compile(r"\bdph_[A-Za-z0-9_-]{40,}")),
     ("bearer token", re.compile(r"Bearer\s+[A-Za-z0-9._~+/=-]{30,}")),
 ]
 SECRET_ASSIGNMENT = re.compile(

@@ -6,7 +6,7 @@ intro = "A snapshot of beds, plantings and jobs. Print a new copy when the plan 
 [[sheet.section]]
 title = "Beds"
 table = "beds"
-columns = ["name", "location", "notes"]
+columns = ["name", "place"]
 order_by = "name"
 
 [[sheet.section]]

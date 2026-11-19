@@ -6,11 +6,11 @@ from people using the earlier ones; that is the point of shipping early.
 
 | Milestone | What a household can do | Status |
 |---|---|---|
-| **M1** | Unzip, run the wizard, record People, Stock, Pets, first aid kits (Medical), where the ways out and shut-offs are (Home layout, decision 0054), their vehicles with the dates to remember (Vehicles, decision 0058), where important papers are kept (Important documents, decision 0062), jobs around the home with the dates they choose (Home care, decision 0063) and things lent out with the date each is due back (Things lent out, decision 0073), see running low, expiring soon and days of water, print the emergency sheet | **In progress** |
-| M2 | Restore and export, review queue, inbox, Agent API, receipt entry | Planned |
+| **M1** | Unzip, run the wizard, record People, Stock, Pets, first aid kits (Medical), where the ways out and shut-offs are (Home layout, decision 0054), their vehicles with the dates to remember (Vehicles, decision 0058), where important papers are kept (Important documents, decision 0062), jobs around the home with the dates they choose (Home care, decision 0063) things lent out with the date each is due back (Things lent out, decision 0073) and a vegetable garden with its jobs (Vegetable garden, decision 0076), see running low, expiring soon and days of water, print the emergency sheet | **In progress** |
+| M2 | Restore and export, review queue, inbox, Agent API, receipt entry, spreadsheet import | Planned. Agent API skeleton built (decisions 0066 to 0069): helpers look and suggest new records, a person reviews. Export my records built (decision 0078): a zip of spreadsheet files, private details left out. Restore from a backup built, with Undo (decision 0079). Import from a spreadsheet built (decision 0080): a CSV into any list, its rows wait on Review |
 | M3 | Readiness prompts (Medical moved into M1, decision 0051), first country pack, optional data-folder passphrase | Planned |
 | M4 | Graphing, Analysis, the question loop, the monthly outcomes screen | Planned |
-| M5 | Garden, Wine, API connector (Pets moved into M1, decision 0047) | Planned |
+| M5 | Wine, API connector (Pets moved into M1, decision 0047; Garden switched on, decision 0076) | Planned |
 
 Why this order: M1 proves the riskiest promises (unzip-and-click on Windows,
 modules built from files alone) and gives real value on day one. The question
@@ -31,8 +31,9 @@ sheet of who to call.
   validator, records with links and history (who changed what), forms and a
   fast grid, watch views (running low, expiring soon, days of cover),
   plain-language errors with *Save a report*, local-only access.
-- An automatic daily backup and a backup on safe close. (Restore and export
-  screens come in M2; a backup is a plain copy that can be restored by hand.)
+- An automatic daily backup and a backup on safe close. (Restore from a backup,
+  with Undo, is built (decision 0079); so are Export my records (0078) and
+  Import from a spreadsheet (0080).)
 - First-run wizard: who lives here, country and type of home, which modules.
 - **People:** contacts, roles, important details (masked on screen), *Who do I
   call?*, the one-page emergency sheet, gaps check.

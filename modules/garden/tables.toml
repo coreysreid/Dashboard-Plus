@@ -1,13 +1,18 @@
+# Each bed or pot is at one of the household's own Places (Household stock), so "Backyard" means the same
+# here as everywhere else (decision 0076). Nothing here gives growing advice: dates and amounts are the
+# household's own records, and the only reminder uses the date a household types for a job.
+
 [tables.beds]
 title = "Garden beds"
+description = "Each bed, pot or growing spot and where it is."
 columns.name = { type = "text", required = true }
-columns.location = { type = "text" }
+columns.place = { type = "link", to = "stock.places", on_delete = "restrict" }
 columns.notes = { type = "longtext" }
 
 [tables.beds.watch]
 [[tables.beds.watch.gaps]]
-missing = "location"
-message = "Where is {name}? Add a broad location so someone else can find the bed."
+missing = "place"
+message = "Where is {name}? Choose one of your places."
 
 [tables.crops]
 title = "Crops"
@@ -26,6 +31,7 @@ columns.notes = { type = "longtext" }
 
 [tables.harvests]
 title = "Harvests"
+record_name = "{planting}, picked {harvested_on}"
 columns.planting = { type = "link", to = "plantings", required = true }
 columns.harvested_on = { type = "date", required = true }
 columns.amount = { type = "decimal", min = 0 }
@@ -40,3 +46,14 @@ columns.due_on = { type = "date" }
 columns.done = { type = "boolean", default = false }
 columns.notes = { type = "longtext" }
 
+# One press marks a job done; its reminder goes because it only looks at jobs not done (decision 0075).
+[[tables.jobs.actions]]
+key = "done"
+label = "Mark done"
+show_when = { done = false }
+set = { done = true }
+done = "Marked as done. Add a new job if it needs doing again."
+
+[tables.jobs.watch]
+# A finished job is never reminded about (decision 0072): the reminder uses only the household's own due date.
+expiring = { date = "due_on", warn_days = 14, wording = "due", what = "job", where = { done = false } }

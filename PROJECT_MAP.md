@@ -48,8 +48,7 @@ Follow the INDEX.md in a folder before opening its files. Hidden files are not l
 | decisions/ | One record per technical choice, with downsides | questioning or reversing a choice |
 
 ## docs/decisions/  (summary: why each technical choice was made)
-One record per decision, from `TEMPLATE.md`. Never deleted; reversed ones are
-marked Superseded. Each lists downsides, cost to undo, and the sign it was wrong.
+One record per decision, from `TEMPLATE.md`. Never deleted; reversed ones are marked Superseded. Each lists downsides, cost to undo, and the sign it was wrong.
 
 | Record | Decision | Status |
 |---|---|---|
@@ -118,10 +117,21 @@ marked Superseded. Each lists downsides, cost to undo, and the sign it was wrong
 | [0063](0063-home-care-promoted.md) | Home care switched on from Lane B's draft: jobs at your places, done by your People, on dates you type; no repeats invented | Accepted |
 | [0064](0064-real-browser-check.md) | A real-browser check clicks through setup, dates, stock in, private details and closing in Chromium (Linux CI job); a refused save keeps a private detail | Accepted |
 | [0065](0065-agpl-licence.md) | Licence changed to GNU AGPL v3 or later (from MIT) | Accepted |
+| [0066](0066-helper-keys-shown-once-kept-as-a-fingerprint.md) | Helpers get a key from Settings: shown once, kept only as a fingerprint outside the database | Accepted |
+| [0067](0067-agent-api-v1-local-bearer-only-module-scoped.md) | The Agent API v1: local, bearer-only, module-scoped, and never private details | Accepted |
+| [0068](0068-helper-suggestions-wait-until-a-person-accepts.md) | Helpers' suggestions wait in their own place until a person accepts them | Accepted |
+| [0069](0069-no-module-called-core-or-with-double-underscores.md) | A module may not be called "core" or use double underscores in its name | Accepted |
 | [0070](0070-stocktake-corrections.md) | Count this batch saves the difference as one stocktake correction in Stock in and out; never the count on top; an out-of-date review is refused | Accepted |
 | [0071](0071-private-sheet-opens-only-by-choice.md) | The private sheet opens only from its Show button (a POST), never from a link such as ?show=1 | Accepted |
 | [0072](0072-reminders-skip-finished-rows-and-sheets-print-linked-contacts.md) | Due-date reminders can skip finished rows (`where` on `expiring`); sheets print a linked contact's phone from a required module, never a private column | Accepted |
 | [0073](0073-lent-out-promoted.md) | Things lent out switched on from Lane B's draft: borrowers in People, reminders only while still out, Stock count untouched | Accepted |
+| [0074](0074-agent-api-hardening.md) | Agent API hardening: links into parts a helper was not given are invisible, one 404 for "not yours" and "not there", hidden characters and key-like text refused, 120 requests a minute, one decision per suggestion | Accepted |
+| [0075](0075-one-step-actions-and-date-order.md) | One-step buttons declared in tables.toml (Mark returned), saved through the ordinary change path and refused when pressed twice; `not_before` keeps one date from coming before another | Accepted |
+| [0076](0076-garden-promoted.md) | Vegetable garden switched on from Lane B's draft: beds at your Places, job reminders only while not done, no growing advice | Accepted |
+| [0077](0077-home-layout-private-access-details.md) | Home layout gets a private "Codes or access details" box, hidden until Show and never printed | Accepted |
+| [0078](0078-export-my-records.md) | Export my records: one zip of spreadsheet files for the household, private details left out, text guarded against formulas, read from one moment | Accepted |
+| [0079](0079-restore-from-a-backup.md) | Restore from a backup: copies checked read-only, the chosen one prepared on a new file, a checked before-restore copy, an atomic swap while no page holds the file, and an Undo that survives a restart | Accepted |
+| [0080](0080-import-from-a-spreadsheet.md) | Import from a spreadsheet (CSV) in Settings: columns matched, every row checked like a helper's suggestion, ready rows wait on Review as one batch by "Import '<file>'"; the file is never kept; private details not imported | Accepted |
 | [TEMPLATE](TEMPLATE.md) | Blank record to copy for a new decision | recording a decision |
 
 ## docs/plans/  (summary: build plans for larger pieces of work, written before building)
@@ -199,6 +209,7 @@ numbered migrations. See docs/DESIGN.md section 6 for the module contract.
 | Entry | What it is | Open it when |
 |---|---|---|
 | documents/ | Where important papers are kept, whose they are and the review or renewal dates you choose; a review dates sheet | changing document records |
+| garden/ | Vegetable garden: beds at your places, crops, plantings, harvests and jobs with a due date; a Garden plan sheet | changing garden records |
 | home_care/ | Jobs around the home, where each is, who usually does it, last done and do again by; work done; a Home care sheet | changing home care jobs |
 | home_layout/ | Ways out, shut-offs, smoke alarms and safety equipment, meters, each at one of your places; an Our home sheet | changing home layout records |
 | lent_out/ | Things lent out: what, to whom (one of your People), lent on, due back and returned on; a Things still lent out sheet | changing loans |
@@ -223,6 +234,22 @@ Generate the next one with: python tools/make_migration.py documents --name <wha
 | Entry | What it is | Open it when |
 |---|---|---|
 | 0001_first_tables.sql | The module's first table, generated from tables.toml | checking how the table is stored |
+
+## modules/garden/  (summary: the Vegetable garden module, files only; built on Lane B's draft, linking to Household stock)
+| Entry | What it is | Open it when |
+|---|---|---|
+| module.toml | Name, version, description; requires Household stock (places) | changing the module's details |
+| tables.toml | Beds, crops, plantings, harvests and jobs; a job reminder only while not done | adding a field or a gap question |
+| labels.toml | Friendly labels, help text, form and list order, jobs main on home | changing wording or order |
+| sheets.toml | Garden plan sheet: beds and where they are, plantings, jobs not yet done | changing what prints |
+| migrations/ | Numbered database changes | after changing tables.toml |
+
+## modules/garden/migrations/  (summary: this module's numbered database changes; never edit a released one)
+Generate the next one with: python tools/make_migration.py garden --name <what_changed>
+
+| Entry | What it is | Open it when |
+|---|---|---|
+| 0001_first_tables.sql | The module's first tables, generated from tables.toml | checking how the tables are stored |
 
 ## modules/home_care/  (summary: the Home care module, files only; built on Lane B's draft, linking to People and Household stock)
 | Entry | What it is | Open it when |
@@ -255,12 +282,13 @@ Generate the next one with: python tools/make_migration.py home_layout --name <w
 | Entry | What it is | Open it when |
 |---|---|---|
 | 0001_first_tables.sql | The module's first tables, generated from tables.toml | checking how the tables are stored |
+| 0002_private_access_details.sql | Adds a private codes-or-access-details box to ways out, shut-offs, alarms and meters | checking the upgrade |
 
 ## modules/lent_out/  (summary: the Things lent out module, files only; built on Lane B's draft, linking to People and Household stock)
 | Entry | What it is | Open it when |
 |---|---|---|
 | module.toml | Name, version, description; requires People (the borrower) and Household stock (the item) | changing the module's details |
-| tables.toml | Loans with a due-back reminder only while still out, and one question about reaching the borrower | adding a field or a gap question |
+| tables.toml | Loans with a due-back reminder only while still out, a Mark returned button, and one question about reaching the borrower | adding a field or a gap question |
 | labels.toml | Friendly labels, help text, form and list order, main list on home | changing wording or order |
 | sheets.toml | Things still lent out sheet: what, who, their phone from People and the dates, with no notes | changing what prints |
 | migrations/ | Numbered database changes | after changing tables.toml |
@@ -377,8 +405,9 @@ Generate the next one with: python tools/make_migration.py vehicles --name <what
 ## src/dashboard/core/  (summary: core services, nothing topic-specific)
 | Entry | What it is | Open it when |
 |---|---|---|
-| __init__.py | Core services: database, migrations, modules and records; review and backups come next. | adding a core service |
+| __init__.py | Core services: database, migrations, modules, records, backups, helpers and their suggestions. | adding a core service |
 | backups.py | Automatic backups: one a day, one at every safe close, kept in two places. | changing when or where backups are made |
+| restore.py | Restore from a backup: check copies without changing them, put one back safely, and undo it. | changing how a backup is checked, put back or undone |
 | db.py | Open the SQLite database with settings that are safe on USB drives. | changing how the data file is opened or backed up |
 | dates.py | Dates the household's way: typed and shown as 20/05/27 or 05/20/27, always stored as 2027-05-20. | changing how dates are typed or shown |
 | naming.py | What to call a record wherever it appears: its name, or for a batch "Kidney beans, 3 tins". | changing how records are named |
@@ -392,6 +421,10 @@ Generate the next one with: python tools/make_migration.py vehicles --name <what
 | suggest.py | Suggestions while typing: a household's own records first, then a module's list of common things. | changing how picking from a list matches |
 | watch.py | Work out what is running low, what expires soon, how many days of supplies are on hand, and what is worth filling in. | changing running low, expiring, days of cover or gaps |
 | startup.py | Prepare the database at start-up: load modules, back up if needed, and migrate. | changing what happens at start-up |
+| helpers.py | Helpers the household has given a key to: making a key, checking it, and turning it off. | changing how helper keys work |
+| proposals.py | Suggestions from helpers and rows imported from a spreadsheet: checked, kept waiting, added only when a person accepts. | changing suggestions, limits or accepting |
+| export.py | Export my records: one zip with a spreadsheet file for every table, a manifest and a plain-words README. | changing what the export contains |
+| csv_import.py | Read a spreadsheet saved as CSV, match its columns to a table's fields, and check every row before it goes to Review. | changing how spreadsheets are read or matched |
 
 ## src/dashboard/core/migrations/  (summary: the core's numbered database changes; never edit a released one)
 Add a new file with the next number instead of changing an old one.
@@ -400,11 +433,13 @@ Add a new file with the next number instead of changing an old one.
 |---|---|---|
 | 0001_core_tables.sql | Settings and the list of modules in use | checking the core tables |
 | 0002_audit_history.sql | The history of every change to every record | checking how history is stored |
+| 0003_helpers.sql | Helpers, their suggestion batches and the suggested records waiting for a decision | checking how helpers and suggestions are stored |
+| 0004_import_batches.sql | Batches can come from a spreadsheet import by a person, not only a helper; rows keep their spreadsheet row | checking how imported rows wait for Review |
 
 ## src/dashboard/web/  (summary: the screens: pages, forms and their protections)
 | Entry | What it is | Open it when |
 |---|---|---|
-| __init__.py | Web layer: pages, forms and the Agent API (not built yet). | adding a screen or route |
+| __init__.py | Web layer: pages, forms, the Review screen and the helper API. | adding a screen or route |
 | app.py | Build the Flask web application and its local-only protections. | changing sign-in, protections or reports |
 | pages.py | Pages built from module declarations: the record grid, add and edit forms, and history. | changing the grid or forms |
 | setup.py | The first-run wizard and the settings page: who lives here, the home, modules and backups. | changing setup questions or settings |
@@ -413,6 +448,12 @@ Add a new file with the next number instead of changing an old one.
 | sheets.py | One-page printable sheets declared by modules, such as the emergency sheet. | changing printable sheets |
 | display.py | Turn declared tables and stored values into friendly labels, form fields and text. | changing how values look |
 | templates/ | The HTML pages | changing what a page looks like |
+| api.py | The helper API (/api/v1): programs the household gave a key to can look at records and suggest new ones. | changing what helpers can read or send |
+| review.py | The Review screen: helpers' suggested new records and imported rows, waiting for a person to accept or reject each one. | changing the Review page |
+| csv_import.py | Settings, Import from a spreadsheet: choose a table, upload a CSV, match its columns, check the rows, send to Review. | changing the import screens |
+| helper_settings.py | Settings, Helpers: give an assistant a key, choose what it may do, and turn its access off. | changing the Helpers settings page |
+| export_page.py | Settings, Export my records: a page and a button that downloads a zip of spreadsheet files. | changing the Export page |
+| restore.py | Settings, Backups: the list of backups, a preview of one, putting it back, and Undo restore. | changing the restore pages |
 
 ## src/dashboard/web/templates/  (summary: HTML pages; base.html holds the shared look)
 | Entry | What it is | Open it when |
@@ -421,6 +462,7 @@ Add a new file with the next number instead of changing an old one.
 | home.html | Home page: days of cover, needs attention, tables with counts, backup and data file status | changing the home screen |
 | attention.html | Running low, expiring soon, days of cover with the working shown, and gaps worth filling in | changing the attention page |
 | count.html | Count this batch: the count, its review and what was saved | changing the stocktake wording |
+| import.html | Import from a spreadsheet: choose a list and file, match columns, see which rows are ready, send to Review | changing the import wording |
 | grid.html | A table's records, a page at a time, sortable | changing the list of records |
 | rows.html | One page of grid rows (also loaded as you scroll) | changing a row |
 | form.html | Add and edit forms, delete and restore, and history | changing the form |
@@ -432,6 +474,11 @@ Add a new file with the next number instead of changing an old one.
 | closed.html | Shown after a safe close | changing that message |
 | error.html | Plain-language error page with "Save a report" | changing error wording |
 | private_sheet.html | The step before a sheet with private details: show it only when you mean to print or share it | changing how private sheets open |
+| helpers.html | Settings, Helpers: the helper list, the address, and the form that makes a key | changing the Helpers settings page |
+| helper_key.html | The one page that shows a new helper key, with a Copy button and a warning to keep it private | changing the new-key page |
+| review.html | Review suggestions: each helper's waiting suggestions with Accept and Reject | changing the Review page |
+| export.html | Settings, Export my records: what is in the export and the download button | changing the Export page |
+| restore_*.html | Settings, Backups: the list of backups, the check-and-compare page, the result, and the shared Undo restore box | changing the restore pages |
 
 ## tests/  (summary: automatic tests; synthetic data only)
 How to run them is in AGENTS.md.
@@ -440,7 +487,9 @@ How to run them is in AGENTS.md.
 | support.py | Shared helpers for tests: temporary folders and made-up (synthetic) modules. | writing a new test |
 | test_db.py | Tests for opening the database safely, transactions, statement splitting and backups. | changing the database layer |
 | test_migrations.py | Tests for numbered migrations: tracks, checksums, newer databases, rollback and backups. | changing migrations |
+| test_csv_import.py | Tests for Import from a spreadsheet: reading a CSV, matching columns, the dry run, staging for Review and Accept. | changing spreadsheet import |
 | test_modules.py | Tests for loading module folders and the plain-language problems they report. | changing module rules |
+| test_actions.py | Tests for one-step actions (buttons like Mark returned) and the date order rule `not_before` (decision 0075). | changing actions or date order |
 | test_example_garden.py | Exercise the garden example with a temporary database and synthetic harvest. | changing the garden example |
 | test_records.py | Tests for saving, checking, linking, deleting and restoring records, and their history. | changing how records are saved |
 | test_schema.py | Tests for turning declared tables into SQL and generating the next migration. | changing table building |
@@ -474,6 +523,9 @@ How to run them is in AGENTS.md.
 | test_lock_requirements.py | Tests for the requirements lock generator. | changing how libraries are locked |
 | test_repofiles.py | Tests for the shared list of repository files, including during a merge with conflicts. | a tool counts a file twice |
 | test_repository.py | Tests that this repository passes its own checks. | CI fails on the repo itself |
+| test_helper_*.py | Tests for helpers: keys, suggestions waiting for a person, the /api/v1 door, and the Settings and Review screens | changing helpers, the helper API or Review |
+| test_export.py | Tests for Export my records: every table of an example household, private details, formula safety and the download. | changing the export |
+| test_restore.py | Tests for restoring a backup: checks that change nothing, the safe swap, Undo after a restart, and refusals. | changing restore or Undo |
 
 ## tools/  (summary: scripts that check, lock and build the project; run by CI)
 | Entry | What it is | Open it when |
@@ -490,6 +542,6 @@ How to run them is in AGENTS.md.
 | load_example.py | Load a made-up example household into an empty data folder, for demos, screenshots and testing. | demonstrating or testing with realistic data |
 | make_screenshots.py | Make the example screenshots: run each example household through every stage of using the dashboard. | the screens changed and the gallery needs remaking |
 | screenshots.js | Browser steps for make_screenshots.py (Node and Playwright) | changing how screenshots are taken |
-| browser_check.py | Click through the real dashboard in Chromium (setup, dates, stock in, stocktake, private details, closing) and fail loudly. | a screen or its browser code changed |
+| browser_check.py | Click through the real dashboard in Chromium (setup, dates, stock in, stocktake, Mark returned, spreadsheet import, private details, closing) and fail loudly. | a screen or its browser code changed |
 | browser_check.js | Browser steps for browser_check.py (Node and Playwright): what is clicked and checked | changing what the browser check clicks |
 | make_project_map.py | Build PROJECT_MAP.md from every INDEX.md in the repository. | changing the map format |

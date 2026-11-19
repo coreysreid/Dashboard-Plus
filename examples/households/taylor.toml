@@ -17,7 +17,7 @@ home_type = "apartment"
 storeys = 1
 mobility_needs = false
 hazards = ["flood", "snow", "storm"]
-modules = ["documents", "home_care", "home_layout", "lent_out", "medical", "people", "stock", "vehicles"]
+modules = ["documents", "garden", "home_care", "home_layout", "lent_out", "medical", "people", "stock", "vehicles"]
 
 # ---- People -----------------------------------------------------------------
 
@@ -118,6 +118,10 @@ notes = "Next to the boiler."
 [[stock.places]]
 name = "Bike shed"
 inside = "Outside"
+
+[[stock.places]]
+name = "Windowsill"
+inside = "Kitchen"
 
 # Amounts are what is on hand today, after the stock in and out below.
 [[stock.items]]
@@ -318,3 +322,32 @@ borrower = "Chris Taylor"
 lent_on = "today-20"
 due_back = "today-2"
 status = "out"
+
+# ---- Vegetable garden ---------------------------------------------------------
+
+[[garden.beds]]
+name = "Kitchen windowsill pot"
+place = "Windowsill"
+
+[[garden.crops]]
+name = "Parsley"
+variety = "Example leaf"
+
+[[garden.plantings]]
+name = "Windowsill parsley 2026"
+bed = "Kitchen windowsill pot"
+crop = "Parsley"
+planted_on = "today-35"
+quantity = 1
+
+[[garden.harvests]]
+planting = "Windowsill parsley 2026"
+harvested_on = "today-2"
+amount = 1
+unit = "bunches"
+
+[[garden.jobs]]
+title = "Check windowsill pot"
+bed = "Kitchen windowsill pot"
+due_on = "today+6"
+done = false

@@ -16,7 +16,7 @@ home_type = "apartment"
 storeys = 1
 mobility_needs = true
 hazards = ["earthquake", "heat", "power"]
-modules = ["documents", "home_care", "home_layout", "lent_out", "medical", "people", "pets", "stock", "vehicles"]
+modules = ["documents", "garden", "home_care", "home_layout", "lent_out", "medical", "people", "pets", "stock", "vehicles"]
 
 # ---- People -----------------------------------------------------------------
 
@@ -294,6 +294,10 @@ inside = "Car"
 name = "Storage locker"
 inside = "Basement"
 notes = "Basement locker 12."
+
+[[stock.places]]
+name = "Balcony"
+notes = "The sunny side, off the kitchen."
 
 # Amounts are what is on hand today, after the stock in and out below.
 [[stock.items]]
@@ -712,3 +716,32 @@ borrower = "Luis Garcia"
 lent_on = "today-3"
 due_back = "today+7"
 status = "out"
+
+# ---- Vegetable garden ---------------------------------------------------------
+
+[[garden.beds]]
+name = "Balcony pot"
+place = "Balcony"
+
+[[garden.crops]]
+name = "Basil"
+variety = "Example green"
+
+[[garden.plantings]]
+name = "Balcony basil 2026"
+bed = "Balcony pot"
+crop = "Basil"
+planted_on = "today-45"
+quantity = 1
+
+[[garden.harvests]]
+planting = "Balcony basil 2026"
+harvested_on = "today-3"
+amount = 1
+unit = "bunches"
+
+[[garden.jobs]]
+title = "Check pot"
+bed = "Balcony pot"
+due_on = "today+5"
+done = false

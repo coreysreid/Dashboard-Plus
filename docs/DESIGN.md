@@ -45,6 +45,7 @@ Dashboard/                      <- the portable folder (or the git clone)
     config.toml                 real settings, written by the wizard
     secrets/                    API keys and agent token hashes
     backups/  exports/  attachments/  reports/
+    restore.json                the last restore, so it can be undone (no secrets)
 ```
 
 In the git repository only `config.example.toml` exists. `data/` is in
@@ -414,6 +415,41 @@ counts = { more = "counted_more", less = "counted_less", note = "notes" }  # sto
   amount, use-by date and place; earlier stock in and out is linked to it, not
   replayed. A backup is made first (startup, decision 0050).
 
+### 5.8 One-step actions and date order
+
+A table can offer a one-press button on a record's page that sets a few fields
+(decision 0075):
+
+```toml
+[[tables.loans.actions]]
+key = "returned"                                     # in the address: /t/lent_out__loans/3/do/returned
+label = "Mark returned"                              # the button
+show_when = { status = "out" }                       # shown only while every filter matches
+set = { status = "returned", returned_on = "today" } # fixed values; "today" / "now" for dates and times
+done = "Marked as returned today."                   # the notice afterwards
+
+columns.returned_on = { type = "date", not_before = "lent_on" }
+```
+
+- All five action settings are needed. Checked when the module loads: `set`
+  and `show_when` name columns of this table; choices are real choices; values
+  fit the column; links, files, private columns and columns worked out from
+  other records (batch totals, amounts changed by stock in and out) can't be
+  set; private columns can't decide when a button shows; `set` must change a
+  `show_when` column, so the button goes away once pressed; and it must fill in
+  any field its values make `required_when`.
+- labels.toml can reword a declared action:
+  `actions.returned = { label = "Back now", done = "Marked as back." }`.
+- The button is a small POST form with the page's token, on the record's page
+  only (not the list). Saving goes through the ordinary change: every check,
+  history, batches and totals, in one transaction. If the record no longer
+  matches `show_when` (a double click or an old page), nothing changes and the
+  page says so.
+- `not_before` (on a date column, naming another date column of the same
+  table) refuses an earlier date when adding, editing or pressing an action:
+  "Returned on can't be before Lent on.", from the labels. The same day is
+  fine; a blank date is not compared.
+
 ## 6. Modules
 
 A module is a folder:
@@ -422,7 +458,8 @@ A module is a folder:
 modules/<name>/
   module.toml       name, version, description, core_api needed,
                     requires, outbound hosts
-  tables.toml       tables, columns, types, dropdown values, links
+  tables.toml       tables, columns, types, dropdown values, links,
+                    one-step actions (5.8)
   labels.toml       friendly names and form layout
   migrations/       numbered migration files for this module's own track
   sources.py        optional: pulls data in
@@ -579,7 +616,9 @@ number and the core can load both for a transition period.
   for a way out, the water shut-off, the power board and a smoke alarm (not
   gas, which many homes lack); a check is *due* on the date the household
   chose, never one worked out for it; an **Our home** sheet prints everything
-  with full place paths and no notes.
+  with full place paths and no notes. Each of the four lists also has an
+  optional private `access_details` box for alarm codes and key-safe numbers
+  (`sensitive`, shown only on Show, never in the sheet; decision 0077).
 - **Vehicles** (declarative; requires People and Household stock; shipped,
   decision 0058). Tables: vehicles (registration or plate number, marked
   `sensitive`; registration or vehicle tax due; who to call if it breaks
@@ -610,6 +649,13 @@ number and the core can load both for a transition period.
   gap asks where a job is done; smoke alarms and extinguishers stay in Home
   layout; a **Home care** sheet prints the jobs and dates without notes. No
   field holds alarm codes or how to get in.
+- **Vegetable garden** (declarative; requires Household stock; shipped,
+  decision 0076). Tables: beds (a link to `stock.places`), crops, plantings
+  (a name, bed, crop, planted on, quantity), harvests (a planting, a date, an
+  amount) and jobs (a due date and "Done?"). Behaviour: a job is "due" from two
+  weeks before its date, only while not done (`where` on `expiring`, decision
+  0072); one gap asks where a bed is; a **Garden plan** sheet prints beds,
+  plantings and jobs not done, without notes. No growing advice is stored.
 - **Things lent out** (declarative; requires People and Household stock;
   shipped, decision 0073). Table: loans (what was lent; an optional
   `stock.items` link that changes no count; the borrower, a link to
@@ -739,11 +785,32 @@ One generic connector that can be aimed at any API.
 
 ### Review queue
 
-Rows with `review_status = needs_review` appear on the **Review** screen,
-grouped by batch, each showing who or what proposed it and why. The person can
-approve, edit-then-approve, or reject. Approving or editing marks
-`edited_by_person` where applicable. Rejected rows stay in history (hidden by
-default).
+Helpers' suggestions are **not** stored as `needs_review` rows in module tables
+(decision 0068): creating a row applies its side effects at once, and lists and
+totals do not filter on review status. They wait in the core tables
+`core__helper_batches` and `core__proposals`. The **Review** screen (`/review`)
+shows waiting batches newest first, each with the helper, the reason and every
+suggestion in plain words. The person can accept or reject each one, or a whole
+batch. Accepting creates the record by the normal path in one transaction,
+credited to `agent:<helper>`, marked `edited_by_person`; if it can no longer be
+added it stays waiting with the reason. Rejected rows stay in history. The
+`review_status` column is not used by helpers.
+
+### Importing from a spreadsheet
+
+Rows from a CSV file wait on the same Review screen (decision 0080). Settings,
+*Import from a spreadsheet* (`/settings/import`): choose a list, upload a CSV
+(UTF-8, comma or semicolon, up to 1 MB and 2,000 rows), match each column to a
+field (guessed from the headings by label or key; any can be changed or
+skipped), and see a dry run: "38 rows ready, 2 need fixing" with the plain
+problem for each row by its spreadsheet row number. The dry run converts each
+cell (dates the household's way or ISO; links by name, places by full path)
+and then runs the same `check_create` as a helper's suggestion. *Send to
+Review* stages the ready rows as one batch with `kind = 'import'`, no helper
+and `source_name` set to the file's name; each row keeps its `source_row`.
+Accepting creates the record credited to `import:<file name>`. Helpers never
+see import batches. The file is read in memory and never written to disk;
+private (sensitive) columns cannot be imported.
 
 ### Inbox
 
@@ -758,65 +825,63 @@ API; the core does not call an AI service by itself.
 ## 9. Agent API
 
 Assistants, whether AI or human helpers, enter data through the API and never
-touch the database. The API listens on `127.0.0.1` only, the same as the rest
-of the program.
+touch the database. The API is part of the same local server (`127.0.0.1`
+only) under `/api/v1/`. The port changes at each start, so Settings, Helpers
+shows the current address (decisions 0066 to 0068, hardened by 0074).
 
 ### Authentication
 
-`Authorization: Bearer <token>`. Tokens are 32 random bytes, shown once when
-issued, and stored only as a SHA-256 hash (adequate for high-entropy random
-tokens). A command-line tool issues, lists and revokes them:
-
-```text
-dashboard agent add "<name>" --tables pets__weights,pets__meals
-dashboard agent revoke "<name>"
-```
-
-Each agent has a name and a list of tables it may touch. Anything else is
-refused.
+`Authorization: Bearer <key>`. A key is `dph_` plus 32 random bytes, made on
+Settings, Helpers with a name, a level (look only, or look and suggest new
+records) and the modules it may use (none ticked by default). It is shown once
+and kept only as a SHA-256 fingerprint in `data/secrets/helper_keys.json`
+(mode 0600), never in the database. A request carrying an `Origin` header is
+refused (helpers are programs, not web pages). Cookies, query strings and form
+fields are never read for a key.
 
 ### Routes
 
 | Route | Purpose |
 |---|---|
-| `POST /api/propose` | Propose rows (below) |
-| `GET /api/tables` | Live column spec: field names, types and dropdown keys. The source of truth; agents must read it rather than guess |
-| `GET /api/rows` | Read rows (only tables the agent is allowed) |
-| `POST /api/amend` | Change one of the agent's own *unreviewed* rows |
-| `POST /api/undo` | Withdraw the agent's own *unreviewed* rows (a row, or a whole batch) |
-| `GET /api/batches` | List the agent's batches and their state |
+| `GET /api/v1/me` | The helper's name, level, modules and limits |
+| `GET /api/v1/tables` | Live column spec for allowed tables; private columns left out |
+| `GET /api/v1/tables/<t>/records` | Records, paged by id (`after`, `limit` up to 200) |
+| `GET /api/v1/tables/<t>/records/<id>` | One record |
+| `GET /api/v1/attention` | Running low, expiring, supplies and gaps for allowed modules |
+| `POST /api/v1/proposals` | Suggest new records (below) |
+| `GET /api/v1/batches`, `/batches/<id>` | The helper's own batches and their state |
 
-`POST /api/propose` body:
-
-```json
-{
-  "request_key": "2026-06-03-sheet-14",
-  "why": "Transcribed from the paper feeding sheet for 3 June",
-  "entries": [
-    { "table": "pets__meals", "values": { "pet": 1, "...": "..." } }
-  ]
-}
-```
+`POST /api/v1/proposals` body: `request_key`, `why`, `entries` (each
+`{"table", "values"}`).
 
 ### Rules
 
-- `request_key` is **required**. Repeating a call with the same key from the
-  same agent returns the original result and writes nothing new (idempotent
-  retries). Keys are remembered for 30 days.
-- At most **50 entries per call** and **200 rows per agent per day**.
-- Rows land with `review_status = needs_review`, `source = agent:<name>` and a
-  `batch_id`. Every call is one batch, so it can be undone together.
-- Once the **person edits** a row, `edited_by_person` is set and the agent can no
-  longer amend or undo it.
-- An agent can fix or withdraw **only its own unreviewed rows**.
-- Columns marked `sensitive` (allergies, conditions, medications) are never
-  returned to an agent and cannot be written by one unless the token was issued
-  with `--sensitive`, and the Settings screen shows which agents have it.
-- Validation uses the same declaration as the forms. Errors name the table,
-  the field and the allowed values, in plain language, so an AI helper can
-  correct itself.
-- Rows written outside the API have no batch and cannot be undone together,
-  so the core provides no other write path for agents.
+- Suggestions are **new records only**. `request_key` is required; the same key
+  and body returns the original batch, a different body is refused (409).
+- At most **50 entries per call** and **200 suggested rows per helper per day**;
+  body at most 64 KB; JSON only.
+- Every suggestion is tried by a full dry run before it is stored; any problem
+  refuses the whole call and names entry, table and field.
+- Columns marked `sensitive` are never returned and never accepted. There is no
+  grant for them in v1.
+- A link into a part the helper was not given is invisible: left out of
+  `/tables`, of records and of `/attention`, and refused (403 `not_allowed`, the
+  same reply whatever value is sent) in a suggestion. A table that requires such
+  a link cannot be suggested into. A table in a part not given answers exactly
+  like a table that does not exist (404 `not_found`); `/me` says what it may use.
+- Text in a suggestion that looks like a helper key (`dph_...`) is refused
+  without being repeated; so are invisible control characters and marks that
+  turn text around (400). Review shows the reason and values as the named
+  helper's own words.
+- At most **120 requests per helper per minute** (429 `too_many_requests` with
+  `Retry-After`). Accept and Reject decide a suggestion once, even if two clicks
+  arrive together.
+- Money is read and sent in whole units (stored in cents). Columns worked out
+  from batches (a stock item's amount) cannot be suggested; suggest a Stock in.
+- A helper can never accept, change or delete records, see history, see other
+  helpers, or reach settings, backups, files or keys: there are no such routes.
+- Deferred: suggested changes and deletions, amend and undo, a private-details
+  grant, per-table scope, a command-line tool, forgetting request keys.
 
 ## 10. Annotations and the question loop
 
@@ -1056,8 +1121,8 @@ only to choose which pack applies; nothing is looked up online.
 ## 11. Audit, backup, export
 
 - **Audit.** `core__audit(id, at, actor, action, table, record_id, before,
-  after, batch_id)`. The actor is `person`, `agent:<name>`, `module:<name>` or
-  `system`. Every write goes through core services, so every write is audited.
+  after, batch_id)`. The actor is `person`, `agent:<name>`, `import:<file>`,
+  `module:<name>` or `system`. Every write goes through core services, so every write is audited.
   A history panel on each record shows what changed.
 - **Undo.** Undo reverses a person's last change, or an agent's batch,
   using the audit before/after. Undo is itself audited.
@@ -1069,13 +1134,44 @@ only to choose which pack applies; nothing is looked up online.
   Settings shows when each copy was last made, and if the copy on the computer
   failed, Settings and the home page say so plainly, with the reason and the
   date of the last good copy (decision 0046).
-- **Restore.** One click on the Backups screen. Restoring first backs up the
-  current state, so a restore can be undone too.
+- **Restore** (decision 0079). Settings → Backups lists the copies in the data
+  folder and in the second folder on the computer, newest first. Each is
+  opened read-only and checked (`quick_check` in the list, the full
+  `integrity_check` before a restore); nothing is ever written to a backup.
+  A copy from a newer version, with a part (module) this program lacks, or
+  with a changed database step is refused; an older copy is brought up to
+  date on a copy. The preview shows the date, size, "Check passed" and the
+  number of records in each list then and now. Restoring prepares the copy as
+  a new file in the data folder, waits until no page has the data file open,
+  makes a checked `before-restore-` backup, and swaps the prepared file in
+  with one atomic rename. `restore.json` names that backup, so **Undo
+  restore** works after a restart until the household keeps the restored
+  records or restores again. Undo is itself a restore (with a `before-undo-`
+  backup). Any failure leaves the records in use and says "Nothing was
+  changed." Helper keys (`data/secrets/`) are never part of a backup or a
+  restore. Later: restoring into a new folder and switching folders,
+  removable drives, attachments, and a catalogue of copies across computers.
 - **Export everything.** One click writes a folder: one CSV per table (with
   dropdown labels and keys, link columns resolved to readable names), the
   attachments, the notes and annotations as plain text/Markdown, and a
   `README.txt` explaining each file. Nothing in it requires this program.
 
+- **Export my records** (decision 0078, built). Settings has a page with one
+  button that downloads `dashboard-plus-export-YYYY-MM-DD.zip`: one CSV per
+  installed table, a `manifest.json` (app and module versions, tables, row
+  counts, every column's heading and internal name, and which columns were
+  left out as private, by label only) and a `README.txt` in plain words.
+  Headings are the household's labels; links show the record's name (the full
+  path for nested places) and its id in a separate column; dates are ISO,
+  money is in whole units, yes/no is Yes/No and choices are their labels.
+  Deleted records are left out unless a checkbox asks for them, and then get a
+  "Deleted on" column. **Private (`sensitive`) columns and `data/secrets/` are
+  never exported**; the export is not the place for them, and it is a copy for
+  spreadsheets, not a backup. Text cells that begin with `=`, `+`, `-`, `@`,
+  a tab or a line return get a leading apostrophe so a spreadsheet cannot run
+  them. It is read inside one read transaction, so every file is from the same
+  moment. Not built yet: writing a folder with attachments, notes and the
+  change history, and a way to export private details deliberately.
 ## 12. Security and privacy
 
 - **Local only.** The web server binds to `127.0.0.1`, never `0.0.0.0`.
@@ -1084,8 +1180,10 @@ only to choose which pack applies; nothing is looked up online.
   (defends against DNS-rebinding), uses `SameSite` cookies and checks the
   `Origin` header on writes (defends against other web pages talking to the
   local server).
-- **The Agent API** uses bearer tokens as described. It is on the same local
-  port; there is no remote option.
+- **The Agent API** uses bearer keys as described. It is on the same local
+  port; there is no remote option. `/api/v1/` is the only exemption from the
+  cookie and page token, and it refuses any request with an `Origin` header;
+  every other path is exactly as strict as before (decision 0067).
 - **Outside contact is opt-in and listed.** Each module's `module.toml` lists
   the hosts it may contact. The Settings screen shows them all in one place.
   Nothing contacts anywhere until the person switches a source on.

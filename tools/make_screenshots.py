@@ -94,6 +94,10 @@ STAGES = [
     ("18m-lent-out-sheet", "Things still lent out sheet", "As it prints: only the loans still out, with the "
      "borrower's phone from People and no notes.", {"goto": "/sheet/lent_out/still_out", "media": "print",
                                                      "module": "lent_out"}),
+    ("18n-garden", "Vegetable garden jobs", "Garden jobs with the date the household chose; a finished job is "
+     "no longer a reminder.", {"goto": "/t/garden__jobs", "module": "garden"}),
+    ("18o-garden-sheet", "Garden plan sheet", "As it prints: beds and where they are, plantings and the jobs "
+     "not yet done, with no notes.", {"goto": "/sheet/garden/plan", "media": "print", "module": "garden"}),
     ("19-needs-attention", "Needs attention", "Days of water with the working shown, running low, use-by "
      "and due dates, and details worth filling in.", {"goto": "/attention"}),
     ("20-supplies-sheet", "Emergency supplies sheet", "As it prints: water, first aid, power and food, and "

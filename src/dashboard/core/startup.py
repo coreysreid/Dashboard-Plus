@@ -43,6 +43,19 @@ def _missing_columns(conn, module) -> list[str]:
     return missing
 
 
+def record_modules(conn, found: list) -> None:
+    """Note each module in use and its version; a module seen for the first time starts switched on."""
+    now = datetime.now(timezone.utc).isoformat(timespec="seconds")
+    with db.transaction(conn):
+        for module in found:
+            conn.execute(
+                "INSERT INTO core__modules (name, version, enabled, first_seen_at, updated_at) "
+                "VALUES (?, ?, 1, ?, ?) ON CONFLICT(name) DO UPDATE SET version = excluded.version, "
+                "updated_at = excluded.updated_at",
+                (module.name, module.version, now, now),
+            )
+
+
 def prepare(data_dir: Path, modules_dir: Path | None = None) -> StartupReport:
     """Open the database, bring it up to date, and record the modules in use.
 
@@ -52,6 +65,11 @@ def prepare(data_dir: Path, modules_dir: Path | None = None) -> StartupReport:
     data_dir = Path(data_dir)
     found, failures = modules.discover(Path(modules_dir) if modules_dir else DEFAULT_MODULES_DIR)
     tracks = {migrations.CORE_TRACK: migrations.load_track(migrations.CORE_TRACK, migrations.CORE_FOLDER)}
+    # Second safety net (decision 0069): module loading already refuses the name "core", but if one ever got
+    # through it must not replace the program's own track or run its own migrations.
+    for module in [m for m in found if m.name == migrations.CORE_TRACK]:
+        failures.setdefault(module.name, []).append("'core' is reserved for the program itself, so this module was left out.")
+    found = [m for m in found if m.name != migrations.CORE_TRACK]
     for module in found:
         tracks[module.name] = module.migrations
     path = database_path(data_dir)
@@ -76,15 +94,7 @@ def prepare(data_dir: Path, modules_dir: Path | None = None) -> StartupReport:
                     f"Its tables.toml describes {', '.join(missing)}, which its migrations do not create. "
                     f"Run tools/make_migration.py for it.")
         found = modules.dependency_order([m for m in found if m.name not in failures], failures)
-        now = datetime.now(timezone.utc).isoformat(timespec="seconds")
-        with db.transaction(conn):
-            for module in found:
-                conn.execute(
-                    "INSERT INTO core__modules (name, version, enabled, first_seen_at, updated_at) "
-                    "VALUES (?, ?, 1, ?, ?) ON CONFLICT(name) DO UPDATE SET version = excluded.version, "
-                    "updated_at = excluded.updated_at",
-                    (module.name, module.version, now, now),
-                )
+        record_modules(conn, found)
         version = conn.execute("PRAGMA user_version").fetchone()[0]
     finally:
         conn.close()

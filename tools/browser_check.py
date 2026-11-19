@@ -1,4 +1,4 @@
-"""Click through the real dashboard in Chromium (setup, dates, stock in, stocktake, private details, closing) and fail loudly."""
+"""Click through the real dashboard in Chromium (setup, dates, stock in, stocktake, Mark returned, spreadsheet import, private details, closing) and fail loudly."""
 from __future__ import annotations
 
 import argparse
@@ -28,7 +28,13 @@ AU = {"household": "smith", "locale": "en-AU", "timezone": "Australia/Sydney",
                 "wrongOrder": "05/20/27", "hint": "Use DD/MM/YY"},
       "stock": {"item": "Kidney beans", "batches": 2, "blankAdds": "Start a new batch",
                 "blankTakes": "Use the batch with the earliest use-by date"},
-      "private": {"person": "Emily Smith", "secret": "Peanut allergy"}}
+      "private": {"person": "Emily Smith", "secret": "Peanut allergy"},
+      "loan": {"name": "Cordless drill, lent to Dave Wilson"},
+      # A made-up spreadsheet: a byte order mark, CRLF, a quoted note with a comma and a line break, a bad date.
+      "csv": {"file": "browser-check.csv", "ready": 2, "fixing": 1, "item": "Browser import rice",
+              "note": "Top shelf, left\nbehind the flour",
+              "text": "\ufeffName,Keep at least,Use by,Notes\r\nBrowser import rice,2,20/05/27,\"Top shelf, left\r\n"
+                      "behind the flour\"\r\nBrowser import oats,1,,\r\nBrowser import salt,1,31/02/27,\r\n"}}
 US = {"household": "garcia", "locale": "en-US", "timezone": "America/Los_Angeles",
       "dates": {"item": "Browser check tins", "typed": "05/20/27", "words": "May 20, 2027",
                 "wrongOrder": "20/05/27", "hint": "Use MM/DD/YY"}}
@@ -129,7 +135,8 @@ def run_au(work: Path, executable: str | None) -> list[str]:
             load_example.load_records(conn, records.build_registry(found), example)
         finally:
             conn.close()
-        done += drive(dict(plan, dates=AU["dates"], stock=AU["stock"], private=AU["private"]), work, "main")
+        done += drive(dict(plan, dates=AU["dates"], stock=AU["stock"], private=AU["private"], loan=AU["loan"],
+                           csv=AU["csv"]), work, "main")
         closed = True
     finally:
         stop_server(process, closed)

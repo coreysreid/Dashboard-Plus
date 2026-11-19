@@ -5,6 +5,7 @@ import hmac
 import logging
 import platform
 import secrets
+import sqlite3
 from datetime import datetime
 from pathlib import Path
 from typing import Callable
@@ -13,8 +14,9 @@ from flask import Flask, abort, g, jsonify, redirect, render_template, request
 from werkzeug.exceptions import HTTPException
 
 from dashboard import __version__
-from dashboard.core import backups, db, records, watch
+from dashboard.core import backups, db, proposals, records, watch
 from dashboard.core.startup import database_path
+from dashboard.web.api import REQUESTS_PER_MINUTE, api_error
 
 log = logging.getLogger("dashboard.web")
 SESSION_COOKIE = "dashboard_session"
@@ -24,7 +26,8 @@ OPEN_PATHS = {"/api/ping", "/api/shutdown", "/start"}
 
 
 def create_app(shutdown_token: str, on_shutdown: Callable[[], None], report=None,
-               data_dir: Path | None = None, session_key: str | None = None) -> Flask:
+               data_dir: Path | None = None, session_key: str | None = None,
+               extra_backup_dir: Path | None = None) -> Flask:
     """Return the web app.
 
     - `on_shutdown` is called when a safe close is requested.
@@ -32,14 +35,19 @@ def create_app(shutdown_token: str, on_shutdown: Callable[[], None], report=None
     - `data_dir` is the data folder; pages that read records need it.
     - `session_key` is the secret in the launch link. The browser exchanges it for a
       cookie, so only the browser opened by *Open Dashboard* can use the pages.
+    - `extra_backup_dir` is the second backup folder on this computer, or None; the restore page lists it.
     """
     app = Flask(__name__)
+    from dashboard.web.csv_import import UploadRequest
+    app.request_class = UploadRequest  # import uploads stay in memory; other requests are unchanged
     app.config["PORT"] = None  # set by the server once it knows its port
     app.config["SESSION_KEY"] = session_key or secrets.token_urlsafe(32)
     app.config["CSRF_TOKEN"] = secrets.token_urlsafe(32)
     app.config["DATA_DIR"] = Path(data_dir) if data_dir else None
+    app.config["EXTRA_BACKUP_DIR"] = Path(extra_backup_dir) if extra_backup_dir else None
     app.config["REPORT"] = report
     app.config["LOADED"] = report.loaded if report else []
+    app.config["HELPER_REQUESTS_PER_MINUTE"] = REQUESTS_PER_MINUTE  # tests may lower it (decision 0074)
 
     def allowed_hosts() -> set[str]:
         port = app.config["PORT"]
@@ -51,6 +59,11 @@ def create_app(shutdown_token: str, on_shutdown: Callable[[], None], report=None
         # where a web page tries to reach this program through a fake address.
         if request.host not in allowed_hosts():
             abort(403)
+        # The helper API has its own rules (a key, no web pages, JSON only; see web/api.py and decision 0067).
+        # Everything else below applies, exactly as before, to every other path.
+        if request.path.startswith("/api/v1/"):
+            from dashboard.web.api import authenticate
+            return authenticate()
         # Writes must come from our own pages, not from another website.
         if request.method == "POST":
             origin = request.headers.get("Origin")
@@ -69,8 +82,8 @@ def create_app(shutdown_token: str, on_shutdown: Callable[[], None], report=None
         cookie = request.cookies.get(SESSION_COOKIE, "")
         if not hmac.compare_digest(cookie, app.config["SESSION_KEY"]):
             return redirect("/start")
-        # Every write needs this page's own token. (The Agent API, when it is built, will check its own
-        # tokens; until then nothing is exempt — security review.)
+        # Every write from a page needs this page's own token. Only /api/v1/ is exempt, because it has no pages
+        # or cookies: it checks a helper's key instead (above).
         if request.method == "POST":
             supplied = request.form.get("_csrf", "")
             if not hmac.compare_digest(supplied, app.config["CSRF_TOKEN"]):
@@ -82,16 +95,46 @@ def create_app(shutdown_token: str, on_shutdown: Callable[[], None], report=None
                 return redirect("/setup")
         return None
 
+    def waiting_suggestions() -> int:
+        """How many helper suggestions wait for a decision (shown beside "Review" on every page)."""
+        if app.config["DATA_DIR"] is None:
+            return 0
+        if not hmac.compare_digest(request.cookies.get(SESSION_COOKIE, ""), app.config["SESSION_KEY"]):
+            return 0  # not signed in (for example the "how to get in" page): show nothing about the household
+        try:
+            return proposals.pending_count(connection())
+        except sqlite3.Error:
+            return 0
+
     @app.context_processor
     def shared_values():
-        return {"csrf_token": app.config["CSRF_TOKEN"], "version": __version__}
+        return {"csrf_token": app.config["CSRF_TOKEN"], "version": __version__, "review_count": waiting_suggestions()}
 
     def connection():
         if "db" not in g:
-            g.db = db.connect(database_path(app.config["DATA_DIR"]))
+            # Each request's connection passes the data file's gate, so a restore can wait until none is open
+            # before it swaps the file (decision 0079).
+            path = database_path(app.config["DATA_DIR"])
+            gate = db.gate(path)
+            gate.enter()
+            try:
+                g.db = db.connect(path)
+            except BaseException:
+                gate.leave()
+                raise
+            g.db_gate = gate
         return g.db
 
+    def release_connection():
+        """Close this request's connection now, instead of at the end of the request."""
+        conn, gate = g.pop("db", None), g.pop("db_gate", None)
+        if conn is not None:
+            conn.close()
+        if gate is not None:
+            gate.leave()
+
     app.config["CONNECT"] = connection
+    app.config["RELEASE"] = release_connection
 
     def registry():
         """Tables of the modules that are switched on, worked out once per request."""
@@ -114,9 +157,7 @@ def create_app(shutdown_token: str, on_shutdown: Callable[[], None], report=None
 
     @app.teardown_appcontext
     def close_connection(_error):
-        conn = g.pop("db", None)
-        if conn is not None:
-            conn.close()
+        release_connection()
 
     @app.get("/start")
     def start():
@@ -138,7 +179,8 @@ def create_app(shutdown_token: str, on_shutdown: Callable[[], None], report=None
         from dashboard.web.setup import backup_report
         tables = [t for group in groups for t in group["main"] + group["more"]]
         return render_template("home.html", report=report, groups=groups, tables=tables, attention=attention,
-                               last_backup=last_backup, backup=backup_report(app.config["DATA_DIR"]))
+                               last_backup=last_backup, backup=backup_report(app.config["DATA_DIR"]),
+                               suggestions=waiting_suggestions())
 
     @app.get("/attention")
     def attention_page():
@@ -170,23 +212,44 @@ def create_app(shutdown_token: str, on_shutdown: Callable[[], None], report=None
         path = write_report(app.config["DATA_DIR"])
         return render_template("report.html", path=path)
 
+    from dashboard.web.api import helper_api
+    from dashboard.web.export_page import export_pages
+    from dashboard.web.csv_import import imports
+    from dashboard.web.helper_settings import helper_settings
     from dashboard.web.pages import pages
+    from dashboard.web.restore import restore_pages
+    from dashboard.web.review import review_pages
     from dashboard.web.setup import setup_pages
     from dashboard.web.sheets import sheet_pages
     app.register_blueprint(pages)
     app.register_blueprint(sheet_pages)
     app.register_blueprint(setup_pages)
+    app.register_blueprint(helper_settings)
+    app.register_blueprint(export_pages)
+    app.register_blueprint(imports)
+    app.register_blueprint(review_pages)
+    app.register_blueprint(restore_pages)
+    app.register_blueprint(helper_api)
+
+    def for_helpers() -> bool:
+        return request.path.startswith("/api/v1/")
 
     @app.errorhandler(400)
     def bad_request(_error):
+        if for_helpers():
+            return api_error(400, "bad_request", "This request could not be read. Check the fields and try again.")
         return render_template("error.html", message="That form had expired. Go back, reload the page and try again."), 400
 
     @app.errorhandler(403)
     def forbidden(_error):
+        if for_helpers():
+            return api_error(403, "forbidden", "This request was refused because it did not come from this computer.")
         return render_template("error.html", message="This request was refused because it did not come from this computer."), 403
 
     @app.errorhandler(404)
     def not_found(_error):
+        if for_helpers():
+            return api_error(404, "not_found", "That table or record could not be found.")
         return render_template("error.html", message="That page does not exist."), 404
 
     @app.after_request
@@ -202,12 +265,19 @@ def create_app(shutdown_token: str, on_shutdown: Callable[[], None], report=None
 
     @app.errorhandler(HTTPException)
     def refused(error):
+        if for_helpers():
+            code = {405: "method_not_allowed", 413: "too_large", 415: "needs_json"}.get(error.code, "refused")
+            message = {413: "This request is too large. Send fewer suggestions at a time.",
+                       405: "That is not a way to use this address."}.get(error.code, "That request was refused.")
+            return api_error(error.code or 400, code, message)
         # Ordinary refusals (wrong method, bad request) are not crashes: no error report, the right code.
         return render_template("error.html", message=error.description or "That request was refused."), error.code
 
     @app.errorhandler(Exception)
     def unexpected(error):
         log.exception("Unexpected error", exc_info=error)
+        if for_helpers():
+            return api_error(500, "server_error", "Something went wrong. Nothing was changed.")
         return render_template("error.html", can_report=True,
                                message="Something went wrong. Your data is safe. "
                                        "You can save a report to share with whoever helps you."), 500

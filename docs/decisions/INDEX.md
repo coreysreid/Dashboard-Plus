@@ -1,6 +1,5 @@
 # docs/decisions/  (summary: why each technical choice was made)
-One record per decision, from `TEMPLATE.md`. Never deleted; reversed ones are
-marked Superseded. Each lists downsides, cost to undo, and the sign it was wrong.
+One record per decision, from `TEMPLATE.md`. Never deleted; reversed ones are marked Superseded. Each lists downsides, cost to undo, and the sign it was wrong.
 
 | Record | Decision | Status |
 |---|---|---|
@@ -69,8 +68,19 @@ marked Superseded. Each lists downsides, cost to undo, and the sign it was wrong
 | [0063](0063-home-care-promoted.md) | Home care switched on from Lane B's draft: jobs at your places, done by your People, on dates you type; no repeats invented | Accepted |
 | [0064](0064-real-browser-check.md) | A real-browser check clicks through setup, dates, stock in, private details and closing in Chromium (Linux CI job); a refused save keeps a private detail | Accepted |
 | [0065](0065-agpl-licence.md) | Licence changed to GNU AGPL v3 or later (from MIT) | Accepted |
+| [0066](0066-helper-keys-shown-once-kept-as-a-fingerprint.md) | Helpers get a key from Settings: shown once, kept only as a fingerprint outside the database | Accepted |
+| [0067](0067-agent-api-v1-local-bearer-only-module-scoped.md) | The Agent API v1: local, bearer-only, module-scoped, and never private details | Accepted |
+| [0068](0068-helper-suggestions-wait-until-a-person-accepts.md) | Helpers' suggestions wait in their own place until a person accepts them | Accepted |
+| [0069](0069-no-module-called-core-or-with-double-underscores.md) | A module may not be called "core" or use double underscores in its name | Accepted |
 | [0070](0070-stocktake-corrections.md) | Count this batch saves the difference as one stocktake correction in Stock in and out; never the count on top; an out-of-date review is refused | Accepted |
 | [0071](0071-private-sheet-opens-only-by-choice.md) | The private sheet opens only from its Show button (a POST), never from a link such as ?show=1 | Accepted |
 | [0072](0072-reminders-skip-finished-rows-and-sheets-print-linked-contacts.md) | Due-date reminders can skip finished rows (`where` on `expiring`); sheets print a linked contact's phone from a required module, never a private column | Accepted |
 | [0073](0073-lent-out-promoted.md) | Things lent out switched on from Lane B's draft: borrowers in People, reminders only while still out, Stock count untouched | Accepted |
+| [0074](0074-agent-api-hardening.md) | Agent API hardening: links into parts a helper was not given are invisible, one 404 for "not yours" and "not there", hidden characters and key-like text refused, 120 requests a minute, one decision per suggestion | Accepted |
+| [0075](0075-one-step-actions-and-date-order.md) | One-step buttons declared in tables.toml (Mark returned), saved through the ordinary change path and refused when pressed twice; `not_before` keeps one date from coming before another | Accepted |
+| [0076](0076-garden-promoted.md) | Vegetable garden switched on from Lane B's draft: beds at your Places, job reminders only while not done, no growing advice | Accepted |
+| [0077](0077-home-layout-private-access-details.md) | Home layout gets a private "Codes or access details" box, hidden until Show and never printed | Accepted |
+| [0078](0078-export-my-records.md) | Export my records: one zip of spreadsheet files for the household, private details left out, text guarded against formulas, read from one moment | Accepted |
+| [0079](0079-restore-from-a-backup.md) | Restore from a backup: copies checked read-only, the chosen one prepared on a new file, a checked before-restore copy, an atomic swap while no page holds the file, and an Undo that survives a restart | Accepted |
+| [0080](0080-import-from-a-spreadsheet.md) | Import from a spreadsheet (CSV) in Settings: columns matched, every row checked like a helper's suggestion, ready rows wait on Review as one batch by "Import '<file>'"; the file is never kept; private details not imported | Accepted |
 | [TEMPLATE](TEMPLATE.md) | Blank record to copy for a new decision | recording a decision |

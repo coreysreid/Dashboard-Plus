@@ -1,0 +1,59 @@
+{% extends "base.html" %}
+{% block title %}Helpers · Dashboard Plus{% endblock %}
+{% block body %}
+<p class="muted"><a href="/settings">Settings</a></p>
+<h1>Helpers</h1>
+<p class="lead">A helper is a program, such as an AI assistant, that can look at parts of your records and suggest new ones. Nothing a helper suggests is added until you accept it on the <a href="/review">Review</a> page. Private details are never shared with helpers.</p>
+<p>Helpers connect only from this computer, with no internet needed for that. But if the helper uses an online AI service, whatever you let it read (the parts you tick below) is sent to that service. Tick only what it needs. A helper that runs entirely on this computer sends nothing anywhere.</p>
+<p>Treat a helper's key like a password: don't paste it into chats or emails. If it might have been seen, turn that helper's access off and make a new one.</p>
+{% if turned_off %}<p class="notice" role="status">{{ turned_off.name }} can no longer connect. Its suggestions and history are kept.</p>{% endif %}
+<div class="card">
+  <p style="margin:0">Helpers connect to: <code>{{ address }}</code> (only from this computer).</p>
+  <p class="muted" style="margin-bottom:0">This address changes each time Dashboard opens; copy it again after reopening.</p>
+</div>
+
+<h2>Your helpers</h2>
+{% if rows %}
+{% for h in rows %}
+<div class="card helper-row">
+  <h3 style="margin:0 0 .25rem">{{ h.name }}</h3>
+  {% if h.active %}
+  <p style="margin:.1rem 0">{{ h.access }} · Parts: {{ h.parts }}</p>
+  <p class="muted" style="margin:.1rem 0">Private details: never shared · Made {{ h.made }} · Last used {{ h.last_used }}</p>
+  <form method="post" action="/settings/helpers/{{ h.id }}/turn-off" class="actions">
+    <input type="hidden" name="_csrf" value="{{ csrf_token }}">
+    <button type="submit" class="danger" aria-label="Turn off access for {{ h.name }}">Turn off access</button>
+  </form>
+  {% else %}
+  <p class="muted" style="margin:.1rem 0">Access turned off on {{ h.off_at }}. Its history is kept.</p>
+  {% endif %}
+</div>
+{% endfor %}
+{% else %}
+<p class="muted">No helpers yet.</p>
+{% endif %}
+
+<h2>Add a helper</h2>
+{% if error %}<p class="problem" role="alert">{{ error }}</p>{% endif %}
+{% if parts %}
+<form class="record" method="post" action="/settings/helpers">
+  <input type="hidden" name="_csrf" value="{{ csrf_token }}">
+  <div class="{% if error %}has-error{% endif %}"><label for="helper-name">Name</label>
+    <input type="text" id="helper-name" name="name" maxlength="40" value="{{ values.name or '' }}">
+    <p class="help">For example "Pet diary helper".</p></div>
+  <fieldset style="border:0;padding:0;margin:0"><legend style="font-weight:600">What may it do?</legend>
+    <div class="choices">
+      <label style="font-weight:400"><input type="radio" name="access" value="read" {% if values.access == "read" %}checked{% endif %}> Look only</label>
+      <label style="font-weight:400"><input type="radio" name="access" value="suggest" {% if values.access != "read" %}checked{% endif %}> Look and suggest new records</label>
+    </div></fieldset>
+  <fieldset style="border:0;padding:0;margin:0"><legend style="font-weight:600">Which parts of your records?</legend>
+    <div class="choices">{% for p in parts %}
+      <label style="font-weight:400"><input type="checkbox" name="modules" value="{{ p.name }}" {% if p.name in (values.modules or []) %}checked{% endif %}> {{ p.title }}</label>
+    {% endfor %}</div>
+    <p class="help">Nothing is ticked until you choose.</p></fieldset>
+  <div class="actions"><button type="submit">Make a key</button></div>
+</form>
+{% else %}
+<p class="muted">Switch on at least one part of your records in <a href="/settings">Settings</a> first.</p>
+{% endif %}
+{% endblock %}

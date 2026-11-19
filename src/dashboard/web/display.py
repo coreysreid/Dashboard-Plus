@@ -389,4 +389,25 @@ def actor_text(actor: str) -> str:
         kind, "The program")
 
 
-ACTION_TEXT = {"create": "added this", "update": "changed", "delete": "deleted this", "restore": "restored this"}
+ACTION_TEXT = {"create": "added this", "update": "changed", "delete": "deleted this", "restore": "restored this",
+               "accept": "accepted a helper's suggestion", "reject": "rejected a helper's suggestion"}
+
+
+def action_words(info: TableInfo, action: dict) -> tuple[str, str]:
+    """A one-step action's button words and its notice once pressed; labels.toml may reword both (decision 0075)."""
+    words = _labels(info).get("actions", {}).get(action["key"], {})
+    return words.get("label") or action["label"], words.get("done") or action["done"]
+
+
+def actions_for(info: TableInfo, record: dict | None) -> list[dict]:
+    """The one-step buttons a record's page offers now: those whose `show_when` matches the record."""
+    if not record or record.get("deleted_at"):
+        return []
+    return [{"key": a["key"], "label": action_words(info, a)[0]} for a in info.table.actions
+            if all(record.get(k) == v for k, v in a["show_when"].items())]
+
+
+def done_words(info: TableInfo, key: str | None) -> str | None:
+    """The notice after an action was pressed, such as "Marked as returned today.", or None."""
+    action = next((a for a in info.table.actions if a["key"] == key), None)
+    return action_words(info, action)[1] if action else None
