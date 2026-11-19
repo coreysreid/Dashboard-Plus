@@ -73,8 +73,11 @@ the "Requests" table of docs/WORKSTREAMS.md.
 | Batch 11 item 39: translation readiness | ready | PR #88 | 1,983 source locations across 13 templates, six modules and picker vocabulary. |
 | Batch 11 item 36: wording consistency | ready | PR #85 | 472 strings across six shipped modules; 13 exact replacements. |
 | Batch 9 item 31: sensitive-detail recheck | ready | PR #79 | Decision 0055 guards held; closed list HTML, instant private reveal and printable location hints remain. |
+| Batch 13 item 54: Agent API skeleton UX | ready for PR | lane-b/batch13-api-ux | Live key, curl, Review and turn-off journey passed; repeating Make a key created two active grants. |
 
 ## Messages to Lane A
+
+- **Batch 13 item 54, duplicate helper grants:** Resubmitting the same Make a key form returned two distinct keys and left two active “Repeat helper” grants. A one-use form submission token would stop accidental extra access while preserving the first one-time key display. The rest of the live key → curl → suggest → Review → accept/reject → off journey passed. Exact steps and wording: `workbench/reports/2026-11-19-agent-api-skeleton-ux.md`.
 
 - **Batch 13 item 53, private grant:** V1 stays private-free. A later Settings action could allow one helper one read of one sensitive field for 15 minutes, with an explicit off switch and value-free audit. Revocation cannot take back a copy already sent to an online service. See `workbench/drafts/agent_api/PRIVATE_GRANT.md`.
 
