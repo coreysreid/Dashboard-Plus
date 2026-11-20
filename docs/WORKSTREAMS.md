@@ -523,6 +523,38 @@ turns it into decision 0089 for Corey's OK.
     acceptance checks; short questions for Corey. Cite sources with dates and
     mark anything unsure.
 
+### Batch 17: sync v1 details, macOS and phones (M3)
+
+Corey chose the sync direction (decision 0089): one main, members push
+requests to Review, Tailscale or WireGuard (pluggable, room for a third),
+**private details never travel in v1**, two computers first, home server
+later. He also wants **macOS** and **Android and iOS apps** in the near
+pipeline, integrated as sync members. Work in `workbench/drafts/sync/` and new
+`workbench/drafts/macos/` and `workbench/drafts/phone/`.
+
+70. **Update the sync design for 0089.** Private details stay on the copy
+    they were typed on ("kept on main" on members); the network layer is
+    pluggable (Tailscale, WireGuard, a later third); list what changes in
+    `SYNC.md`, `NOTES.md` and `ACCEPTANCE.md`.
+71. **Stage 0 security review brief.** What an independent reviewer of the
+    remote boundary must check, with test ideas, before stage 2 ships.
+72. **macOS build, researched.** How a portable or app-bundle build would
+    work (signing, notarisation, Gatekeeper, Apple silicon and Intel, where
+    the data folder lives), what differs from Windows, plain steps. Cite
+    Apple's documentation with dates.
+73. **Phone apps, designed.** Android and iOS as sync members: options
+    (installable web app, a cross-platform app, native), what each needs for
+    offline use, storage, key pairing and the private network on a phone,
+    store rules, costs; a recommendation and the first screens a phone needs
+    (Needs attention, Stock in and out, Count this batch, Review).
+74. **"Not a vault" wording.** Corey: the app captures the mess and shows it
+    cleanly; "it's not a Fort Knox vault for your passwords, ID documents and
+    gold bars." Exact help and setup words that say so where people might
+    type sensitive things (Important documents, Home layout codes, People
+    details), without scolding. Exact replacements only.
+75. **Wine promotion pass.** Your ready-check put Wine first: bring the draft
+    to promotion standard with acceptance checks for Lane A.
+
 ## Brief for Lane B, batch 3 (done)
 
 > You are Lane B, the checker and drafter. You have full internet access for
