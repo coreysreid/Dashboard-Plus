@@ -2,6 +2,8 @@
 
 Checked **19 November 2026**. This is item 69 for Lane A's decision 0089. Corey's newer main/member push–pull brief in `docs/WORKSTREAMS.md` supersedes the build order and automatic merge assumptions of `docs/plans/household-sharing.md` option C and decision 0081; its warnings about local SQLite files and optional sharing still apply. No code, network listener or key scheme is shipped by this draft.
 
+**20 November item 68 follow-up:** Corey accepted main/member sync in decision 0089; shared-folder option A is unselected. The [option A ready-check](../../reports/2026-11-20-sharing-option-a-ready-check.md) lists blockers if it is ever reconsidered: a whole copied database carries fields 0089 keeps local, cloud-file leases cannot provide an atomic cross-device lock, and current Review cannot reconcile two changed databases. That route needs a new product/privacy decision, a safe exchange and recovery design, and a full read-only write gate before it can be built. Do not use a shared SQLite file as a shortcut around the chosen record-level sync stages.
+
 ## What Corey needs to choose
 
 1. Is the first supported pair two Windows computers, with main expected to be on whenever they sync? A phone needs another client design.
