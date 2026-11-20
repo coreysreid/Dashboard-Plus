@@ -36,7 +36,8 @@ home router. USB bundles come later as the offline way to do the same thing.
    registration numbers. For papers, the app records where a document and its
    copies are kept ("Green HDD", "Family iCloud"), never the document, a scan
    or its number. This needs a "travels to members" choice per private column
-   (stage 1).
+   (stage 1). Corey confirmed (20 November): a pet's **microchip number travels
+   to members** like other ordinary details; it is what a vet or pound asks for.
 3. **The private network is pluggable.** Tailscale or self-run WireGuard to
    start, with room for a third provider later. Dashboard Plus never depends on
    one vendor: it listens only on the private-network address the household
