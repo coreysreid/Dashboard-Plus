@@ -1,14 +1,16 @@
 [tables.jobs]
 home = "main"
 empty = "Add a job around the home you want to remember, such as cleaning the gutters."
-form = ["name", "kind", "place", "who_does_it", "last_done", "next_due", "notes"]
+form = ["name", "kind", "place", "who_does_it", "last_done", "next_due", "repeat_count", "repeat_unit", "notes"]
 list = ["name", "kind", "place", "who_does_it", "last_done", "next_due"]
 columns.name = { label = "Job", help = "For example, Clean the gutters or Hot water system service. Smoke alarms and fire extinguishers have their own list in Home layout." }
 columns.kind = { label = "What it is about" }
 columns.place = { label = "Where it is", help = "Choose one of your Places, such as Garage or Backyard, or add it first. Places are shared with Household stock." }
 columns.who_does_it = { label = "Who usually does it", help = "Choose one of your People: someone at home, a friend or a tradesperson. Add them first if they are new. Their number is kept in People, so it only needs changing in one place." }
 columns.last_done = { label = "Last done" }
-columns.next_due = { label = "Do again by", help = "A date you choose, from the manual, a tradesperson or your own plan. Nothing is worked out for you, and logging work done does not change it: type the next date here each time. The dashboard will remind you a month before." }
+columns.next_due = { label = "Do again by", help = "A date you choose, from the manual, a tradesperson or your own plan. Mark done records the work and lets you choose the next date. Adding an older Work done entry changes no job dates. The dashboard will remind you a month before." }
+columns.repeat_count = { label = "Repeat every", help = "Optional, and only if you want one: a number from 1 to 99, then weeks, months or years below. After you mark this job done, we will offer one next date. You can change or skip it. This is your own choice, not a maintenance schedule." }
+columns.repeat_unit = { label = "Weeks, months or years", help = "Leave both blank for no repeat. Changing the repeat does not change Do again by or past Work done." }
 columns.notes = { help = "Anything that helps next time, such as which ladder or which filter. Do not write down alarm codes, where a key is hidden or how to get in. This is a record, not instructions: get a qualified person for electrical, gas or roof work." }
 
 [tables.work_done]
@@ -18,4 +20,4 @@ form = ["job", "done_on", "done_by", "notes"]
 list = ["done_on", "job", "done_by", "notes"]
 columns.done_on = { label = "Done on" }
 columns.done_by = { label = "Who did it", help = "Choose one of your People, or leave it blank." }
-columns.notes = { label = "What was done", help = "Logging this does not change the job's dates. Open the job to change Last done and Do again by." }
+columns.notes = { label = "What was done", help = "Adding an entry here does not change the job's dates. To record the latest work and choose the next date, use Mark done on the job." }

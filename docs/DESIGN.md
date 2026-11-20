@@ -450,6 +450,56 @@ columns.returned_on = { type = "date", not_before = "lent_on" }
   "Returned on can't be before Lent on.", from the labels. The same day is
   fine; a blank date is not compared.
 
+**Actions that add a record** (decision 0091). An action with `adds` opens a
+small form instead of saving at once, and one save adds a linked record and
+changes this one:
+
+```toml
+[[tables.jobs.actions]]
+key = "done"
+label = "Mark done"
+title = "Mark “{record}” done"                      # optional; {record} is the record's name
+intro = "Nothing changes until you save."           # optional
+done = "Marked done on {done_on}. Work done was saved."  # may name asked fields
+undo = "Undo this completion"                       # optional: offers Undo after saving
+adds = { table = "work_done", link = "job", ask = ["done_on", "done_by", "notes"],
+         values = { }, add_button = "Add an older Work done entry (does not change the job dates)" }
+latest = { date = "done_on", into = "last_done" }   # optional: the asked date becomes this record's
+next_date = { into = "next_due", question = "When do you want to do it again?",
+              repeat = { count = "repeat_count", unit = "repeat_unit" } }  # optional; repeat optional
+help = { done_on = "The day the work was finished." }  # optional words under asked fields
+messages = { stale = "...", same_day = "... {date} ...", undo_refused = "..." }  # optional
+```
+
+- `show_when` and `set` are optional here. `ask` names fields of the added
+  table (public, typed in, not the link); `values` fixes others with the same
+  rules as `set`; every required field of the added table must be asked,
+  fixed or have a default. `latest.date` must be an asked date; `latest.into`
+  and `next_date.into` public date columns of this table; `repeat.count` a
+  whole-number column and `repeat.unit` a choice of weeks, months or years.
+  All checked when the module loads, with plain messages.
+- The `latest` date may not be after today, nor before the record's current
+  value (older work goes through the ordinary add form, which changes no
+  dates), nor a day that already has a linked record. `next_date` asks for
+  one explicit choice, none preselected: a date (not before the `latest`
+  date; a date already passed is explained and needs a second Save), the
+  date the record's repeat offers from the `latest` date (calendar months
+  and years, clamped to the month's last day; weeks of seven days), or no
+  date, which clears the reminder.
+- One save is one transaction: the linked record through the ordinary create
+  path, this record through the ordinary change path, and one `action` entry
+  in history holding the fields before and after and the new record's id.
+- The form carries the record's **revision** (its newest history entry) and
+  a one-use **operation number**. A different revision saves nothing and says
+  `messages.stale`; the same operation number sent again returns the first
+  result and saves nothing new.
+- **Undo** is offered on the notice after saving while nothing about either
+  record has changed since (both revisions are what the operation left). It
+  deletes the added record (kept in history) and puts the fields back, in one
+  transaction, with an `undo` history entry; otherwise it says
+  `messages.undo_refused` and changes nothing.
+- labels.toml may reword `label`, `done`, `title`, `intro` and `undo`.
+
 ## 6. Modules
 
 A module is a folder:
@@ -642,13 +692,15 @@ number and the core can load both for a transition period.
 - **Home care** (declarative; requires People and Household stock; shipped,
   decision 0063). Tables: home care jobs (what kind, which of the household's
   `stock.places` it is at, who usually does it, a link to `people.people`;
-  last done; do again by) and work done (a dated note of each time, and who
-  did it). Behaviour: a job is *due* on the date the household typed, never
-  one worked out for it; logging work done changes no dates, so the household
-  types the next "do again by" itself (the core has no repeat engine yet); one
-  gap asks where a job is done; smoke alarms and extinguishers stay in Home
-  layout; a **Home care** sheet prints the jobs and dates without notes. No
-  field holds alarm codes or how to get in.
+  last done; do again by; an optional repeat the household chose) and work
+  done (a dated note of each time, and who did it). Behaviour: a job is *due*
+  on the date the household chose, never one worked out for it; **Mark done**
+  (decision 0091, section 5.8) adds Work done and sets Last done and the
+  chosen Do again by in one save, offering one date from the job's repeat
+  only if the household set one, and can be undone; adding an older Work done
+  entry changes no dates; one gap asks where a job is done; smoke alarms and
+  extinguishers stay in Home layout; a **Home care** sheet prints the jobs and
+  dates without notes. No field holds alarm codes or how to get in.
 - **Vegetable garden** (declarative; requires Household stock; shipped,
   decision 0076). Tables: beds (a link to `stock.places`), crops, plantings
   (a name, bed, crop, planted on, quantity), harvests (a planting, a date, an

@@ -740,7 +740,7 @@ place = "Car"
 
 # ---- Home care ----------------------------------------------------------------
 # Smoke alarms and the extinguisher are in Home layout above. Every "do again by" is a date the family
-# chose; logging work done does not change it, so they typed the next date on the job themselves.
+# chose. Adding Work done by itself does not change it; Mark done records the work and asks for the next date.
 
 [[home_care.jobs]]
 name = "Clean the gutters"

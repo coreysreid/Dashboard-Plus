@@ -32,6 +32,19 @@ MODULE_REQUIRED = ("name", "title", "version", "description", "core_api", "kind"
 TABLE_KEYS = ("title", "description", "columns", "watch", "adjusts", "parent", "total", "record_name", "actions")
 # A one-step button on a record's page, such as "Mark returned" (decision 0075).
 ACTION_KEYS = ("key", "label", "show_when", "set", "done")
+# An action that also adds a linked record through a small form, like Home care's "Mark done" (decision 0091).
+FORM_ACTION_KEYS = ("title", "intro", "adds", "latest", "next_date", "help", "undo", "messages")
+ADDS_KEYS = ("table", "link", "ask", "values", "add_button")
+LATEST_KEYS = ("date", "into")
+NEXT_DATE_KEYS = ("into", "question", "repeat")
+REPEAT_KEYS = ("count", "unit")
+REPEAT_UNITS = ("weeks", "months", "years")
+MESSAGE_KEYS = ("stale", "same_day", "undo_refused")
+DEFAULT_MESSAGES = {
+    "stale": "This record changed while the form was open. Check it and try again. Nothing was saved.",
+    "same_day": "This is already recorded for {date}. Use the ordinary add form if you need another entry.",
+    "undo_refused": "This record has changed since then. Nothing was undone. Check it before changing it.",
+}
 ADJUST_KEYS = ("link", "quantity", "amount", "direction", "adds")
 # Optional, for batches (DESIGN.md 5.7): the record a batch belongs to, how to pick or start one,
 # and the two reasons a stocktake count records its difference with (decision 0070).
@@ -42,7 +55,7 @@ GAP_KEYS = ("missing", "none", "where", "message")
 COLUMN_KEYS = ("type", "required", "required_when", "default", "min", "max", "unit", "choices", "help", "sensitive",
                "to", "on_delete", "not_before")
 LABEL_TABLE_KEYS = ("title", "columns", "form", "list", "empty", "home", "actions")
-LABEL_ACTION_KEYS = ("label", "done")  # new words for an action's button and its notice
+LABEL_ACTION_KEYS = ("label", "done", "title", "intro", "undo")  # new words for an action's button, form, notice
 HOME_PLACES = ("main", "more")  # where a table sits on the home page: shown large, or in the line of links
 LABEL_COLUMN_KEYS = ("label", "help", "show_when", "suggest_from", "fills", "answers", "blank")
 
@@ -609,8 +622,7 @@ def _check_tables(module: str, data: dict, requires: list[str], problems: list[s
     computed = _computed_columns(tables)
     for tname, raw in raw_tables.items():
         if isinstance(raw, dict) and tname in tables and "actions" in raw:
-            tables[tname].actions = _check_actions(file, tables[tname], raw["actions"], computed.get(tname, set()),
-                                                   problems)
+            tables[tname].actions = _check_actions(file, tables[tname], raw["actions"], computed, tables, problems)
     for tname, raw in raw_tables.items():
         gaps = raw.get("watch", {}).get("gaps") if isinstance(raw, dict) and isinstance(raw.get("watch"), dict) else None
         if gaps is not None and tname in tables:
@@ -661,8 +673,11 @@ def _action_value(column: Column, value) -> str | None:
     return None if isinstance(value, str) and value.strip() else "write the words to fill in"
 
 
-def _check_actions(file: str, table: Table, raw, computed: set[str], problems: list[str]) -> list[dict]:
-    """Check `actions`: one-step buttons on a record's page that set a few fields, like "Mark returned"."""
+def _check_actions(file: str, table: Table, raw, computed_by_table: dict[str, set[str]], tables: dict[str, Table],
+                   problems: list[str]) -> list[dict]:
+    """Check `actions`: buttons on a record's page that set a few fields, like "Mark returned", or that add a
+    linked record through a small form, like "Mark done" (decisions 0075 and 0091)."""
+    computed = computed_by_table.get(table.name, set())
     where = f"In {file}, table '{table.name}', actions"
     if not isinstance(raw, list):
         problems.append(f"{where}: write each action as a [[tables.{table.name}.actions]] section.")
@@ -674,11 +689,17 @@ def _check_actions(file: str, table: Table, raw, computed: set[str], problems: l
         if not isinstance(action, dict):
             problems.append(f"{a_where}: describe it with key, label, show_when, set and done.")
             continue
-        problems.extend(_unknown_keys(a_where, action, ACTION_KEYS))
-        missing = [k for k in ACTION_KEYS if k not in action]
+        problems.extend(_unknown_keys(a_where, action, ACTION_KEYS + FORM_ACTION_KEYS))
+        form = "adds" in action
+        missing = [k for k in (("key", "label", "done") if form else ACTION_KEYS) if k not in action]
         if missing:
             problems.append(f"{a_where}: {', '.join(repr(k) for k in missing)} "
                             f"{'is' if len(missing) == 1 else 'are'} missing.")
+            continue
+        extra = [k for k in FORM_ACTION_KEYS if k in action and k != "adds"]
+        if extra and not form:
+            problems.append(f"{a_where}: {', '.join(repr(k) for k in extra)} only work in an action that adds a "
+                            f"record, with adds = {{ table = ..., link = ..., ask = [...] }}.")
             continue
         key = action["key"]
         if not isinstance(key, str) or not NAME.match(key):
@@ -693,48 +714,223 @@ def _check_actions(file: str, table: Table, raw, computed: set[str], problems: l
             problems.append(f"{a_where}: 'label' (the button's words) and 'done' (what it says afterwards) must "
                             f"be short sentences, like label = \"Mark returned\".")
             continue
-        shown, values = action["show_when"], action["set"]
-        if not _check_where(f"{a_where}, show_when", shown, columns, problems):
-            continue
-        private = [c for c in shown if columns[c].sensitive]
-        if private:  # whether the button shows would give the private value away
-            problems.append(f"{a_where}, show_when: '{private[0]}' is private, so it can't decide when a button "
-                            f"shows.")
-            continue
-        if not isinstance(values, dict) or not values:
-            problems.append(f"{a_where}: 'set' lists the fields to fill in, like {{ status = \"returned\" }}.")
-            continue
-        bad = False
-        for name, value in values.items():
-            column = columns.get(name)
-            if column is None:
-                problems.append(f"{a_where}, set: there is no column '{name}'.{_suggest(name, list(columns))}")
-            elif column.sensitive:
-                problems.append(f"{a_where}, set: '{name}' is private, so an action can't change it.")
-            elif name in computed:
-                problems.append(f"{a_where}, set: '{name}' is worked out from other records, so an action can't "
-                                f"set it.")
-            elif (why := _action_value(column, value)) is not None:
-                problems.append(f"{a_where}, set: '{name}' can't be set to {value!r}: {why}.")
-            else:
+        shown, values = action.get("show_when"), action.get("set")
+        if shown is not None or not form:
+            if not _check_where(f"{a_where}, show_when", shown, columns, problems):
                 continue
-            bad = True
-        if bad:
-            continue
-        if not any(name in values and values[name] != value for name, value in shown.items()):
+            private = [c for c in shown if columns[c].sensitive]
+            if private:  # whether the button shows would give the private value away
+                problems.append(f"{a_where}, show_when: '{private[0]}' is private, so it can't decide when a "
+                                f"button shows.")
+                continue
+        shown = shown or {}
+        if values is not None or not form:
+            if not isinstance(values, dict) or not values:
+                problems.append(f"{a_where}: 'set' lists the fields to fill in, like {{ status = \"returned\" }}.")
+                continue
+            if not _check_set(a_where, values, columns, computed, problems):
+                continue
+        values = values or {}
+        if not form and not any(name in values and values[name] != value for name, value in shown.items()):
             # Pressed twice (a double click, an old page), the second press must find nothing to do.
             problems.append(f"{a_where}: 'set' must change a column named in show_when, so the button goes away "
                             f"once pressed, like show_when = {{ status = \"out\" }} with "
                             f"set = {{ status = \"returned\" }}.")
             continue
         needed = [c.name for c in columns.values() if c.required_when and c.name not in values
-                  and all(values.get(k) == v for k, v in c.required_when.items())]
+                  and all(values.get(k) == v for k, v in c.required_when.items())] if values else []
         if needed:
             problems.append(f"{a_where}: what it sets makes '{needed[0]}' required, so set that too.")
             continue
-        actions.append({"key": key, "label": action["label"].strip(), "done": action["done"].strip(),
-                        "show_when": dict(shown), "set": dict(values)})
+        checked = {"key": key, "label": action["label"].strip(), "done": action["done"].strip(),
+                   "show_when": dict(shown), "set": dict(values), "adds": None}
+        if form:  # a double press is caught by the form's one-use number instead (decision 0091)
+            more = _check_form_action(a_where, table, tables, action, values, computed_by_table, problems)
+            if more is None:
+                continue
+            checked.update(more)
+        actions.append(checked)
     return actions
+
+
+def _check_set(where: str, values: dict, columns: dict[str, Column], computed: set[str], problems: list[str],
+               part: str = "set") -> bool:
+    """Check fixed values an action fills in: real, public columns that are typed in, with fitting values."""
+    ok = True
+    for name, value in values.items():
+        column = columns.get(name)
+        if column is None:
+            problems.append(f"{where}, {part}: there is no column '{name}'.{_suggest(name, list(columns))}")
+        elif column.sensitive:
+            problems.append(f"{where}, {part}: '{name}' is private, so an action can't change it.")
+        elif name in computed:
+            problems.append(f"{where}, {part}: '{name}' is worked out from other records, so an action can't "
+                            f"set it.")
+        elif (why := _action_value(column, value)) is not None:
+            problems.append(f"{where}, {part}: '{name}' can't be set to {value!r}: {why}.")
+        else:
+            continue
+        ok = False
+    return ok
+
+
+def _words(value) -> bool:
+    return isinstance(value, str) and bool(value.strip())
+
+
+def _date_column(table: Table, name, computed: set[str]) -> str | None:
+    """Why `name` is not a public, typed-in date column of `table`, or None when it is."""
+    column = table.columns.get(name) if isinstance(name, str) else None
+    if column is None:
+        return f"there is no column {name!r}.{_suggest(str(name), list(table.columns))}"
+    if column.type != "date":
+        return f"'{name}' is not a date column"
+    if column.sensitive:
+        return f"'{name}' is private"
+    if name in computed:
+        return f"'{name}' is worked out from other records"
+    return None
+
+
+def _placeholders(text: str) -> set[str]:
+    return set(re.findall(r"{(\w*)}", text))
+
+
+def _check_form_action(where: str, table: Table, tables: dict[str, Table], action: dict, values: dict,
+                       computed_by_table: dict[str, set[str]], problems: list[str]) -> dict | None:
+    """Check an action that adds a linked record through a small form, like Home care's "Mark done"
+    (decision 0091): which record it adds and what it asks, and the optional latest date, next date and Undo."""
+    count = len(problems)
+    computed = computed_by_table.get(table.name, set())
+    adds = action["adds"]
+    example = 'adds = { table = "work_done", link = "job", ask = ["done_on", "notes"] }'
+    if not isinstance(adds, dict):
+        problems.append(f"{where}: 'adds' names the record the action adds, like {example}.")
+        return None
+    problems.extend(_unknown_keys(f"{where}, adds", adds, ADDS_KEYS))
+    other = tables.get(adds.get("table")) if isinstance(adds.get("table"), str) else None
+    if other is None or other is table:
+        problems.append(f"{where}, adds: 'table' must name another table of this module, like {example}."
+                        f"{_suggest(str(adds.get('table')), [t for t in tables if t != table.name])}")
+        return None
+    link = other.columns.get(adds.get("link")) if isinstance(adds.get("link"), str) else None
+    if link is None or link.type != "link" or link.to != table.name:
+        problems.append(f"{where}, adds: 'link' must name the column of '{other.name}' that points at "
+                        f"'{table.name}'.")
+        return None
+    other_computed = computed_by_table.get(other.name, set())
+    ask = adds.get("ask")
+    if not isinstance(ask, list) or not ask or not all(isinstance(a, str) for a in ask) or len(set(ask)) != len(ask):
+        problems.append(f"{where}, adds: 'ask' lists the fields the form asks for, each once, like "
+                        f"ask = [\"done_on\", \"notes\"].")
+        return None
+    for name in ask:
+        column = other.columns.get(name)
+        if column is None:
+            problems.append(f"{where}, adds, ask: '{other.name}' has no column '{name}'."
+                            f"{_suggest(name, list(other.columns))}")
+        elif name == link.name:
+            problems.append(f"{where}, adds, ask: '{name}' is filled in by the action itself, so it is not asked.")
+        elif column.sensitive:
+            problems.append(f"{where}, adds, ask: '{name}' is private, so this form can't ask for it.")
+        elif name in other_computed:
+            problems.append(f"{where}, adds, ask: '{name}' is worked out from other records, so it is not asked.")
+        elif column.type in ("links", "file"):
+            problems.append(f"{where}, adds, ask: '{name}' is a list of links or a file, which this form can't ask.")
+    fixed = adds.get("values", {})
+    if not isinstance(fixed, dict):
+        problems.append(f"{where}, adds: 'values' fills in fixed values, like values = {{ kind = \"check\" }}.")
+        fixed = {}
+    clash = [n for n in fixed if n in ask or n == link.name]
+    if clash:
+        problems.append(f"{where}, adds, values: '{clash[0]}' is asked or linked already, so it can't also be fixed.")
+    else:
+        _check_set(f"{where}, adds", fixed, other.columns, other_computed, problems, part="values")
+    for column in other.columns.values():
+        if column.required and column.default is None and column.name not in ask and column.name not in fixed \
+                and column.name != link.name:
+            problems.append(f"{where}, adds: '{column.name}' is required in '{other.name}', so ask for it or give "
+                            f"it a value.")
+    if "add_button" in adds and not _words(adds["add_button"]):
+        problems.append(f"{where}, adds: 'add_button' is the words for the ordinary add button, like "
+                        f"add_button = \"Add an older entry\".")
+    latest = action.get("latest")
+    if latest is not None and not isinstance(latest, dict):
+        problems.append(f"{where}: write latest like latest = {{ date = \"done_on\", into = \"last_done\" }}.")
+    elif latest is not None:
+        problems.extend(_unknown_keys(f"{where}, latest", latest, LATEST_KEYS))
+        if latest.get("date") not in ask or _date_column(other, latest.get("date"), other_computed) is not None:
+            problems.append(f"{where}, latest: 'date' must be one of the asked fields and a date, like "
+                            f"date = \"done_on\".")
+        if (why := _date_column(table, latest.get("into"), computed)) is not None:
+            problems.append(f"{where}, latest: 'into' must be a date column of '{table.name}': {why}.")
+        elif latest.get("into") in values:
+            problems.append(f"{where}, latest: '{latest['into']}' is in set as well; choose one.")
+    next_date = action.get("next_date")
+    if next_date is not None and not isinstance(next_date, dict):
+        problems.append(f"{where}: write next_date like next_date = {{ into = \"next_due\", question = "
+                        f"\"When do you want to do it again?\" }}.")
+    elif next_date is not None:
+        problems.extend(_unknown_keys(f"{where}, next_date", next_date, NEXT_DATE_KEYS))
+        if not isinstance(latest, dict):
+            problems.append(f"{where}, next_date: it needs 'latest' too, so the next date can be compared with the "
+                            f"day the work was done.")
+        if (why := _date_column(table, next_date.get("into"), computed)) is not None:
+            problems.append(f"{where}, next_date: 'into' must be a date column of '{table.name}': {why}.")
+        elif next_date.get("into") in values or \
+                (isinstance(latest, dict) and next_date.get("into") == latest.get("into")):
+            problems.append(f"{where}, next_date: '{next_date['into']}' is filled in elsewhere in this action.")
+        if not _words(next_date.get("question")):
+            problems.append(f"{where}, next_date: 'question' is the heading above the choices, like "
+                            f"question = \"When do you want to do it again?\".")
+        repeat = next_date.get("repeat")
+        if repeat is not None:
+            if isinstance(repeat, dict):
+                problems.extend(_unknown_keys(f"{where}, next_date, repeat", repeat, REPEAT_KEYS))
+            count_col = table.columns.get(repeat.get("count")) if isinstance(repeat, dict) else None
+            unit_col = table.columns.get(repeat.get("unit")) if isinstance(repeat, dict) else None
+            if count_col is None or count_col.type != "integer" or count_col.sensitive:
+                problems.append(f"{where}, next_date, repeat: 'count' must name a whole-number column of "
+                                f"'{table.name}', like count = \"repeat_count\".")
+            if unit_col is None or unit_col.type != "choice" or unit_col.sensitive or \
+                    not {c.key for c in unit_col.choices} <= set(REPEAT_UNITS):
+                problems.append(f"{where}, next_date, repeat: 'unit' must name a choice column of '{table.name}' "
+                                f"whose choices are among {', '.join(REPEAT_UNITS)}.")
+    helps = action.get("help", {})
+    if not isinstance(helps, dict) or any(n not in ask or not _words(t) for n, t in helps.items()):
+        problems.append(f"{where}: 'help' gives words under asked fields, like help = {{ done_on = \"The day the "
+                        f"work was finished.\" }}.")
+    for name in ("title", "intro", "undo"):
+        if name in action and not _words(action[name]):
+            problems.append(f"{where}: '{name}' must be a short sentence.")
+    if _words(action.get("title")) and _placeholders(action["title"]) - {"record"}:
+        problems.append(f"{where}: 'title' may name only {{record}}, like title = \"Mark {{record}} done\".")
+    unknown = _placeholders(action["done"]) - set(ask)
+    if unknown:
+        problems.append(f"{where}: 'done' may name only asked fields, like {{{ask[0]}}}, not "
+                        f"{{{sorted(unknown)[0]}}}.")
+    messages = action.get("messages", {})
+    if not isinstance(messages, dict):
+        problems.append(f"{where}: write messages like messages = {{ stale = \"...\" }}.")
+        messages = {}
+    problems.extend(_unknown_keys(f"{where}, messages", messages, MESSAGE_KEYS))
+    if any(not _words(t) for t in messages.values()):
+        problems.append(f"{where}, messages: each message must be a short sentence.")
+    elif _placeholders(messages.get("same_day", "")) - {"date"}:
+        problems.append(f"{where}, messages: 'same_day' may name only {{date}}.")
+    if len(problems) > count:
+        return None
+    return {"adds": {"table": other.name, "link": link.name, "ask": list(ask), "values": dict(fixed),
+                     "add_button": (adds.get("add_button") or "").strip() or None},
+            "latest": dict(latest) if latest else None,
+            "next_date": {"into": next_date["into"], "question": next_date["question"].strip(),
+                          "repeat": dict(next_date["repeat"]) if next_date.get("repeat") else None}
+            if next_date else None,
+            "help": {k: v.strip() for k, v in helps.items()},
+            "title": (action.get("title") or "").strip() or None,
+            "intro": (action.get("intro") or "").strip() or None,
+            "undo": (action.get("undo") or "").strip() or None,
+            "messages": {k: messages.get(k, "").strip() or DEFAULT_MESSAGES[k] for k in MESSAGE_KEYS}}
 
 
 def _check_where(where: str, filters, columns: dict[str, Column], problems: list[str]) -> bool:

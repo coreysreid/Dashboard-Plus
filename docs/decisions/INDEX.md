@@ -92,4 +92,5 @@ One record per decision, from `TEMPLATE.md`. Never deleted; reversed ones are ma
 | [0087](0087-add-a-helper-form-makes-one-key.md) | An Add a helper form makes one key even if sent twice: a one-use form token, and plain words on a repeat | Accepted |
 | [0088](0088-limits-hold-under-simultaneous-requests.md) | Helper limits are checked again inside the write lock; other API versions answer plain 404 JSON; count pages say "1 tin" | Accepted |
 | [0089](0089-household-sync-main-and-members.md) | Household sync: one main, members push requests to Review, over a private network (Tailscale or WireGuard); private details never travel in v1 | Accepted (direction; security review before shipping) |
+| [0091](0091-home-care-mark-done.md) | Home care Mark done: an action may add a linked record through a small form, saved once in one transaction with the record's revision and a one-use operation number, a deliberate next date (optional household repeat) and an Undo that refuses after any change | Accepted |
 | [TEMPLATE](TEMPLATE.md) | Blank record to copy for a new decision | recording a decision |

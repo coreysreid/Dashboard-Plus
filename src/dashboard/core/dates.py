@@ -94,3 +94,26 @@ def _stored(value) -> date | None:
 def is_stored(text: str) -> bool:
     """True for a date already in the stored form, 2027-05-20."""
     return bool(re.match(r"^\d{4}-\d{2}-\d{2}$", text.strip()))
+
+
+REPEAT_UNITS = ("weeks", "months", "years")
+
+
+def add_period(start, count: int, unit: str) -> str:
+    """The stored date `count` weeks, months or years after `start`, on the calendar (decision 0091).
+
+    Weeks are seven days each. Months and years keep the day of the month, or use the month's last day
+    when it has no such day: 31 January plus one month is 28 February (29 in a leap year), and 29 February
+    plus one year is 28 February. Only dates are involved, so no time of day or time zone can move it."""
+    when = start if isinstance(start, date) else date.fromisoformat(str(start)[:10])
+    if unit == "weeks":
+        return date.fromordinal(when.toordinal() + 7 * count).isoformat()
+    months = count * (12 if unit == "years" else 1) if unit in ("months", "years") else None
+    if months is None:
+        raise ValueError(f"'{unit}' is not weeks, months or years.")
+    index = when.year * 12 + (when.month - 1) + months
+    year, month = divmod(index, 12)
+    month += 1
+    following = date(year + (month == 12), month % 12 + 1, 1)
+    last = date.fromordinal(following.toordinal() - 1).day
+    return date(year, month, min(when.day, last)).isoformat()

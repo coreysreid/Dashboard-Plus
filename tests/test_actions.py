@@ -1,4 +1,4 @@
-"""Tests for one-step actions (buttons like Mark returned) and the date order rule `not_before` (decision 0075)."""
+"""Tests for actions: one-step buttons like Mark returned, the date order rule `not_before` (decision 0075), and the checks on actions that add a record (decision 0091)."""
 from datetime import date
 
 from support import DEMO_MODULE, TempDirTestCase
@@ -183,6 +183,118 @@ class ActionSavingTests(TempDirTestCase):
             self.records.update("demo__lots", self.lot, {"opened": "2026-01-03"})  # moving the first date past it
         self.records.update("demo__lots", self.lot, {"opened": None})  # either date blank: nothing to compare
         self.records.update("demo__lots", self.lot, {"opened": "2025-12-31"})
+
+
+FORM_TABLES = '''[tables.jobs]
+title = "Jobs"
+columns.name = { type = "text", required = true }
+columns.last_done = { type = "date" }
+columns.next_due = { type = "date" }
+columns.every = { type = "integer", min = 1, max = 99 }
+columns.unit = { type = "choice", choices = ["weeks", "months", "years"] }
+columns.secret = { type = "text", sensitive = true }
+
+[tables.work]
+title = "Work"
+columns.job = { type = "link", to = "jobs", required = true }
+columns.done_on = { type = "date", required = true, default = "today" }
+columns.note = { type = "longtext" }
+columns.code = { type = "text", sensitive = true }
+columns.kind = { type = "choice", choices = ["check", "repair"] }
+
+[[tables.jobs.actions]]
+key = "done"
+label = "Mark done"
+title = "Mark {record} done"
+done = "Marked done on {done_on}."
+undo = "Undo it"
+adds = { table = "work", link = "job", ask = ["done_on", "note"], values = { kind = "check" } }
+latest = { date = "done_on", into = "last_done" }
+next_date = { into = "next_due", question = "When next?", repeat = { count = "every", unit = "unit" } }
+help = { done_on = "The day." }
+'''
+
+
+class FormActionLoadingTests(TempDirTestCase):
+    """An action that adds a record through a small form (decision 0091) is checked when the module loads."""
+
+    def problems(self, old: str, new: str, labels=None) -> str:
+        self.assertIn(old, FORM_TABLES)
+        folder = self.make_module(tables=FORM_TABLES.replace(old, new), labels=labels)
+        with self.assertRaises(modules.ModuleError) as caught:
+            modules.load_module(folder)
+        return " | ".join(caught.exception.problems)
+
+    def test_a_valid_form_action_loads_with_default_messages(self):
+        module = modules.load_module(self.make_module(tables=FORM_TABLES, labels=None))
+        action = module.tables["jobs"].actions[0]
+        self.assertEqual(action["adds"], {"table": "work", "link": "job", "ask": ["done_on", "note"],
+                                          "values": {"kind": "check"}, "add_button": None})
+        self.assertEqual(action["next_date"]["repeat"], {"count": "every", "unit": "unit"})
+        self.assertEqual((action["show_when"], action["set"]), ({}, {}))  # neither is needed
+        self.assertIn("Nothing was saved", action["messages"]["stale"])
+
+    def test_the_added_table_and_its_link_must_be_real(self):
+        text = self.problems('table = "work"', 'table = "wrok"')
+        self.assertIn("'table' must name another table of this module", text)
+        self.assertIn("Did you mean 'work'", text)
+        self.assertIn("'link' must name the column of 'work' that points at 'jobs'",
+                      self.problems('link = "job"', 'link = "note"'))
+
+    def test_what_it_asks_must_be_public_typed_in_fields(self):
+        self.assertIn("'code' is private, so this form can't ask for it",
+                      self.problems('ask = ["done_on", "note"]', 'ask = ["done_on", "note", "code"]'))
+        self.assertIn("'job' is filled in by the action itself",
+                      self.problems('ask = ["done_on", "note"]', 'ask = ["done_on", "job"]'))
+        self.assertIn("'work' has no column 'nots'. Did you mean 'note'",
+                      self.problems('ask = ["done_on", "note"]', 'ask = ["done_on", "nots"]'))
+        self.assertIn("'kind' can't be set to 'fix'",
+                      self.problems('values = { kind = "check" }', 'values = { kind = "fix" }'))
+        self.assertIn("'note' is asked or linked already",
+                      self.problems('values = { kind = "check" }', 'values = { note = "x" }'))
+
+    def test_a_required_field_left_unasked_is_named(self):
+        old = 'columns.kind = { type = "choice", choices = ["check", "repair"] }'
+        text = self.problems(old, old + '\ncolumns.cost = { type = "money", required = true }')
+        self.assertIn("'cost' is required in 'work', so ask for it or give it a value", text)
+
+    def test_latest_next_date_and_repeat_name_the_right_kinds_of_column(self):
+        self.assertIn("latest: 'date' must be one of the asked fields and a date",
+                      self.problems('latest = { date = "done_on"', 'latest = { date = "note"'))
+        self.assertIn("latest: 'into' must be a date column of 'jobs'",
+                      self.problems('into = "last_done" }', 'into = "name" }'))
+        self.assertIn("'secret' is not a date column", self.problems('into = "last_done" }', 'into = "secret" }'))
+        self.assertIn("next_date: it needs 'latest' too",
+                      self.problems('latest = { date = "done_on", into = "last_done" }\n', ''))
+        self.assertIn("next_date: 'next_due' is filled in elsewhere",
+                      self.problems('into = "last_done" }', 'into = "next_due" }'))
+        self.assertIn("repeat: 'count' must name a whole-number column",
+                      self.problems('count = "every"', 'count = "unit"'))
+        self.assertIn("whose choices are among weeks, months, years",
+                      self.problems('choices = ["weeks", "months", "years"]', 'choices = ["weeks", "fortnights"]'))
+        self.assertIn("'question' is the heading", self.problems('question = "When next?"', 'question = ""'))
+
+    def test_words_name_only_what_they_can_and_unknown_settings_are_reported(self):
+        self.assertIn("'done' may name only asked fields, like {done_on}, not {due}",
+                      self.problems('done = "Marked done on {done_on}."', 'done = "Due {due}."'))
+        self.assertIn("'title' may name only {record}",
+                      self.problems('title = "Mark {record} done"', 'title = "Mark {name}"'))
+        self.assertIn("'help' gives words under asked fields", self.problems('help = { done_on', 'help = { name'))
+        self.assertIn("adds: unknown setting 'tabel'", self.problems('adds = { table', 'adds = { tabel = "x", table'))
+        self.assertIn("messages: unknown setting 'stal'",
+                      self.problems('undo = "Undo it"', 'undo = "Undo it"\nmessages = { stal = "x" }'))
+        self.assertIn("'same_day' may name only {date}",
+                      self.problems('undo = "Undo it"', 'undo = "Undo it"\nmessages = { same_day = "On {day}" }'))
+
+    def test_form_settings_need_adds(self):
+        text = self.problems('adds = { table = "work", link = "job", ask = ["done_on", "note"], values = { kind = "check" } }\n',
+                             'show_when = { name = "x" }\nset = { name = "y" }\n')
+        self.assertIn("only work in an action that adds a record", text)
+
+    def test_labels_may_reword_its_title_intro_and_undo(self):
+        labels = '[tables.jobs]\nactions.done = { title = "Finished {record}", undo = "Take it back" }\n'
+        module = modules.load_module(self.make_module(tables=FORM_TABLES, labels=labels))
+        self.assertEqual(module.labels["tables"]["jobs"]["actions"]["done"]["undo"], "Take it back")
 
 
 if __name__ == "__main__":  # pragma: no cover
