@@ -8,13 +8,16 @@ from dataclasses import dataclass, field
 from urllib.parse import urlsplit
 
 from dashboard import __version__
-from dashboard.core import hello
+from dashboard.core import hello, helper_address
 
 TIMEOUT = 15  # seconds
 MAX_ANSWER = 4 * 1024 * 1024  # bytes; a full page of records is far smaller
 MAX_HELLO_ANSWER = 1024  # bytes; Dashboard's answer to the check is about 120
-WHERE_ADDRESS = ("The address changes each time Dashboard opens: copy the current one from "
-                 "Settings, Helpers and update the assistant's settings.")
+WHERE_ADDRESS = ("This assistant uses the copied address. Dashboard Plus chooses a new one each time it opens; "
+                 "copy the current address again from Settings → Helpers.")  # manual address mode (0092)
+NOT_REACHED = "Dashboard Plus could not be reached. Is it open on this computer? " + WHERE_ADDRESS
+NOT_ANSWERING = ("Dashboard Plus is not answering at the address in its connection file. Open it again and try "
+                 "once more. The key was not sent.")
 NOT_DASHBOARD = ("This address is not Dashboard Plus, or it is an old address. Open Dashboard Plus and copy the "
                  "address again from Settings → Helpers. If the address is right, this helper's key may have been "
                  "turned off: make a new one there. The key was not sent.")
@@ -39,8 +42,21 @@ def _headers(**extra) -> dict:
     return {"Accept": "application/json", "User-Agent": f"dashboard-plus-connector/{__version__}", **extra}
 
 
+def call_via_file(address_file: str, key: str, method: str, path: str, body: dict | None = None,
+                  timeout: float = TIMEOUT) -> Answer:
+    """Read Dashboard's address file now, then `call` the address it gives (decision 0092). Never raises.
+
+    The file is read again for every call, because the assistant's app may keep this connector running while
+    Dashboard closes and opens on a new port. Nothing about a previous call is remembered: no address and no
+    passed check. A missing or wrong file stops here, before anything is contacted."""
+    base, code, problem = helper_address.read(address_file)
+    if problem:
+        return _plain(0, problem, code)
+    return call(base, key, method, path, body, timeout, not_reached=NOT_ANSWERING)
+
+
 def call(base: str, key: str, method: str, path: str, body: dict | None = None,
-         timeout: float = TIMEOUT) -> Answer:
+         timeout: float = TIMEOUT, not_reached: str = NOT_REACHED) -> Answer:
     """Send one request to `base` + `path` and return the answer. Never raises for network or API problems.
 
     First, on a new connection and without the key, ask the program at that address to prove it is the
@@ -65,12 +81,10 @@ def call(base: str, key: str, method: str, path: str, body: dict | None = None,
             return _plain(0, "Dashboard Plus did not answer in time. If this was a suggestion, try again with the "
                              "same request_key: it cannot be added twice.", "timed_out")
         except (http.client.HTTPException, OSError, ValueError):
-            return _plain(0, "Dashboard Plus could not be reached. Is it open on this computer? " + WHERE_ADDRESS,
-                          "not_reachable")
+            return _plain(0, not_reached, "not_reachable")
         finally:
             connection.close()
-    return _plain(0, "Dashboard Plus could not be reached. Is it open on this computer? " + WHERE_ADDRESS,
-                  "not_reachable")
+    return _plain(0, not_reached, "not_reachable")
 
 
 def _check(connection: http.client.HTTPConnection, key: str, host: str, prefix: str) -> Answer | None:

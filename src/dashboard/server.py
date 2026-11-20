@@ -14,7 +14,7 @@ from pathlib import Path
 
 from waitress import create_server
 
-from dashboard.core import backups, db, startup
+from dashboard.core import backups, db, helper_address, startup
 from dashboard.web.app import create_app
 
 HOST = "127.0.0.1"
@@ -148,6 +148,13 @@ def _serve(data_dir: Path, open_browser: bool, ready: threading.Event | None,
     with os.fdopen(descriptor, "w", encoding="utf-8") as handle:
         handle.write(json.dumps({"port": port, "token": token, "pid": state.pid, "session": session}))
     db.keep_private(path.parent, path)
+    # A separate file for connectors with only the address and a run ID (decision 0092), never the tokens above.
+    try:
+        run_id = helper_address.write(data_dir, port)
+    except OSError:
+        run_id = None
+        log.warning("The helpers' address file could not be written")
+    app.config["HELPER_ADDRESS_RUN"] = run_id
     log.info("Dashboard started on %s", state.url)
 
     print("Dashboard Plus is running.")
@@ -173,6 +180,8 @@ def _serve(data_dir: Path, open_browser: bool, ready: threading.Event | None,
             path.unlink()
         except OSError:
             pass
+        if run_id:
+            helper_address.remove(data_dir, run_id)
         log.info("Dashboard stopped")
     stopping.set()
     try:

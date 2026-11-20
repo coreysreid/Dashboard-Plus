@@ -1,4 +1,4 @@
-"""Helpers the household has given a key to: making a key, checking it, and turning it off."""
+"""Helpers the household has given a key to: making a key, checking it, replacing it, and turning it off."""
 from __future__ import annotations
 
 import hmac
@@ -6,6 +6,7 @@ import json
 import os
 import re
 import secrets
+import sqlite3
 import threading
 from dataclasses import dataclass
 from datetime import datetime, timedelta, timezone
@@ -35,6 +36,9 @@ class Helper:
     created_at: str
     last_used_at: str | None
     revoked_at: str | None
+    rotated_at: str | None = None      # when its key was last replaced (decision 0093)
+    key_pending_at: str | None = None  # a key change started and not finished: no key of this helper works
+    key_generation: int = 0            # goes up with each new key; a write checked with an older one is refused
 
     @property
     def actor(self) -> str:
@@ -49,6 +53,10 @@ class Helper:
     def active(self) -> bool:
         return self.revoked_at is None
 
+    @property
+    def key_unfinished(self) -> bool:
+        return self.key_pending_at is not None
+
 
 def _now() -> str:
     return datetime.now(timezone.utc).isoformat(timespec="seconds")
@@ -56,7 +64,8 @@ def _now() -> str:
 
 def _from_row(row) -> Helper:
     return Helper(row["id"], row["key_id"], row["slug"], row["name"], row["access"],
-                  list(json.loads(row["modules"])), row["created_at"], row["last_used_at"], row["revoked_at"])
+                  list(json.loads(row["modules"])), row["created_at"], row["last_used_at"], row["revoked_at"],
+                  row["rotated_at"], row["key_pending_at"], int(row["key_generation"]))
 
 
 def fingerprint(key: str) -> str:
@@ -124,7 +133,7 @@ def issue(conn, data_dir: Path, name: str, access: str, modules: list[str]) -> t
     modules = sorted(set(modules))
     if not modules:
         raise PlainError("Choose at least one part of your records.")
-    key = KEY_PREFIX + secrets.token_urlsafe(32)
+    key = _new_key()
     key_id = secrets.token_hex(8)
     now = _now()
     with _lock:
@@ -141,6 +150,10 @@ def issue(conn, data_dir: Path, name: str, access: str, modules: list[str]) -> t
         keys[fingerprint(key)] = key_id
         _write_keys(data_dir, keys)
     return get(conn, helper_id), key
+
+
+def _new_key() -> str:
+    return KEY_PREFIX + secrets.token_urlsafe(32)
 
 
 def get(conn, helper_id: int) -> Helper | None:
@@ -169,9 +182,19 @@ def verify(conn, data_dir: Path, header: str | None) -> Helper | None:
     if found is None:
         return None
     row = conn.execute("SELECT * FROM core__helpers WHERE key_id = ?", (found,)).fetchone()
-    if row is None or row["revoked_at"] is not None:
-        return None
+    if row is None or row["revoked_at"] is not None or row["key_pending_at"] is not None:
+        return None  # turned off, or in the middle of a key change: no key of it works (0093)
     return _from_row(row)
+
+
+def still_current(conn, helper: Helper) -> bool:
+    """Inside a write transaction: True only if `helper`, as it was when its key was checked, may still write.
+
+    A request checked with a key that was then turned off or replaced is refused at the write (decision 0093)."""
+    row = conn.execute("SELECT revoked_at, key_pending_at, key_generation FROM core__helpers WHERE id = ?",
+                       (helper.id,)).fetchone()
+    return (row is not None and row["revoked_at"] is None and row["key_pending_at"] is None
+            and int(row["key_generation"]) == helper.key_generation)
 
 
 def turn_off(conn, data_dir: Path, helper_id: int) -> Helper:
@@ -190,6 +213,82 @@ def turn_off(conn, data_dir: Path, helper_id: int) -> Helper:
             conn.execute("INSERT INTO core__audit (at, actor, action, table_name, record_id, before, after) "
                          "VALUES (?, 'person', 'helper_off', 'core__helpers', ?, NULL, NULL)", (now, helper_id))
     return get(conn, helper_id)
+
+
+class HelperOff(PlainError):
+    """A new key was asked for a helper whose access is off: nothing is made."""
+
+
+class KeyNotChanged(PlainError):
+    """The key file could not be written, or the last step failed: the helper is paused and no key is shown."""
+
+
+HELPER_OFF = "This helper's access is off. No key was made."
+NOT_CHANGED = ("The key could not be changed. This helper's access is paused so the old key cannot be used. "
+               "Check the data folder, then make a new key from Helpers.")
+
+
+def rotate(conn, data_dir: Path, helper_id: int) -> tuple[Helper, str]:
+    """Give a helper a new key and stop its old one, keeping its id, name, grant, suggestions and history.
+
+    The database and the key file cannot change in one step, so (decision 0093):
+    1. the helper is marked as changing its key, and its key count goes up: from now no key of it works, and
+       a suggestion checked with the old key is refused when it reaches the write;
+    2. the key file is replaced whole, holding the new fingerprint instead of every old one for this helper;
+    3. the mark is cleared and the change noted in the history, without any key or fingerprint.
+    Only then is the new key returned, to be shown once. If any step fails, the helper stays paused, no key is
+    returned, and the old key never works again."""
+    with _lock:
+        helper = get(conn, helper_id)
+        if helper is None:
+            raise PlainError("That helper could not be found.")
+        if not helper.active:
+            raise HelperOff(HELPER_OFF)
+        key = _new_key()
+        with db.transaction(conn):
+            changed = conn.execute(
+                "UPDATE core__helpers SET key_pending_at = ?, key_generation = key_generation + 1 "
+                "WHERE id = ? AND revoked_at IS NULL", (_now(), helper_id)).rowcount
+        if not changed:
+            raise HelperOff(HELPER_OFF)
+        try:
+            _swap_fingerprint(data_dir, helper.key_id, fingerprint(key))
+            _finish_rotation(conn, helper_id)
+        except (OSError, sqlite3.Error) as error:
+            raise KeyNotChanged(NOT_CHANGED) from error
+    return get(conn, helper_id), key
+
+
+def _swap_fingerprint(data_dir: Path, key_id: str, new_fingerprint: str) -> None:
+    """One whole-file replacement: every fingerprint of this helper out, the new one in. Never both at once."""
+    keys = {k: v for k, v in _read_keys(data_dir).items() if v != key_id}
+    keys[new_fingerprint] = key_id
+    _write_keys(data_dir, keys)
+
+
+def _finish_rotation(conn, helper_id: int) -> None:
+    now = _now()
+    with db.transaction(conn):
+        conn.execute("UPDATE core__helpers SET key_pending_at = NULL, rotated_at = ? WHERE id = ?", (now, helper_id))
+        conn.execute("INSERT INTO core__audit (at, actor, action, table_name, record_id, before, after) "
+                     "VALUES (?, 'person', 'helper_rotate', 'core__helpers', ?, NULL, NULL)", (now, helper_id))
+
+
+def stop_unfinished_key_changes(conn, data_dir: Path) -> list[int]:
+    """At start-up: a key change that did not finish (the program stopped half way) leaves no working key.
+
+    Every fingerprint of such a helper is removed and the helper stays marked, so its card says the change
+    did not finish and offers a new key. The old key is never brought back. Returns the helpers stopped."""
+    unfinished = conn.execute("SELECT id, key_id FROM core__helpers WHERE key_pending_at IS NOT NULL "
+                              "AND revoked_at IS NULL").fetchall()
+    if not unfinished:
+        return []
+    with _lock:
+        stale = {r["key_id"] for r in unfinished}
+        keys = _read_keys(data_dir)
+        if any(v in stale for v in keys.values()):
+            _write_keys(data_dir, {k: v for k, v in keys.items() if v not in stale})
+    return [r["id"] for r in unfinished]
 
 
 def touch(conn, helper: Helper) -> None:

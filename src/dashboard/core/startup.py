@@ -6,7 +6,7 @@ from dataclasses import dataclass, field
 from datetime import datetime, timezone
 from pathlib import Path
 
-from dashboard.core import db, migrations, modules
+from dashboard.core import db, helpers, migrations, modules
 
 log = logging.getLogger("dashboard.startup")
 DATABASE_FILE = "dashboard.db"
@@ -95,6 +95,7 @@ def prepare(data_dir: Path, modules_dir: Path | None = None) -> StartupReport:
                     f"Run tools/make_migration.py for it.")
         found = modules.dependency_order([m for m in found if m.name not in failures], failures)
         record_modules(conn, found)
+        stopped = helpers.stop_unfinished_key_changes(conn, data_dir)  # decision 0093
         version = conn.execute("PRAGMA user_version").fetchone()[0]
     finally:
         conn.close()
@@ -102,5 +103,7 @@ def prepare(data_dir: Path, modules_dir: Path | None = None) -> StartupReport:
         log.warning("Module %s was left out: %s", name, " ".join(problems))
     for item in applied:
         log.info("Applied database change %s", item.label)
+    if stopped:
+        log.warning("A helper key change did not finish; %d helper(s) need a new key", len(stopped))
     return StartupReport(database=path, version=version, applied=[m.label for m in applied],
                          modules=[m.name for m in found], module_problems=failures, loaded=found)

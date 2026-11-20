@@ -209,6 +209,10 @@ def submit(conn: sqlite3.Connection, registry: dict, helper: helpers.Helper, bod
     now = _now()
     try:
         with db.transaction(conn):
+            # A key turned off or replaced after this request was checked cannot still write (0093).
+            if not helpers.still_current(conn, helper):
+                raise ProposalError(401, "no_key", "This helper's access key is missing or no longer works. "
+                                                   "Ask the household to check Helpers in Settings.")
             # Checked again inside the write lock, so two requests at the same moment cannot both pass (0088).
             _check_limits(conn, helper, len(entries), queue_limit)
             batch_id = conn.execute(
