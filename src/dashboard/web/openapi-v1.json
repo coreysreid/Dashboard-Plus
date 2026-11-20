@@ -744,7 +744,7 @@
           "Suggesting"
         ],
         "summary": "Suggest new records (all or nothing)",
-        "description": "Suggestions only ever ADD records, and only wait on Review until a person accepts or rejects each one. Up to 50 entries and 65,536 bytes per request, 200 suggested rows per helper per UTC day, and at most `limits.review_queue_limit` of the helper's suggestions waiting on Review at once. Send the same `request_key` and body again to retry safely: you get the first answer (200) and nothing is added twice. A request that would take the helper over its Review limit is refused whole with `review_queue_full`.",
+        "description": "Suggestions only ever ADD records, and only wait on Review until a person accepts or rejects each one. Up to 50 entries and 65,536 bytes per request, 200 suggested rows per helper per UTC day, and at most `limits.review_queue_limit` of the helper's suggestions waiting on Review at once. Send the same `request_key` and body again to retry safely: you get the first answer (200) and nothing is added twice. A request that would take the helper over its Review limit is refused whole with `review_queue_full`. An entry may point at an earlier entry of the same request with `{\"ref\": N}` in a `link` field, so a new record and one that needs it arrive together; a ref to a later entry, to itself, or to an entry for a different table than the link points at is refused (422 `invalid`, naming the entry and field). An entry may also carry `source`, the line it was read from, shown on Review only (decision 0097).",
         "requestBody": {
           "required": true,
           "content": {
@@ -752,19 +752,72 @@
               "schema": {
                 "$ref": "#/components/schemas/ProposalRequest"
               },
-              "example": {
-                "request_key": "weigh-2026-11-17",
-                "why": "Read from the weigh-in card on the fridge",
-                "entries": [
-                  {
-                    "table": "pets__weigh_ins",
-                    "values": {
-                      "pet": 3,
-                      "day": "2026-11-17",
-                      "weight": 4.3
-                    }
+              "examples": {
+                "weigh_in": {
+                  "summary": "One new record",
+                  "value": {
+                    "request_key": "weigh-2026-11-17",
+                    "why": "Read from the weigh-in card on the fridge",
+                    "entries": [
+                      {
+                        "table": "pets__weigh_ins",
+                        "values": {
+                          "pet": 3,
+                          "day": "2026-11-17",
+                          "weight": 4.3
+                        }
+                      }
+                    ]
                   }
-                ]
+                },
+                "receipt": {
+                  "summary": "A new Stock item and its first Stock in, with the receipt lines",
+                  "value": {
+                    "request_key": "example-market-2026-11-20-1",
+                    "why": "Invented Example Market receipt, 20/11/26. Check the paper before accepting.",
+                    "entries": [
+                      {
+                        "table": "stock__items",
+                        "values": {
+                          "name": "Red lentils",
+                          "category": "pantry",
+                          "unit": "bags"
+                        },
+                        "source": {
+                          "line": "RED LENTILS 500G"
+                        }
+                      },
+                      {
+                        "table": "stock__movements",
+                        "values": {
+                          "item": {
+                            "ref": 0
+                          },
+                          "reason": "bought",
+                          "amount": 2,
+                          "happened_on": "2026-11-20"
+                        },
+                        "source": {
+                          "line": "RED LENTILS 500G x2",
+                          "price": "3.80"
+                        }
+                      },
+                      {
+                        "table": "stock__movements",
+                        "values": {
+                          "item": 6,
+                          "reason": "bought",
+                          "amount": 2,
+                          "happened_on": "2026-11-20"
+                        },
+                        "source": {
+                          "line": "KIDNEY BEANS 400G x2",
+                          "price": "2.40"
+                        }
+                      }
+                    ]
+                  }
+                }
               }
             }
           }
@@ -777,19 +830,54 @@
                 "schema": {
                   "$ref": "#/components/schemas/Batch"
                 },
-                "example": {
-                  "batch_id": 12,
-                  "state": "waiting",
-                  "why": "Read from the weigh-in card on the fridge",
-                  "proposals": [
-                    {
-                      "id": 31,
-                      "position": 0,
-                      "table": "pets__weigh_ins",
-                      "status": "pending"
+                "examples": {
+                  "weigh_in": {
+                    "value": {
+                      "batch_id": 12,
+                      "state": "waiting",
+                      "why": "Read from the weigh-in card on the fridge",
+                      "proposals": [
+                        {
+                          "id": 31,
+                          "position": 0,
+                          "table": "pets__weigh_ins",
+                          "status": "pending"
+                        }
+                      ],
+                      "message": "1 suggestion is waiting for the household to review. Nothing changes until they accept it."
                     }
-                  ],
-                  "message": "1 suggestion is waiting for the household to review. Nothing changes until they accept it."
+                  },
+                  "receipt": {
+                    "value": {
+                      "batch_id": 13,
+                      "state": "waiting",
+                      "why": "Invented Example Market receipt, 20/11/26. Check the paper before accepting.",
+                      "proposals": [
+                        {
+                          "id": 40,
+                          "position": 0,
+                          "table": "stock__items",
+                          "status": "pending"
+                        },
+                        {
+                          "id": 41,
+                          "position": 1,
+                          "table": "stock__movements",
+                          "status": "pending",
+                          "depends_on": [
+                            0
+                          ]
+                        },
+                        {
+                          "id": 42,
+                          "position": 2,
+                          "table": "stock__movements",
+                          "status": "pending"
+                        }
+                      ],
+                      "message": "3 suggestions are waiting for the household to review. Nothing changes until they accept them."
+                    }
+                  }
                 }
               }
             }
@@ -1873,9 +1961,20 @@
           "number",
           "boolean",
           "null",
-          "array"
+          "array",
+          "object"
         ],
-        "description": "Text, a number, true/false, null, or a list of record ids for a `links` column. Dates are ISO (2026-11-17). Money is whole units, like 12.50. Choices are their key."
+        "description": "Text, a number, true/false, null, or a list of record ids for a `links` column. Dates are ISO (2026-11-17). Money is whole units, like 12.50. Choices are their key. For a `link` column only, `{\"ref\": N}` points at the record that entry N (an earlier entry in the same request, counted from 0) would add, and it must add to the table the link points at: a new Stock item and its first Stock in can be sent together (decision 0097).",
+        "properties": {
+          "ref": {
+            "type": "integer",
+            "minimum": 0,
+            "description": "The position of an earlier entry in this request."
+          }
+        },
+        "required": [
+          "ref"
+        ]
       },
       "Record": {
         "type": "object",
@@ -2123,12 +2222,16 @@
               "$ref": "#/components/schemas/Value"
             },
             "description": "Column name to value, as GET /tables describes. Never private, worked-out or system fields."
+          },
+          "source": {
+            "$ref": "#/components/schemas/Source"
           }
         },
         "required": [
           "table",
           "values"
-        ]
+        ],
+        "additionalProperties": false
       },
       "ProposalRequest": {
         "type": "object",
@@ -2181,6 +2284,13 @@
               "accepted",
               "rejected"
             ]
+          },
+          "depends_on": {
+            "type": "array",
+            "items": {
+              "type": "integer"
+            },
+            "description": "Present only when this suggestion points at earlier ones with `{\"ref\": N}`: their positions. On Review they are shown as one group; accepting this one adds those first, in the same step, and rejecting one of those rejects this one too."
           }
         },
         "required": [
@@ -2227,6 +2337,13 @@
               "string",
               "null"
             ]
+          },
+          "depends_on": {
+            "type": "array",
+            "items": {
+              "type": "integer"
+            },
+            "description": "Present only when this suggestion points at earlier ones with `{\"ref\": N}`: their positions. On Review they are shown as one group; accepting this one adds those first, in the same step, and rejecting one of those rejects this one too."
           }
         },
         "required": [
@@ -2422,6 +2539,24 @@
           "hello",
           "proof"
         ]
+      },
+      "Source": {
+        "type": "object",
+        "description": "Optional: the line this entry was read from, such as a receipt line, and that line's price, as the helper read them. At least one of the two. Screened like all helper text (no key-shaped text, no hidden characters). Kept with the suggestion and shown on Review as the helper's words (\"From the receipt or paper, as Pantry helper read it\"); never saved in the household's records. To record something, use a real field in `values`.",
+        "properties": {
+          "line": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 200
+          },
+          "price": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 20,
+            "description": "As printed, like \"3.80\". Shown for checking only."
+          }
+        },
+        "additionalProperties": false
       }
     }
   }

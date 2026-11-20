@@ -315,3 +315,21 @@ class ReplyShapeTests(ApiTestCase):
         self.assertEqual(self.conn.execute("SELECT COUNT(*) FROM core__proposals").fetchone()[0], 2)
         one = dict(two, request_key="third", entries=two["entries"][:1])
         self.assertEqual(self.api_post("/api/v1/proposals", one).status_code, 201)  # exactly full is allowed
+
+    def test_a_receipt_with_a_new_item_its_stock_in_and_source_lines(self):
+        """The request example for decision 0097 is accepted as written, and its reply fits the file."""
+        media = SPEC["paths"]["/api/v1/proposals"]["post"]["requestBody"]["content"]["application/json"]
+        example = json.loads(json.dumps(media["examples"]["receipt"]["value"]))
+        example["entries"][2]["values"]["item"] = self.conn.execute(
+            "SELECT id FROM stock__items WHERE name = 'Torch batteries'").fetchone()[0]
+        body = self.valid(self.api_post("/api/v1/proposals", example, key=self.stock_key), "/api/v1/proposals", 201,
+                          "post")
+        self.assertEqual([p.get("depends_on") for p in body["proposals"]], [None, [0], None])
+        detail = self.valid(self.api_get(f"/api/v1/batches/{body['batch_id']}", key=self.stock_key),
+                            "/api/v1/batches/{batch_id}")
+        self.assertEqual(detail["proposals"][1]["depends_on"], [0])
+        later = dict(example, request_key="later-ref", entries=[dict(example["entries"][1])])
+        response = self.api_post("/api/v1/proposals", later, key=self.stock_key)
+        self.assertEqual((response.status_code, response.get_json()["error"]), (422, "invalid"))
+        self.assertEqual(check(response.get_json(), SPEC["components"]["schemas"]["Error"]), [])
+        self.assertEqual(response.get_json()["problems"][0]["field"], "item")
