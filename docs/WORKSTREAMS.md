@@ -111,14 +111,14 @@ Draft modules may link to these with `requires = ["people"]` and
 |---|---|---|
 | M1: core, People, Household stock, gaps, README, release checks, examples | A | merged; three hands-on checks are with Corey |
 | Water basis on the home page, second backup status | A | merged |
-| Setup country and state drop-downs, "Save and exit" | A | in review |
-| Pets module (moved forward from M5, from Lane B's draft) | A | in review |
-| Batch 2: M1 check, wording, Pets/Medical/Wine drafts, AU/US research, SWOT | B | merged |
-| Batch 3: catalogue, Home layout, lots, Medical, readiness, country packs, Documents, Home care, Wine, examples, UX check | B | merged (#22, #24 to #33) |
-| Drinking water only; pick from a list while typing (catalogue) | A | merged (#35, #36) |
-| Nested places | A | in review |
-| Dates shown the household's way, then lots | A | next |
-| Batch 4 (below), then the Lane B roadmap (batches 5 to 8) | B | ready to start |
+| Setup country and state drop-downs, "Save and exit", Pets | A | merged (M1) |
+| Nested places, dates your way, stock lots (decisions 0052 to 0054) | A | merged |
+| Medical, Vehicles, Documents, Home care, Lent out, Garden promoted from drafts (decisions 0051 to 0076) | A | merged |
+| Agent API, helper review, MCP connector (decisions 0066 to 0069, 0074, 0083 to 0088) | A | merged |
+| Export, restore, spreadsheet import (decisions 0078 to 0080) | A | merged |
+| Household sync direction (decision 0089) | A | decided; building not started |
+| Batches 4 to 16 (acceptance checks, drafts, country packs, UX checks, connector acceptance, sync design) | B | merged |
+| Batch 17 | B | in progress; see `workbench/STATUS.md` |
 
 ## How the lanes work together: draft, polish, test
 
@@ -149,6 +149,7 @@ session can finish; Lane A keeps it stocked.
 | B | A | Module wording (`workbench/reports/2026-11-09-module-wording.md`). | adopted, lightly changed: sheet titles keep "Emergency sheet" ("fridge copy" and "with private medical details"), supplies sheet is "Emergency supplies"; the rest as suggested |
 | A | B | Helpers NOTES (`workbench/drafts/helpers/NOTES.md`): staging, keys, review. | skeleton built (decisions 0066 to 0069): suggestions wait in their own tables, new records only. Left for later: amend/undo, change-then-accept, private-details grant, Inbox. Please expand drafts from there. |
 | B | A | MCP connector design (`workbench/drafts/agent_api/MCP_CONNECTOR.md`, `MCP_ACCEPTANCE.md`, `mcp-tools.json`). | built (decision 0083): `python -m dashboard.connector` with your eight tool names, results labelled as household data, key redacted everywhere, no proxy or redirects; Settings, Helpers shows the settings to paste with `YOUR-KEY-HERE`. Differences: `http://localhost:<port>` is accepted beside `127.0.0.1`; the batches tool allows `limit` up to 100 (the API's own cap). Still open: per-app notes on where each assistant stores the key, a fixed port or connection file. Please run MCP_ACCEPTANCE.md against it. |
+| A | A and B | Housekeeping review, 20 November 2026: the status table above and `workbench/STATUS.md` had gone stale (merged batches still shown as "ready for PR", duplicate rows). Both corrected. Going forward, update the existing row instead of adding a new one, and when a request here is finished, change its State to "done" (the first row, about the two in-flight branches, is old and can be closed). Also check whether `Lane B:` commits that touched `docs/` on 18 and 19 November were intended. Whoever reads this first: answer here, then mark it done. | open |
 
 ## Brief for Lane B, batch 4
 
