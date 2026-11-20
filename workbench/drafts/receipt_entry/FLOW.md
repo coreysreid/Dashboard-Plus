@@ -1,5 +1,7 @@
 # Entering a shopping receipt
 
+**Later built-in receipt screen design.** The currently shipped helper route is in [HELPER_FLOW.md](HELPER_FLOW.md). The **Add from a receipt** page, local photo parser, per-line edit controls and receipt-wide Undo described below are not shipped; they need core work in [NOTES.md](NOTES.md).
+
 Drafted 17 November 2026 for M2. All sample lines and prices below are invented, not copied from a retailer. The matching table has **200 one-to-one candidate descriptions** selected from common pantry, fresh-food and household goods in the workbench catalogue. It is not a measured top-200 sales ranking. `region_hint` changes which spelling to offer first; it does not prohibit a match in another country.
 
 ## Start
