@@ -8,4 +8,4 @@
 | migrations/ | Generated first schema | checking promotion |
 | example.toml | Invented service and People rows for three households | loading examples |
 | ACCEPTANCE.md | Contact, meter, privacy and print checks | testing promotion |
-| NOTES.md | Core link and print needs | planning integration |
+| NOTES.md | Exact meter mappings, promotion decisions and remaining core display limit | planning integration |

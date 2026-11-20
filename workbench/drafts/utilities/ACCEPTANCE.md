@@ -1,14 +1,16 @@
-# Utilities and accounts checks
+# Utilities promotion acceptance
 
-Checked **2026-11-17**. Test with invented providers and numbers only.
+Checked **20 November 2026**. Use only the invented optional example rows or newly invented test rows. Run beside current shipped People, Home layout and Stock.
 
-1. A new household sees **“Add one household service and who to contact about a fault.”**
-2. A provider and fault contact are saved as People rows. Updating a fault phone there updates the service's opened view; no duplicate phone field is kept in Utilities.
-3. A service without a household meter, such as internet, can be saved with Meter blank. Electricity, water and gas examples name a meter also recorded in Home layout. At promotion, the name becomes an exact record link and shows its full place path.
-4. The Home layout Our home sheet lists the meter and full place path. After the core adds a meter link, moving the meter's parent place updates that path without retyping the Utility service.
-5. Account number and notes are private. They are hidden in the default list and absent from the Utility contacts and Our home sheets; helpers without sensitive permission cannot read them.
-6. A missing fault contact produces the specific Worth filling in question. A linked fault contact with no phone produces the phone question; a contact with a phone does not.
-7. The Utility contacts printout includes the actual fault phone, not just a linked contact name, once the core supports linked fields in sheets. Until then the sheet must say to use the People contact and must not present itself as a complete outage reference.
-8. Deleting a linked contact clears the service link and asks for review. After meter linking is added, deleting a meter also asks for review and never displays a stale place. Removing a place that contains a meter is refused or requires reassignment.
-9. Export and backup include private account numbers under existing household protections, but a general emergency-sheet bundle excludes them. Print never reveals them by default.
-10. No provider phone or outage instruction is preloaded for a real household. The household confirms its provider, line and meter location from its own records before using the sheet.
+1. **Start and empty state.** Enable Utilities in a fresh household with its dependencies. No migration, dependency or sheet error occurs. The empty list says “Add one household service and who to contact about a fault.”
+2. **People contacts.** Save an invented provider and fault contact as People rows, then choose them on a service. Changing the fault contact's People phone changes the opened service reference and the next Utility contacts sheet print. No duplicate phone lives in Utilities.
+3. **Optional exact meter.** Save an internet service with Meter blank. Choose an existing `home_layout.meters` row for electricity. The stored value is that meter's ID; the picker cannot accept arbitrary meter text. Smith's Home electricity resolves to Electricity meter.
+4. **Three example mappings.** Load each optional example beside shipped modules. Smith Home electricity links Electricity meter at Garage; Garcia Apartment electricity links Apartment electricity meter at Hall closet; Taylor Flat water links Flat water meter at Kitchen cupboard. One service and one exact meter link per example, with no orphan or duplicate meter name.
+5. **Move and delete places.** Move the parent of a linked meter's Place. Our home shows the new full nested path without retyping the Utility service or changing its meter ID. Deleting a Place that holds a meter is refused until the meter is reassigned. The Utility list currently shows only the meter name; see NOTES.md for the full-path display gap.
+6. **Private values.** Add an invented account number and note. The ordinary list, Utility contacts sheet, Our home sheet, helper API and general spreadsheet export omit them; the household's checked backup retains them. Default private reveal stays closed. No password or card-detail field is requested.
+7. **Worth filling in.** A service without a fault contact asks “Who would you contact about a fault with {name}? Add a People contact if you have one.” A chosen contact without a phone asks “What is the fault-line number for {name}? Add it to the People contact.” Adding a phone clears the question.
+8. **Printed phone.** Utility contacts prints service, kind, provider, fault contact, `fault_contact.phone` and meter name. Its intro asks the household to check the number with the provider. Account number, private notes and login details do not print. A4 and Letter output wraps long invented names/phones without clipping; a 320px screen has no horizontal page overflow.
+9. **Broken links.** Deleting a People provider or fault contact clears the relevant service link and returns the specific missing-contact question. Deleting a Home layout meter clears its service link; the service stays and never shows a stale place. Undo/restore does not create a duplicate service.
+10. **Module off/on.** Switch Utilities off and on. Screens and questions hide while off; the exact service, People and meter links return when enabled. Other modules' rows do not change.
+11. **No live provider advice.** Neither module nor examples preload a real number, outage instruction, payment step or meter reading. The household must confirm its own provider and number before relying on the sheet.
+12. **Migration and restore.** A new household gets one `utilities__services` table with foreign keys to People and Home layout, and no changed shipped table. A checked backup/restore followed by Undo preserves the service's exact meter link and sensitive values under existing backup rules.
