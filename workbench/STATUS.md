@@ -73,16 +73,14 @@ the "Requests" table of docs/WORKSTREAMS.md.
 | Batch 11 item 39: translation readiness | ready | PR #88 | 1,983 source locations across 13 templates, six modules and picker vocabulary. |
 | Batch 11 item 36: wording consistency | ready | PR #85 | 472 strings across six shipped modules; 13 exact replacements. |
 | Batch 9 item 31: sensitive-detail recheck | ready | PR #79 | Decision 0055 guards held; closed list HTML, instant private reveal and printable location hints remain. |
-| Batch 13 item 54: Agent API skeleton UX | ready for PR | lane-b/batch13-api-ux | Live key, curl, Review and turn-off journey passed; repeating Make a key created two active grants. |
-| Batch 14 item 55: lent out, stocktake and Garden UX | ready for PR | lane-b/batch14-item55 | Six Smith/Garcia/Taylor browser journeys passed at 320px and desktop; count review says “1 tins/litres”. |
-| Batch 14 item 56: Agent API abuse recheck | ready for PR | lane-b/batch14-item56 | All 22 cases classified; two concurrent cap races and one minor version-response gap. |
+| Batch 13 item 54: Agent API skeleton UX | merged | #125; fix 0087 | Live key, curl, Review and turn-off journey passed; repeat key submission fixed. |
+| Batch 14 item 55: lent out, stocktake and Garden UX | merged | #127; fix 0088 | Six Smith/Garcia/Taylor browser journeys passed at 320px and desktop; singular count wording fixed. |
+| Batch 14 item 56: Agent API abuse recheck | merged | #128; fix 0088 | All 22 cases classified; simultaneous limits and version reply fixed. |
+| Batch 14 item 57: Home care Mark done design | ready for PR | lane-b/batch14-item57 | Form, chosen repeat offer, atomic Work done and job dates, safe Undo, 16 checks. |
 
 ## Messages to Lane A
 
-- **Batch 14 item 55, stocktake wording:** Smith's first kidney-bean batch showed “This adds 1 tins” on Review; Garcia and Taylor showed “1 litres.” The amount and one-movement correction were right. Suggested neutral wording: “This adds 1 to this batch as a stocktake correction. It is not a purchase.” All six loan, count and Garden journeys passed with no 320px overflow. See `workbench/reports/2026-11-19-batch14-household-ux.md` and its 90-screen matrix.
-- **Batch 14 item 56, concurrent helper limits:** Two distinct requests that both read 199/day can leave 201 against the 200 cap; two that both read 499 waiting can leave 501 against the 500 cap. The count checks happen before the insert transaction. Recheck under the same write transaction; preserve idempotent retries and the existing 429 messages. All 22 cases are classified, with exact temporary-household probes, in `workbench/reports/2026-11-19-agent-api-abuse-recheck.md`.
-
-- **Batch 13 item 54, duplicate helper grants:** Resubmitting the same Make a key form returned two distinct keys and left two active “Repeat helper” grants. A one-use form submission token would stop accidental extra access while preserving the first one-time key display. The rest of the live key → curl → suggest → Review → accept/reject → off journey passed. Exact steps and wording: `workbench/reports/2026-11-19-agent-api-skeleton-ux.md`.
+- **Batch 14 item 57, Home care Mark done:** The current action contract cannot add Work done and change its job together. The proposed Mark done form asks for Done on, the actual person, an optional note and an explicit next-date choice; Save and Undo each need one transaction, revision checks and a one-use operation ID. Optional repeat offers one date only when the household chose the rule. See `workbench/drafts/home_care_mark_done/` for exact words and sixteen checks.
 
 - **Batch 13 item 53, private grant:** V1 stays private-free. A later Settings action could allow one helper one read of one sensitive field for 15 minutes, with an explicit off switch and value-free audit. Revocation cannot take back a copy already sent to an online service. See `workbench/drafts/agent_api/PRIVATE_GRANT.md`.
 
