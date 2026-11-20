@@ -1,5 +1,6 @@
 """Tests for the unsigned Mac app build, using a stand-in for the Python download (runs on any system)."""
 import io
+import os
 import plistlib
 import stat
 import sys
@@ -66,7 +67,8 @@ class BuildMacTests(unittest.TestCase):
             self.assertEqual(plist["CFBundlePackageType"], "APPL")
             self.assertEqual(plist["CFBundleShortVersionString"], build_portable.program_version())
             launcher = contents / "MacOS" / plist["CFBundleExecutable"]
-            self.assertTrue(launcher.stat().st_mode & stat.S_IXUSR)
+            if os.name == "posix":  # Windows disks have no "runnable" flag; the zip below carries it everywhere
+                self.assertTrue(launcher.stat().st_mode & stat.S_IXUSR)
             text = launcher.read_text(encoding="utf-8")
             self.assertTrue(text.startswith("#!/bin/sh\n"))
             self.assertIn('"$PYTHON" -I', text)  # nothing from outside the app is used

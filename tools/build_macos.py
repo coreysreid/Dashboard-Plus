@@ -189,8 +189,16 @@ def make_zip(folder: Path, zip_path: Path) -> None:
             else:
                 info = zipfile.ZipInfo.from_file(item, arcname, strict_timestamps=False)
                 info.compress_type = zipfile.ZIP_DEFLATED
+                if _must_be_runnable(arcname):
+                    # Windows disks keep no "runnable" flag, so it is set here for the Mac (decision 0096).
+                    info.external_attr = (stat.S_IFREG | 0o755) << 16
                 with open(item, "rb") as handle:
                     archive.writestr(info, handle.read())
+
+
+def _must_be_runnable(arcname: str) -> bool:
+    """The app's launcher and the bundled Python's programs must stay runnable after unzipping."""
+    return "/Contents/MacOS/" in arcname or "/Contents/Resources/python/bin/" in arcname
 
 
 def build(out: Path, python_archive: Path | None = None, arch: str | None = None,

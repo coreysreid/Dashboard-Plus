@@ -20,16 +20,22 @@ def app_bundle(package_file: PurePath | None = None) -> PurePath | None:
 
     A Mac app is a folder named `<name>.app` with a `Contents` folder inside; the program's code
     sits somewhere below `Contents`. Only the path is looked at, so tests can pass a made-up one."""
-    parts = PurePath(PACKAGE_FILE if package_file is None else package_file).parts
+    path = _as_path(PACKAGE_FILE if package_file is None else package_file)
+    parts = path.parts
     for i in range(len(parts) - 1):
         if parts[i].endswith(".app") and len(parts[i]) > 4 and parts[i + 1] == "Contents":
-            return PurePath(*parts[: i + 1])
+            return type(path)(*parts[: i + 1])  # the same kind of path that was given, on any system
     return None
+
+
+def _as_path(value) -> PurePath:
+    """Keep a given path's own kind (a Mac path stays a Mac path when tests run on Windows)."""
+    return value if isinstance(value, PurePath) else PurePath(value)
 
 
 def mac_application_support(home: PurePath) -> PurePath:
     """This Mac account's own folder for program data: ~/Library/Application Support/Dashboard Plus."""
-    return PurePath(home) / "Library" / "Application Support" / APP_FOLDER_NAME
+    return _as_path(home) / "Library" / "Application Support" / APP_FOLDER_NAME
 
 
 def default_data_dir(platform: str | None = None, package_file: PurePath | None = None,
