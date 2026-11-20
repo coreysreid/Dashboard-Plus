@@ -22,13 +22,20 @@
   {% endif %}
   {% if b.helper_off %}<p class="muted">This helper's access is off. Its earlier suggestions still need your decision.</p>{% endif %}
   <ul style="list-style:none;padding:0;margin:1rem 0">
-  {% for p in b.proposals %}
-    <li style="padding:.6rem 0;border-top:1px solid var(--line)">
+  {% for group in b.groups %}
+  {% set together = group | length > 1 %}
+  {% if together %}<li style="padding:.6rem 0;border-top:1px solid var(--line)"><p class="muted" style="margin:0">These {{ group | length }} rows go together: accepting a row also adds the new record it needs, and rejecting a new record also rejects the rows that need it.</p>
+    <ul style="list-style:none;padding:0 0 0 .8rem;margin:.4rem 0 0;border-left:3px solid var(--line)">{% endif %}
+  {% for p in group %}
+    <li style="padding:.6rem 0;{% if not (together and loop.first) %}border-top:1px solid var(--line){% endif %}">
       {% if p.text.off %}
       <p style="margin:0">This is for {{ p.text.module }}, which is switched off.</p>
       {% else %}
       <p style="margin:0">{% if b.kind == "import" %}Row {{ p.source_row }} would add to{% else %}{{ b.helper }} suggests adding to{% endif %} <strong>{{ p.text.table }}</strong>: <span class="helper-text">{% for label, text in p.text.parts %}{{ label }}: <bdi>{{ text }}</bdi>{% if not loop.last %} · {% endif %}{% endfor %}</span></p>
       {% endif %}
+      {% if p.source %}<p class="muted helper-text" style="margin:.3rem 0 0">From the receipt or paper, as {{ b.helper }} read it:{% if p.source.line %} <q><bdi>{{ p.source.line }}</bdi></q>{% endif %}{% if p.source.price %} · Price: <bdi>{{ p.source.price }}</bdi>{% endif %}. Shown for checking only; it is not saved in your records.</p>{% endif %}
+      {% if p.needs %}<p class="muted" style="margin:.3rem 0 0">Accepting this also adds the new record{{ "" if p.needs | length == 1 else "s" }} above that it needs.</p>{% endif %}
+      {% if p.needed_by %}<p class="muted" style="margin:.3rem 0 0">Rejecting this also rejects the {{ p.needed_by }} row{{ "" if p.needed_by == 1 else "s" }} below that need{{ "s" if p.needed_by == 1 else "" }} it.</p>{% endif %}
       {% if p.exists %}<p class="problem" role="status" style="margin:.4rem 0"><bdi>{{ p.exists }}</bdi></p>{% endif %}
       {% if p.reason %}<p class="problem" role="alert" style="margin:.4rem 0">{{ p.reason }}</p>{% endif %}
       <div class="actions" style="margin:.4rem 0 0">
@@ -38,6 +45,8 @@
         <form method="post" action="/review/{{ p.id }}/reject"><input type="hidden" name="_csrf" value="{{ csrf_token }}"><button type="submit" class="quiet">Reject</button></form>
       </div>
     </li>
+  {% endfor %}
+  {% if together %}</ul></li>{% endif %}
   {% endfor %}
   </ul>
   {% if b.proposals | length > 1 %}

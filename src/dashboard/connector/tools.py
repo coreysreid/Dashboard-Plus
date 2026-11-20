@@ -14,6 +14,11 @@ REVIEW_NOTE = ("Suggestions never change the records directly: each one waits on
 TABLE = {"type": "string", "minLength": 1, "maxLength": 100, "pattern": "^[a-z][a-z0-9_]*$",
          "description": "A table name exactly as dashboard_tables lists it, such as pets__weigh_ins."}
 NOTHING = {"type": "object", "properties": {}, "additionalProperties": False}
+SOURCE = {"type": "object", "additionalProperties": False,
+          "description": "Optional: the line this entry was read from and its price, shown on Review only and never "
+                         "saved in the records (decision 0097).",
+          "properties": {"line": {"type": "string", "minLength": 1, "maxLength": 200},
+                         "price": {"type": "string", "minLength": 1, "maxLength": 20}}}
 
 
 @dataclass(frozen=True)
@@ -75,12 +80,16 @@ TOOLS = [
          "so after calling this say that the suggestions are waiting for review, not that they are done. Give a "
          "short `why` the household will read, and a `request_key` that is new for each new suggestion and the "
          "same if you retry it, so it can never be added twice. Values use field names from dashboard_tables; "
-         "money is in whole units like 12.50.",
+         "money is in whole units like 12.50. To add a new record and one that links to it together (a new "
+         "Stock item and its first Stock in), put the new record first and set the link to {\"ref\": N}, N being "
+         "that earlier entry's position from 0; the household sees them as one group. An entry may carry a "
+         "`source`, the line it was read from and its price, like {\"line\": \"KIDNEY BEANS 400G x2\", "
+         "\"price\": \"3.80\"}: it is shown on Review for checking and never saved in the records.",
          {"type": "object", "properties": {
              "request_key": {"type": "string", "minLength": 1, "maxLength": 100, "pattern": "^[A-Za-z0-9._:-]+$"},
              "why": {"type": "string", "minLength": 1, "maxLength": 300},
              "entries": {"type": "array", "minItems": 1, "maxItems": 50, "items": {
-                 "type": "object", "properties": {"table": TABLE, "values": {"type": "object"}},
+                 "type": "object", "properties": {"table": TABLE, "values": {"type": "object"}, "source": SOURCE},
                  "required": ["table", "values"], "additionalProperties": False}}},
           "required": ["request_key", "why", "entries"], "additionalProperties": False},
          "POST", lambda a: "/proposals", send_body=True),

@@ -413,7 +413,7 @@ class Records:
         return self._create(self.info(name), values, actor, review_status, batch_id)
 
     def check_create(self, entries: list[tuple[str, dict]], actor: str,
-                     starting_amounts: bool = False) -> dict[int, dict[str, str]]:
+                     starting_amounts: bool = False, resolve=None) -> dict[int, dict[str, str]]:
         """Try creating each (table, values) in order without keeping anything; return what is wrong.
 
         A full dry run: the real create path runs for every entry (so stock that would go below zero, links
@@ -422,9 +422,13 @@ class Records:
         an empty result means every entry would be saved.
 
         Amounts worked out from batches are refused, except that `starting_amounts` lets a new record start its
-        first batch the way the add form does (a spreadsheet import, decision 0080); helpers never get this."""
+        first batch the way the add form does (a spreadsheet import, decision 0080); helpers never get this.
+
+        `resolve(values, made)` may swap a value that points at an earlier entry for that entry's new record id;
+        `made` maps each earlier position that was added to its id, and it raises ValidationError if it cannot."""
         self._check_actor(actor)
         problems: dict[int, dict[str, str]] = {}
+        made: dict[int, int] = {}
         self.conn.execute("BEGIN IMMEDIATE")
         try:
             for position, (name, values) in enumerate(entries):
@@ -440,7 +444,9 @@ class Records:
                                               for c in clash}
                         self.conn.execute("ROLLBACK TO check_entry")
                     else:
-                        self._create(info, values, actor, "confirmed", None)
+                        if resolve is not None:
+                            values = resolve(values, made)
+                        made[position] = self._create(info, values, actor, "confirmed", None)
                 except ValidationError as error:
                     problems[position] = dict(error.problems)
                     self.conn.execute("ROLLBACK TO check_entry")

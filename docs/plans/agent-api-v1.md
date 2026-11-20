@@ -85,6 +85,8 @@ Routes:
 7. GET /api/v1/batches?after=<id>&limit=20 → own batches newest first with totals {total,pending,accepted,rejected}, next_after.
 8. GET /api/v1/batches/<id> → one batch + proposals with status, record_id once accepted, reason. Another helper's → 404.
 
+Receipt lines and grouped suggestions (built 2026-11-20, decision 0097): an entry may add `"source": {"line", "price"}` (text, at most 200 and 20 characters, screened like `why`, kept in `core__proposals.source_json` by core migration 0006, shown on Review only, never written to a record). A `link` value may be `{"ref": N}`, an earlier entry of the same request adding to the linked table; anything else is 422 `invalid` with entry and field. `Records.check_create(..., resolve=)` swaps refs for the dry run's own new ids. Replies add `depends_on: [positions]` to rows with refs. `proposals.accept_counted` adds the waiting rows a row needs first, in one transaction; `reject_counted` rejects the waiting rows that need it; `accept_batch`/`reject_batch` go in position order. Review (`review.py`, `review.html`) groups rows that point at each other, names a pending link "Red lentils (new, suggested above)" and says on each row what Accept or Reject also does. Tests: `tests/test_grouped_suggestions.py`, plus a receipt request in `tests/test_api_contract.py`.
+
 9. GET /api/v1/openapi.json → the published OpenAPI 3.1 description (`src/dashboard/web/openapi-v1.json`), served as is, same key and rules as every route (decision 0084). `tests/test_api_contract.py` holds it to the real routes, error codes and reply shapes.
 
 ## 5. Screens (plain words; reuse Lane B's workbench/drafts/helpers/REVIEW_WORDS.md where possible)
@@ -124,7 +126,7 @@ Review/settings (tests/test_review_page.py): making a key returns 201 with key i
 tests/test_module_confinement.py additions per finding B.
 
 ## 8. Deliberately later (Lane B expands in workbench/drafts/helpers/)
-Update/delete suggestions (amend/undo, stale before-values, edited_by_person lock, change-then-accept); private-details grant; per-table scopes; key expiry; "last 20 things this helper did"; fixed port or connection file (connection file BUILT 2026-11-20, decision 0092); a new key for the same helper (BUILT 2026-11-20, decision 0093); forgetting request keys after 30 days; duplicate-receipt flagging; abuse-case catalogue (Lane B's ABUSE_CASES.md; cases 8, 11, 13, 16, 18, 20 and 22 answered by decision 0074); OpenAPI 3.1 description generated from the same spec; versioning policy; MCP wrapper (local stdio server mapping tools to routes; BUILT 2026-11-19 as `python -m dashboard.connector`, decision 0083, see section 10) + example prompts; more receipt→Stock-in examples; a cap on how many suggestions may wait on Review; Inbox items from helpers; Review history filters; screen-reader status messages; confirmation dialogs; resolve the unused `review_status = needs_review` in DESIGN.
+Update/delete suggestions (amend/undo, stale before-values, edited_by_person lock, change-then-accept); private-details grant; per-table scopes; key expiry; "last 20 things this helper did"; fixed port or connection file (connection file BUILT 2026-11-20, decision 0092); a new key for the same helper (BUILT 2026-11-20, decision 0093); forgetting request keys after 30 days; duplicate-receipt flagging; refs across requests and editing a suggestion on Review (receipt source lines and same-request item→Stock-in groups BUILT 2026-11-20, decision 0097); abuse-case catalogue (Lane B's ABUSE_CASES.md; cases 8, 11, 13, 16, 18, 20 and 22 answered by decision 0074); OpenAPI 3.1 description generated from the same spec; versioning policy; MCP wrapper (local stdio server mapping tools to routes; BUILT 2026-11-19 as `python -m dashboard.connector`, decision 0083, see section 10) + example prompts; more receipt→Stock-in examples; a cap on how many suggestions may wait on Review; Inbox items from helpers; Review history filters; screen-reader status messages; confirmation dialogs; resolve the unused `review_status = needs_review` in DESIGN.
 
 ## 9. Decision records
 0066 Helpers get a key from Settings: shown once, kept only as a fingerprint outside the database.
@@ -135,6 +137,7 @@ Update/delete suggestions (amend/undo, stale before-values, edited_by_person loc
 0083 The local MCP connector. 0084 The published API description. 0085 The Review queue cap.
 0086 The connector checks it is really Dashboard (the hello) before the key is ever sent.
 0092 A steady helper address: an address file the connector reads for every call. 0093 One-step "Make a new key for this helper".
+0097 Receipt lines on suggestions, and a new item with its Stock in as one group on Review.
 
 ## 10. The MCP connector (built 2026-11-19, decision 0083)
 - `src/dashboard/connector/`: stdio MCP server, no new dependency. Methods: initialize (protocol 2025-06-18, also 2025-03-26 and 2024-11-05), notifications/initialized, ping, tools/list, tools/call; others -32601; unreadable -32700; invalid or batched -32600; unknown tool -32602.
