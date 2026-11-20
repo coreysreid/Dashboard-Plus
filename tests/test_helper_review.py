@@ -149,8 +149,8 @@ class ReviewScreenTests(TempDirTestCase):
     # ----- Review ------------------------------------------------------------------------------------
     def test_an_empty_review_page(self):
         page = self.text("/review")
-        self.assertIn("Review suggestions", page)
-        self.assertIn("No suggestions to review.", page)
+        self.assertIn("<h1>Review</h1>", page)
+        self.assertIn("Nothing is waiting on Review.", page)
         self.assertNotIn("needs a look", self.text("/"))
 
     def test_a_suggestion_is_shown_in_plain_words_with_its_reason(self):
@@ -179,7 +179,7 @@ class ReviewScreenTests(TempDirTestCase):
         self.assertEqual(response.status_code, 302)
         self.assertIn("Added to Places.", self.text(response.headers["Location"]))
         self.assertIn("Garage", self.text("/t/stock__places"))
-        self.assertIn("No suggestions to review.", self.text("/review"))
+        self.assertIn("Nothing is waiting on Review.", self.text("/review"))
 
     def test_rejecting_adds_nothing(self):
         result = self.suggest([self.place("Garage")])
@@ -205,7 +205,7 @@ class ReviewScreenTests(TempDirTestCase):
         self.store.create("stock__movements", {"item": self.beans, "reason": "used", "amount": 3})  # now only 2 left
         response = self.post(f"/review/batch/{result['batch_id']}/accept-all")
         page = self.text(response.headers["Location"])
-        self.assertIn("Added 2. 1 could not be added and is still waiting", page)
+        self.assertIn("Added 2 records. 1 could not be added and is still waiting", page)
         self.assertIn("This can&#39;t be added as it is:", page)
         self.assertIn("Reject it, or add the record yourself.", page)
         self.assertIn("more than there is", page)
@@ -216,7 +216,7 @@ class ReviewScreenTests(TempDirTestCase):
     def test_reject_all_for_a_batch(self):
         result = self.suggest([self.place("Garage"), self.place("Shed")])
         response = self.post(f"/review/batch/{result['batch_id']}/reject-all")
-        self.assertIn("Rejected 2 suggestions. Nothing was added.", self.text(response.headers["Location"]))
+        self.assertIn("Rejected 2 rows. Nothing was added.", self.text(response.headers["Location"]))
         self.assertEqual(self.store.count("stock__places"), 0)
 
     def test_deciding_twice_says_so(self):
@@ -224,7 +224,7 @@ class ReviewScreenTests(TempDirTestCase):
         pid = result["proposals"][0]["id"]
         self.post(f"/review/{pid}/reject")
         response = self.post(f"/review/{pid}/accept")
-        self.assertIn("already been decided", self.text(response.headers["Location"]))
+        self.assertIn("This row was already accepted or rejected.", self.text(response.headers["Location"]))
         self.assertEqual(self.store.count("stock__places"), 0)
 
     def test_text_a_helper_sends_is_shown_as_text_never_run(self):

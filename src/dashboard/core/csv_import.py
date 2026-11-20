@@ -28,6 +28,14 @@ CURRENCY = re.compile(r"^([+-]?)\s*[$£€¥]\s*")
 QUESTION_WORDS = ("is ", "must ", "has ", "points ", "can't ", "cannot ", "matches ", "uses ", "contains ")
 
 
+class NoMatch(ValueError):
+    """A link value that names nothing: `text` is the value as typed."""
+
+    def __init__(self, message: str, text: str):
+        super().__init__(message)
+        self.text = text
+
+
 class FileProblem(PlainError):
     """The whole file cannot be used, with the plain reason (too large, not UTF-8, a broken quote)."""
 
@@ -42,9 +50,16 @@ class Sheet:
 
 @dataclass
 class DryRun:
-    """What would happen: rows ready to send (row number, values) and rows that need fixing (row number, reasons)."""
+    """What would happen: rows ready to send (row number, values) and rows that need fixing (row number, reasons).
+
+    Three things the person should see before sending (decision 0094): `same_name` maps a ready row to the existing
+    record it shares a name with, `unclear_dates` maps a ready row to how each short date will be read, and
+    `unmatched` maps a link field to the (row, text) of every value that matched nothing."""
     ready: list[tuple[int, dict]] = field(default_factory=list)
     problems: list[tuple[int, list[str]]] = field(default_factory=list)
+    same_name: dict[int, str] = field(default_factory=dict)
+    unclear_dates: dict[int, list[str]] = field(default_factory=dict)
+    unmatched: dict[str, list[tuple[int, str]]] = field(default_factory=dict)
 
 
 # ----- reading the file ---------------------------------------------------------------------------------
@@ -231,9 +246,10 @@ class LinkNames:
         found = full.get(_key(text)) or leaf.get(_key(text)) or []
         what = table_title(target).lower()
         if not found:
-            hint = " Use the full path, like Kitchen › Pantry › Shelf 3." if target.table.parent else ""
-            raise ValueError(f"has no match: there is nothing in {what} called “{text}”. Add it first, or fix the "
-                             f"name.{hint}")
+            one = what[:-1] if what.endswith("s") else what
+            advice = (f"Use the full path of a {one} saved in this household, or add the {one} first."
+                      if target.table.parent else "Add it first, or fix the name.")
+            raise NoMatch(f"has no match: there is nothing in {what} called “{text}”. {advice}", text)
         if len(found) > 1:
             shown = "; ".join(sorted({s for _i, s in found})[:5])
             raise ValueError(f"“{text}” matches more than one: {shown}. Use the full path, or give them different "
@@ -274,6 +290,39 @@ def convert(store: Records, names: LinkNames, info: TableInfo, column: Column, c
     return text
 
 
+def _name_key(text) -> str:
+    return " ".join(str(text or "").split()).casefold()
+
+
+class SameName:
+    """Finds an existing record with the same name as a new row: ignoring case and spaces at the ends and between words.
+
+    Only tables that name their own records are checked (a required text column, no record_name template). In a
+    table whose records nest (places), the same name under a different parent is a different record."""
+
+    def __init__(self, store: Records, info: TableInfo):
+        column = naming.name_column(info)
+        self.info = info
+        self.column = column if column is not None and column.required and not info.table.record_name else None
+        self.parent = info.table.parent
+        self.known: dict[tuple, str] = {}
+        if self.column is not None:
+            wanted = [self.column.name] + ([self.parent] if self.parent else [])
+            for row in store.conn.execute(f"SELECT {', '.join(wanted)} FROM {info.name} WHERE deleted_at IS NULL"):
+                key = (_name_key(row[self.column.name]), row[self.parent] if self.parent else None)
+                self.known.setdefault(key, str(row[self.column.name]).strip())
+
+    def find(self, values: dict) -> str | None:
+        """The existing record's name when `values` repeats it, else None."""
+        if self.column is None or not _name_key(values.get(self.column.name)):
+            return None
+        return self.known.get((_name_key(values[self.column.name]), values.get(self.parent) if self.parent else None))
+
+    def message(self, name: str) -> str:
+        """"Rice is already in Stock items. This row would add a second one." for Import."""
+        return f"{name} is already in {table_title(self.info)}. This row would add a second one."
+
+
 def say(info: TableInfo, column_name: str, message: str) -> str:
     """"Use by must be a date like 20/05/27." from a field and its problem."""
     column = info.table.columns.get(column_name)
@@ -290,7 +339,7 @@ def dry_run(store: Records, info: TableInfo, sheet: Sheet, mapping: list[str]) -
     Rows that pass are checked together, in order (so a Stock out after a Stock in in the same file is fine)."""
     style = dates.household_style(store.conn)
     names = LinkNames(store)
-    result, converted = DryRun(), []
+    result, converted, unclear = DryRun(), [], {}
     for number, cells in sheet.rows:
         values, problems = {}, []
         if any(cell.strip() for cell in cells[len(mapping):]):
@@ -302,22 +351,84 @@ def dry_run(store: Records, info: TableInfo, sheet: Sheet, mapping: list[str]) -
             column = info.table.columns[name]
             try:
                 values[name] = convert(store, names, info, column, cell, style)
+            except NoMatch as error:
+                result.unmatched.setdefault(name, []).append((number, error.text))
+                problems.append(say(info, name, str(error)))
             except ValueError as error:
                 problems.append(say(info, name, str(error)))
+            else:
+                reading = dates.ambiguous(cell, style) if column.type == "date" else None
+                if reading:
+                    unclear.setdefault(number, []).append(unclear_date_text(label(info, column), cell, reading, style))
         if problems:
             result.problems.append((number, problems))
         else:
             converted.append((number, values))
     wrong = store.check_create([(info.name, values) for _n, values in converted], "person", starting_amounts=True)
+    same = SameName(store, info)
     for position, (number, values) in enumerate(converted):
         if position in wrong:
             result.problems.append((number, [say(info, f, m) for f, m in wrong[position].items()]))
-        else:
-            result.ready.append((number, values))
+            continue
+        result.ready.append((number, values))
+        if number in unclear:
+            result.unclear_dates[number] = unclear[number]
+        existing = same.find(values)
+        if existing:
+            result.same_name[number] = same.message(existing)
     result.problems.sort()
     return result
 
 
-def staged(info: TableInfo, run: DryRun) -> list[tuple[int, str, dict]]:
-    """The ready rows in the shape proposals.stage_import keeps them."""
-    return [(number, info.name, values) for number, values in run.ready]
+def unclear_date_text(field_label: str, cell: str, reading: str, style: str) -> str:
+    """"Use by: “1/2/27” could be read either way. Read as 1 February 2027 (day first). Change it ..." """
+    order = "month first" if style == dates.MONTH_FIRST else "day first"
+    return (f"{field_label}: “{cell.strip()}” could be read either way. Read as {dates.long(reading, style)} "
+            f"({order}). Change it in the spreadsheet if that's wrong.")
+
+
+def unmatched_summary(store: Records, info: TableInfo, run: DryRun, shown: int = 3) -> list[str]:
+    """One line per link field whose values matched nothing: how many, and the first few as typed."""
+    lines = []
+    for name, found in run.unmatched.items():
+        column = info.table.columns[name]
+        target = store.registry[target_table(info.module.name, column)]
+        distinct = list(dict.fromkeys(text for _row, text in found))
+        rows = len({row for row, _text in found})
+        first = ", ".join(f"“{text}”" for text in distinct[:shown])
+        more = f" and {len(distinct) - shown} more" if len(distinct) > shown else ""
+        lines.append(f"{label(info, column)}: {len(distinct)} value{'' if len(distinct) == 1 else 's'} on {rows} "
+                     f"row{'' if rows == 1 else 's'} matched nothing in {table_title(target)} (first: {first}{more}). "
+                     f"Add them first, fix the names, or skip this column.")
+    return lines
+
+
+def skipped_columns(store: Records, info: TableInfo, sheet: Sheet, mapping: list[str], run: DryRun) -> list[tuple[str, int]]:
+    """Columns whose heading names a field but that the person skipped: the heading and how many ready rows had a
+    value in it, which will now be left blank."""
+    guess = auto_match(store, info, sheet.headers)
+    ready = {number for number, _values in run.ready}
+    found = []
+    for position, (wanted, chosen) in enumerate(zip(guess, mapping)):
+        if not wanted or chosen or wanted in mapping:
+            continue
+        count = sum(1 for number, cells in sheet.rows
+                    if number in ready and position < len(cells) and cells[position].strip())
+        if count:
+            heading = sheet.headers[position]
+            found.append((heading[:1].upper() + heading[1:], count))
+    return found
+
+
+def skip_text(heading: str, count: int) -> str:
+    return f"Skipping {heading} leaves it blank on {count} row{'' if count == 1 else 's'}."
+
+
+def chosen_rows(run: DryRun, add_anyway: set[int]) -> list[tuple[int, dict]]:
+    """The ready rows to send: a row with the same name as an existing record only when the person chose to add it."""
+    return [(n, v) for n, v in run.ready if n not in run.same_name or n in add_anyway]
+
+
+def staged(info: TableInfo, rows: list[tuple[int, dict]]) -> list[tuple[int, str, dict]]:
+    """The chosen rows in the shape proposals.stage_import keeps them."""
+    return [(number, info.name, values) for number, values in rows]

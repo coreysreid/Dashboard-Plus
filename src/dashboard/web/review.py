@@ -3,7 +3,7 @@ from __future__ import annotations
 
 from flask import Blueprint, current_app, redirect, render_template, request, url_for
 
-from dashboard.core import dates, proposals, records
+from dashboard.core import csv_import, dates, proposals, records
 from dashboard.core.proposals import HIDDEN_CHARACTERS
 from dashboard.errors import PlainError
 from dashboard.web import display
@@ -51,8 +51,8 @@ def describe(store: records.Records, proposal: dict) -> dict:
     return {"table": display.table_title(info), "parts": parts, "off": False, "module": info.module.title}
 
 
-MESSAGES = {"stale": "That suggestion had already been decided.",
-            "nothing": "Nothing was waiting to be decided."}
+MESSAGES = {"stale": "This row was already accepted or rejected.",
+            "nothing": "Nothing is waiting on Review."}
 
 
 def _message(args) -> tuple[str, str] | None:
@@ -67,13 +67,13 @@ def _message(args) -> tuple[str, str] | None:
         return "notice", f"Rejected. Nothing was added to {title}."
     if done == "added_many":
         left = count("left")
-        text = f"Added {count('added')}."
+        text = f"Added {count('added')} record{'' if count('added') == 1 else 's'}."
         if left:
             text += f" {left} could not be added and {'is' if left == 1 else 'are'} still waiting: see the reasons below."
         return ("problem" if left else "notice"), text
     if done == "rejected_many":
         n = count("count")
-        return "notice", f"Rejected {n} suggestion{'' if n == 1 else 's'}. Nothing was added."
+        return "notice", f"Rejected {n} row{'' if n == 1 else 's'}. Nothing was added."
     if done == "imported":
         n = count("count")
         return "notice", (f"Sent {n} row{'' if n == 1 else 's'} from your spreadsheet to Review. Nothing is added to "
@@ -83,16 +83,35 @@ def _message(args) -> tuple[str, str] | None:
     return ("notice", MESSAGES[done]) if done in MESSAGES else None
 
 
+def _already_there(store: records.Records, cache: dict, item: dict) -> str | None:
+    """For an imported row whose name is already in its list, the plain warning shown beside it (decision 0094)."""
+    info = store.registry.get(item["table_name"])
+    if info is None:
+        return None
+    if info.name not in cache:
+        cache[info.name] = csv_import.SameName(store, info)
+    name = cache[info.name].find(item["values"])
+    if not name:
+        return None
+    title = display.table_title(info)
+    text = f"Already exists: {name} is already in {title}. Accepting this row will make another {name}."
+    if info.name == "stock__items":
+        text += " To add what you bought, use Stock in; to correct a count, use Count this batch."
+    return text
+
+
 @review_pages.get("/review")
 def review():
     conn, store = current_app.config["CONNECT"](), _store()
     batches = proposals.pending(conn)
     style = dates.household_style(conn)
+    same = {}  # one look at each table's names, for imported rows that repeat one
     for batch in batches:
         batch["when"] = dates.show(batch["created_at"][:10], style)
         batch["why"] = visible(batch["why"])
         for item in batch["proposals"]:
             item["text"] = describe(store, item)
+            item["exists"] = _already_there(store, same, item) if batch["kind"] == "import" else None
     return render_template("review.html", batches=batches, message=_message(request.args),
                            waiting=sum(len(b["proposals"]) for b in batches))
 

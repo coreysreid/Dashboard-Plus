@@ -60,17 +60,31 @@
   <section class="card" aria-labelledby="dry-run">
     <h2 id="dry-run" style="margin-top:0">{{ run.ready | length }} row{{ "" if run.ready | length == 1 else "s" }} ready{% if run.problems %}, {{ run.problems | length }} need{{ "s" if run.problems | length == 1 else "" }} fixing{% endif %}</h2>
     <p class="muted" style="margin:.2rem 0">Nothing has been saved yet.{% if run.problems %} Rows that need fixing are left out: fix them in your spreadsheet and import them on their own.{% endif %}</p>
+    {% for line in unmatched %}<p class="problem" role="alert" style="margin:.4rem 0">{{ line }}</p>{% endfor %}
     {% if fixes %}
     <h3>Rows that need fixing</h3>
     <ul>{% for number, messages in fixes %}<li>Row {{ number }}: {% for m in messages %}<bdi>{{ m }}</bdi>{% if not loop.last %} {% endif %}{% endfor %}</li>{% endfor %}</ul>
+    {% endif %}
+    {% if same_name %}
+    <h3>Already in your list</h3>
+    <p class="muted" style="margin:.2rem 0">These rows are skipped unless you tick Add anyway. Two things can share a name, but a second one splits the count. Tick or untick, then press Check again to update the count below.</p>
+    <ul style="list-style:none;padding:0">{% for number, text in same_name %}
+      <li style="padding:.3rem 0;border-top:1px solid var(--line)"><label><input type="checkbox" name="add_{{ number }}" value="1"{% if number in add %} checked{% endif %}> Add anyway</label> Row {{ number }}: <bdi>{{ text }}</bdi></li>
+    {% endfor %}</ul>
+    {% endif %}
+    {% if unclear %}
+    <h3>Dates that could be read either way</h3>
+    <ul>{% for number, texts in unclear %}<li>Row {{ number }}: {% for t in texts %}<bdi>{{ t }}</bdi>{% if not loop.last %} {% endif %}{% endfor %}</li>{% endfor %}</ul>
+    <p style="margin:.4rem 0"><label><input type="checkbox" name="dates_ok" value="1"{% if dates_ok %} checked{% endif %}> These dates are read the way I meant</label></p>
     {% endif %}
     {% if ready %}
     <h3>Rows ready{% if run.ready | length > ready | length %} (the first {{ ready | length }}){% endif %}</h3>
     <ul style="list-style:none;padding:0">{% for r in ready %}
       <li style="padding:.3rem 0;border-top:1px solid var(--line)">Row {{ r.row }}: {% for label, text in r.text.parts %}{{ label }}: <bdi>{{ text }}</bdi>{% if not loop.last %} · {% endif %}{% endfor %}</li>
     {% endfor %}</ul>
-    <div class="actions"><button type="submit" formaction="/settings/import/send">Send {{ run.ready | length }} row{{ "" if run.ready | length == 1 else "s" }} to Review</button></div>
-    <p class="muted" style="margin:0">On Review you can accept them one by one or all at once.</p>
+    {% for line in skipped %}<p class="problem" role="status" style="margin:.4rem 0">{{ line }} These values will not be added. Check each row on Review, or go back and fix the file first.</p>{% endfor %}
+    <div class="actions"><button type="submit" formaction="/settings/import/send">Send {{ sending }} row{{ "" if sending == 1 else "s" }} to Review</button></div>
+    <p class="muted" style="margin:0">{% if sending < run.ready | length %}{{ run.ready | length - sending }} ready row{{ "" if run.ready | length - sending == 1 else "s" }} skipped because {{ "it is" if run.ready | length - sending == 1 else "they are" }} already in your list. {% endif %}On Review you can accept them one by one or all at once.</p>
     {% endif %}
   </section>
   {% endif %}
