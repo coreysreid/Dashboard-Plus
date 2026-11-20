@@ -904,8 +904,9 @@ only) under `/api/v1/`. The port changes at each start; Dashboard writes the
 current address to `data/run/helper-address.json` so a connector finds it
 after a restart (0092), and Settings, Helpers also shows it (decisions 0066 to
 0068, hardened by 0074, with a published description in 0084, a Review queue
-limit in 0085, a check that the address is really Dashboard in 0086, and a new
-key for the same helper in 0093).
+limit in 0085, a check that the address is really Dashboard in 0086, a new
+key for the same helper in 0093, and receipt lines and grouped suggestions in
+0097).
 
 ### Authentication
 
@@ -956,7 +957,26 @@ everyone (`HELLOS_PER_MINUTE`), separate from each helper's.
 | `POST /api/v1/hello` | No key: proves this is the Dashboard that made a key, before the key is sent (0086) |
 
 `POST /api/v1/proposals` body: `request_key`, `why`, `entries` (each
-`{"table", "values"}`).
+`{"table", "values"}`, with an optional `source`).
+
+**Receipt lines and grouped suggestions (0097).** An entry may carry
+`source: {"line": "KIDNEY BEANS 400G x2", "price": "3.80"}` (either or both,
+text, line up to 200 characters, price up to 20). It is screened like all
+helper text, kept in `core__proposals.source_json`, shown on Review as "From
+the receipt or paper, as <helper> read it: ... Shown for checking only; it is
+not saved in your records", and never passed to the create path. In a `link`
+field, `{"ref": N}` points at the record entry N of the same request would add:
+N must be an earlier entry that adds to the table the link points at, or the
+request is refused (422 `invalid`, naming entry and field). The dry run
+resolves refs to the records made inside it. Values are stored as sent; batch
+replies add `depends_on` (positions) only to rows that have refs. On Review,
+rows that point at each other are one group. Accepting a row first adds the
+waiting rows it needs, earliest first, in the same transaction (all or
+nothing; the reason is kept on the row that failed and a pointer on the row
+asked for). Rejecting a row rejects every waiting row that needs it ("Rejected
+with entry N, which it needed."). Accept all and Reject all go in position
+order and count each row once. Any row can still be rejected alone; rejecting
+a Stock in leaves its new item waiting. Imports never carry either.
 
 ### Rules
 
@@ -997,7 +1017,9 @@ everyone (`HELLOS_PER_MINUTE`), separate from each helper's.
   (`tests/test_api_contract.py`) fails when a route, method, error code or reply
   shape in the code is missing from it, or the reverse (0084).
 - Deferred: suggested changes and deletions, amend and undo, a private-details
-  grant, per-table scope, a command-line tool, forgetting request keys.
+  grant, per-table scope, a command-line tool, forgetting request keys, refs
+  across requests, editing a suggestion on Review, and a receipt batch with
+  "Choose item" and "Skip line" for lines a helper could not match.
 
 ### Connecting an AI assistant (MCP)
 

@@ -14,6 +14,7 @@ from datetime import datetime, timezone
 
 from dashboard.core import db, helpers
 from dashboard.core.records import Records, ValidationError
+from dashboard.core.schema import target_table
 from dashboard.errors import PlainError
 
 MAX_ENTRIES = 50
@@ -21,6 +22,8 @@ MAX_PER_DAY = 200
 MAX_WAITING = 500  # suggestions one helper may have waiting on Review at once (decision 0085)
 MAX_WHY = 300
 MAX_KEY = 100
+MAX_SOURCE_LINE = 200  # a receipt line, as the helper read it (decision 0097)
+MAX_SOURCE_PRICE = 20
 REQUEST_KEY = re.compile(r"^[A-Za-z0-9._:-]+$")
 # Something shaped like a helper key (decision 0066). Keys belong only in the Authorization header.
 KEY_LIKE = re.compile(re.escape(helpers.KEY_PREFIX) + r"[A-Za-z0-9_-]{8,}")
@@ -95,8 +98,26 @@ def _screen(body) -> None:
                             "around on screen. Remove them and send it again. Line breaks are fine.")
 
 
-def _read_body(body) -> tuple[str, str, list[tuple[str, dict]]]:
-    """Check the shape of a request and return (request_key, why, [(table, values)])."""
+def _read_source(source) -> dict:
+    """An entry's optional `source`: the line it was read from and that line's price, as the helper wrote them.
+
+    Screened like every other piece of the request (decision 0074) and kept only to show on Review (0097)."""
+    if not isinstance(source, dict) or not source or set(source) - {"line", "price"}:
+        raise _bad('A source must look like {"line": "KIDNEY BEANS 400G x2", "price": "3.80"}: the line, its '
+                   'price, or both, as text.')
+    cleaned = {}
+    for name, longest in (("line", MAX_SOURCE_LINE), ("price", MAX_SOURCE_PRICE)):
+        if name not in source:
+            continue
+        value = source[name]
+        if not isinstance(value, str) or not 1 <= len(value.strip()) <= longest:
+            raise _bad(f"A source {name} must be text of 1 to {longest} characters.")
+        cleaned[name] = value.strip()
+    return cleaned
+
+
+def _read_body(body) -> tuple[str, str, list[tuple[str, dict]], list[dict | None]]:
+    """Check the shape of a request and return (request_key, why, [(table, values)], [source or None])."""
     _screen(body)
     if not isinstance(body, dict) or set(body) - {"request_key", "why", "entries"}:
         raise _bad()
@@ -111,18 +132,65 @@ def _read_body(body) -> tuple[str, str, list[tuple[str, dict]]]:
         raise _bad()
     if len(entries) > MAX_ENTRIES:
         raise _bad(f"Send {MAX_ENTRIES} suggestions or fewer at a time.")
-    found = []
+    found, sources = [], []
     for entry in entries:
-        if not isinstance(entry, dict) or set(entry) != {"table", "values"} or not isinstance(entry["table"], str) \
-                or not isinstance(entry["values"], dict):
+        if not isinstance(entry, dict) or not {"table", "values"} <= set(entry) <= {"table", "values", "source"} \
+                or not isinstance(entry["table"], str) or not isinstance(entry["values"], dict):
             raise _bad()
         found.append((entry["table"], entry["values"]))
-    return key, why.strip(), found
+        sources.append(_read_source(entry["source"]) if "source" in entry else None)
+    return key, why.strip(), found, sources
 
 
-def _body_hash(why: str, entries: list[tuple[str, dict]]) -> str:
-    text = json.dumps({"why": why, "entries": [[t, v] for t, v in entries]}, sort_keys=True)
+def _body_hash(why: str, entries: list[tuple[str, dict]], sources: list[dict | None] | None = None) -> str:
+    """A fingerprint of a request. An entry without a source hashes exactly as it did before decision 0097."""
+    sources = sources or [None] * len(entries)
+    text = json.dumps({"why": why, "entries": [[t, v] if s is None else [t, v, s]
+                                               for (t, v), s in zip(entries, sources)]}, sort_keys=True)
     return hashlib.sha256(text.encode("utf-8")).hexdigest()
+
+
+# ----- one entry pointing at an earlier one: {"ref": 0} (decision 0097) -------------------------------
+
+def ref_of(value) -> int | None:
+    """The earlier entry a value points at, if it is exactly {"ref": <whole number>}; otherwise None."""
+    if isinstance(value, dict) and set(value) == {"ref"} and isinstance(value["ref"], int) \
+            and not isinstance(value["ref"], bool):
+        return value["ref"]
+    return None
+
+
+def refs_in(values: dict) -> dict[str, int]:
+    """{field: earlier position} for every value of a suggestion that points at an earlier entry."""
+    return {field: ref for field, value in values.items() if (ref := ref_of(value)) is not None}
+
+
+def _ref_problem(registry: dict, entries: list[tuple[str, dict]], position: int, info, column, value) -> str | None:
+    """Why a value that points at an earlier entry cannot be used, or None if it can."""
+    if column.type != "link":
+        return "can point at an earlier entry only when it links to one record."
+    ref = ref_of(value)
+    if ref is None:
+        return 'must be a record id, or {"ref": N} where N is the position of an earlier entry in this request.'
+    if not 0 <= ref < position:
+        if not position:
+            return "points at an earlier entry, but this is the first entry in the request."
+        return f"points at entry {ref}, but it can only point at an earlier entry in this request (0 to {position - 1})."
+    wanted, given = target_table(info.module.name, column), entries[ref][0]
+    if given != wanted:
+        return (f"points at entry {ref}, which would add to {_title(registry[given])}, "
+                f"but this field links to {_title(registry[wanted]) if wanted in registry else wanted}.")
+    return None
+
+
+def _resolve_refs(values: dict, made: dict[int, int]) -> dict:
+    """For the dry run (Records.check_create): swap each {"ref": N} for the record entry N made there."""
+    found = refs_in(values)
+    missing = {field: f"points at entry {ref}, which could not be added, so this cannot be either."
+               for field, ref in found.items() if ref not in made}
+    if missing:
+        raise ValidationError(missing)
+    return dict(values, **{field: made[ref] for field, ref in found.items()})
 
 
 def _check_tables(helper: helpers.Helper, registry: dict, entries: list[tuple[str, dict]]) -> None:
@@ -165,6 +233,10 @@ def _shape_problems(helper: helpers.Helper, registry: dict, entries: list[tuple[
             if column is None:
                 problems.append({"entry": position, "table": name, "field": field[:60],
                                  "message": "is not a field of this table."})
+            elif isinstance(value, dict):
+                wrong = _ref_problem(registry, entries, position, info, column, value)
+                if wrong:
+                    problems.append({"entry": position, "table": name, "field": field, "message": wrong})
             elif column.type == "file":
                 problems.append({"entry": position, "table": name, "field": field,
                                  "message": "is a file, and helpers cannot suggest files."})
@@ -191,8 +263,8 @@ def submit(conn: sqlite3.Connection, registry: dict, helper: helpers.Helper, bod
     if not helper.may_suggest:
         raise ProposalError(403, "look_only", "This helper may look but not suggest changes. "
                                               "Ask the household to change its access in Settings.")
-    key, why, entries = _read_body(body)
-    digest = _body_hash(why, entries)
+    key, why, entries, sources = _read_body(body)
+    digest = _body_hash(why, entries, sources)
     stored = conn.execute("SELECT id, body_hash FROM core__helper_batches WHERE helper_id = ? AND request_key = ?",
                           (helper.id, key)).fetchone()
     if stored:
@@ -201,7 +273,7 @@ def submit(conn: sqlite3.Connection, registry: dict, helper: helpers.Helper, bod
     _check_tables(helper, registry, entries)
     problems = _shape_problems(helper, registry, entries)
     if not problems:
-        wrong = Records(conn, registry).check_create(entries, helper.actor)
+        wrong = Records(conn, registry).check_create(entries, helper.actor, resolve=_resolve_refs)
         problems = [{"entry": position, "table": entries[position][0], "field": field[:60], "message": message}
                     for position, fields in sorted(wrong.items()) for field, message in fields.items()]
     if problems:
@@ -218,10 +290,11 @@ def submit(conn: sqlite3.Connection, registry: dict, helper: helpers.Helper, bod
             batch_id = conn.execute(
                 "INSERT INTO core__helper_batches (helper_id, request_key, body_hash, why, created_at) "
                 "VALUES (?, ?, ?, ?, ?)", (helper.id, key, digest, why, now)).lastrowid
-            for position, (name, values) in enumerate(entries):
+            for position, ((name, values), source) in enumerate(zip(entries, sources)):
                 proposal_id = conn.execute(
-                    "INSERT INTO core__proposals (batch_id, position, table_name, values_json, created_at) "
-                    "VALUES (?, ?, ?, ?, ?)", (batch_id, position, name, json.dumps(values, sort_keys=True), now)).lastrowid
+                    "INSERT INTO core__proposals (batch_id, position, table_name, values_json, created_at, source_json) "
+                    "VALUES (?, ?, ?, ?, ?, ?)", (batch_id, position, name, json.dumps(values, sort_keys=True), now,
+                                                  json.dumps(source, sort_keys=True) if source else None)).lastrowid
                 conn.execute("INSERT INTO core__audit (at, actor, action, table_name, record_id, before, after, batch_id) "
                              "VALUES (?, ?, 'propose', 'core__proposals', ?, NULL, ?, ?)",
                              (now, helper.actor, proposal_id, json.dumps({"table": name, "batch": batch_id}), batch_id))
@@ -260,6 +333,9 @@ def batch_result(conn: sqlite3.Connection, batch_id: int, detail: bool = False) 
     proposals = []
     for r in rows:
         item = {"id": r["id"], "position": r["position"], "table": r["table_name"], "status": r["status"]}
+        depends = sorted(set(refs_in(json.loads(r["values_json"])).values()))
+        if depends:
+            item["depends_on"] = depends
         if detail:
             item.update(record_id=r["record_id"], reason=r["reason"], decided_at=r["decided_at"])
         proposals.append(item)
@@ -349,7 +425,10 @@ def pending_count(conn: sqlite3.Connection) -> int:
 def pending(conn: sqlite3.Connection) -> list[dict]:
     """Batches that still have rows waiting, newest first, each with its waiting rows and who it came from.
 
-    `helper` names the author: the helper's name, or "Import 'pantry.csv'" for a person's import."""
+    `helper` names the author: the helper's name, or "Import 'pantry.csv'" for a person's import. Each row has
+    its `source` (the line a helper read it from, or None) and `refs` ({field: earlier position}). `groups`
+    holds the waiting rows again, gathered so that rows pointing at each other sit together (decision 0097),
+    and `made` maps the position of each row already accepted to its new record's id."""
     batches = conn.execute(
         "SELECT b.*, h.name AS helper_name, h.revoked_at AS helper_revoked_at FROM core__helper_batches b "
         "LEFT JOIN core__helpers h ON h.id = b.helper_id WHERE EXISTS "
@@ -357,16 +436,41 @@ def pending(conn: sqlite3.Connection) -> list[dict]:
         "ORDER BY b.id DESC").fetchall()
     found = []
     for b in batches:
-        rows = conn.execute("SELECT * FROM core__proposals WHERE batch_id = ? AND status = 'pending' ORDER BY position",
-                            (b["id"],)).fetchall()
+        every = conn.execute("SELECT * FROM core__proposals WHERE batch_id = ? ORDER BY position", (b["id"],)).fetchall()
+        rows = [_row_dict(r) for r in every if r["status"] == "pending"]
         imported = b["kind"] == "import"
         found.append({"id": b["id"], "kind": b["kind"], "source_name": b["source_name"],
                       "helper": f"Import '{b['source_name']}'" if imported else b["helper_name"],
                       "helper_off": not imported and b["helper_revoked_at"] is not None,
-                      "why": b["why"], "created_at": b["created_at"], "total": conn.execute(
-                          "SELECT COUNT(*) FROM core__proposals WHERE batch_id = ?", (b["id"],)).fetchone()[0],
-                      "proposals": [dict(r, values=json.loads(r["values_json"])) for r in rows]})
+                      "why": b["why"], "created_at": b["created_at"], "total": len(every),
+                      "proposals": rows, "groups": _groups(rows),
+                      "made": {r["position"]: r["record_id"] for r in every if r["status"] == "accepted"}})
     return found
+
+
+def _row_dict(row) -> dict:
+    values = json.loads(row["values_json"])
+    return dict(row, values=values, refs=refs_in(values),
+                source=json.loads(row["source_json"]) if row["source_json"] else None)
+
+
+def _groups(rows: list[dict]) -> list[list[dict]]:
+    """Waiting rows gathered so that a row and the waiting rows it points at are in one group, earliest first."""
+    leader = {r["position"]: r["position"] for r in rows}
+
+    def top(position: int) -> int:
+        while leader[position] != position:
+            position = leader[position]
+        return position
+
+    for r in rows:
+        for ref in r["refs"].values():
+            if ref in leader:
+                leader[top(r["position"])] = top(ref)
+    grouped: dict[int, list[dict]] = {}
+    for r in rows:
+        grouped.setdefault(top(r["position"]), []).append(r)
+    return sorted(grouped.values(), key=lambda group: group[0]["position"])
 
 
 def _audit(conn, action: str, proposal_id: int, after: dict | None, batch_id: int) -> None:
@@ -375,16 +479,23 @@ def _audit(conn, action: str, proposal_id: int, after: dict | None, batch_id: in
                  (_now(), action, proposal_id, json.dumps(after, sort_keys=True) if after else None, batch_id))
 
 
+ROW_QUERY = ("SELECT p.*, h.slug AS slug, b.helper_id AS helper_id, b.kind AS kind, b.source_name AS source_name "
+             "FROM core__proposals p JOIN core__helper_batches b ON b.id = p.batch_id "
+             "LEFT JOIN core__helpers h ON h.id = b.helper_id ")
+
+
 def _load(conn, proposal_id: int):
-    row = conn.execute(
-        "SELECT p.*, h.slug AS slug, b.helper_id AS helper_id, b.kind AS kind, b.source_name AS source_name "
-        "FROM core__proposals p JOIN core__helper_batches b ON b.id = p.batch_id "
-        "LEFT JOIN core__helpers h ON h.id = b.helper_id WHERE p.id = ?", (proposal_id,)).fetchone()
+    row = conn.execute(ROW_QUERY + "WHERE p.id = ?", (proposal_id,)).fetchone()
     if row is None:
         raise PlainError("That suggestion could not be found.")
     if row["status"] != "pending":
         raise PlainError("That suggestion has already been decided.")
     return row
+
+
+def _batch_rows(conn, batch_id: int) -> dict:
+    """Every row of a batch, by position."""
+    return {r["position"]: r for r in conn.execute(ROW_QUERY + "WHERE p.batch_id = ?", (batch_id,))}
 
 
 def _why_not(store: Records, info, error: ValidationError) -> str:
@@ -395,37 +506,100 @@ def _why_not(store: Records, info, error: ValidationError) -> str:
     return "This can't be added as it is: " + " ".join(parts) + " Reject it, or add the record yourself."
 
 
-def accept(conn: sqlite3.Connection, registry: dict, proposal_id: int) -> tuple[str, int]:
-    """Add the suggested (or imported) record. Returns (table, new record id).
+def _table_title(registry: dict, name: str) -> str:
+    return _title(registry[name]) if name in registry else name.split("__", 1)[0]
 
-    History names the helper ("agent:<slug>") or the file ("import:<name>") as the creator.
 
-    If the world has changed so the record can no longer be added, the suggestion stays waiting with the
-    reason written on it, nothing else is changed, and a PlainError says why."""
-    row = _load(conn, proposal_id)
+def _needed_first(conn, registry: dict, row) -> tuple[list, dict[int, int]]:
+    """The waiting rows this one needs (directly or through others), earliest first and then itself, and the
+    record ids of rows it needs that were already accepted. A needed row that was rejected refuses it."""
+    rows = _batch_rows(conn, row["batch_id"])
+    chain, made, seen, waiting = [], {}, set(), [row["position"]]
+    while waiting:
+        position = waiting.pop()
+        if position in seen:
+            continue
+        seen.add(position)
+        needed = row if position == row["position"] else rows.get(position)  # itself: always claimed below
+        if needed is None or needed["status"] == "rejected":
+            title = _table_title(registry, needed["table_name"]) if needed else "record"
+            _keep_reason(conn, row["id"], f"This needs a new record in {title} suggested with it, which was "
+                                          f"rejected. Reject this too, or add the record yourself.")
+        if needed["status"] == "accepted":
+            made[position] = needed["record_id"]
+            continue
+        chain.append(needed)
+        waiting.extend(refs_in(json.loads(needed["values_json"])).values())
+    return sorted(chain, key=lambda r: r["position"]), made
+
+
+def _ready(conn, registry: dict, row) -> tuple:
+    """(row, table, values, actor) for a row about to be added, or a PlainError with the reason kept on it."""
     info = registry.get(row["table_name"])
     if info is None:
         module = row["table_name"].split("__", 1)[0]
-        reason = f"This is for {module}, which is switched off. Reject it, or switch it on in Settings first."
-        raise PlainError(reason)
-    store = Records(conn, registry)
+        _keep_reason(conn, row["id"], f"This is for {module}, which is switched off. Reject it, or switch it on "
+                                      f"in Settings first.")
     values = json.loads(row["values_json"])
     if row["kind"] == "import":  # a person's own file: no helper limits apply, and the person decides here
         actor = import_actor(row["source_name"])
     else:
         actor = f"agent:{row['slug']}"
-        _check_helper_links(conn, registry, info, row, values, proposal_id)
+        _check_helper_links(conn, registry, info, row, values, row["id"])
+    return row, info, values, actor
+
+
+def _note_needed(conn, registry: dict, asked, failing) -> None:
+    """When a row it needs cannot be added, say so on the row that was asked for too."""
+    if failing["id"] != asked["id"]:
+        with db.transaction(conn):
+            conn.execute("UPDATE core__proposals SET reason = ? WHERE id = ? AND status = 'pending'",
+                         (f"This needs a new record in {_table_title(registry, failing['table_name'])} above, "
+                          f"which cannot be added yet: see the reason on it.", asked["id"]))
+
+
+def accept(conn: sqlite3.Connection, registry: dict, proposal_id: int) -> tuple[str, int]:
+    """Add the suggested (or imported) record. Returns (table, new record id).
+
+    History names the helper ("agent:<slug>") or the file ("import:<name>") as the creator. A suggestion that
+    points at another one waiting in its batch (decision 0097) adds that one first, in the same transaction.
+
+    If the world has changed so the record can no longer be added, the suggestion stays waiting with the
+    reason written on it, nothing else is changed, and a PlainError says why."""
+    table, record_id, _also = accept_counted(conn, registry, proposal_id)
+    return table, record_id
+
+
+def accept_counted(conn: sqlite3.Connection, registry: dict, proposal_id: int) -> tuple[str, int, int]:
+    """Accept, as above. Returns (table, new record id, how many rows it needed were added first)."""
+    row = _load(conn, proposal_id)
+    chain, made = _needed_first(conn, registry, row)
+    plan = []
+    for needed in chain:
+        try:
+            plan.append(_ready(conn, registry, needed))
+        except PlainError:
+            _note_needed(conn, registry, row, needed)
+            raise
+    store = Records(conn, registry)
+    failing, failing_info = row, None
     try:
         with db.transaction(conn):
-            _claim(conn, proposal_id, "accepted")  # first, so a second click or window cannot add it again
-            record_id = store.create_in(row["table_name"], values, actor=actor,
-                                        review_status="confirmed", batch_id=row["batch_id"])
-            conn.execute(f"UPDATE {info.name} SET edited_by_person = 1 WHERE id = ?", (record_id,))
-            conn.execute("UPDATE core__proposals SET record_id = ?, reason = NULL WHERE id = ?", (record_id, proposal_id))
-            _audit(conn, "accept", proposal_id, {"table": info.name, "record_id": record_id}, row["batch_id"])
+            for needed, info, values, actor in plan:
+                failing, failing_info = needed, info
+                _claim(conn, needed["id"], "accepted")  # first, so a second click or window cannot add it again
+                values = dict(values, **{field: made[ref] for field, ref in refs_in(values).items()})
+                record_id = store.create_in(needed["table_name"], values, actor=actor,
+                                            review_status="confirmed", batch_id=needed["batch_id"])
+                conn.execute(f"UPDATE {info.name} SET edited_by_person = 1 WHERE id = ?", (record_id,))
+                conn.execute("UPDATE core__proposals SET record_id = ?, reason = NULL WHERE id = ?",
+                             (record_id, needed["id"]))
+                _audit(conn, "accept", needed["id"], {"table": info.name, "record_id": record_id}, needed["batch_id"])
+                made[needed["position"]] = record_id
     except ValidationError as error:
-        _keep_reason(conn, proposal_id, _why_not(store, info, error))
-    return info.name, record_id
+        _note_needed(conn, registry, row, failing)
+        _keep_reason(conn, failing["id"], _why_not(store, failing_info, error))
+    return row["table_name"], made[row["position"]], len(plan) - 1
 
 
 def _check_helper_links(conn, registry: dict, info, row, values: dict, proposal_id: int) -> None:
@@ -456,31 +630,70 @@ def _keep_reason(conn, proposal_id: int, reason: str):
 
 
 def reject(conn: sqlite3.Connection, proposal_id: int) -> str:
-    """Say no to one suggestion. Nothing is added. Returns its table name."""
+    """Say no to one suggestion, and to any waiting in its batch that need it. Nothing is added. Returns its table."""
+    return reject_counted(conn, proposal_id)[0]
+
+
+def reject_counted(conn: sqlite3.Connection, proposal_id: int) -> tuple[str, int]:
+    """Reject, as above. Returns (table, how many rows that needed it were rejected with it)."""
     row = _load(conn, proposal_id)
+    hit, needing = {row["position"]}, []
+    for other in sorted(_batch_rows(conn, row["batch_id"]).values(), key=lambda r: r["position"]):
+        if other["status"] == "pending" and set(refs_in(json.loads(other["values_json"])).values()) & hit:
+            hit.add(other["position"])
+            needing.append(other)
+    also = 0
     with db.transaction(conn):
         _claim(conn, proposal_id, "rejected")
         _audit(conn, "reject", proposal_id, {"table": row["table_name"]}, row["batch_id"])
-    return row["table_name"]
+        for other in needing:
+            also += conn.execute(
+                "UPDATE core__proposals SET status = 'rejected', decided_at = ?, reason = ? WHERE id = ? "
+                "AND status = 'pending'", (_now(), f"Rejected with entry {row['position']}, which it needed.",
+                                           other["id"])).rowcount
+            _audit(conn, "reject", other["id"], {"table": other["table_name"], "with": proposal_id}, row["batch_id"])
+    return row["table_name"], also
+
+
+def _waiting_ids(conn, batch_id: int) -> list[int]:
+    return [r["id"] for r in conn.execute(
+        "SELECT id FROM core__proposals WHERE batch_id = ? AND status = 'pending' ORDER BY position", (batch_id,))]
+
+
+def _still_waiting(conn, proposal_id: int):
+    return conn.execute("SELECT * FROM core__proposals WHERE id = ? AND status = 'pending'", (proposal_id,)).fetchone()
 
 
 def accept_batch(conn: sqlite3.Connection, registry: dict, batch_id: int) -> tuple[int, list[str]]:
-    """Accept every waiting row of a batch, each in its own transaction. Returns (added, [reasons for the rest])."""
-    added, failed = 0, []
-    for row in conn.execute("SELECT id FROM core__proposals WHERE batch_id = ? AND status = 'pending' ORDER BY position",
-                            (batch_id,)).fetchall():
+    """Accept every waiting row of a batch, earliest first. Returns (added, [reasons for the rest]).
+
+    Each row is its own transaction, together with any row it needs. A row that needs one that could not be
+    added is not tried; it stays waiting with that reason on it."""
+    added, failed, blocked = 0, [], set()
+    for proposal_id in _waiting_ids(conn, batch_id):
+        row = _still_waiting(conn, proposal_id)
+        if row is None:  # already added, because a row before it needed it
+            continue
+        if set(refs_in(json.loads(row["values_json"])).values()) & blocked:
+            blocked.add(row["position"])
+            reason = "This needs a suggestion above that cannot be added yet: see the reason on it."
+            with db.transaction(conn):
+                conn.execute("UPDATE core__proposals SET reason = ? WHERE id = ?", (reason, proposal_id))
+            failed.append(reason)
+            continue
         try:
-            accept(conn, registry, row["id"])
-            added += 1
+            _table, _record, also = accept_counted(conn, registry, proposal_id)
+            added += 1 + also
         except PlainError as error:
+            blocked.add(row["position"])
             failed.append(str(error))
     return added, failed
 
 
 def reject_batch(conn: sqlite3.Connection, batch_id: int) -> int:
     """Reject every waiting row of a batch. Returns how many."""
-    ids = [r["id"] for r in conn.execute(
-        "SELECT id FROM core__proposals WHERE batch_id = ? AND status = 'pending' ORDER BY position", (batch_id,))]
-    for proposal_id in ids:
-        reject(conn, proposal_id)
-    return len(ids)
+    count = 0
+    for proposal_id in _waiting_ids(conn, batch_id):
+        if _still_waiting(conn, proposal_id) is not None:  # not already rejected with a row it needed
+            count += 1 + reject_counted(conn, proposal_id)[1]
+    return count

@@ -38,7 +38,10 @@ is new: keep a copy of anything important somewhere else too. See
 - **Helpers (early):** give an assistant, such as an AI program, a key in
   Settings so it can look at the parts of your records you choose and suggest
   new ones. Nothing is added until you accept it on the Review page. Private
-  details are never shared with helpers.
+  details are never shared with helpers. A helper reading a receipt can show
+  the line and price each row came from (for checking only, never saved), and
+  can send a new Stock item with its first Stock in as one group: accepting
+  the Stock in adds the item too, rejecting the item rejects both.
 - **Connect an AI assistant:** assistant apps that support MCP can use a
   helper through the connector that comes with Dashboard Plus
   (`python -m dashboard.connector`). Settings, Helpers shows the settings to
