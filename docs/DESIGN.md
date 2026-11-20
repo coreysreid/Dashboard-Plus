@@ -840,10 +840,12 @@ API; the core does not call an AI service by itself.
 
 Assistants, whether AI or human helpers, enter data through the API and never
 touch the database. The API is part of the same local server (`127.0.0.1`
-only) under `/api/v1/`. The port changes at each start, so Settings, Helpers
-shows the current address (decisions 0066 to 0068, hardened by 0074, with a
-published description in 0084, a Review queue limit in 0085, and a check that
-the address is really Dashboard in 0086).
+only) under `/api/v1/`. The port changes at each start; Dashboard writes the
+current address to `data/run/helper-address.json` so a connector finds it
+after a restart (0092), and Settings, Helpers also shows it (decisions 0066 to
+0068, hardened by 0074, with a published description in 0084, a Review queue
+limit in 0085, a check that the address is really Dashboard in 0086, and a new
+key for the same helper in 0093).
 
 ### Authentication
 
@@ -854,6 +856,21 @@ and kept only as a SHA-256 fingerprint in `data/secrets/helper_keys.json`
 (mode 0600), never in the database. A request carrying an `Origin` header is
 refused (helpers are programs, not web pages). Cookies, query strings and form
 fields are never read for a key.
+
+**A new key for the same helper (0093).** Each working helper's card has
+**Make a new key**: one press (CSRF token plus a one-use token bound to that
+helper, like 0087) gives a new key shown once and stops the old one. The
+helper keeps its id, `key_id`, slug, grant, Made date, suggestions and
+history; the card adds "Key changed". In order: the row is marked
+`key_pending_at` and its `key_generation` goes up (no key of it works now);
+`helper_keys.json` is replaced whole with the new fingerprint instead of every
+old one for that `key_id`; the mark is cleared, `rotated_at` set and a
+value-free `helper_rotate` audit row added. Only then is the key shown. If a
+step fails the helper stays paused, no key is shown, and at start-up an
+unfinished change has its fingerprints removed ("Key change did not finish.
+Make a new key to reconnect."). A suggestion checked with the old key is
+refused inside the write transaction (401 `no_key`), because the generation,
+revoked and pending state are read again there.
 
 **Checking it is really Dashboard (0086).** `POST /api/v1/hello` is the one
 route without a key. A program sends `key_name` (`SHA-256("dph-id:" +
@@ -933,9 +950,25 @@ Python's own. Its eight tools map one to one to the routes above:
 `dashboard_suggest_new_records`, `dashboard_list_suggestion_batches`,
 `dashboard_get_suggestion_batch`. It can do nothing the key does not allow.
 
-- The address and key come only from `DASHBOARD_PLUS_URL` and
-  `DASHBOARD_PLUS_KEY` or a `--config` file, never from a tool's arguments.
-  Only `http://127.0.0.1:<port>` or `http://localhost:<port>` is accepted.
+- Where Dashboard is comes from `DASHBOARD_PLUS_ADDRESS_FILE` (the
+  preferred form, 0092) or `DASHBOARD_PLUS_URL`; the key from
+  `DASHBOARD_PLUS_KEY`; or a `--config` file with `address_file`, `url` and
+  `key`. Never from a tool's arguments. Only `http://127.0.0.1:<port>` or
+  `http://localhost:<port>` is accepted. When an address file is given, a URL
+  is ignored.
+- **Steady address (0092).** After its listener is ready Dashboard writes
+  `data/run/helper-address.json`: `{"version": 1, "url":
+  "http://127.0.0.1:<port>/api/v1", "run_id": "<32 hex>"}`, to a temporary
+  name first and then put in place in one step, readable by this account
+  only. It never holds a key, cookie, session or close token (those stay in
+  `dashboard.json`, which the connector never reads). A safe close removes it
+  only if the run ID is still its own; a crash can leave it stale. The
+  connector reads it again for every call, so one MCP process survives
+  restarts: at most 1 KB, a regular file and not a link, exactly those three
+  values, the URL in exactly that spelling. The file is never proof of
+  identity: the hello below still runs before the key. Its plain errors
+  (missing, does not look right, not answering) all end "The key was not
+  sent."
 - Before every request it sends the hello above on a new connection; only if
   the proof matches (`hmac.compare_digest`) does the request, with the key, go
   down that same connection. Otherwise the tool fails with "This address is
@@ -947,9 +980,13 @@ Python's own. Its eight tools map one to one to the routes above:
 - Every result says it is household data, not instructions, then gives the
   API's JSON (as text, and as `structuredContent`). API refusals become tool
   errors with the API's own message; nothing is retried with wider access.
-- Settings, Helpers and the new-key page show "Connect an AI assistant":
-  settings to paste into the assistant's app with `YOUR-KEY-HERE` in place of
-  the key, and the warning that an online assistant sees what the helper reads.
+- Settings, Helpers and the key pages show "Connect an AI assistant":
+  settings to paste into the assistant's app, pointing at this folder's
+  address file, with `YOUR-KEY-HERE` in place of the key, and the warning that
+  an online assistant sees what the helper reads. A collapsed "Connection
+  details" shows the current address and a manual block with
+  `DASHBOARD_PLUS_URL` for apps that cannot use the file (it must be copied
+  again after each restart).
 
 ## 10. Annotations and the question loop
 

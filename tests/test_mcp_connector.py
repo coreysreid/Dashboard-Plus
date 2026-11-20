@@ -290,7 +290,7 @@ class ErrorTests(LiveDashboard):
         time.sleep(0.2)
         result = self.tool(self.connector(), "dashboard_me")
         self.assertTrue(result["isError"])
-        self.assertIn("Settings, Helpers", result["content"][0]["text"])
+        self.assertIn("copy the current address again from Settings → Helpers", result["content"][0]["text"])
 
 
 class ProtocolErrorTests(LiveDashboard):
@@ -648,7 +648,7 @@ class HelpersPageTests(LiveDashboard):
         self.assertIn(f"http://127.0.0.1:{self.port}/api/v1", html)
         self.assertIn("dashboard.connector", html)
         self.assertIn("that service will see what the helper reads", html)
-        self.assertIn("The key is a password", html)
+        self.assertIn("treat it like a password", html)
         self.assertNotIn("dph_", html)
 
     def test_the_new_key_page_shows_the_key_once_and_the_settings_use_a_placeholder(self):

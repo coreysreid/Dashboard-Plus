@@ -1,4 +1,4 @@
-"""Where the connector finds Dashboard Plus and its key: two environment values or a small file, checked before use."""
+"""Where the connector finds Dashboard Plus and its key: environment values or a small file, checked before use."""
 from __future__ import annotations
 
 import os
@@ -9,6 +9,7 @@ from pathlib import Path
 from urllib.parse import urlsplit
 
 URL_VARIABLE = "DASHBOARD_PLUS_URL"
+ADDRESS_FILE_VARIABLE = "DASHBOARD_PLUS_ADDRESS_FILE"  # Dashboard's address file, read again for every call (0092)
 KEY_VARIABLE = "DASHBOARD_PLUS_KEY"
 LOCAL_HOSTS = {"127.0.0.1", "localhost"}
 API_PATHS = {"", "/", "/api/v1", "/api/v1/"}
@@ -20,6 +21,7 @@ WHERE = "Copy it from Settings, Helpers in Dashboard Plus."
 class Settings:
     """What the connector needs to call the helper API. `problem` says, in plain words, why it cannot."""
     base: str | None = None  # http://127.0.0.1:<port>/api/v1, never with the key in it
+    address_file: str | None = None  # when set, the address is read from this file before every call instead
     key: str | None = field(default=None, repr=False)  # never printed, logged or returned
     problem: str | None = None
 
@@ -65,25 +67,30 @@ def _read_file(path: Path) -> tuple[dict, str | None]:
     except tomllib.TOMLDecodeError:
         return {}, ('The connector\'s settings file could not be read. It needs two lines: '
                     'url = "http://127.0.0.1:<port>/api/v1" and key = "<your key>".')
-    return {k: v for k, v in raw.items() if k in ("url", "key") and isinstance(v, str)}, None
+    return {k: v for k, v in raw.items() if k in ("url", "address_file", "key") and isinstance(v, str)}, None
 
 
 def load(config_path: str | None = None, environ: dict | None = None) -> Settings:
-    """Read the address and key: from the file given by --config, then the environment, which wins.
+    """Read where Dashboard is and the key: from the file given by --config, then the environment, which wins.
 
-    Tool calls can never change either: an assistant cannot point the connector somewhere else."""
+    Given an address file (DASHBOARD_PLUS_ADDRESS_FILE, or address_file in the --config file), the connector
+    reads that file again before every call, and a DASHBOARD_PLUS_URL is ignored so a stale one cannot win
+    (decision 0092). Otherwise the copied address is used as it is. Tool calls can never change any of these:
+    an assistant cannot point the connector somewhere else."""
     environ = os.environ if environ is None else environ
     values, problem = ({}, None) if not config_path else _read_file(Path(config_path))
     if problem:
         return Settings(problem=problem)
-    url = environ.get(URL_VARIABLE) or values.get("url")
-    base, problem = check_url(url)
-    if problem:
-        return Settings(problem=problem)
+    address_file = (environ.get(ADDRESS_FILE_VARIABLE) or values.get("address_file") or "").strip() or None
+    base = None
+    if address_file is None:
+        base, problem = check_url(environ.get(URL_VARIABLE) or values.get("url"))
+        if problem:
+            return Settings(problem=problem)
     key, problem = check_key(environ.get(KEY_VARIABLE) or values.get("key"))
     if problem:
         return Settings(problem=problem)
-    return Settings(base=base, key=key)
+    return Settings(base=base, address_file=address_file, key=key)
 
 
 def readable_by_others(config_path: str | None) -> bool:
