@@ -9,7 +9,7 @@ columns.holder = { label = "Whose document", help = "Choose one of your People i
 columns.place = { label = "Where it is kept", help = "Choose one of your Places, such as Study or Hall cupboard. Places are shared with Household stock." }
 columns.renew_by = { label = "Review or renew by", help = "A date shown on the document, or one you choose as a reminder. The dashboard will remind you a month before. Leave blank if none applies." }
 columns.copies = { label = "Copies also kept at", help = "Where copies of this paper are kept, such as a hard drive or a family cloud folder. Dashboard Plus never stores the document itself." }
-columns.notes = { help = "For example, “Another copy on Green HDD” or “Family iCloud”. This is a pointer to a copy, not the paper, a scan, a password or its number." }
+columns.notes = { help = "Use Notes for anything else that helps you find or review this paper. Choose where copies are kept in ‘Copies also kept at’ above. Keep scans, numbers and passwords in a place you trust." }
 
 [tables.copy_places]
 home = "more"

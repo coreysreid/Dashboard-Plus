@@ -269,6 +269,8 @@ class CsvImportTests(TempDirTestCase):
         self.assertIn("Use by: “1/2/27” could be read either way. Read as 1 February 2027 (day first). "
                       "Change it in the spreadsheet if that's wrong.", words)
         self.assertEqual(words.count("could be read either way. Read as"), 1)  # 20/05/27, ISO and 5/5/27 are clear
+        self.assertIn("1 row needs your date choice before it can be sent.", words)  # Lane B, batch 18
+        self.assertRegex(page, r'<button type="submit" formaction="/settings/import/send" disabled')
         response = self.post("/settings/import/send", self.form(page))  # box not ticked
         self.assertIn("tick the box", plain(response.get_data(as_text=True)))
         self.assertEqual(self.count("core__proposals"), 0)

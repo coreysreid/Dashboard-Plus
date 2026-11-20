@@ -1,0 +1,27 @@
+# Helper address file and key rotation: live connector run
+
+Checked **20 November 2026** against `origin/main` at `1b303b4`, decisions 0086, 0092 and 0093, a disposable Smith example, the shipped `python -m dashboard.connector` stdio process, Settings → Helpers in Chromium at 320px, and a small invented MCP client. The client sent real JSON-RPC messages to the connector; a named commercial assistant app was not tested. The two one-time helper keys and all temporary files were confined to a disposable folder and are absent from this report.
+
+## Exact sequence and result
+
+1. Load Smith into a fresh temporary data folder. Start Dashboard with `--no-browser` and open its one-time launch link in Chromium. In **Settings → Helpers**, make **Example steady helper** with **Look only** and one switched-on part. Copy its one-time key into the invented client's process environment, alongside `DASHBOARD_PLUS_ADDRESS_FILE=<that data folder>/run/helper-address.json`. Do not set a fixed `DASHBOARD_PLUS_URL`.
+2. Keep one connector process alive. Send MCP `initialize` with protocol `2025-06-18`, then `tools/call` for `dashboard_me` with `{}`. It identifies **Example steady helper**. The on-screen assistant settings point to the address file and contain `YOUR-KEY-HERE`, not the actual key. The locator JSON has exactly `version`, `url` and `run_id`; its URL is loopback-only.
+3. Use Dashboard's safe `--close`. It exits successfully and removes its address file. Without restarting the connector, call `dashboard_me`: it returns `isError: true`, `status: 0`, `error: address_file_missing`, and **“I cannot find Dashboard Plus's current address file. Open Dashboard Plus on this computer. If you moved its folder or USB drive, copy the connection settings again from Settings → Helpers. The key was not sent.”** No records or key move while Dashboard is closed.
+4. Start Dashboard again on the **same data folder**. The port and `run_id` both change. The assistant settings block shown in Helpers is byte-for-byte unchanged, and the **same connector process** answers `dashboard_me` successfully with the same helper name. Nothing is re-pasted.
+5. Safe-close and start Dashboard **a second time**. The address file is removed during the close, and a tool call while closed gives the same bounded error. The port and `run_id` change again. The same connector process answers `dashboard_me` successfully again; the settings block is still unchanged. This directly exercises the per-call locator read rather than a cached port.
+6. On the third run, press **Make a new key** for that same helper. The page says **“Copy it now. This key will not be shown again. The old key no longer works.”** Its assistant settings block still points to the same address file, and the new key differs. A `dashboard_me` call from the still-running **old-key connector** returns `isError: true`, `status: 0`, `error: not_dashboard` at the pre-key `/hello` proof. It says **“This address is not Dashboard Plus, or it is an old address. Open Dashboard Plus and copy the address again from Settings → Helpers. If the address is right, this helper's key may have been turned off: make a new one there. The key was not sent.”** This is a refusal, not an API 401: the old key is never sent after proof fails.
+7. Replace only `DASHBOARD_PLUS_KEY` in a **new connector process**, using the same address-file path. `initialize` and `dashboard_me` succeed for **Example steady helper**. The helper's name and grant remain the same. Connector logs contained neither the old nor the new key.
+
+| Phase | Dashboard run | Address file | Same connector process | `dashboard_me` |
+|---|---:|---|---|---|
+| First connection | 1 | Current loopback URL and run ID | Started once | Succeeds |
+| Closed | — | Removed | Still running | Bounded missing-file error; key not sent |
+| First restart | 2 | New port and run ID | Still running | Succeeds without settings change |
+| Closed again | — | Removed | Still running | Same bounded refusal |
+| Second restart | 3 | New port and run ID | Still running | Succeeds without settings change |
+| Key rotated | 3 | Same location | Old-key process still running | Fails at identity proof; key not sent |
+| Key replaced | 3 | Same location | New process with new key | Succeeds |
+
+The MCP request for every successful probe was `{"name":"dashboard_me","arguments":{}}` inside `tools/call`; each returned `isError: false` and identified the invented helper in `structuredContent.data`. A safe close and both restarts were performed with the shipped dashboard commands, not by editing the locator. The one-time key was read only from the one-time browser page and never printed by this report. The tests show restart and rotation behavior for one local installation; they do not prove behavior in a named assistant's settings UI, on a moved USB folder, after a crash or on another operating system.
+
+**Wording observation:** After a deliberate rotation, the old connector's refusal leads with an address problem even though the locator is current. It also says the helper key may have been turned off and that the key was not sent. This ambiguity is a security choice: the connector cannot disclose whether an unknown key belongs to a live Dashboard at that address. A household following the new-key page's instruction to replace `DASHBOARD_PLUS_KEY` recovered in one step. No shipped wording change is required from this run.

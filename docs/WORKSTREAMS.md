@@ -584,6 +584,33 @@ security review (your item 71 brief).
 81. **Corey's one-hour test, refreshed again.** Add Mark done, Copies also
     kept and Make a new key; keep it to 60 minutes.
 
+### Batch 19: helpers on receipts, the Mac preview, sync stage 1 checks (M2, M3)
+
+Built on 20 November: Wine (0095), the unsigned Mac preview app (0096), receipt
+lines and grouped suggestions on Review (0097), and your batch 18 findings
+(0098). Corey still has to answer whether a pet's microchip number travels to
+members (your item 78 note); assume it does until he says otherwise.
+
+82. **Receipt to Review, again.** Re-run your connector receipt example with
+    `source` lines and a brand-new item using `{"ref": 0}`; check Review at
+    320px and desktop, Accept the group, Reject an item and see its Stock in
+    rejected too. Worst first, exact words to change.
+83. **Unmatched receipt lines, designed.** "Choose item" and "Skip line" on
+    Review for lines the helper could not match, and how a helper should
+    send them. Exact words, what is saved, acceptance checks.
+84. **Mac preview, read-through.** Read the Mac app's README section and
+    decision 0096 as a household would; list every step that would confuse
+    a non-technical person, with replacement words. Note what only a real
+    Mac test by Corey can confirm.
+85. **Sync stage 1, acceptance checks refined.** Turn your STAGE1.md checks
+    into exact test descriptions Lane A can write, including the People
+    `detail` kind rule and the upgrade of an existing household.
+86. **Duplicate receipt, designed.** How Review should notice the same
+    receipt sent twice (by a helper or by importing), and the words.
+87. **Phone first screens, drawn in words.** For Needs attention, Stock in
+    and out, Count this batch and Review on a phone member: what each shows,
+    exact labels, and what is left out compared with a computer.
+
 ## Brief for Lane B, batch 3 (done)
 
 > You are Lane B, the checker and drafter. You have full internet access for

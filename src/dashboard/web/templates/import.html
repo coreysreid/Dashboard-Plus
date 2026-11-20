@@ -83,7 +83,9 @@
       <li style="padding:.3rem 0;border-top:1px solid var(--line)">Row {{ r.row }}: {% for label, text in r.text.parts %}{{ label }}: <bdi>{{ text }}</bdi>{% if not loop.last %} · {% endif %}{% endfor %}</li>
     {% endfor %}</ul>
     {% for line in skipped %}<p class="problem" role="status" style="margin:.4rem 0">{{ line }} These values will not be added. Check each row on Review, or go back and fix the file first.</p>{% endfor %}
-    <div class="actions"><button type="submit" formaction="/settings/import/send">Send {{ sending }} row{{ "" if sending == 1 else "s" }} to Review</button></div>
+    {% set waiting_dates = unclear and not dates_ok %}
+    {% if waiting_dates %}<p class="notice" role="status" style="margin:.4rem 0">{{ unclear | length }} row{{ " needs" if unclear | length == 1 else "s need" }} your date choice before {{ "it" if unclear | length == 1 else "they" }} can be sent. Tick "These dates are read the way I meant" above, then press Check again. Nothing has been sent.</p>{% endif %}
+    <div class="actions"><button type="submit" formaction="/settings/import/send"{% if waiting_dates %} disabled aria-disabled="true"{% endif %}>Send {{ sending }} row{{ "" if sending == 1 else "s" }} to Review</button></div>
     <p class="muted" style="margin:0">{% if sending < run.ready | length %}{{ run.ready | length - sending }} ready row{{ "" if run.ready | length - sending == 1 else "s" }} skipped because {{ "it is" if run.ready | length - sending == 1 else "they are" }} already in your list. {% endif %}On Review you can accept them one by one or all at once.</p>
     {% endif %}
   </section>
