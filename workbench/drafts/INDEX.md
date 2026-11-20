@@ -8,6 +8,7 @@ and made-up example rows. Add a row here for each draft folder you create.
 | private_erase/ | Private-field erase scope, warnings and backup checks | designing erase |
 | stocktake_corrections/ | Batch count flow and explicit correction movements | designing counted amounts |
 | agent_api/ | Agent API misuse, contracts and helper flows | reviewing M2 helpers |
+| home_care_mark_done/ | Atomic completion, repeat-date offer and Undo design for shipped Home care | building Mark done |
 | stock_lots/ | Item lots (layered use-by dates), screen flows and core needs | planning layered stock dates |
 | readiness/ | 49 source-linked "Have you thought about…?" questions | reviewing readiness prompts |
 | country-packs/ | Sourced AU, US, UK and NZ content | reviewing country packs |
@@ -28,3 +29,4 @@ and made-up example rows. Add a row here for each draft folder you create.
 | utilities/ | Private accounts, People fault contacts and Home layout meter links | planning household utilities |
 | corey_test/ | One-hour solo Windows test and BACKLOG-ready feedback form | planning Corey's hands-on round |
 | speed_fixture/ | Large made-up household file for speed testing | measuring scale |
+| sync/ | Optional main/member household sync, conflicts, privacy and offline bundles | deciding sync |

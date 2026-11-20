@@ -41,3 +41,5 @@ expected, actual, severity (blocker, important, minor), suggested change.
 | 2026-11-19-batch14-ux-matrix.csv | Ninety route, response and document-width observations. | reproducing batch 14 UX results |
 | ux_2026_11_19/ | Smith phone and desktop captures of stocktake wording. | seeing the singular-unit finding |
 | 2026-11-19-agent-api-abuse-recheck.md | All 22 misuse cases checked against shipped code; concurrent cap race reproduced. | hardening the Agent API |
+| 2026-11-19-new-screens-wording.md | Exact replacements for Count, Review, Helpers and Mark returned. | polishing new screen words |
+| 2026-11-20-mcp-connector-acceptance.md | Shipped connector run against twelve checks, worst-first partials and exact probes. | accepting the MCP connector |
