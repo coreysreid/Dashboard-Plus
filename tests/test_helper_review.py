@@ -70,7 +70,7 @@ class ReviewScreenTests(TempDirTestCase):
         self.assertIn("an ordinary restart needs no new copy", page)
         self.assertIn("Current local address:", page)
         self.assertIn("Receipt helper", page)
-        self.assertIn("May look and suggest", page)
+        self.assertIn("May look and suggest new records", page)
         self.assertIn("Parts: Household stock", page)
         self.assertIn("Private details: never shared", page)
         self.assertRegex(page, r'name="modules" value="stock"(?! checked)')  # nothing ticked by default

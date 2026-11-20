@@ -3,7 +3,7 @@
 {% block body %}
 <p class="muted"><a href="/settings">Settings</a></p>
 <h1>Helpers</h1>
-<p class="lead">A helper is a program, such as an AI assistant, that can look at parts of your records and suggest new ones. Nothing a helper suggests is added until you accept it on the <a href="/review">Review</a> page. Private details are never shared with helpers.</p>
+<p class="lead">A helper is a program, such as an AI assistant, that can look at parts of your records and suggest new ones. Nothing a helper suggests is added until you accept it on the <a href="/review">Review</a> page. Fields marked private are never shared with helpers. Ordinary names and notes in the parts you tick can be read.</p>
 <p>Helpers connect only from this computer, with no internet needed for that. But if the helper uses an online AI service, whatever you let it read (the parts you tick below) is sent to that service. Tick only what it needs. A helper that runs entirely on this computer sends nothing anywhere.</p>
 <p>Treat a helper's key like a password: don't paste it into chats or emails. If it was lost or might have been seen, press <strong>Make a new key</strong> on that helper.</p>
 {% if turned_off %}<p class="notice" role="status">{{ turned_off.name }} can no longer connect. Its suggestions and history are kept.</p>{% endif %}

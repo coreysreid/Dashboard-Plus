@@ -8,7 +8,7 @@
   <input type="text" id="helper-key" value="{{ key }}" readonly autocomplete="off" spellcheck="false" style="font-family:monospace">
   <div class="actions"><button type="button" id="copy-key">Copy</button><span id="copied" class="muted" role="status"></span></div>
 </div>
-<p><strong>Keep it private.</strong> Anyone with this key can {% if can_suggest %}look at and suggest records for{% else %}look at{% endif %} {{ parts }} while Dashboard is open on this computer. If you give it to an online service, that service will see what the helper reads. You can turn it off in Settings → Helpers at any time.</p>
+<p><strong>Keep it private.</strong> Anyone with this key can {% if can_suggest %}look at records and suggest new records for{% else %}look at{% endif %} {{ parts }} while Dashboard is open on this computer. If you give it to an online service, that service will see what the helper reads. You can turn it off in Settings → Helpers at any time.</p>
 {% include "helper_connect.html" %}
 <div class="actions"><a class="button" href="/settings/helpers">Done</a></div>
 <script>

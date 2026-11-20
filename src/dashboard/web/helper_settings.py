@@ -16,7 +16,7 @@ from dashboard.core import helper_address, helpers, settings
 from dashboard.errors import PlainError
 
 helper_settings = Blueprint("helper_settings", __name__)
-ACCESS_WORDS = {"read": "May look", "suggest": "May look and suggest"}
+ACCESS_WORDS = {"read": "May look", "suggest": "May look and suggest new records"}
 KEY_PLACEHOLDER = "YOUR-KEY-HERE"  # the real key is never put into this block (decision 0083)
 ALREADY_MADE = ("A key was already made from this form. It cannot be shown again. "
                 "Return to Helpers if you want to make another.")
