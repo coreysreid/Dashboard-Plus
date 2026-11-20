@@ -60,8 +60,38 @@ class DocumentsModuleTests(TempDirTestCase):
     def test_there_is_nowhere_to_type_a_document_number(self):
         """A location list, not a vault (draft NOTES): no number, password or copy of the paper."""
         columns = modules.load_module(ROOT / "modules" / "documents").tables["documents"].columns
-        self.assertEqual(set(columns), {"name", "kind", "holder", "place", "renew_by", "notes"})
+        self.assertEqual(set(columns), {"name", "kind", "holder", "place", "renew_by", "copies", "notes"})
         self.assertFalse(any(c.type == "file" for c in columns.values()))
+
+    def test_copies_are_names_of_places_only_never_a_file_or_number(self):
+        tables = modules.load_module(ROOT / "modules" / "documents").tables
+        self.assertEqual(set(tables["copy_places"].columns), {"name"})
+        self.assertEqual((tables["documents"].columns["copies"].type, tables["documents"].columns["copies"].to),
+                         ("links", "copy_places"))
+
+    def test_a_paper_can_have_copies_at_several_places_shown_on_the_paper_its_form_the_sheet_and_export(self):
+        usb = self.records.create("documents__copy_places", {"name": "Blue USB drive"})
+        cloud = self.records.create("documents__copy_places", {"name": "Family cloud folder"})
+        paper = self.records.create("documents__documents", {"name": "Family passports", "kind": "passport",
+                                                             "copies": [usb, cloud]})
+        self.assertEqual(self.records.get("documents__documents", paper)["copies"], [usb, cloud])
+        self.records.update("documents__documents", paper, {"copies": [usb]})
+        self.assertEqual(self.records.get("documents__documents", paper)["copies"], [usb])
+        self.records.update("documents__documents", paper, {"copies": [usb, cloud]})
+        client = self.client()
+        for path in (f"/t/documents__documents/{paper}",
+                     "/sheet/documents/document_review"):
+            text = client.get(path, base_url=BASE).get_data(as_text=True)
+            self.assertIn("Blue USB drive", text, path)
+        self.assertIn("Copies also kept at", client.get("/t/documents__documents/new", base_url=BASE).get_data(as_text=True))
+        from dashboard import __version__
+        from dashboard.core import export
+        import io, zipfile
+        with zipfile.ZipFile(io.BytesIO(export.build(self.conn, self.registry, __version__))) as archive:
+            names = [n for n in archive.namelist() if "documents__documents" in n or "Important documents" in n]
+            text = "".join(archive.read(n).decode("utf-8-sig") for n in names if n.endswith(".csv"))
+        self.assertIn("Blue USB drive", text)
+        self.assertIn("Family cloud folder", text)
 
     def test_a_household_with_no_documents_is_asked_nothing(self):
         self.assertEqual(self.gaps(), [])

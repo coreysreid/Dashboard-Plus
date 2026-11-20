@@ -36,6 +36,9 @@ class ExampleHouseholdTests(TempDirTestCase):
                                               "Home insurance policy", "Kidney beans"])  # the 3 tins on Shelf 3, not the 10 in the garage
         beans = result["conn"].execute("SELECT quantity FROM stock__items WHERE name = 'Kidney beans'").fetchone()
         self.assertEqual(beans[0], 13)
+        copies = result["conn"].execute("SELECT p.name FROM documents__documents__copies c "
+                                        "JOIN documents__copy_places p ON p.id = c.to_id ORDER BY p.name").fetchall()
+        self.assertEqual([r[0] for r in copies], ["Blue USB drive", "Blue USB drive", "Family cloud folder"])
         self.assertEqual(result["gaps"], 3)  # their only first aid kit is in the car; Home layout is filled in;
         # how to reach Dave about the drill
         details = {i.name: i.detail for i in watch.expiring(result["conn"], result["registry"], TODAY)}

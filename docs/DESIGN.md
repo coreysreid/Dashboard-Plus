@@ -633,7 +633,8 @@ number and the core can load both for a transition period.
   shipped, decision 0062). A list of where papers are kept, not a document
   vault. One table: documents (name, kind such as passport, insurance, will
   or warranty; whose it is, a link to `people.people`; where it is kept, a
-  link to `stock.places`; a review or renew-by date; notes). There is no
+  link to `stock.places`; a review or renew-by date; the places copies are also kept, a link to the
+  small table `copy_places`, decision 0090; notes). There is no
   field for a document number, password or copy of the paper. Behaviour: the
   date is *due* on the day the household chose; one gap asks, per paper,
   "Where is it kept?"; a household with no papers listed is asked nothing; a

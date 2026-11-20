@@ -165,7 +165,7 @@ class LentOutModuleTests(TempDirTestCase):
         self.assertEqual((row["status"], row["returned_on"]), ("returned", self.day(0)))
         self.assertEqual(self.due(), {})  # no longer overdue
         page = client.get(f"{path}?done=returned", base_url=BASE).get_data(as_text=True)
-        self.assertIn("Marked as returned today.", page)
+        self.assertIn("Marked returned today.", page)
         self.assertNotIn(">Mark returned</button>", page)
         self.assertIn('from "No, still out" to "Yes, returned"', page)  # in the loan's history like any change
         history = len(self.records.history("lent_out__loans", loan))

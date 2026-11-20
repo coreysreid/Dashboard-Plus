@@ -92,4 +92,5 @@ One record per decision, from `TEMPLATE.md`. Never deleted; reversed ones are ma
 | [0087](0087-add-a-helper-form-makes-one-key.md) | An Add a helper form makes one key even if sent twice: a one-use form token, and plain words on a repeat | Accepted |
 | [0088](0088-limits-hold-under-simultaneous-requests.md) | Helper limits are checked again inside the write lock; other API versions answer plain 404 JSON; count pages say "1 tin" | Accepted |
 | [0089](0089-household-sync-main-and-members.md) | Household sync: one main, members push requests to Review, over a private network (Tailscale or WireGuard); private details never travel in v1 | Accepted (direction; security review before shipping) |
+| [0090](0090-documents-record-where-copies-are-kept.md) | Documents record where copies are also kept (a named place such as "Blue USB drive" ticked on each paper); never the paper, a scan or a number | Accepted |
 | [TEMPLATE](TEMPLATE.md) | Blank record to copy for a new decision | recording a decision |

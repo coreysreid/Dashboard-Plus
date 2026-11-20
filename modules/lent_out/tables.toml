@@ -25,7 +25,7 @@ key = "returned"
 label = "Mark returned"
 show_when = { status = "out" }
 set = { status = "returned", returned_on = "today" }
-done = "Marked as returned today. If it came back on another day, change Returned on below."
+done = "Marked returned today. If it came back on another day, change Returned on below."
 
 # Reminded a week before, and only while the thing is still out: a returned loan is never overdue.
 [tables.loans.watch]

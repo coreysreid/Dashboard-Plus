@@ -141,6 +141,7 @@ One record per decision, from `TEMPLATE.md`. Never deleted; reversed ones are ma
 | [0087](0087-add-a-helper-form-makes-one-key.md) | An Add a helper form makes one key even if sent twice: a one-use form token, and plain words on a repeat | Accepted |
 | [0088](0088-limits-hold-under-simultaneous-requests.md) | Helper limits are checked again inside the write lock; other API versions answer plain 404 JSON; count pages say "1 tin" | Accepted |
 | [0089](0089-household-sync-main-and-members.md) | Household sync: one main, members push requests to Review, over a private network (Tailscale or WireGuard); private details never travel in v1 | Accepted (direction; security review before shipping) |
+| [0090](0090-documents-record-where-copies-are-kept.md) | Documents record where copies are also kept (a named place such as "Blue USB drive" ticked on each paper); never the paper, a scan or a number | Accepted |
 | [TEMPLATE](TEMPLATE.md) | Blank record to copy for a new decision | recording a decision |
 
 ## docs/plans/  (summary: build plans for larger pieces of work, written before building)
@@ -233,9 +234,9 @@ numbered migrations. See docs/DESIGN.md section 6 for the module contract.
 | Entry | What it is | Open it when |
 |---|---|---|
 | module.toml | Name, version, description; requires People (whose paper) and Household stock (places) | changing the module's details |
-| tables.toml | Where each paper is kept, whose it is and its review or renewal date, with one gap question; no document numbers | adding a field or a gap question |
+| tables.toml | Where each paper is kept, whose it is, its review or renewal date and the places copies are also kept (copy_places), with one gap question; no document numbers | adding a field or a gap question |
 | labels.toml | Friendly labels, help text, form and list order | changing wording or order |
-| sheets.toml | Document review dates sheet: names, kinds and dates only, no places or numbers | changing what prints |
+| sheets.toml | Document review dates sheet: names, kinds, dates and where copies are kept; no original places or numbers | changing what prints |
 | migrations/ | Numbered database changes | after changing tables.toml |
 
 ## modules/documents/migrations/  (summary: this module's numbered database changes; never edit a released one)
@@ -244,6 +245,7 @@ Generate the next one with: python tools/make_migration.py documents --name <wha
 | Entry | What it is | Open it when |
 |---|---|---|
 | 0001_first_tables.sql | The module's first table, generated from tables.toml | checking how the table is stored |
+| 0002_copies_also_kept.sql | Places copies are kept, and the link from each paper to them | checking how copies are stored |
 
 ## modules/garden/  (summary: the Vegetable garden module, files only; built on Lane B's draft, linking to Household stock)
 | Entry | What it is | Open it when |
@@ -500,7 +502,7 @@ Add a new file with the next number instead of changing an old one.
 | helpers.html | Settings, Helpers: the helper list, the address, and the form that makes a key | changing the Helpers settings page |
 | helper_key.html | The one page that shows a new helper key, with a Copy button and a warning to keep it private | changing the new-key page |
 | helper_connect.html | "Connect an AI assistant": settings to paste into an assistant's app, with a placeholder for the key | changing the assistant set-up words |
-| review.html | Review suggestions: each helper's waiting suggestions with Accept and Reject | changing the Review page |
+| review.html | Review: each helper's waiting suggestions with Accept and Reject | changing the Review page |
 | export.html | Settings, Export my records: what is in the export and the download button | changing the Export page |
 | restore_*.html | Settings, Backups: the list of backups, the check-and-compare page, the result, and the shared Undo restore box | changing the restore pages |
 
