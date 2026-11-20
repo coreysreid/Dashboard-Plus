@@ -146,6 +146,7 @@ One record per decision, from `TEMPLATE.md`. Never deleted; reversed ones are ma
 | [0092](0092-steady-helper-address.md) | A steady helper address: Dashboard writes `data/run/helper-address.json` (address and run ID only) atomically at start and removes its own on close; the connector reads it for every call via `DASHBOARD_PLUS_ADDRESS_FILE`, then still does the 0086 hello before the key | Accepted |
 | [0093](0093-one-step-helper-key-rotation.md) | "Make a new key" for a helper: one press, one-use token, key shown once, old key stopped; same helper, grant and history; pause, file swap, finish in that order, failing closed; in-flight writes rechecked | Accepted |
 | [0094](0094-import-pauses-on-duplicates-and-unclear-dates.md) | Import pauses before sending: a name already in the list is skipped unless "Add anyway" is ticked, short dates that read either way need one tick, links that match nothing and skipped columns are summed up; Review wording trimmed | Accepted |
+| [0095](0095-wine-promoted.md) | Wine collection is switched on from Lane B's draft: counts typed by hand, free-text place, ordinary price and tasting notes that enter exports (and say so), no reminders or advice, a wine with bottles or notes cannot be deleted; examples in Smith and Taylor | Accepted |
 | [TEMPLATE](TEMPLATE.md) | Blank record to copy for a new decision | recording a decision |
 
 ## docs/plans/  (summary: build plans for larger pieces of work, written before building)
@@ -233,6 +234,7 @@ numbered migrations. See docs/DESIGN.md section 6 for the module contract.
 | pets/ | Pets, their vet, treatments and medicine with due dates, weigh-ins, vet visits; a pet details sheet | changing pets |
 | stock/ | Pantry, water, first aid, tools and hardware, with places, minimums and use-by dates | changing stock, running low or days of water |
 | vehicles/ | Each vehicle, who to call if it breaks down, registration, insurance and service dates; a Vehicles sheet | changing vehicle records |
+| wine/ | Wine collection: wines, bottle counts you type, a free-text place, tasting notes; a Wine collection sheet | changing wine records |
 
 ## modules/documents/  (summary: the Important documents module, files only; built on Lane B's draft, linking to People and Household stock)
 | Entry | What it is | Open it when |
@@ -399,6 +401,22 @@ Generate the next one with: python tools/make_migration.py stock --name <what_ch
 
 ## modules/vehicles/migrations/  (summary: this module's numbered database changes; never edit a released one)
 Generate the next one with: python tools/make_migration.py vehicles --name <what_changed>
+
+| Entry | What it is | Open it when |
+|---|---|---|
+| 0001_first_tables.sql | The module's first tables, generated from tables.toml | checking how the tables are stored |
+
+## modules/wine/  (summary: the Wine collection module, files only; built on Lane B's draft, no links to other modules)
+| Entry | What it is | Open it when |
+|---|---|---|
+| module.toml | Name, version, description; requires nothing | changing the module's details |
+| tables.toml | Wines, bottles (a count you type, a free-text place, an ordinary price) and tasting notes; one question about where bottles are kept | adding a field or a gap question |
+| labels.toml | Friendly labels, help text (says price and notes enter exports), form and list order | changing wording or order |
+| sheets.toml | Wine collection sheet: wine, count, place and bought on, with no price or notes | changing what prints |
+| migrations/ | Numbered database changes | after changing tables.toml |
+
+## modules/wine/migrations/  (summary: this module's numbered database changes; never edit a released one)
+Generate the next one with: python tools/make_migration.py wine --name <what_changed>
 
 | Entry | What it is | Open it when |
 |---|---|---|

@@ -16,7 +16,7 @@ home_type = "house"
 storeys = 2
 mobility_needs = false
 hazards = ["bushfire", "heat", "storm"]
-modules = ["documents", "garden", "home_care", "home_layout", "lent_out", "medical", "people", "pets", "stock", "vehicles"]
+modules = ["documents", "garden", "home_care", "home_layout", "lent_out", "medical", "people", "pets", "stock", "vehicles", "wine"]
 
 # ---- People -----------------------------------------------------------------
 
@@ -836,3 +836,24 @@ title = "Mend the bed edge"
 bed = "Back yard raised bed"
 due_on = "today-20"
 done = true
+
+# ---- Wine collection ----------------------------------------------------------
+# Counts are typed by the household: the tasting note does not change the bottle count.
+
+[[wine.wines]]
+name = "Evening Red"
+producer = "Example Vineyard"
+vintage = 2023
+region = "Fictional Valley"
+grape = "Shiraz"
+
+[[wine.bottles]]
+wine = "Evening Red"
+quantity = 2
+place = "Pantry"
+bought_on = "today-30"
+
+[[wine.tastings]]
+wine = "Evening Red"
+tasted_on = "today-5"
+notes = "Remembered the fruit flavour; one bottle opened, count updated separately."

@@ -756,9 +756,17 @@ number and the core can load both for a transition period.
   from the API connector, jobs are recurring events, and the outcome is a
   money-saved figure. A step-by-step "build this module" guide uses it. It is
   an optional module, off unless chosen in the wizard.
-- **Wine collection** (declarative; a serious module for collectors, kept compact on purpose so it also shows how little a new module takes). Tables: wines (name, producer, vintage,
-  region, grape), bottles or stock (quantity, location, bought, price), tasting
-  notes. About one page of files; its purpose is to prove how easy a module is.
+- **Wine collection** (declarative; requires nothing; shipped, decision 0095;
+  kept compact on purpose). Tables: wines (name, producer, vintage, region,
+  grape), bottles (a count the household types, a free-text "Where kept", bought
+  on, an ordinary Price paid) and tasting notes (a date and text). Behaviour:
+  counts never change by themselves, and a tasting note does not take a bottle
+  away; one gap asks where the bottles of a wine are kept; a wine with bottles
+  or notes cannot be deleted; a **Wine collection** sheet prints wine, count,
+  place and bought on, without price or notes. Price paid and tasting notes are
+  ordinary fields: a helper granted Wine reads them and the spreadsheet export
+  includes them, and the forms say so. No drinking, storage, buying, health or
+  value advice is stored or worked out.
 - **Graphing** (module). Charts over any table or measure or daily-fact view,
   using one well-trodden JavaScript charting library (see section 15). Chart
   configurations are saved as records. Annotations and events are drawn on
@@ -1566,7 +1574,7 @@ Open a module's own INDEX.md before its files.
 | people/ | Contacts, roles, important details, emergency sheet (files only) | changing who-to-call, emergency sheet or sensitive fields |
 | garden/ | Vegetable garden; the worked example module (files only) | learning to build a module |
 | stock/ | Pantry, emergency water, tools and hardware, receipts (files only) | changing stock, reorder or supply-cover behaviour |
-| wine/ | Wine collection (files only; compact module) | changing wine tables |
+| wine/ | Wine collection (files only; compact module; shipped, decision 0095) | changing wine tables |
 | graphing/ | Charts over any table | changing chart behaviour |
 | analysis/ | Statistics and the question loop | changing how findings are made |
 | api_connector/ | Pulls data from outside APIs | adding or fixing a source |

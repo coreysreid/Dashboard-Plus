@@ -98,6 +98,10 @@ STAGES = [
      "no longer a reminder.", {"goto": "/t/garden__jobs", "module": "garden"}),
     ("18o-garden-sheet", "Garden plan sheet", "As it prints: beds and where they are, plantings and the jobs "
      "not yet done, with no notes.", {"goto": "/sheet/garden/plan", "media": "print", "module": "garden"}),
+    ("18p-wine", "Wine collection", "Each wine, how many bottles the household says it has and where they are "
+     "kept; the count is typed, never worked out.", {"goto": "/t/wine__bottles", "module": "wine"}),
+    ("18q-wine-sheet", "Wine collection sheet", "As it prints: wine, count, place and bought on, with no price "
+     "or tasting notes.", {"goto": "/sheet/wine/collection", "media": "print", "module": "wine"}),
     ("19-needs-attention", "Needs attention", "Days of water with the working shown, running low, use-by "
      "and due dates, and details worth filling in.", {"goto": "/attention"}),
     ("20-supplies-sheet", "Emergency supplies sheet", "As it prints: water, first aid, power and food, and "
