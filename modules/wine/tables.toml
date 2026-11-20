@@ -1,3 +1,7 @@
+# A small, manual wine list (decision 0095). Counts are typed by the household and never change by themselves;
+# "Where kept" is free text, not a Stock place; Price paid and Tasting notes are ordinary fields that enter
+# spreadsheet exports. Nothing here gives buying, storage, drinking, health or value advice.
+
 [tables.wines]
 title = "Wines"
 columns.name = { type = "text", required = true }
@@ -8,6 +12,7 @@ columns.grape = { type = "text" }
 
 [tables.bottles]
 title = "Bottles"
+record_name = "{wine}, {quantity}[ at {place}]"
 columns.wine = { type = "link", to = "wines", required = true }
 columns.quantity = { type = "integer", required = true, min = 0 }
 columns.place = { type = "text" }
@@ -21,6 +26,7 @@ message = "Where are the bottles of {wine} kept? Write a shelf or rack if it wou
 
 [tables.tastings]
 title = "Tasting notes"
+record_name = "{wine}, tasted {tasted_on}"
 columns.wine = { type = "link", to = "wines", required = true }
 columns.tasted_on = { type = "date", required = true }
 columns.notes = { type = "longtext", required = true }

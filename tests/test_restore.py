@@ -135,7 +135,7 @@ class RestoreTests(RestoreTestCase):
 
     def test_a_backup_with_a_part_this_program_lacks_is_refused(self):
         copy = self.tampered("daily-2026-06-05.db", "INSERT INTO core__migrations VALUES "
-                                                    "('wine', 1, 'first', 'x', '2027-01-01')")
+                                                    "('stargazing', 1, 'first', 'x', '2027-01-01')")
         self.assertEqual(restore.check(copy, restore.known_tracks(self.loaded)).state, "unknown")
         with self.assertRaises(restore.RestoreError):
             restore.restore(self.data, copy, self.loaded)

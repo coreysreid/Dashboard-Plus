@@ -11,7 +11,7 @@ from people using the earlier ones; that is the point of shipping early.
 | M3 | Readiness prompts (Medical moved into M1, decision 0051), first country pack, optional data-folder passphrase, optional sharing with the household, household sync (decision 0089: one main, members push requests to Review), a macOS build | Planned. Sync direction chosen (0089); built in stages after a security review |
 | M3b | Phone apps for Android and iOS, joining the household as sync members (0089) | Planned, near pipeline (Corey, 20 November 2026); design with Lane B |
 | M4 | Graphing, Analysis, the question loop, the monthly outcomes screen | Planned |
-| M5 | Wine, API connector (Pets moved into M1, decision 0047; Garden switched on, decision 0076) | Planned. The connector for AI assistants is done (decision 0083): assistant apps that support MCP can use a helper's key through `python -m dashboard.connector`. The connector that pulls data from outside services (DESIGN 6.1) is still to come |
+| M5 | API connector (Pets moved into M1, decision 0047; Garden switched on, decision 0076; Wine switched on, decision 0095: wines, bottle counts you type, tasting notes) | Planned. The connector for AI assistants is done (decision 0083): assistant apps that support MCP can use a helper's key through `python -m dashboard.connector`. The connector that pulls data from outside services (DESIGN 6.1) is still to come |
 
 Why this order: M1 proves the riskiest promises (unzip-and-click on Windows,
 modules built from files alone) and gives real value on day one. The question

@@ -218,6 +218,18 @@ As it prints: beds and where they are, plantings and the jobs not yet done, with
 
 ![Garden plan sheet](screenshots/smith/18o-garden-sheet.png)
 
+### Wine collection
+
+Each wine, how many bottles the household says it has and where they are kept; the count is typed, never worked out.
+
+![Wine collection](screenshots/smith/18p-wine.png)
+
+### Wine collection sheet
+
+As it prints: wine, count, place and bought on, with no price or tasting notes.
+
+![Wine collection sheet](screenshots/smith/18q-wine-sheet.png)
+
 ### Needs attention
 
 Days of water with the working shown, running low, use-by and due dates, and details worth filling in.
@@ -679,6 +691,18 @@ Garden jobs with the date the household chose; a finished job is no longer a rem
 As it prints: beds and where they are, plantings and the jobs not yet done, with no notes.
 
 ![Garden plan sheet](screenshots/taylor/18o-garden-sheet.png)
+
+### Wine collection
+
+Each wine, how many bottles the household says it has and where they are kept; the count is typed, never worked out.
+
+![Wine collection](screenshots/taylor/18p-wine.png)
+
+### Wine collection sheet
+
+As it prints: wine, count, place and bought on, with no price or tasting notes.
+
+![Wine collection sheet](screenshots/taylor/18q-wine-sheet.png)
 
 ### Needs attention
 

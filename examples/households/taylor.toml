@@ -17,7 +17,7 @@ home_type = "apartment"
 storeys = 1
 mobility_needs = false
 hazards = ["flood", "snow", "storm"]
-modules = ["documents", "garden", "home_care", "home_layout", "lent_out", "medical", "people", "stock", "vehicles"]
+modules = ["documents", "garden", "home_care", "home_layout", "lent_out", "medical", "people", "stock", "vehicles", "wine"]
 
 # ---- People -----------------------------------------------------------------
 
@@ -351,3 +351,23 @@ title = "Check windowsill pot"
 bed = "Kitchen windowsill pot"
 due_on = "today+6"
 done = false
+
+# ---- Wine collection ----------------------------------------------------------
+
+[[wine.wines]]
+name = "Weekend Rosé"
+producer = "Example Vineyard"
+vintage = 2024
+region = "Fictional Valley"
+grape = "Rosé blend"
+
+[[wine.bottles]]
+wine = "Weekend Rosé"
+quantity = 1
+place = "Kitchen cupboard"
+bought_on = "today-8"
+
+[[wine.tastings]]
+wine = "Weekend Rosé"
+tasted_on = "today-3"
+notes = "Light and easy to remember."

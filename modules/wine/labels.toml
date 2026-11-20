@@ -1,4 +1,5 @@
 [tables.wines]
+home = "main"
 empty = "Add a wine you want to remember."
 form = ["name", "producer", "vintage", "region", "grape"]
 list = ["name", "producer", "vintage", "region"]
@@ -7,6 +8,7 @@ columns.vintage = { help = "Leave blank for a non-vintage wine." }
 columns.region = { help = "As written on the label, if you want to record it." }
 
 [tables.bottles]
+home = "more"
 empty = "Add a bottle count for a wine you have."
 form = ["wine", "quantity", "place", "bought_on", "price"]
 list = ["wine", "quantity", "place", "bought_on"]
@@ -16,6 +18,7 @@ columns.bought_on = { label = "Bought on" }
 columns.price = { label = "Price paid", help = "For this entry, in your household's currency. Leave blank if unhelpful. It is included in a spreadsheet export." }
 
 [tables.tastings]
+home = "more"
 empty = "No tasting notes yet. Add one when you want to remember a wine."
 form = ["wine", "tasted_on", "notes"]
 list = ["wine", "tasted_on", "notes"]
