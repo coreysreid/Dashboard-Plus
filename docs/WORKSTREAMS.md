@@ -555,6 +555,34 @@ pipeline, integrated as sync members. Work in `workbench/drafts/sync/` and new
 75. **Wine promotion pass.** Your ready-check put Wine first: bring the draft
     to promotion standard with acceptance checks for Lane A.
 
+### Batch 18: checking the 20 November build (M2, M3)
+
+Built on 20 November: Important documents "Copies also kept" (0090), Home
+care Mark done with Undo (0091), a steady helper address (0092), one-step
+helper key rotation (0093), import pauses on duplicates and unclear dates
+(0094), and your wording reports applied. Sync waits for the stage 0
+security review (your item 71 brief).
+
+76. **UX check of the 20 November build.** All three households, 320px and
+    desktop: Mark done (save, double press, Undo, repeat offer), Copies also
+    kept, import with duplicates and 1/2/27, Settings → Helpers with the
+    address file and Make a new key. Worst first, exact words to change.
+77. **Connector with the address file, end to end.** Restart Dashboard twice
+    and confirm the assistant keeps working without re-pasting; then rotate
+    the key and confirm the old one stops. Exact steps and results.
+78. **Sync stage 1, detailed.** For decision 0089 stage 1 (stable IDs,
+    revisions, change log, the per-column "travels to members" rule with
+    People `detail` depending on `kind`): table-by-table list, migration
+    order, how existing households upgrade, and acceptance checks. Design
+    only.
+79. **Wine, final check against the shipped core.** Re-run your 15 checks
+    against current main and list anything Lane A must change at promotion.
+80. **Utilities promotion pass.** Link meters to Home layout, add the fault
+    phone to its sheet now that linked phones print (0072), and bring it to
+    promotion standard with acceptance checks.
+81. **Corey's one-hour test, refreshed again.** Add Mark done, Copies also
+    kept and Make a new key; keep it to 60 minutes.
+
 ## Brief for Lane B, batch 3 (done)
 
 > You are Lane B, the checker and drafter. You have full internet access for

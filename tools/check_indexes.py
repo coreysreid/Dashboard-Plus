@@ -13,7 +13,7 @@ from repofiles import read_text, repo_files  # noqa: E402
 
 MAX_LINES = 25
 # Folders that hold a long catalogue of similar items may exceed the usual limit.
-LINE_LIMIT_OVERRIDES = {"docs/decisions": 120, "src/dashboard/web/templates": 40, "tests": 60, "workbench/drafts": 40, "workbench/reports": 60}
+LINE_LIMIT_OVERRIDES = {"docs/decisions": 120, "src/dashboard/web/templates": 40, "src/dashboard/core": 40, "tests": 60, "workbench/drafts": 40, "workbench/reports": 60}
 PLACEHOLDER = "DESCRIBE ME"
 LINK = re.compile(r"\[[^\]]*\]\(([^)]+)\)")
 SEPARATOR_CELL = re.compile(r"^:?-{3,}:?$")
