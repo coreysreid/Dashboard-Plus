@@ -17,7 +17,7 @@ columns.price = { type = "money", min = 0 }
 [tables.bottles.watch]
 [[tables.bottles.watch.gaps]]
 missing = "place"
-message = "Where are the bottles of {wine} kept? Add a place if you want to find them quickly."
+message = "Where are the bottles of {wine} kept? Write a shelf or rack if it would help you find them."
 
 [tables.tastings]
 title = "Tasting notes"

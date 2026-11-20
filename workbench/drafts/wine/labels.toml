@@ -13,11 +13,11 @@ list = ["wine", "quantity", "place", "bought_on"]
 columns.quantity = { label = "Bottles on hand", help = "The current count. Update it when bottles are added or opened." }
 columns.place = { label = "Where kept", help = "A shelf, rack or other place you can recognise." }
 columns.bought_on = { label = "Bought on" }
-columns.price = { label = "Price paid", help = "For this entry, in the household's own currency. Leave blank if unhelpful." }
+columns.price = { label = "Price paid", help = "For this entry, in your household's currency. Leave blank if unhelpful. It is included in a spreadsheet export." }
 
 [tables.tastings]
 empty = "No tasting notes yet. Add one when you want to remember a wine."
 form = ["wine", "tasted_on", "notes"]
 list = ["wine", "tasted_on", "notes"]
 columns.tasted_on = { label = "Tasted on" }
-columns.notes = { label = "Your notes", help = "Write what you want to remember; there is no required scoring system." }
+columns.notes = { label = "Your notes", help = "Write what you want to remember; there is no required score. These notes are visible in the list and a spreadsheet export." }
