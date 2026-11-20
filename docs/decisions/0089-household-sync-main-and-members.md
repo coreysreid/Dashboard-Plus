@@ -28,6 +28,15 @@ home router. USB bundles come later as the offline way to do the same thing.
    as "kept on main"; their absence never clears them. The app should keep
    saying plainly what it is for, and not invite people to store ID numbers or
    passwords. What a person keeps on their own USB stick is up to them.
+   Corey clarified (20 November): **medical notes are safety information, not
+   private secrets.** Allergies, conditions, medications, blood type, care and
+   diet needs stay hidden on screen until Show and print on the emergency
+   sheet, and **do travel to members**. What never travels: access
+   instructions (where a spare key is), Home layout codes and vehicle
+   registration numbers. For papers, the app records where a document and its
+   copies are kept ("Green HDD", "Family iCloud"), never the document, a scan
+   or its number. This needs a "travels to members" choice per private column
+   (stage 1).
 3. **The private network is pluggable.** Tailscale or self-run WireGuard to
    start, with room for a third provider later. Dashboard Plus never depends on
    one vendor: it listens only on the private-network address the household
