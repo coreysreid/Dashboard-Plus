@@ -1,67 +1,55 @@
-# Household sync: decisions, core work and sources
+# Household sync: decision 0089 delta, core work and sources
 
-Checked **19 November 2026**. This is item 69 for Lane A's decision 0089. Corey's newer main/member push–pull brief in `docs/WORKSTREAMS.md` supersedes the build order and automatic merge assumptions of `docs/plans/household-sharing.md` option C and decision 0081; its warnings about local SQLite files and optional sharing still apply. No code, network listener or key scheme is shipped by this draft.
+Updated **20 November 2026** against accepted `docs/decisions/0089-household-sync-main-and-members.md`, `docs/WORKSTREAMS.md` batch 17 item 70 and the shipped People, Home layout and Vehicles tables. This remains a design; no sync listener, key scheme or network exchange has shipped. The earlier item 69 draft assumed optional module grants and a private-details switch. Decision 0089 settles those product choices.
 
 **20 November item 68 follow-up:** Corey accepted main/member sync in decision 0089; shared-folder option A is unselected. The [option A ready-check](../../reports/2026-11-20-sharing-option-a-ready-check.md) lists blockers if it is ever reconsidered: a whole copied database carries fields 0089 keeps local, cloud-file leases cannot provide an atomic cross-device lock, and current Review cannot reconcile two changed databases. That route needs a new product/privacy decision, a safe exchange and recovery design, and a full read-only write gate before it can be built. Do not use a shared SQLite file as a shortcut around the chosen record-level sync stages.
 
 ## What Corey needs to choose
+## What changed from item 69
 
-1. Is the first supported pair two Windows computers, with main expected to be on whenever they sync? A phone needs another client design.
-2. Are modules chosen for each member, or does membership always mean a full copy? If modules are chosen, should a member be allowed to push edits to modules it cannot pull? Proposed: no.
-3. May a member receive private fields? Proposed: Off by default with a separate confirmation and clear warning that its local database and backups then hold them. If Off, should private fields in mixed records remain main-only forever? Proposed: yes, and absence never clears them.
-4. Must main approve **every** incoming row, or may a household later permit automatic acceptance of conflict-free rows? Item 69 assumes every row reaches Review. Start there.
-5. When main restores an older backup, should members be re-paired, or can a controlled rebase after comparing epochs keep their keys? Proposed: pause and require an explicit rebase; never make the restored snapshot an automatic delete wave.
-6. Is a private network the only online transport for v1, with encrypted USB bundles as a later milestone? Proposed: yes. Which supported setup is acceptable for Corey's household: Tailscale or a self-managed alternative?
-7. How long should main retain accepted changes and tombstones for a member that never returns? Proposed: warn before retiring a device; a returning member starts with a new snapshot and reconciles its outbox.
-8. Should a headless home server be a supported v1 main or a later milestone? It needs a separate admin and recovery path.
-
-## Transport choice and limits
-
-| Option | Household cost | Network and trust consequence |
-|---|---|---|
-| Tailscale (pilot recommendation) | Install and join a private tailnet on both computers; hosted control service | WireGuard-based private device network, with relay fallback. Main must still authenticate the exact Dashboard process and member. Tailscale HTTPS certificates may publish tailnet/device names to public Certificate Transparency; prefer app-owned pinned certificate and a neutral device label. |
-| Headscale with Tailscale clients | Someone runs and maintains a separate control server | Self-hosts coordination but not Dashboard main; the home main must still be awake and reachable through the private network. More setup and recovery work. |
-| Manual WireGuard | Someone distributes peer keys, addresses and routes | Encrypted private IP path, but no household pairing/configuration interface supplied by WireGuard itself. Highest setup burden. |
-| ZeroTier | Join and authorize both devices on a virtual network; commonly hosted controller | Encrypted virtual LAN, possibly via relay; still needs Dashboard's own authentication and pinned main identity. |
-
-No public router forwarding, public reverse tunnel or Tailscale Funnel in the proposed product. Tailscale Serve is tailnet-only but its HTTPS naming/privacy trade-off should be checked before choosing it. A private device network can still include a compromised device. The sync door needs its own authenticated protocol and an app-owned TLS certificate bound to the selected private IP. The precise Windows firewall, certificate generation, interface-change and process-supervision behavior remains **unverified** and needs real-device tests before a promise to a household. No design should make the present local helper API remotely reachable by accident.
-
-## Core work, in household terms
-
-| What the household would see | What core must build |
+| Earlier draft | Decision 0089 rule and work needed |
 |---|---|
-| “Pair a computer” with a one-use invitation, main identity check and a named device that can be turned off | Separate member-key namespace, one-time display/fingerprint/revocation outside backups as in 0066, independent TLS identity, mutual nonce proof, exact Host and private-interface binding, replay/size/rate limits. Member keys must never authorize helper routes. |
-| “Syncing with …”; records stay available offline | Global row and link IDs, durable per-device outbox, accepted-main revision/cursor/epoch and an atomic change log beside `core__audit`; first-pull snapshot and later delta apply with checked backup. No direct SQLite-file sync. |
-| “Changes from Sam's laptop” on Review with side-by-side rows | Separate sync request staging for create/update/delete and private fields, dependency graph, per-row Accept/Reject, under-lock revalidation, idempotent operation/decision storage, accepted-change fan-out. Helper proposal tables (0068) are add-only and grant-filtered; they are not enough. |
-| “Counted 8; main now says 6” | Stock movement global IDs, exactly-once normal-path application, no replicated cached total, and an observation-based stocktake action that computes its correction at acceptance after showing intervening events (0070). |
-| “This part needs updating before it can sync” | Module and exchange-schema versions, migration of queued operations, per-module stop/retry, link safety and no cross-module bypass (0055, 0069, 0074). |
-| “Sync paused after restore” | Restore/Undo gate (0079) integrated with sync pause, new epoch, rebase flow and key revocation that survives restoring an old database. |
-| “Save an offline bundle” | Versioned authenticated-encrypted format, a dedicated pairing/bundle secret, safe key rotation/recovery, tamper/replay checks and no plaintext temp copy. Python's standard library has no suitable AEAD; dependency requires its own approval and decision under AGENTS.md. |
-| “Move main to a home server” | One-authority handover protocol, portable headless launcher, supervised start/stop, local admin and backup/restore path, private-interface binding and secure certificate re-pinning. |
+| A member could choose modules and turn private details on | A member receives the full copy of parts switched on. There is no v1 private-details grant. A per-column travel classification filters both directions, including bundled exchange and logs. |
+| All `sensitive` fields treated alike | Medical safety details in `people.important_info.detail` for allergy, condition, medication, care_need and dietary travel, remain behind Show and print on the emergency sheet. Access instructions, Home layout access_details and vehicle registration do not. `kind=other` defaults local until classified. This is a conditional field rule, so a simple `sensitive` Boolean cannot implement it. |
+| Tailscale recommended, with Headscale/ZeroTier comparison | Tailscale and self-run WireGuard are initial network adapters. A third adapter can be added later. Exchange and member authorization do not depend on provider. Headscale and ZeroTier are research context, not v1 commitments. |
+| Review engine before network pairing | Stage order now follows 0089: 0 security review, 1 IDs/revisions/log, 2 pairing and pull, 3 push to Review, 4 conflicts, 5 encrypted USB, 6 home server. |
+| Windows desktop first, headless main a later step | Two computers first, with macOS support designed next. Android and iOS join as members in a later phone milestone; shared protocol and data rules must work without a desktop browser or Windows paths. Home server remains stage 6. |
 
-The current audit has local integer IDs and changed-row JSON, not global identities, a durable cursor or a versioned portable protocol (`src/dashboard/core/migrations/0002_audit_history.sql`). Stock movements update batch/item quantities (`modules/stock/tables.toml`), and the shipped count action checks and writes a correction together (`src/dashboard/core/records.py`). Restore swaps a checked SQLite copy with an Undo path and keys outside backups (`src/dashboard/core/restore.py`). These are useful foundations but cannot by themselves provide safe sync. Preserve the current module migration boundary (0055) when applying remote changes.
+The [option A ready-check](../../reports/2026-11-20-sharing-option-a-ready-check.md) still applies if shared-folder sync is reconsidered: a copied SQLite file would carry local-only fields, cloud-file leases cannot make a cross-device atomic lock, and Review cannot reconcile diverged databases. It is unselected.
 
-## Staged build and rough size
+## Exact field policy needed in core
 
-These are **relative sizes, not delivery estimates**. Stop after each stage for its acceptance and security gate.
+The only shipped `sensitive = true` columns checked on 20 November are `people.important_info.detail`, `home_layout.{homes,rooms,storage,spots}.access_details`, and `vehicles.vehicles.registration`. The People detail rule depends on its `kind`, so the exchange schema needs an explicit *travels to members* rule per private column, with a discriminator and fail-closed default. Module authors must classify new private columns before they are eligible for sync. Ordinary columns that could contain secrets in free text (for example People notes) need product wording and a content decision; schema flags alone cannot prevent someone typing a password into an ordinary field. Decision 0089 deliberately does not promise a vault.
 
-| Stage | Size | Reviewable result and gate |
+The filter belongs before portable audit/change-log entries, outbox serialization, Review staging, snapshot/delta response and USB encryption, on **both** main and member. No raw value, derived hash, length, search token or diagnostic sample of a local-only field crosses. A missing or local-only marker does not overwrite the receiving copy's field. Main should avoid a record name or error that reveals the value. Core must define transition behavior when a `people.important_info` row changes kind between medical and access, including an already-synced medical value: ordinary sync cannot retract copies already made. Require explicit user wording and a migration/reconciliation rule before shipping. Distinguish the placeholder from true blank/null and from a not-yet-pulled row. The member's own local-only value must remain available on that member after a snapshot or restore. A member backup/export may include its own data and needs its separate existing privacy warning; sync must never treat it as a data exchange bundle.
+
+## Pluggable private-network boundary
+
+A network adapter reports the selected private interface/address, peer reachability and address changes. The sync core owns the one-use invitation, member key, app-owned pinned TLS identity, mutual proof, Host allowlist, rate/size limits, cursor and revision format. Store provider choice and endpoint separately from record data; do not put Tailscale names, WireGuard peer keys or IPs into portable operations. Initial setup offers **Tailscale** or **self-run WireGuard**; the adapter contract admits a third later without a protocol migration. A provider change closes the listener and requires endpoint and identity verification before resuming at the existing cursor. It must never silently bind a public or wildcard address. The app and helper API remain loopback-only. Phone membership later needs a mobile-capable private-network client or OS integration, background-transfer limits and protected local storage; do not claim those are solved by the desktop adapter.
+
+Tailscale's hosted coordination and WireGuard's manual peer setup have different household costs. Neither authenticates a Dashboard member by itself. No router forwarding, public tunnel or Tailscale Funnel is part of v1. The exact Windows/macOS firewall, certificate, mobile VPN and interface-change behavior needs real-device verification before publishing setup steps.
+
+## Core work and stage gates
+
+| Stage | Relative size | Reviewable result and gate |
 |---|---|---|
-| 0. Rules and threat model | Small | Corey answers the questions above; decision 0089 records privacy, transport and Review authority. Independent security review of remote boundary. |
-| 1. Local identities and exchange log | Large | Global IDs/backfill, schema versions, main revisions and outbox; two local copies exchange synthetic changes offline with no listener; migration and restore tests. |
-| 2. Review and merge engine | Very large | One request per push, field conflict/dependency UI, Stock events/counts, delete/edit, exactly-once decisions; no network yet. Two-device and skewed-clock fixtures pass. |
-| 3. Private-network pairing and pull/push | Large | Separate member keys, pinned HTTPS, listener auto-off, checked snapshot/deltas, mode badge and recovery messages. Independent security review plus two clean Windows devices. |
-| 4. Offline encrypted bundles | Medium | Same protocol through authenticated files; tamper/replay/lost-key tests and vetted crypto dependency. |
-| 5. Headless main handover | Large | Home-server runbook, one-authority handover, backups, local admin and failover drills. |
+| 0. Remote-boundary security review | Small | Independent reviewer tests trust boundary, private-field filter, listener binding and abuse cases before any network milestone ships. Item 71 provides the brief. |
+| 1. IDs, revisions and local change log | Large | Stable global IDs, versioned exchange schema, outbox and accepted revisions; per-column travel classification and no local-only value in portable log; offline two-copy fixtures, restore and migration tests. |
+| 2. Pairing and pull | Large | Separate member keys and pinned identity, Tailscale/WireGuard adapters, private bind, checked snapshot/deltas, backup before apply, same-version gate and two-device tests. Independent security gate before release. |
+| 3. Push to Review | Large | Each incoming row waits for a person; idempotent staging/decisions and ordinary records untouched before acceptance. Existing helper proposal staging is add-only and insufficient for general edits. |
+| 4. Conflicts | Very large | Side-by-side field edits, Stock movement/count semantics, deletes and links, revalidation under lock, skewed-clock fixtures. No automatic last-writer result. |
+| 5. Encrypted USB bundles | Medium | Same filtered exchange as network, authenticated encryption, replay/epoch tests and a separately reviewed crypto dependency. |
+| 6. Home server main | Large | One-authority handover, managed process, local admin, recovery, backups and re-pinning. |
 
-## Threats to test before release
+The current audit uses local integer IDs (`src/dashboard/core/migrations/0002_audit_history.sql`), Stock count uses a checked correction (`src/dashboard/core/records.py`), and restore has an Undo path (`src/dashboard/core/restore.py`). They are foundations, not a portable protocol. Preserve decision 0055's module migration boundary. Restore on main pauses sync and changes epoch; a member away beyond log retention gets a fresh snapshot while its unsent edits remain separate. Each accepted incoming row reaches Review. The first release is two computers; the wire format, credentials and revision semantics must allow macOS and phone members later.
 
-- **Stolen laptop:** revoke its member key, but copied records and backups remain on its disk; recommend device storage encryption and say exactly what was copied. Never promise remote erasure.
-- **Lost or copied key:** a member key is scoped to one device/household and can be revoked without restoring a database; rate limits and TLS pinning reduce misuse, but an attacker with both key and device access may act as that member until revocation.
-- **Someone else on the private network:** cannot use the listener without a member grant and main identity check; malformed requests, wrong Host, replay and flooding must fail without leaking private field names or values.
-- **Member mistakes or hostile record text:** everything pushed waits for a person, is displayed as data, and is validated again at acceptance. A member cannot call Restore/Export/Settings or helper Accept through sync.
-- **Confused main/restore:** old main and new server cannot both accept pushes; epoch mismatch pauses exchange rather than replaying prior operations or resurrecting deleted rows.
+## Remaining design questions, not reversals of 0089
+
+- How will the household classify `kind=other` and ordinary free-text fields, and what should happen when a previously travelled medical row is reclassified as access?
+- Does a placeholder disclose that a local-only value exists, or should the receiving copy show only a generic local-storage hint? How will a screen reader read it without exposing content?
+- What is the exact key rotation, device retirement, log retention and rebase procedure after restore? How do provider switches preserve pinning?
+- Which vetted AEAD dependency, key recovery and bundle metadata policy will stage 5 use?
 
 ## Sources and scope
 
-Official sources checked **19 November 2026**: [Tailscale concepts](https://tailscale.com/docs/concepts/what-is-tailscale), [Tailscale Serve](https://tailscale.com/docs/features/tailscale-serve), [Tailscale HTTPS certificate privacy](https://tailscale.com/docs/how-to/set-up-https-certificates), [Headscale](https://headscale.net/stable/), [WireGuard](https://www.wireguard.com/), [ZeroTier setup](https://docs.zerotier.com/start/) and [protocol](https://docs.zerotier.com/protocol/), [SQLite network filesystem warning](https://www.sqlite.org/useovernet.html), and [SQLite backup API](https://www.sqlite.org/backup.html). Network-product behavior is cited from these pages; Dashboard-specific rules above are proposals, not vendor claims. The earlier household-sharing plan's `Sources (from memory)` section is not relied on for protocol claims. Verify certificate and Windows firewall behavior on the exact portable build before publishing a setup guide.
+Decision and shipped schemas checked **20 November 2026**. Official network and SQLite sources checked **19 November 2026**: [Tailscale concepts](https://tailscale.com/docs/concepts/what-is-tailscale), [Tailscale Serve](https://tailscale.com/docs/features/tailscale-serve), [Tailscale HTTPS certificate privacy](https://tailscale.com/docs/how-to/set-up-https-certificates), [WireGuard](https://www.wireguard.com/), [Headscale](https://headscale.net/stable/), [ZeroTier setup](https://docs.zerotier.com/start/), [SQLite network filesystem warning](https://www.sqlite.org/useovernet.html), and [SQLite backup API](https://www.sqlite.org/backup.html). Vendor behavior comes from these pages. Dashboard protocol rules above are design proposals, not vendor claims. Firewall and certificate behavior remains unverified on the portable build.
