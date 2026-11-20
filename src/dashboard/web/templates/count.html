@@ -3,9 +3,9 @@
 {% block body %}
 <p class="muted"><a href="/">Home</a> · <a href="/t/{{ info.name }}">{{ title }}</a> · <a href="{{ batch_href }}">This batch</a></p>
 {% if step == "review" %}
-<h1>Update this batch?</h1>
+<h1>Save this stocktake correction?</h1>
 {% elif step == "done" %}
-<h1>Count updated</h1>
+<h1>Stocktake correction saved</h1>
 {% else %}
 <h1>Count this batch</h1>
 {% endif %}
@@ -27,7 +27,7 @@
   {% if plan.difference > 0 %}
   <p>This adds <strong>{{ difference_text }}</strong> as a <strong>stocktake correction</strong>. It is not a purchase.</p>
   {% else %}
-  <p>This removes <strong>{{ difference_text }}</strong> as a <strong>stocktake correction</strong>. It does not say they were used or thrown away.</p>
+  <p>This removes <strong>{{ difference_text }}</strong> as a <strong>stocktake correction</strong>. This does not record use or waste.</p>
   {% endif %}
   {% if after %}<p>{{ after }}</p>{% endif %}
   <p class="muted">The correction will appear in Stock in and out and in this batch's history.</p>
@@ -38,7 +38,7 @@
     <input type="hidden" name="recorded" value="{{ recorded_value }}">
     <div class="actions">
       <button type="submit">Save correction</button>
-      <a href="{{ count_href }}?counted={{ counted | urlencode }}">Go back</a>
+      <a href="{{ count_href }}?counted={{ counted | urlencode }}">Change count</a>
     </div>
   </form>
 </div>

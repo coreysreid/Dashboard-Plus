@@ -171,7 +171,7 @@ function expect(condition, message) { if (!condition) throw new Failed(message);
     expect(await page.locator(button).count() === 1, `The page for "${name}" should offer Mark returned while it is still out; it does not.`);
     await submit(button);
     const said = await text('[role=status]');
-    expect(said.includes('Marked as returned today'), `After Mark returned the page should say "Marked as returned today"; it says "${said}".`);
+    expect(said.includes('Marked returned today'), `After Mark returned the page should say "Marked returned today"; it says "${said}".`);
     expect(await page.inputValue('#f-status') === 'returned', 'After Mark returned, "Is it back?" should read Yes, returned.');
     expect(await page.inputValue('#f-returned_on') !== '', 'After Mark returned, Returned on should be filled in with today.');
     expect(!(await page.locator(button).count()), 'Mark returned should go away once the loan is back.');

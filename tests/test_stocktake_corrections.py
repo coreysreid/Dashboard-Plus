@@ -262,7 +262,7 @@ class StocktakeTests(TempDirTestCase):
         path = f"/t/stock__lots/{self.first}/count"
         review = self.post(client, path, step="review", counted="1", recorded="3").get_data(as_text=True)
         self.assertIn("This removes <strong>2 tins</strong> as a <strong>stocktake correction</strong>. "
-                      "It does not say they were used or thrown away.", review)
+                      "This does not record use or waste.", review)
         self.assertIn("Kidney beans will show 11 tins across 2 batches.", review)
         saved = self.post(client, path, step="save", counted="1", recorded="3")
         status, done = self.page(client, saved.headers["Location"])

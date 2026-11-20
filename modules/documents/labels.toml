@@ -1,11 +1,19 @@
 [tables.documents]
 home = "main"
 empty = "Add where one important paper is kept."
-form = ["name", "kind", "holder", "place", "renew_by", "notes"]
+form = ["name", "kind", "holder", "place", "renew_by", "copies", "notes"]
 list = ["name", "kind", "holder", "place", "renew_by"]
-columns.name = { label = "Document", help = "A name you recognise, such as Home insurance policy or Family passports. Do not include its number." }
+columns.name = { label = "Document", help = "Use a name you recognise, such as Home insurance policy or Family passports. A name is enough; keep the document number with the paper." }
 columns.kind = { label = "Kind of document" }
 columns.holder = { label = "Whose document", help = "Choose one of your People if it helps find the right paper. Leave blank for papers that belong to the whole household." }
 columns.place = { label = "Where it is kept", help = "Choose one of your Places, such as Study or Hall cupboard. Places are shared with Household stock." }
 columns.renew_by = { label = "Review or renew by", help = "A date shown on the document, or one you choose as a reminder. The dashboard will remind you a month before. Leave blank if none applies." }
-columns.notes = { help = "For example, where a spare copy is kept. Do not write document numbers, passwords or private details here." }
+columns.copies = { label = "Copies also kept at", help = "Where copies of this paper are kept, such as a hard drive or a family cloud folder. Dashboard Plus never stores the document itself." }
+columns.notes = { help = "For example, “Another copy on Green HDD” or “Family iCloud”. This is a pointer to a copy, not the paper, a scan, a password or its number." }
+
+[tables.copy_places]
+home = "more"
+empty = "Add a place where copies of papers are kept, such as a hard drive or a family cloud folder."
+form = ["name"]
+list = ["name"]
+columns.name = { label = "Place copies are kept", help = "For example Blue USB drive, Family cloud folder or Solicitor. A name only: never a password or a link." }

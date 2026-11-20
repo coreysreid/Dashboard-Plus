@@ -168,6 +168,12 @@ def load_records(conn: sqlite3.Connection, registry: dict, data: dict, today: da
                     if found is None:
                         raise ExampleError(f"{name}: '{value}' must be added before it is linked to.")
                     value = found
+                elif col.type == "links":
+                    target = registry[target_table(info.module.name, col)]
+                    ids = [_find(conn, target, v) for v in value]
+                    if None in ids:
+                        raise ExampleError(f"{name}: '{value[ids.index(None)]}' must be added before it is linked to.")
+                    value = ids
                 elif col.type == "date":
                     value = _date(value, today)
                 values[column] = value

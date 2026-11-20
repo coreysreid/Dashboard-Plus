@@ -6,9 +6,9 @@ list = ["name", "floor", "place", "route"]
 columns.name = { help = "For example, Front door or Back door." }
 columns.floor = { label = "Floor", help = "For example, Ground floor. Leave blank if your home has one floor." }
 columns.place = { label = "Where it is", help = "Choose one of your Places, or add the room first. Places are shared with Household stock." }
-columns.route = { label = "How to get there", help = "In your own words, including the way from upstairs if you have one. This prints on Our home. Put alarm codes or key-safe numbers in the private box below instead." }
+columns.route = { label = "How to get there", help = "Describe the way out in your own words, including from upstairs if needed. This prints on Our home, so leave out codes and key-safe numbers." }
 columns.notes = { help = "Do not write down where a spare key is hidden or an alarm code. Codes go in the private box below." }
-columns.access_details = { label = "Codes or access details (private)", help = "Kept private: shown only when you press Show, never printed." }
+columns.access_details = { label = "Codes or access details (private)", help = "Hidden until you press Show and left off Our home. It is still saved in this computer's data folder and backups. You can note who to ask here and keep the actual code in a place you trust." }
 
 [tables.shutoffs]
 home = "main"
@@ -18,8 +18,8 @@ list = ["name", "kind", "place", "how_to_find"]
 columns.name = { help = "For example, Water main or Power board." }
 columns.kind = { label = "What it turns off" }
 columns.place = { label = "Where it is", help = "Choose one of your Places, or add the room or area first. Places are shared with Household stock." }
-columns.how_to_find = { label = "How to find it", help = "A landmark helps someone who has never looked for it, such as: behind the grey shelves. This prints on Our home. Put alarm codes or key-safe numbers in the private box below instead." }
-columns.access_details = { label = "Codes or access details (private)", help = "Kept private: shown only when you press Show, never printed." }
+columns.how_to_find = { label = "How to find it", help = "A landmark helps someone find it, such as “behind the grey shelves”. This prints on Our home, so leave out codes and key-safe numbers." }
+columns.access_details = { label = "Codes or access details (private)", help = "Hidden until you press Show and left off Our home. It is still saved in this computer's data folder and backups. You can note who to ask here and keep the actual code in a place you trust." }
 
 [tables.equipment]
 empty = "Add a smoke alarm and where it is."
@@ -30,7 +30,7 @@ columns.kind = { label = "What it is" }
 columns.place = { label = "Where it is", help = "Choose one of your Places, or add the room first. Places are shared with Household stock." }
 columns.last_tested = { label = "Last tested or checked" }
 columns.battery_changed = { label = "Battery changed", help = "Only if it has a battery you can change." }
-columns.access_details = { label = "Codes or access details (private)", help = "Kept private: shown only when you press Show, never printed." }
+columns.access_details = { label = "Codes or access details (private)", help = "Hidden until you press Show and left off Our home. It is still saved in this computer's data folder and backups. You can note who to ask here and keep the actual code in a place you trust." }
 columns.next_check = { label = "Test or check again by", help = "Choose a date from the maker's instructions, your local fire service's advice or your own plan. The dashboard will remind you a month before." }
 
 [tables.meters]
@@ -40,5 +40,5 @@ list = ["name", "kind", "place", "how_to_find"]
 columns.name = { help = "For example, Electricity meter." }
 columns.kind = { label = "What it measures" }
 columns.place = { label = "Where it is", help = "Choose one of your Places, or add the room or area first. Places are shared with Household stock." }
-columns.how_to_find = { label = "How to find it", help = "A short landmark is enough. This prints on Our home. Do not enter account numbers or access codes; the private box below is for a code to open a locked meter box." }
-columns.access_details = { label = "Codes or access details (private)", help = "Kept private: shown only when you press Show, never printed." }
+columns.how_to_find = { label = "How to find it", help = "A short landmark is enough. This prints on Our home, so leave out account numbers and codes. You can note who has access in the private box below." }
+columns.access_details = { label = "Codes or access details (private)", help = "Hidden until you press Show and left off Our home. It is still saved in this computer's data folder and backups. You can note who to ask here and keep the actual code in a place you trust." }

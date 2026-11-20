@@ -51,8 +51,8 @@ def describe(store: records.Records, proposal: dict) -> dict:
     return {"table": display.table_title(info), "parts": parts, "off": False, "module": info.module.title}
 
 
-MESSAGES = {"stale": "That suggestion had already been decided.",
-            "nothing": "Nothing was waiting to be decided."}
+MESSAGES = {"stale": "This row was already accepted or rejected.",
+            "nothing": "Nothing is waiting on Review."}
 
 
 def _message(args) -> tuple[str, str] | None:
@@ -67,13 +67,13 @@ def _message(args) -> tuple[str, str] | None:
         return "notice", f"Rejected. Nothing was added to {title}."
     if done == "added_many":
         left = count("left")
-        text = f"Added {count('added')}."
+        text = f"Added {count('added')} record{'' if count('added') == 1 else 's'}."
         if left:
             text += f" {left} could not be added and {'is' if left == 1 else 'are'} still waiting: see the reasons below."
         return ("problem" if left else "notice"), text
     if done == "rejected_many":
         n = count("count")
-        return "notice", f"Rejected {n} suggestion{'' if n == 1 else 's'}. Nothing was added."
+        return "notice", f"Rejected {n} row{'' if n == 1 else 's'}. Nothing was added."
     if done == "imported":
         n = count("count")
         return "notice", (f"Sent {n} row{'' if n == 1 else 's'} from your spreadsheet to Review. Nothing is added to "

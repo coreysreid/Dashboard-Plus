@@ -6,7 +6,7 @@ from datetime import date
 from flask import Blueprint, abort, current_app, render_template, request
 
 from dashboard.core import records
-from dashboard.core.schema import table_name, target_table
+from dashboard.core.schema import join_table_name, table_name, target_table
 from dashboard.web import display
 
 sheet_pages = Blueprint("sheets", __name__)
@@ -75,6 +75,10 @@ def show_sheet(module, name):
 
         def value(row, spec):
             label, name, field_name, column, owner = spec
+            if field_name is None and column.type == "links":  # several records, kept in a join table
+                join = join_table_name(module, info.table.name, name)
+                ids = [r[0] for r in conn.execute(f"SELECT to_id FROM {join} WHERE from_id = ? ORDER BY to_id", (row["id"],))]
+                return formatter.text(owner, column, ids)
             if field_name is None:
                 return formatter.text(owner, column, row.get(name))
             record_id = row.get(name)

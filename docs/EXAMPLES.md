@@ -178,7 +178,7 @@ Where each important paper is kept, whose it is and the review or renewal date t
 
 ### Document review dates sheet
 
-As it prints: names, kinds and dates only, with no places or document numbers.
+As it prints: names, kinds, dates and where copies are also kept, with no original places or document numbers.
 
 ![Document review dates sheet](screenshots/smith/18i-documents-sheet.png)
 
@@ -418,7 +418,7 @@ Where each important paper is kept, whose it is and the review or renewal date t
 
 ### Document review dates sheet
 
-As it prints: names, kinds and dates only, with no places or document numbers.
+As it prints: names, kinds, dates and where copies are also kept, with no original places or document numbers.
 
 ![Document review dates sheet](screenshots/garcia/18i-documents-sheet.png)
 
@@ -640,7 +640,7 @@ Where each important paper is kept, whose it is and the review or renewal date t
 
 ### Document review dates sheet
 
-As it prints: names, kinds and dates only, with no places or document numbers.
+As it prints: names, kinds, dates and where copies are also kept, with no original places or document numbers.
 
 ![Document review dates sheet](screenshots/taylor/18i-documents-sheet.png)
 

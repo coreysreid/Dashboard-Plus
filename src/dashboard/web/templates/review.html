@@ -1,11 +1,11 @@
 {% extends "base.html" %}
 {% block title %}Review · Dashboard Plus{% endblock %}
 {% block body %}
-<h1>Review suggestions</h1>
+<h1>Review</h1>
 <p class="lead">Helpers can suggest new records, and you can <a href="/settings/import">import rows from a spreadsheet</a>. Nothing is added to your records until you accept it.</p>
 {% if message %}<p class="{{ message[0] }}" role="status">{{ message[1] }}</p>{% endif %}
 {% if not batches %}
-<p class="card">No suggestions to review.</p>
+<p class="card">Nothing is waiting on Review.</p>
 {% endif %}
 {% for b in batches %}
 <section class="card" aria-labelledby="batch-{{ b.id }}">
