@@ -47,3 +47,4 @@ expected, actual, severity (blocker, important, minor), suggested change.
 | 2026-11-20-sharing-option-a-ready-check.md | Unselected shared-folder option A blockers and two-device acceptance checks. | reconsidering sharing A after 0089 |
 | 2026-11-20-not-a-vault-wording.md | Exact help and setup replacements for document, access and private fields. | applying Corey's not-a-vault wording |
 | 2026-11-20-batch18-ux.md | Three-household phone and desktop checks of Mark done, copies, import and Helpers. | fixing 20 November build UX |
+| 2026-11-20-helper-address-rotation-run.md | Live MCP connector through two restarts and one-step key rotation. | checking helper continuity |
