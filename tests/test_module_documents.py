@@ -47,6 +47,16 @@ class DocumentsModuleTests(TempDirTestCase):
     def page(self, path):
         return self.client().get(path, base_url=BASE).get_data(as_text=True)
 
+    def test_with_no_copy_places_yet_the_form_offers_to_add_one_in_a_new_tab(self):  # Lane B, batch 18
+        page = self.page("/t/documents__documents/new")
+        self.assertIn('href="/t/documents__copy_places/new" target="_blank"', page)
+        self.assertIn("then reload this page; what you typed here stays", page)
+
+    def test_notes_help_points_to_the_copies_field(self):
+        page = self.page("/t/documents__documents/new")
+        self.assertIn("Choose where copies are kept in ‘Copies also kept at’ above.", page)
+        self.assertNotIn("Green HDD", page)
+
     def test_module_loads_without_problems(self):
         self.assertEqual(self.report.module_problems, {})
         self.assertIn("documents", self.report.modules)

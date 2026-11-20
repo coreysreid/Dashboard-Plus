@@ -31,11 +31,11 @@
           {% for value, label in f.options %}<option value="{{ value }}"{% if f.owners and value in f.owners %} data-owner="{{ f.owners[value] }}"{% endif %} {% if value == (f.value | string) %}selected{% endif %}>{{ label }}</option>{% endfor %}
         </select>
         {% if f.follows %}<p class="help" data-follows-note="{{ fid }}" data-things="{{ f.things }}" hidden></p>
-        {% elif f.kind == "link" and not f.options %}<p class="help">There is nothing to choose yet.</p>{% endif %}
+        {% elif f.kind == "link" and not f.options %}{% if f.add_first %}<p class="help">No {{ f.add_first[1] }} yet. <a href="{{ f.add_first[0] }}" target="_blank" rel="noopener">Add one in a new tab</a>, then reload this page; what you typed here stays.</p>{% else %}<p class="help">There is nothing to choose yet.</p>{% endif %}{% endif %}
       {% elif f.kind == "links" %}
         <div class="choices" id="{{ fid }}">
           {% for value, label in f.options %}<label style="font-weight:400"><input type="checkbox" name="{{ f.name }}" value="{{ value }}" {% if value in (f.value or []) %}checked{% endif %}> {{ label }}</label>{% endfor %}
-          {% if not f.options %}<p class="help">There is nothing to choose yet.</p>{% endif %}
+          {% if not f.options %}{% if f.add_first %}<p class="help">No {{ f.add_first[1] }} yet. <a href="{{ f.add_first[0] }}" target="_blank" rel="noopener">Add one in a new tab</a>, then reload this page; what you typed here stays.</p>{% else %}<p class="help">There is nothing to choose yet.</p>{% endif %}{% endif %}
         </div>
       {% elif f.kind == "date" %}
         <input type="text" id="{{ fid }}" name="{{ f.name }}"{{ aria }} value="{{ f.value or '' }}" inputmode="numeric" autocomplete="off" size="12" data-date-style="{{ f.date_style }}">

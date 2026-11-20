@@ -194,6 +194,7 @@ class Field:
     only_when_blank: str | None = None  # shown only while this link field (Which batch) is left blank
 
     kept_private: bool = False  # a saved private value, not sent until the person chooses Show
+    add_first: tuple[str, str] | None = None  # for an empty link list: (where to add one, what they are called)
 
     @property
     def name(self) -> str:
@@ -340,6 +341,10 @@ def build_fields(records: Records, info: TableInfo, values: dict, errors: dict, 
                       (info.table.name, column.name) in info.module.catalogues, add_new, search,
                       _labels(info).get("columns", {}).get(column.name, {}).get("answers"),
                       formatter.date_style if column.type == "date" else None, follows, owners)
+        if column.type in ("link", "links") and not options and not follows:
+            # Nothing to choose yet: offer to add one in a new tab, so what is typed here is kept (Lane B, batch 18).
+            target = formatter.target(info, column)
+            field.add_first = (f"/t/{target.name}/new", table_title(target).lower())
         if follows:
             field.things = table_title(formatter.target(info, column)).lower()
         words = blank_choice(records, info, column, on_form, editing)
