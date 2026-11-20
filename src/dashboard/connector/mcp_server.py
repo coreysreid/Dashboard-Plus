@@ -50,8 +50,13 @@ class Server:
     def __init__(self, settings: config.Settings, transport: Transport | None = None):
         self.settings = settings
         self.version: str | None = None  # the protocol version agreed at initialize
-        self.transport = transport or (lambda method, path, body: client.call(
-            settings.base, settings.key, method, path, body))
+        self.transport = transport or self._default_transport
+
+    def _default_transport(self, method: str, path: str, body: dict | None) -> client.Answer:
+        """With an address file, read it again for this call (0092); otherwise use the copied address."""
+        if self.settings.address_file:
+            return client.call_via_file(self.settings.address_file, self.settings.key, method, path, body)
+        return client.call(self.settings.base, self.settings.key, method, path, body)
 
     # ---- JSON-RPC framing -------------------------------------------------
     def handle_line(self, line: bytes | str) -> str | None:
@@ -188,9 +193,11 @@ def serve(server: Server, stdin: BinaryIO, stdout: BinaryIO) -> None:
 
 def main(argv: list[str] | None = None, stdin: BinaryIO | None = None, stdout: BinaryIO | None = None,
          stderr: TextIO | None = None, environ: dict | None = None) -> int:
-    """Start the connector. The address and key come from DASHBOARD_PLUS_URL and DASHBOARD_PLUS_KEY, or --config."""
+    """Start the connector. Where Dashboard is comes from DASHBOARD_PLUS_ADDRESS_FILE (read for every call) or
+    DASHBOARD_PLUS_URL; the key from DASHBOARD_PLUS_KEY. A --config file may hold any of them."""
     parser = argparse.ArgumentParser(prog="python -m dashboard.connector", description=__doc__)
-    parser.add_argument("--config", help='a settings file with url = "..." and key = "..." (TOML)')
+    parser.add_argument("--config", help='a settings file with address_file = "..." (or url = "...") '
+                                         'and key = "..." (TOML)')
     args = parser.parse_args(argv)
     settings = config.load(args.config, environ)
     handler = logging.StreamHandler(stderr or sys.stderr)
@@ -202,6 +209,8 @@ def main(argv: list[str] | None = None, stdin: BinaryIO | None = None, stdout: B
         log.warning("not set up yet: %s", settings.problem)
     elif config.readable_by_others(args.config):
         log.warning("the settings file can be read by other people on this computer; restrict it (chmod 600)")
+    elif settings.address_file:
+        log.info("ready; the address is read from Dashboard's address file for every call")
     else:
         log.info("ready for %s", settings.base)
     serve(Server(settings), stdin or sys.stdin.buffer, stdout or sys.stdout.buffer)

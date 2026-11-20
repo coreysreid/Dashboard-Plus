@@ -104,6 +104,10 @@ class CsvImportTests(TempDirTestCase):
         _response, page = self.check(text, changes, **kwargs)
         return self.post("/settings/import/send", self.form(page))
 
+    def go(self, page, **extra):
+        """Press Send on a check page after ticking that the dates that could be read either way are right."""
+        return self.post("/settings/import/send", dict(self.form(page), dates_ok="1", **extra))
+
     def count(self, table):
         return self.conn.execute(f"SELECT COUNT(*) FROM {table}").fetchone()[0]
 
@@ -137,7 +141,7 @@ class CsvImportTests(TempDirTestCase):
         self.assertIn("Row 5: Name: Kidney beans", plain(page))
         self.assertIn("Use by: 01/02/27", plain(page))  # typed the household's way (day first in Australia)
         self.assertEqual((self.items(), self.count("core__proposals")), (0, 0))
-        response = self.post("/settings/import/send", self.form(page))
+        response = self.go(page)
         self.assertEqual(response.status_code, 302)
         self.assertIn("/review?done=imported&count=4", response.headers["Location"])
         self.assertEqual((self.items(), self.count("stock__lots"), self.count("core__proposals")), (0, 0, 4))
@@ -191,8 +195,8 @@ class CsvImportTests(TempDirTestCase):
                 "Bulbs,Shed\nNails,Top shelf\n")
         _response, page = self.check(text)
         self.assertIn("3 rows ready, 2 need fixing", plain(page))
-        self.assertIn("Row 5: Where it is has no match: there is nothing in places called “Shed”. Add it first, "
-                      "or fix the name.", plain(page))
+        self.assertIn("Row 5: Where it is has no match: there is nothing in places called “Shed”. Use the full path "
+                      "of a place saved in this household, or add the place first.", plain(page))
         self.assertIn("Row 6: Where it is: “Top shelf” matches more than one: Garage › Top shelf; "
                       "Kitchen › Pantry › Top shelf. Use the full path", plain(page))
         self.post("/settings/import/send", self.form(page))
@@ -210,6 +214,96 @@ class CsvImportTests(TempDirTestCase):
         self.assertIn("1 row ready", plain(page))
         self.post("/settings/import/send", self.form(page))
         self.assertEqual(self.store.get("stock__items", rice)["quantity"], 2)  # not until Accept
+
+    # ----- pausing on names already there, dates that could be read either way, and missing links (0094) -----
+    def test_a_name_already_in_the_list_is_flagged_and_skipped_unless_added_anyway(self):
+        self.store.create("stock__items", {"name": "Rice", "unit": "kg"})
+        self.store.create("stock__items", {"name": "Kidney beans"})
+        text = "name,quantity\n  rice ,1\nKIDNEY  Beans,2\nFlour,3\n"
+        _response, page = self.check(text)
+        self.assertIn("3 rows ready", plain(page))
+        self.assertIn("Row 2: Rice is already in Stock items. This row would add a second one.", plain(page))
+        self.assertIn("Row 3: Kidney beans is already in Stock items. This row would add a second one.", plain(page))
+        self.assertNotIn("Flour is already", plain(page))
+        self.assertIn("Send 1 row to Review", plain(page))
+        self.assertEqual(self.count("core__proposals"), 0)
+        response = self.go(page)  # nothing ticked: both repeated names are skipped
+        self.assertIn("count=1", response.headers["Location"])
+        self.assertEqual([r[0] for r in self.conn.execute("SELECT source_row FROM core__proposals")], [4])
+        # Ticking Add anyway on row 3 sends it as well, and Review says it already exists.
+        self.conn.execute("DELETE FROM core__proposals")
+        self.conn.execute("DELETE FROM core__helper_batches")
+        self.conn.commit()
+        _response, page = self.check(text, {"add_3": "1"})
+        self.assertIn("Send 2 rows to Review", plain(page))
+        response = self.go(page, add_3="1")
+        self.assertIn("count=2", response.headers["Location"])
+        review = plain(self.client.get("/review", base_url=BASE).get_data(as_text=True))
+        self.assertIn("Row 3 would add to Stock items", review)
+        self.assertIn("Already exists: Kidney beans is already in Stock items. Accepting this row will make another "
+                      "Kidney beans. To add what you bought, use Stock in; to correct a count, use Count this batch.",
+                      review)
+        self.assertEqual(review.count("Already exists"), 1)
+
+    def test_every_row_already_in_the_list_sends_nothing(self):
+        self.store.create("stock__items", {"name": "Rice"})
+        _response, page = self.check("name\nRice\n")
+        response = self.go(page)
+        self.assertEqual(response.status_code, 200)
+        self.assertIn("No rows are chosen to send", plain(response.get_data(as_text=True)))
+        self.assertEqual(self.count("core__proposals"), 0)
+
+    def test_the_same_name_under_another_parent_is_a_different_place(self):
+        self.store.create("stock__places", {"name": "Spare room"})
+        sheet = csv_import.parse("name,inside\nTop shelf,Garage\nTop shelf,Spare room\n")
+        info = self.registry["stock__places"]
+        run = csv_import.dry_run(self.store, info, sheet, ["name", "inside"])
+        self.assertEqual(sorted(run.same_name), [2])  # only the one under Garage repeats a name
+        self.assertEqual(csv_import.SameName(self.store, self.registry["stock__lots"]).find({"notes": "x"}), None)
+
+    def test_a_short_date_that_could_be_read_either_way_is_flagged_and_needs_a_tick(self):
+        text = "name,expires\nA,1/2/27\nB,20/05/27\nC,2027-02-01\nD,5/5/27\n"
+        _response, page = self.check(text)
+        words = plain(page)
+        self.assertIn("4 rows ready", words)
+        self.assertIn("Use by: “1/2/27” could be read either way. Read as 1 February 2027 (day first). "
+                      "Change it in the spreadsheet if that's wrong.", words)
+        self.assertEqual(words.count("could be read either way. Read as"), 1)  # 20/05/27, ISO and 5/5/27 are clear
+        response = self.post("/settings/import/send", self.form(page))  # box not ticked
+        self.assertIn("tick the box", plain(response.get_data(as_text=True)))
+        self.assertEqual(self.count("core__proposals"), 0)
+        self.assertEqual(self.go(page).status_code, 302)
+        self.assertEqual(self.count("core__proposals"), 4)
+
+    def test_clear_dates_need_no_tick(self):
+        _response, page = self.check("name,expires\nA,20/05/27\nB,2027-02-01\n")
+        self.assertNotIn("could be read either way", plain(page))
+        self.assertEqual(self.post("/settings/import/send", self.form(page)).status_code, 302)
+
+    def test_a_month_first_household_is_told_so(self):
+        settings.put(self.conn, "household.country", "United States")
+        _response, page = self.check("name,expires\nA,1/2/27\n")
+        self.assertIn("Read as January 2, 2027 (month first).", plain(page))
+
+    def test_links_that_match_nothing_are_summed_up_once_at_the_top(self):
+        text = "name,place\nTins,Shed › Top\nRope,Loft\nNails,Loft\nFlour,Garage › Top shelf\n"
+        _response, page = self.check(text)
+        words = plain(page)
+        self.assertEqual(words.count("matched nothing in Places"), 1)
+        self.assertIn("Where it is: 2 values on 3 rows matched nothing in Places (first: “Shed › Top”, “Loft”). "
+                      "Add them first, fix the names, or skip this column.", words)
+        self.assertLess(words.index("matched nothing in Places"), words.index("Row 2: Where it is has no match"))
+
+    def test_skipping_a_column_says_how_many_rows_lose_a_value(self):
+        text = "name,place\nTins,Shed › Top\nRope,Loft\nNails,\n"
+        _response, page = self.check(text, {"match_1": ""})
+        words = plain(page)
+        self.assertIn("3 rows ready", words)
+        self.assertIn("Skipping Place leaves it blank on 2 rows. These values will not be added.", words)
+        _response, page = self.check(text)  # not skipped: no such line
+        self.assertNotIn("Skipping", plain(page))
+        _response, page = self.check("name,mystery\nTins,x\n")  # a heading that names no field is just ignored
+        self.assertNotIn("Skipping", plain(page))
 
     def test_private_columns_cannot_be_imported(self):
         text = "name,code\nFront door spare,1234\n"
@@ -277,7 +371,7 @@ class CsvImportTests(TempDirTestCase):
 
     def test_changed_matches_are_checked_again_before_sending(self):
         _response, page = self.check(EXAMPLE, {"match_7": "drinking"})
-        response = self.post("/settings/import/send", dict(self.form(page), match_8=""))
+        response = self.go(page, match_8="")
         self.assertIn("The matches changed since the rows were checked", response.get_data(as_text=True))
         self.assertEqual(self.count("core__proposals"), 0)
 
@@ -306,7 +400,7 @@ class CsvImportTests(TempDirTestCase):
     def test_helpers_never_see_an_import_batch(self):
         helper, _key = helpers.issue(self.conn, self.data, "Receipt helper", "suggest", ["stock"])
         _response, page = self.check(EXAMPLE, {"match_7": "drinking"})
-        self.post("/settings/import/send", self.form(page))
+        self.go(page)
         batch = self.conn.execute("SELECT id FROM core__helper_batches").fetchone()[0]
         self.assertEqual(proposals.helper_batches(self.conn, helper, None, 20), [])
         self.assertFalse(proposals.owns(self.conn, helper, batch))

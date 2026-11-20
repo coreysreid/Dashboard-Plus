@@ -1,17 +1,35 @@
 <section class="card" aria-labelledby="connect-heading">
   <h2 id="connect-heading" style="margin-top:0">Connect an AI assistant</h2>
-  <p>Some AI assistant apps can use a helper through a small connector that comes with Dashboard Plus (it uses a standard called MCP). Paste these settings where your assistant's app lists its MCP servers, then replace <code>YOUR-KEY-HERE</code> with the helper's key.</p>
+  {% if address_file %}
+  <p>Copy these settings into your assistant desktop app's MCP server settings. Replace <code>YOUR-KEY-HERE</code> in <code>DASHBOARD_PLUS_KEY</code> with {% if key_shown %}the key shown above{% else %}the key you copied when you made this helper{% endif %}; do not put the key in a chat. The settings point to a small address file in this Dashboard Plus folder. Dashboard updates that file when it opens, so an ordinary restart needs no new copy. Keep Dashboard Plus open while the assistant uses it. If you move the Dashboard Plus folder or USB drive, copy these settings again. The key stays in your assistant app's settings file; treat it like a password.</p>
+  {% if address_file_problem %}<p class="problem" role="alert">{{ address_file_problem }}</p>{% endif %}
+  {% else %}
+  <p>Copy these settings into your assistant desktop app's MCP server settings. Replace <code>YOUR-KEY-HERE</code> in <code>DASHBOARD_PLUS_KEY</code> with {% if key_shown %}the key shown above{% else %}the key you copied when you made this helper{% endif %}; do not put the key in a chat. The key stays in your assistant app's settings file; treat it like a password.</p>
+  {% endif %}
   <pre id="assistant-settings" tabindex="0" style="overflow-x:auto;max-width:100%;white-space:pre;background:var(--bg);border:1px solid var(--line);padding:.75rem;border-radius:6px">{{ assistant }}</pre>
-  <div class="actions"><button type="button" id="copy-settings">Copy these settings</button><span id="settings-copied" class="muted" role="status"></span></div>
-  <p><strong>The key is a password.</strong> Your assistant's app keeps these settings in a file on this computer, so anyone who can open that file can use the key. Don't paste the key into a chat.</p>
+  <div class="actions"><button type="button" class="copy-block" data-copy="assistant-settings" data-say="settings-copied">Copy connection settings</button><span id="settings-copied" class="muted" role="status"></span></div>
   <p>If the assistant is an online service, that service will see what the helper reads. Anything it suggests still waits for you on the <a href="/review">Review</a> page.</p>
-  <p class="muted" style="margin-bottom:0">The address changes each time Dashboard opens: update it in the assistant's settings after reopening. To disconnect, turn the helper's access off here and remove the "dashboard-plus" lines from the assistant's settings.</p>
+  <p class="muted">To disconnect, turn the helper's access off here and remove the "dashboard-plus" lines from the assistant's settings.</p>
+  <details>
+    <summary>Connection details</summary>
+    <p>Current local address: <code>{{ address }}</code> (only from this computer).</p>
+    {% if address_file %}
+    <p>Address file: <code style="overflow-wrap:anywhere">{{ address_file }}</code></p>
+    <p><strong>Use current address instead.</strong> Only for an assistant app that cannot use the address file. This assistant uses the copied address. Dashboard Plus chooses a new one each time it opens; copy the current address again from Settings → Helpers.</p>
+    <pre id="manual-settings" tabindex="0" style="overflow-x:auto;max-width:100%;white-space:pre;background:var(--bg);border:1px solid var(--line);padding:.75rem;border-radius:6px">{{ manual }}</pre>
+    <div class="actions" style="margin-bottom:0"><button type="button" class="copy-block" data-copy="manual-settings" data-say="manual-copied">Copy these settings</button><span id="manual-copied" class="muted" role="status"></span></div>
+    {% else %}
+    <p class="muted" style="margin-bottom:0">This address changes each time Dashboard opens; copy it again after reopening.</p>
+    {% endif %}
+  </details>
 </section>
 <script>
-  document.getElementById("copy-settings").addEventListener("click", function () {
-    var text = document.getElementById("assistant-settings").textContent;
-    var say = function (words) { document.getElementById("settings-copied").textContent = words; };
-    if (navigator.clipboard) { navigator.clipboard.writeText(text).then(function () { say("Copied."); }, function () { say("Select the settings and copy them."); }); }
-    else { say("Select the settings and copy them."); }
+  document.querySelectorAll(".copy-block").forEach(function (button) {
+    button.addEventListener("click", function () {
+      var text = document.getElementById(button.dataset.copy).textContent;
+      var say = function (words) { document.getElementById(button.dataset.say).textContent = words; };
+      if (navigator.clipboard) { navigator.clipboard.writeText(text).then(function () { say("Copied."); }, function () { say("Select the settings and copy them."); }); }
+      else { say("Select the settings and copy them."); }
+    });
   });
 </script>

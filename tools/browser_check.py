@@ -1,4 +1,4 @@
-"""Click through the real dashboard in Chromium (setup, dates, stock in, stocktake, Mark returned, spreadsheet import, private details, closing) and fail loudly."""
+"""Click through the real dashboard in Chromium (setup, dates, stock in, stocktake, Mark returned, Mark done, spreadsheet import, private details, closing) and fail loudly."""
 from __future__ import annotations
 
 import argparse
@@ -30,6 +30,7 @@ AU = {"household": "smith", "locale": "en-AU", "timezone": "Australia/Sydney",
                 "blankTakes": "Use the batch with the earliest use-by date"},
       "private": {"person": "Emily Smith", "secret": "Peanut allergy"},
       "loan": {"name": "Cordless drill, lent to Dave Wilson"},
+      "job": {"name": "Clean the gutters", "next": "20/05/27"},
       # A made-up spreadsheet: a byte order mark, CRLF, a quoted note with a comma and a line break, a bad date.
       "csv": {"file": "browser-check.csv", "ready": 2, "fixing": 1, "item": "Browser import rice",
               "note": "Top shelf, left\nbehind the flour",
@@ -136,7 +137,7 @@ def run_au(work: Path, executable: str | None) -> list[str]:
         finally:
             conn.close()
         done += drive(dict(plan, dates=AU["dates"], stock=AU["stock"], private=AU["private"], loan=AU["loan"],
-                           csv=AU["csv"]), work, "main")
+                           job=AU["job"], csv=AU["csv"]), work, "main")
         closed = True
     finally:
         stop_server(process, closed)

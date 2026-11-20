@@ -3,7 +3,7 @@ empty = "Add a vehicle and who you would call if it broke down."
 form = ["name", "registration", "registration_due", "roadside_contact", "parked_at", "emergency_kit", "notes"]
 list = ["name", "registration_due", "roadside_contact", "parked_at", "emergency_kit"]
 columns.name = { label = "Vehicle", help = "Use a name your household recognises, such as Family car." }
-columns.registration = { label = "Registration or plate number", help = "Private: hidden until you choose Show, and never printed. Leave blank if you would rather keep it with the vehicle's papers." }
+columns.registration = { label = "Registration or plate number", help = "Hidden until you choose Show and left off printed sheets. It is still saved in this computer's data folder and backups. You can leave it blank and keep the number with the vehicle's papers." }
 columns.registration_due = { label = "Registration or vehicle tax due", help = "The date on your own renewal notice. The dashboard will remind you a month before. Leave blank if there is nothing to renew." }
 columns.roadside_contact = { label = "Who to call if it breaks down", help = "Choose one of your People, or add the roadside service, garage or person first. Their number is kept in People, so it only needs changing in one place." }
 columns.parked_at = { label = "Where it is usually kept", help = "Choose one of your Places, such as Car or Garage. Places are shared with Household stock." }

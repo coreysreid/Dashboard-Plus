@@ -3,14 +3,12 @@
 {% block body %}
 <p class="muted"><a href="/settings">Settings</a></p>
 <h1>Helpers</h1>
-<p class="lead">A helper is a program, such as an AI assistant, that can look at parts of your records and suggest new ones. Nothing a helper suggests is added until you accept it on the <a href="/review">Review</a> page. Private details are never shared with helpers.</p>
+<p class="lead">A helper is a program, such as an AI assistant, that can look at parts of your records and suggest new ones. Nothing a helper suggests is added until you accept it on the <a href="/review">Review</a> page. Fields marked private are never shared with helpers. Ordinary names and notes in the parts you tick can be read.</p>
 <p>Helpers connect only from this computer, with no internet needed for that. But if the helper uses an online AI service, whatever you let it read (the parts you tick below) is sent to that service. Tick only what it needs. A helper that runs entirely on this computer sends nothing anywhere.</p>
-<p>Treat a helper's key like a password: don't paste it into chats or emails. If it might have been seen, turn that helper's access off and make a new one.</p>
+<p>Treat a helper's key like a password: don't paste it into chats or emails. If it was lost or might have been seen, press <strong>Make a new key</strong> on that helper.</p>
 {% if turned_off %}<p class="notice" role="status">{{ turned_off.name }} can no longer connect. Its suggestions and history are kept.</p>{% endif %}
-<div class="card">
-  <p style="margin:0">Helpers connect to: <code>{{ address }}</code> (only from this computer).</p>
-  <p class="muted" style="margin-bottom:0">This address changes each time Dashboard opens; copy it again after reopening.</p>
-</div>
+{% if changed %}<p class="notice" role="status">{{ changed.name }}'s key was changed on {{ changed_on }}. Its access and history are unchanged.</p>{% endif %}
+{% if key_error %}<p class="problem" role="alert">{{ key_error }}</p>{% endif %}
 
 {% include "helper_connect.html" %}
 
@@ -21,11 +19,20 @@
   <h3 style="margin:0 0 .25rem">{{ h.name }}</h3>
   {% if h.active %}
   <p style="margin:.1rem 0">{{ h.access }} · Parts: {{ h.parts }}</p>
-  <p class="muted" style="margin:.1rem 0">Private details: never shared · Made {{ h.made }} · Last used {{ h.last_used }}</p>
-  <form method="post" action="/settings/helpers/{{ h.id }}/turn-off" class="actions">
-    <input type="hidden" name="_csrf" value="{{ csrf_token }}">
-    <button type="submit" class="danger" aria-label="Turn off access for {{ h.name }}">Turn off access</button>
-  </form>
+  <p class="muted" style="margin:.1rem 0">Private details: never shared · Made {{ h.made }}{% if h.key_changed %} · Key changed {{ h.key_changed }}{% endif %} · Last used {{ h.last_used }}{% if h.connected %} · Connected from this computer{% endif %}</p>
+  {% if h.unfinished %}<p class="problem" role="status" style="margin:.25rem 0">{{ not_finished }}</p>{% endif %}
+  <div class="actions">
+    <form method="post" action="/settings/helpers/{{ h.id }}/new-key" style="display:inline">
+      <input type="hidden" name="_csrf" value="{{ csrf_token }}">
+      <input type="hidden" name="new_key_token" value="{{ h.new_key_token }}">
+      <button type="submit" aria-label="Make a new key for {{ h.name }}" aria-describedby="new-key-help-{{ h.id }}">Make a new key</button>
+    </form>
+    <form method="post" action="/settings/helpers/{{ h.id }}/turn-off" style="display:inline">
+      <input type="hidden" name="_csrf" value="{{ csrf_token }}">
+      <button type="submit" class="danger" aria-label="Turn off access for {{ h.name }}">Turn off access</button>
+    </form>
+  </div>
+  <p class="help" id="new-key-help-{{ h.id }}" style="margin:.25rem 0 0">Use this if the key was lost or may have been seen. Your helper keeps the same name, access and Review history. Its old key stops when the new one is made. You will need to replace the key in your assistant app.</p>
   {% else %}
   <p class="muted" style="margin:.1rem 0">Access turned off on {{ h.off_at }}. Its history is kept.</p>
   {% endif %}

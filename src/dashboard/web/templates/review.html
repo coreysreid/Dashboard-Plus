@@ -1,11 +1,11 @@
 {% extends "base.html" %}
 {% block title %}Review · Dashboard Plus{% endblock %}
 {% block body %}
-<h1>Review suggestions</h1>
+<h1>Review</h1>
 <p class="lead">Helpers can suggest new records, and you can <a href="/settings/import">import rows from a spreadsheet</a>. Nothing is added to your records until you accept it.</p>
 {% if message %}<p class="{{ message[0] }}" role="status">{{ message[1] }}</p>{% endif %}
 {% if not batches %}
-<p class="card">No suggestions to review.</p>
+<p class="card">Nothing is waiting on Review.</p>
 {% endif %}
 {% for b in batches %}
 <section class="card" aria-labelledby="batch-{{ b.id }}">
@@ -29,6 +29,7 @@
       {% else %}
       <p style="margin:0">{% if b.kind == "import" %}Row {{ p.source_row }} would add to{% else %}{{ b.helper }} suggests adding to{% endif %} <strong>{{ p.text.table }}</strong>: <span class="helper-text">{% for label, text in p.text.parts %}{{ label }}: <bdi>{{ text }}</bdi>{% if not loop.last %} · {% endif %}{% endfor %}</span></p>
       {% endif %}
+      {% if p.exists %}<p class="problem" role="status" style="margin:.4rem 0"><bdi>{{ p.exists }}</bdi></p>{% endif %}
       {% if p.reason %}<p class="problem" role="alert" style="margin:.4rem 0">{{ p.reason }}</p>{% endif %}
       <div class="actions" style="margin:.4rem 0 0">
         {% if not p.text.off %}

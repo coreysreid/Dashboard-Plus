@@ -141,6 +141,11 @@ One record per decision, from `TEMPLATE.md`. Never deleted; reversed ones are ma
 | [0087](0087-add-a-helper-form-makes-one-key.md) | An Add a helper form makes one key even if sent twice: a one-use form token, and plain words on a repeat | Accepted |
 | [0088](0088-limits-hold-under-simultaneous-requests.md) | Helper limits are checked again inside the write lock; other API versions answer plain 404 JSON; count pages say "1 tin" | Accepted |
 | [0089](0089-household-sync-main-and-members.md) | Household sync: one main, members push requests to Review, over a private network (Tailscale or WireGuard); private details never travel in v1 | Accepted (direction; security review before shipping) |
+| [0090](0090-documents-record-where-copies-are-kept.md) | Documents record where copies are also kept (a named place such as "Blue USB drive" ticked on each paper); never the paper, a scan or a number | Accepted |
+| [0091](0091-home-care-mark-done.md) | Home care Mark done: an action may add a linked record through a small form, saved once in one transaction with the record's revision and a one-use operation number, a deliberate next date (optional household repeat) and an Undo that refuses after any change | Accepted |
+| [0092](0092-steady-helper-address.md) | A steady helper address: Dashboard writes `data/run/helper-address.json` (address and run ID only) atomically at start and removes its own on close; the connector reads it for every call via `DASHBOARD_PLUS_ADDRESS_FILE`, then still does the 0086 hello before the key | Accepted |
+| [0093](0093-one-step-helper-key-rotation.md) | "Make a new key" for a helper: one press, one-use token, key shown once, old key stopped; same helper, grant and history; pause, file swap, finish in that order, failing closed; in-flight writes rechecked | Accepted |
+| [0094](0094-import-pauses-on-duplicates-and-unclear-dates.md) | Import pauses before sending: a name already in the list is skipped unless "Add anyway" is ticked, short dates that read either way need one tick, links that match nothing and skipped columns are summed up; Review wording trimmed | Accepted |
 | [TEMPLATE](TEMPLATE.md) | Blank record to copy for a new decision | recording a decision |
 
 ## docs/plans/  (summary: build plans for larger pieces of work, written before building)
@@ -233,9 +238,9 @@ numbered migrations. See docs/DESIGN.md section 6 for the module contract.
 | Entry | What it is | Open it when |
 |---|---|---|
 | module.toml | Name, version, description; requires People (whose paper) and Household stock (places) | changing the module's details |
-| tables.toml | Where each paper is kept, whose it is and its review or renewal date, with one gap question; no document numbers | adding a field or a gap question |
+| tables.toml | Where each paper is kept, whose it is, its review or renewal date and the places copies are also kept (copy_places), with one gap question; no document numbers | adding a field or a gap question |
 | labels.toml | Friendly labels, help text, form and list order | changing wording or order |
-| sheets.toml | Document review dates sheet: names, kinds and dates only, no places or numbers | changing what prints |
+| sheets.toml | Document review dates sheet: names, kinds, dates and where copies are kept; no original places or numbers | changing what prints |
 | migrations/ | Numbered database changes | after changing tables.toml |
 
 ## modules/documents/migrations/  (summary: this module's numbered database changes; never edit a released one)
@@ -244,6 +249,7 @@ Generate the next one with: python tools/make_migration.py documents --name <wha
 | Entry | What it is | Open it when |
 |---|---|---|
 | 0001_first_tables.sql | The module's first table, generated from tables.toml | checking how the table is stored |
+| 0002_copies_also_kept.sql | Places copies are kept, and the link from each paper to them | checking how copies are stored |
 
 ## modules/garden/  (summary: the Vegetable garden module, files only; built on Lane B's draft, linking to Household stock)
 | Entry | What it is | Open it when |
@@ -265,7 +271,7 @@ Generate the next one with: python tools/make_migration.py garden --name <what_c
 | Entry | What it is | Open it when |
 |---|---|---|
 | module.toml | Name, version, description; requires People (who does it) and Household stock (places) | changing the module's details |
-| tables.toml | Home care jobs with a do-again-by date and one gap question, and the work done on each | adding a field or a gap question |
+| tables.toml | Home care jobs with a do-again-by date, an optional household repeat, Mark done and one gap question, and the work done on each | adding a field or a gap question |
 | labels.toml | Friendly labels, help text, form and list order, which list is main on home | changing wording or order |
 | sheets.toml | Home care sheet: each job, where, who usually does it and its dates, with no notes | changing what prints |
 | migrations/ | Numbered database changes | after changing tables.toml |
@@ -276,6 +282,7 @@ Generate the next one with: python tools/make_migration.py home_care --name <wha
 | Entry | What it is | Open it when |
 |---|---|---|
 | 0001_first_tables.sql | The module's first tables, generated from tables.toml | checking how the tables are stored |
+| 0002_repeat_choice.sql | Adds the optional household repeat (every N weeks, months or years) to jobs, unset for every job | checking how the repeat is stored |
 
 ## modules/home_layout/  (summary: the Home layout module, files only; built on Lane B's draft, using Household stock's places)
 | Entry | What it is | Open it when |
@@ -421,7 +428,7 @@ Generate the next one with: python tools/make_migration.py vehicles --name <what
 | mcp_server.py | The MCP server over stdio: JSON-RPC 2.0, one message per line, turning tool calls into helper API requests. | changing the protocol, errors or what results say |
 | tools.py | The eight tools an assistant may use, one per helper API route, with their inputs checked before any request. | adding or changing a tool |
 | client.py | Call the helper API on this computer: check it is the real Dashboard first, then send the key down that connection only. | changing how requests are sent or answers read |
-| config.py | Where the connector finds Dashboard Plus and its key: two environment values or a small file, checked before use. | changing where the address or key come from |
+| config.py | Where the connector finds Dashboard Plus and its key: environment values or a small file, checked before use. | changing where the address or key come from |
 
 ## src/dashboard/core/  (summary: core services, nothing topic-specific)
 | Entry | What it is | Open it when |
@@ -436,13 +443,15 @@ Generate the next one with: python tools/make_migration.py vehicles --name <what
 | migrations.py | Apply numbered migrations, one track for the core and one per module. | changing how database changes are applied |
 | migrations/ | The core's own numbered database changes | adding a core table |
 | modules.py | Find module folders, check their files, and explain any mistakes in plain words. | changing what module files may say |
+| actions.py | Actions that add a linked record through a small form, like Mark done: one saved operation, a one-use number and Undo. | changing Mark done, its checks or Undo |
 | records.py | Create, change, delete and read records, checking every value and keeping a history. | changing how records are saved or checked |
 | settings.py | Read and write household settings kept in the database (core__settings). | storing a new setting |
 | schema.py | Turn a module's declared tables into SQL, and work out its next migration. | changing how tables are built |
 | suggest.py | Suggestions while typing: a household's own records first, then a module's list of common things. | changing how picking from a list matches |
 | watch.py | Work out what is running low, what expires soon, how many days of supplies are on hand, and what is worth filling in. | changing running low, expiring, days of cover or gaps |
 | startup.py | Prepare the database at start-up: load modules, back up if needed, and migrate. | changing what happens at start-up |
-| helpers.py | Helpers the household has given a key to: making a key, checking it, and turning it off. | changing how helper keys work |
+| helper_address.py | The small address file a connector reads to find Dashboard after a restart: only the address and a run ID (0092). | changing how a connector finds Dashboard |
+| helpers.py | Helpers the household has given a key to: making a key, checking it, replacing it, and turning it off. | changing how helper keys work |
 | hello.py | Proof that an address is the real Dashboard Plus, worked out from a key without ever sending it (decision 0086). | changing the check the connector makes before sending a key |
 | proposals.py | Suggestions from helpers and rows imported from a spreadsheet: checked, kept waiting, added only when a person accepts. | changing suggestions, limits or accepting |
 | export.py | Export my records: one zip with a spreadsheet file for every table, a manifest and a plain-words README. | changing what the export contains |
@@ -457,6 +466,7 @@ Add a new file with the next number instead of changing an old one.
 | 0002_audit_history.sql | The history of every change to every record | checking how history is stored |
 | 0003_helpers.sql | Helpers, their suggestion batches and the suggested records waiting for a decision | checking how helpers and suggestions are stored |
 | 0004_import_batches.sql | Batches can come from a spreadsheet import by a person, not only a helper; rows keep their spreadsheet row | checking how imported rows wait for Review |
+| 0005_helper_key_rotation.sql | A helper can get a new key and keep its history: when the key was changed, a change still in progress, and a count of keys | checking how a key change is stored |
 
 ## src/dashboard/web/  (summary: the screens: pages, forms and their protections)
 | Entry | What it is | Open it when |
@@ -465,6 +475,7 @@ Add a new file with the next number instead of changing an old one.
 | app.py | Build the Flask web application and its local-only protections. | changing sign-in, protections or reports |
 | pages.py | Pages built from module declarations: the record grid, add and edit forms, and history. | changing the grid or forms |
 | setup.py | The first-run wizard and the settings page: who lives here, the home, modules and backups. | changing setup questions or settings |
+| action_form.py | An action's small form, such as Mark done: open it, save it once as one operation, and Undo it (decision 0091). | changing Mark done or Undo screens |
 | count.py | Count this batch: a stocktake of one batch, reviewed and then saved as one stocktake correction. | changing the stocktake screens |
 | home.py | Group the home page by area: each module's main lists shown large, its other lists as one line of links. | changing how the home page is grouped or ordered |
 | sheets.py | One-page printable sheets declared by modules, such as the emergency sheet. | changing printable sheets |
@@ -473,7 +484,7 @@ Add a new file with the next number instead of changing an old one.
 | api.py | The helper API (/api/v1): programs the household gave a key to can look at records and suggest new ones. | changing what helpers can read or send |
 | review.py | The Review screen: helpers' suggested new records and imported rows, waiting for a person to accept or reject each one. | changing the Review page |
 | csv_import.py | Settings, Import from a spreadsheet: choose a table, upload a CSV, match its columns, check the rows, send to Review. | changing the import screens |
-| helper_settings.py | Settings, Helpers: give an assistant a key, choose what it may do, and turn its access off. | changing the Helpers settings page |
+| helper_settings.py | Settings, Helpers: give an assistant a key, choose what it may do, give it a new key, and turn its access off. | changing the Helpers settings page |
 | export_page.py | Settings, Export my records: a page and a button that downloads a zip of spreadsheet files. | changing the Export page |
 | restore.py | Settings, Backups: the list of backups, a preview of one, putting it back, and Undo restore. | changing the restore pages |
 | openapi-v1.json | The published OpenAPI 3.1 description of the helper API, served at GET /api/v1/openapi.json. | changing a helper route, reply or error code (edit it too) |
@@ -489,17 +500,21 @@ Add a new file with the next number instead of changing an old one.
 | grid.html | A table's records, a page at a time, sortable | changing the list of records |
 | rows.html | One page of grid rows (also loaded as you scroll) | changing a row |
 | form.html | Add and edit forms, delete and restore, and history | changing the form |
+| action_form.html | An action's small form, such as Mark done: what it asks, the next-date choice, Save once | changing the Mark done wording |
+| _*.html | Pieces shared by both forms: one field (_field), and the forms' styles and browser code (_form_script) | changing every form at once |
 | setup.html | First-run wizard and Settings (one form, two modes) | changing setup questions |
-| sheet.html | A printable sheet, styled to fit one page | changing how sheets print |
+| *sheet.html | A printable sheet styled to fit one page (sheet), and the step before one with private details (private_sheet) | changing how sheets print |
 | start.html | Shown to a browser that was not opened by the shortcut | changing that message |
 | report.html | Shown after saving a report | changing that message |
-| close.html | The "Save and exit" page | changing how closing works |
-| closed.html | Shown after a safe close | changing that message |
+| close*.html | The "Save and exit" page, and the page shown after a safe close | changing how closing works |
 | error.html | Plain-language error page with "Save a report" | changing error wording |
-| private_sheet.html | The step before a sheet with private details: show it only when you mean to print or share it | changing how private sheets open |
 | helpers.html | Settings, Helpers: the helper list, the address, and the form that makes a key | changing the Helpers settings page |
 | helper_key.html | The one page that shows a new helper key, with a Copy button and a warning to keep it private | changing the new-key page |
 | helper_connect.html | "Connect an AI assistant": settings to paste into an assistant's app, with a placeholder for the key | changing the assistant set-up words |
+| review.html | Review: each helper's waiting suggestions with Accept and Reject | changing the Review page |
+| helpers.html | Settings, Helpers: the helper list with Make a new key and Turn off access, and the form that makes a key | changing the Helpers settings page |
+| helper*_key.html | The one page that shows a key: helper_key for a new helper, helper_new_key for a new key for one already made; each with Copy and a warning | changing the key pages |
+| helper_connect.html | "Connect an AI assistant": settings to paste into an assistant's app (pointing at the address file), with a placeholder for the key, and Connection details | changing the assistant set-up words |
 | review.html | Review suggestions: each helper's waiting suggestions with Accept and Reject | changing the Review page |
 | export.html | Settings, Export my records: what is in the export and the download button | changing the Export page |
 | restore_*.html | Settings, Backups: the list of backups, the check-and-compare page, the result, and the shared Undo restore box | changing the restore pages |
@@ -513,7 +528,7 @@ How to run them is in AGENTS.md.
 | test_migrations.py | Tests for numbered migrations: tracks, checksums, newer databases, rollback and backups. | changing migrations |
 | test_csv_import.py | Tests for Import from a spreadsheet: reading a CSV, matching columns, the dry run, staging for Review and Accept. | changing spreadsheet import |
 | test_modules.py | Tests for loading module folders and the plain-language problems they report. | changing module rules |
-| test_actions.py | Tests for one-step actions (buttons like Mark returned) and the date order rule `not_before` (decision 0075). | changing actions or date order |
+| test_actions.py | Tests for actions: one-step buttons like Mark returned, the date order rule `not_before` (decision 0075), and the checks on actions that add a record (decision 0091). | changing actions or date order |
 | test_example_garden.py | Exercise the garden example with a temporary database and synthetic harvest. | changing the garden example |
 | test_records.py | Tests for saving, checking, linking, deleting and restoring records, and their history. | changing how records are saved |
 | test_schema.py | Tests for turning declared tables into SQL and generating the next migration. | changing table building |
@@ -549,6 +564,8 @@ How to run them is in AGENTS.md.
 | test_repository.py | Tests that this repository passes its own checks. | CI fails on the repo itself |
 | test_helper_*.py | Tests for helpers: keys, suggestions waiting for a person, the /api/v1 door, and the Settings and Review screens | changing helpers, the helper API or Review |
 | test_mcp_connector.py | Tests for the AI-assistant connector (MCP over stdio) against a real local Dashboard: tools, errors and the key. | changing the connector or the helper API routes |
+| test_helper_address.py | Tests for the steady helper address (decision 0092): Dashboard's address file, and the connector reading it each call. | changing how a connector finds Dashboard |
+| test_helper_key_rotation.py | Tests for Make a new key (decision 0093): one press, one new key shown once, the old key stopped, the helper kept. | changing how a helper key is replaced |
 | test_export.py | Tests for Export my records: every table of an example household, private details, formula safety and the download. | changing the export |
 | test_restore.py | Tests for restoring a backup: checks that change nothing, the safe swap, Undo after a restart, and refusals. | changing restore or Undo |
 | test_api_contract.py | Tests that the published API description (openapi-v1.json) matches the real /api/v1 routes, errors and replies. | changing a helper route, reply or error code |
@@ -568,6 +585,6 @@ How to run them is in AGENTS.md.
 | load_example.py | Load a made-up example household into an empty data folder, for demos, screenshots and testing. | demonstrating or testing with realistic data |
 | make_screenshots.py | Make the example screenshots: run each example household through every stage of using the dashboard. | the screens changed and the gallery needs remaking |
 | screenshots.js | Browser steps for make_screenshots.py (Node and Playwright) | changing how screenshots are taken |
-| browser_check.py | Click through the real dashboard in Chromium (setup, dates, stock in, stocktake, Mark returned, spreadsheet import, private details, closing) and fail loudly. | a screen or its browser code changed |
+| browser_check.py | Click through the real dashboard in Chromium (setup, dates, stock in, stocktake, Mark returned, Mark done, spreadsheet import, private details, closing) and fail loudly. | a screen or its browser code changed |
 | browser_check.js | Browser steps for browser_check.py (Node and Playwright): what is clicked and checked | changing what the browser check clicks |
 | make_project_map.py | Build PROJECT_MAP.md from every INDEX.md in the repository. | changing the map format |

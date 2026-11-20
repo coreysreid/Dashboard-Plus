@@ -5,7 +5,7 @@
 
 [tables.documents]
 title = "Important documents"
-description = "Where important papers, or copies of them, are kept, and when to review or renew them. Do not enter document numbers here."
+description = "Where to find important papers and their copies, and when to look at them again. Keep the papers, scans and numbers in a place you trust."
 columns.name = { type = "text", required = true }
 columns.kind = { type = "choice", required = true, choices = [
     { key = "passport", label = "Passport" },
@@ -19,7 +19,15 @@ columns.kind = { type = "choice", required = true, choices = [
 columns.holder = { type = "link", to = "people.people", on_delete = "clear" }
 columns.place = { type = "link", to = "stock.places", on_delete = "restrict" }
 columns.renew_by = { type = "date" }
+columns.copies = { type = "links", to = "copy_places" }
 columns.notes = { type = "longtext" }
+
+# Only the names of the places copies are kept, such as a hard drive or a family cloud folder (decision 0090).
+# Never the copy itself, a scan or a document number.
+[tables.copy_places]
+title = "Places copies are kept"
+description = "Where copies of important papers are kept, such as a hard drive, a family cloud folder or a solicitor."
+columns.name = { type = "text", required = true }
 
 [tables.documents.watch]
 expiring = { date = "renew_by", warn_days = 30, wording = "due", what = "review or renewal" }

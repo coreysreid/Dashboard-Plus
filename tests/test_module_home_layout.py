@@ -173,7 +173,7 @@ class HomeLayoutModuleTests(TempDirTestCase):
             self.assertEqual(shown["value"], f"{CODE}-{ {'exits': 'door', 'shutoffs': 'water', 'equipment': 'alarm', 'meters': 'meter'}[table] }")
         form = client.get(f"/t/home_layout__exits/{ids['exits']}", base_url=BASE).get_data(as_text=True)
         self.assertIn("Codes or access details (private)", form)
-        self.assertIn("Kept private: shown only when you press Show, never printed.", form)
+        self.assertIn("Hidden until you press Show and left off Our home.", form)
 
     def test_moving_a_cupboard_updates_the_sheet(self):
         """Lane B check 4: move the parent and every path shown follows; nothing else changes."""

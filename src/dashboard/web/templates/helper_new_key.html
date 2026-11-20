@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+{% block title %}New key for {{ helper.name }} · Dashboard Plus{% endblock %}
+{% block body %}
+<h1>New key for {{ helper.name }}</h1>
+<p class="lead">Copy it now. This key will not be shown again. The old key no longer works.</p>
+<div class="card">
+  <label for="helper-key" style="font-weight:600">New access key</label>
+  <input type="text" id="helper-key" value="{{ key }}" readonly autocomplete="off" spellcheck="false" style="font-family:monospace">
+  <div class="actions"><button type="button" id="copy-key">Copy key</button><span id="copied" class="muted" role="status"></span></div>
+</div>
+<p>In your assistant app's MCP settings, replace only <code>DASHBOARD_PLUS_KEY</code> with this key, then restart or reconnect that assistant's Dashboard Plus tool. Keep the key out of chats and emails. Suggestions already waiting on Review are still there.</p>
+{% include "helper_connect.html" %}
+<div class="actions"><a class="button" href="/settings/helpers?changed={{ helper.id }}">Done</a></div>
+<script>
+  document.getElementById("copy-key").addEventListener("click", function () {
+    var box = document.getElementById("helper-key");
+    box.select();
+    var say = function (text) { document.getElementById("copied").textContent = text; };
+    if (navigator.clipboard) { navigator.clipboard.writeText(box.value).then(function () { say("Copied."); }, function () { say("Select the key and copy it."); }); }
+    else { say("Select the key and copy it."); }
+  });
+</script>
+{% endblock %}

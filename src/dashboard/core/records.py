@@ -19,6 +19,7 @@ ACTOR = re.compile(r"^(person|system|agent:[a-z0-9_-]+|module:[a-z0-9_]+|import:
 TRUE_WORDS = {"true", "yes", "y", "1", "on"}
 FALSE_WORDS = {"false", "no", "n", "0", "off"}
 MAX_PAGE = 500
+OPERATION = re.compile(r"^[A-Za-z0-9_-]{16,64}$")  # a form's one-use operation number (decision 0091)
 
 
 class ValidationError(PlainError):
@@ -35,6 +36,10 @@ class RecordNotFound(PlainError):
 
 class ActionNotAvailable(PlainError):
     """A one-step action no longer applies to the record (pressed twice, or from an old page); nothing changed."""
+
+
+class ActionStale(ActionNotAvailable):
+    """The record changed while an action's form was open (or since the operation to undo); nothing changed."""
 
 
 class CountOutOfDate(ValidationError):

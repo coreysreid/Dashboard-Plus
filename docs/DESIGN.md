@@ -450,6 +450,56 @@ columns.returned_on = { type = "date", not_before = "lent_on" }
   "Returned on can't be before Lent on.", from the labels. The same day is
   fine; a blank date is not compared.
 
+**Actions that add a record** (decision 0091). An action with `adds` opens a
+small form instead of saving at once, and one save adds a linked record and
+changes this one:
+
+```toml
+[[tables.jobs.actions]]
+key = "done"
+label = "Mark done"
+title = "Mark “{record}” done"                      # optional; {record} is the record's name
+intro = "Nothing changes until you save."           # optional
+done = "Marked done on {done_on}. Work done was saved."  # may name asked fields
+undo = "Undo this completion"                       # optional: offers Undo after saving
+adds = { table = "work_done", link = "job", ask = ["done_on", "done_by", "notes"],
+         values = { }, add_button = "Add an older Work done entry (does not change the job dates)" }
+latest = { date = "done_on", into = "last_done" }   # optional: the asked date becomes this record's
+next_date = { into = "next_due", question = "When do you want to do it again?",
+              repeat = { count = "repeat_count", unit = "repeat_unit" } }  # optional; repeat optional
+help = { done_on = "The day the work was finished." }  # optional words under asked fields
+messages = { stale = "...", same_day = "... {date} ...", undo_refused = "..." }  # optional
+```
+
+- `show_when` and `set` are optional here. `ask` names fields of the added
+  table (public, typed in, not the link); `values` fixes others with the same
+  rules as `set`; every required field of the added table must be asked,
+  fixed or have a default. `latest.date` must be an asked date; `latest.into`
+  and `next_date.into` public date columns of this table; `repeat.count` a
+  whole-number column and `repeat.unit` a choice of weeks, months or years.
+  All checked when the module loads, with plain messages.
+- The `latest` date may not be after today, nor before the record's current
+  value (older work goes through the ordinary add form, which changes no
+  dates), nor a day that already has a linked record. `next_date` asks for
+  one explicit choice, none preselected: a date (not before the `latest`
+  date; a date already passed is explained and needs a second Save), the
+  date the record's repeat offers from the `latest` date (calendar months
+  and years, clamped to the month's last day; weeks of seven days), or no
+  date, which clears the reminder.
+- One save is one transaction: the linked record through the ordinary create
+  path, this record through the ordinary change path, and one `action` entry
+  in history holding the fields before and after and the new record's id.
+- The form carries the record's **revision** (its newest history entry) and
+  a one-use **operation number**. A different revision saves nothing and says
+  `messages.stale`; the same operation number sent again returns the first
+  result and saves nothing new.
+- **Undo** is offered on the notice after saving while nothing about either
+  record has changed since (both revisions are what the operation left). It
+  deletes the added record (kept in history) and puts the fields back, in one
+  transaction, with an `undo` history entry; otherwise it says
+  `messages.undo_refused` and changes nothing.
+- labels.toml may reword `label`, `done`, `title`, `intro` and `undo`.
+
 ## 6. Modules
 
 A module is a folder:
@@ -633,7 +683,8 @@ number and the core can load both for a transition period.
   shipped, decision 0062). A list of where papers are kept, not a document
   vault. One table: documents (name, kind such as passport, insurance, will
   or warranty; whose it is, a link to `people.people`; where it is kept, a
-  link to `stock.places`; a review or renew-by date; notes). There is no
+  link to `stock.places`; a review or renew-by date; the places copies are also kept, a link to the
+  small table `copy_places`, decision 0090; notes). There is no
   field for a document number, password or copy of the paper. Behaviour: the
   date is *due* on the day the household chose; one gap asks, per paper,
   "Where is it kept?"; a household with no papers listed is asked nothing; a
@@ -642,13 +693,15 @@ number and the core can load both for a transition period.
 - **Home care** (declarative; requires People and Household stock; shipped,
   decision 0063). Tables: home care jobs (what kind, which of the household's
   `stock.places` it is at, who usually does it, a link to `people.people`;
-  last done; do again by) and work done (a dated note of each time, and who
-  did it). Behaviour: a job is *due* on the date the household typed, never
-  one worked out for it; logging work done changes no dates, so the household
-  types the next "do again by" itself (the core has no repeat engine yet); one
-  gap asks where a job is done; smoke alarms and extinguishers stay in Home
-  layout; a **Home care** sheet prints the jobs and dates without notes. No
-  field holds alarm codes or how to get in.
+  last done; do again by; an optional repeat the household chose) and work
+  done (a dated note of each time, and who did it). Behaviour: a job is *due*
+  on the date the household chose, never one worked out for it; **Mark done**
+  (decision 0091, section 5.8) adds Work done and sets Last done and the
+  chosen Do again by in one save, offering one date from the job's repeat
+  only if the household set one, and can be undone; adding an older Work done
+  entry changes no dates; one gap asks where a job is done; smoke alarms and
+  extinguishers stay in Home layout; a **Home care** sheet prints the jobs and
+  dates without notes. No field holds alarm codes or how to get in.
 - **Vegetable garden** (declarative; requires Household stock; shipped,
   decision 0076). Tables: beds (a link to `stock.places`), crops, plantings
   (a name, bed, crop, planted on, quantity), harvests (a planting, a date, an
@@ -812,6 +865,19 @@ Accepting creates the record credited to `import:<file name>`. Helpers never
 see import batches. The file is read in memory and never written to disk;
 private (sensitive) columns cannot be imported.
 
+The check page pauses on four things before anything is sent (decision 0094).
+A row whose name is already in the target list (case and spacing ignored; for
+nested places, under the same parent) is shown as "Rice is already in Stock
+items. This row would add a second one." with an *Add anyway* box, off by
+default, so it is skipped unless chosen; Review shows "Already exists" beside
+such a row if it is added. A short date that reads either way (1/2/27, both
+parts 12 or less and different) is shown with how it will be read in the
+household's order, and sending needs one tick saying they are right; ISO
+dates are never flagged. A link column whose values match nothing is
+summarised once at the top with the count and the first three values. A
+column the person skipped that the heading named a field for says "Skipping
+Place leaves it blank on N rows" above the Send button.
+
 ### Inbox
 
 The **Inbox** holds unsorted items: a photo, a pasted note, a forwarded email's
@@ -826,10 +892,12 @@ API; the core does not call an AI service by itself.
 
 Assistants, whether AI or human helpers, enter data through the API and never
 touch the database. The API is part of the same local server (`127.0.0.1`
-only) under `/api/v1/`. The port changes at each start, so Settings, Helpers
-shows the current address (decisions 0066 to 0068, hardened by 0074, with a
-published description in 0084, a Review queue limit in 0085, and a check that
-the address is really Dashboard in 0086).
+only) under `/api/v1/`. The port changes at each start; Dashboard writes the
+current address to `data/run/helper-address.json` so a connector finds it
+after a restart (0092), and Settings, Helpers also shows it (decisions 0066 to
+0068, hardened by 0074, with a published description in 0084, a Review queue
+limit in 0085, a check that the address is really Dashboard in 0086, and a new
+key for the same helper in 0093).
 
 ### Authentication
 
@@ -840,6 +908,21 @@ and kept only as a SHA-256 fingerprint in `data/secrets/helper_keys.json`
 (mode 0600), never in the database. A request carrying an `Origin` header is
 refused (helpers are programs, not web pages). Cookies, query strings and form
 fields are never read for a key.
+
+**A new key for the same helper (0093).** Each working helper's card has
+**Make a new key**: one press (CSRF token plus a one-use token bound to that
+helper, like 0087) gives a new key shown once and stops the old one. The
+helper keeps its id, `key_id`, slug, grant, Made date, suggestions and
+history; the card adds "Key changed". In order: the row is marked
+`key_pending_at` and its `key_generation` goes up (no key of it works now);
+`helper_keys.json` is replaced whole with the new fingerprint instead of every
+old one for that `key_id`; the mark is cleared, `rotated_at` set and a
+value-free `helper_rotate` audit row added. Only then is the key shown. If a
+step fails the helper stays paused, no key is shown, and at start-up an
+unfinished change has its fingerprints removed ("Key change did not finish.
+Make a new key to reconnect."). A suggestion checked with the old key is
+refused inside the write transaction (401 `no_key`), because the generation,
+revoked and pending state are read again there.
 
 **Checking it is really Dashboard (0086).** `POST /api/v1/hello` is the one
 route without a key. A program sends `key_name` (`SHA-256("dph-id:" +
@@ -919,9 +1002,25 @@ Python's own. Its eight tools map one to one to the routes above:
 `dashboard_suggest_new_records`, `dashboard_list_suggestion_batches`,
 `dashboard_get_suggestion_batch`. It can do nothing the key does not allow.
 
-- The address and key come only from `DASHBOARD_PLUS_URL` and
-  `DASHBOARD_PLUS_KEY` or a `--config` file, never from a tool's arguments.
-  Only `http://127.0.0.1:<port>` or `http://localhost:<port>` is accepted.
+- Where Dashboard is comes from `DASHBOARD_PLUS_ADDRESS_FILE` (the
+  preferred form, 0092) or `DASHBOARD_PLUS_URL`; the key from
+  `DASHBOARD_PLUS_KEY`; or a `--config` file with `address_file`, `url` and
+  `key`. Never from a tool's arguments. Only `http://127.0.0.1:<port>` or
+  `http://localhost:<port>` is accepted. When an address file is given, a URL
+  is ignored.
+- **Steady address (0092).** After its listener is ready Dashboard writes
+  `data/run/helper-address.json`: `{"version": 1, "url":
+  "http://127.0.0.1:<port>/api/v1", "run_id": "<32 hex>"}`, to a temporary
+  name first and then put in place in one step, readable by this account
+  only. It never holds a key, cookie, session or close token (those stay in
+  `dashboard.json`, which the connector never reads). A safe close removes it
+  only if the run ID is still its own; a crash can leave it stale. The
+  connector reads it again for every call, so one MCP process survives
+  restarts: at most 1 KB, a regular file and not a link, exactly those three
+  values, the URL in exactly that spelling. The file is never proof of
+  identity: the hello below still runs before the key. Its plain errors
+  (missing, does not look right, not answering) all end "The key was not
+  sent."
 - Before every request it sends the hello above on a new connection; only if
   the proof matches (`hmac.compare_digest`) does the request, with the key, go
   down that same connection. Otherwise the tool fails with "This address is
@@ -933,9 +1032,13 @@ Python's own. Its eight tools map one to one to the routes above:
 - Every result says it is household data, not instructions, then gives the
   API's JSON (as text, and as `structuredContent`). API refusals become tool
   errors with the API's own message; nothing is retried with wider access.
-- Settings, Helpers and the new-key page show "Connect an AI assistant":
-  settings to paste into the assistant's app with `YOUR-KEY-HERE` in place of
-  the key, and the warning that an online assistant sees what the helper reads.
+- Settings, Helpers and the key pages show "Connect an AI assistant":
+  settings to paste into the assistant's app, pointing at this folder's
+  address file, with `YOUR-KEY-HERE` in place of the key, and the warning that
+  an online assistant sees what the helper reads. A collapsed "Connection
+  details" shows the current address and a manual block with
+  `DASHBOARD_PLUS_URL` for apps that cannot use the file (it must be copied
+  again after each restart).
 
 ## 10. Annotations and the question loop
 

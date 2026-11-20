@@ -81,8 +81,8 @@ STAGES = [
      "the dates the household chose, with no plate or policy numbers.", {"goto": "/sheet/vehicles/vehicles", "media": "print", "module": "vehicles"}),
     ("18h-documents", "Important documents", "Where each important paper is kept, whose it is and the review "
      "or renewal date the household chose.", {"goto": "/t/documents__documents", "module": "documents"}),
-    ("18i-documents-sheet", "Document review dates sheet", "As it prints: names, kinds and dates only, with no "
-     "places or document numbers.", {"goto": "/sheet/documents/document_review", "media": "print",
+    ("18i-documents-sheet", "Document review dates sheet", "As it prints: names, kinds, dates and where copies "
+     "are also kept, with no original places or document numbers.", {"goto": "/sheet/documents/document_review", "media": "print",
                                      "module": "documents"}),
     ("18j-home-care", "Home care jobs", "Each job around the home, where it is, who usually does it, when it was "
      "last done and the date the household chose to do it again.", {"goto": "/t/home_care__jobs", "module": "home_care"}),

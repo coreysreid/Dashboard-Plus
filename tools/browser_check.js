@@ -171,11 +171,37 @@ function expect(condition, message) { if (!condition) throw new Failed(message);
     expect(await page.locator(button).count() === 1, `The page for "${name}" should offer Mark returned while it is still out; it does not.`);
     await submit(button);
     const said = await text('[role=status]');
-    expect(said.includes('Marked as returned today'), `After Mark returned the page should say "Marked as returned today"; it says "${said}".`);
+    expect(said.includes('Marked returned today'), `After Mark returned the page should say "Marked returned today"; it says "${said}".`);
     expect(await page.inputValue('#f-status') === 'returned', 'After Mark returned, "Is it back?" should read Yes, returned.');
     expect(await page.inputValue('#f-returned_on') !== '', 'After Mark returned, Returned on should be filled in with today.');
     expect(!(await page.locator(button).count()), 'Mark returned should go away once the loan is back.');
     ok(`Mark returned: one press on "${name}" saves it as back today, says so, and the button goes`);
+  }
+
+  async function checkMarkDone() {  // an action with a small form that adds Work done, saved once, with Undo (decision 0091)
+    const job = plan.job;
+    await goto('/t/home_care__jobs');
+    await Promise.all([page.waitForNavigation(), page.click(`a[aria-label="Open ${job.name}"]`)]);
+    const jobUrl = page.url();
+    const before = await page.inputValue('#f-next_due');
+    await Promise.all([page.waitForNavigation(), page.click('a[data-action="done"]')]);
+    expect((await text('h1')).includes(job.name), `Mark done should open a form named after "${job.name}"; it shows "${await text('h1')}".`);
+    expect(!(await page.locator('input[name=next_choice]:checked').count()), 'No next-date choice should be chosen before the person chooses one.');
+    expect(await page.inputValue('#f-done_by') === '', 'Who did it should start blank even though someone usually does this job.');
+    await page.fill('#f-next_date', job.next);
+    expect(await page.isChecked('#next-date-choice'), 'Typing a next date should choose "Choose a date".');
+    const [response] = await Promise.all([page.waitForNavigation(), page.dblclick('form.record button[type=submit]')]);
+    expect(response && response.ok(), `Saving Mark done answered ${response ? response.status() : 'nothing'}.`);
+    const said = await text('[role=status]');
+    expect(said.includes('Marked done on') && said.includes(`Do again by ${job.next}`), `After Mark done the page should name both dates; it says "${said}".`);
+    expect(await page.inputValue('#f-next_due') === job.next, `After Mark done, Do again by should read ${job.next}.`);
+    const added = (await html()).split('used Mark done').length - 1;
+    expect(added === 1, `A double click should save one completion; history shows ${added}.`);
+    await Promise.all([page.waitForNavigation(), page.click('button[data-undo]')]);
+    expect((await text('[role=status]')).startsWith('Undone.'), `Undo should say "Undone."; it says "${await text('[role=status]')}".`);
+    expect(await page.inputValue('#f-next_due') === before, `After Undo, Do again by should be back to ${before}.`);
+    expect(page.url().startsWith(jobUrl.split('?')[0]), 'Undo should come back to the job.');
+    ok(`Mark done: "${job.name}" saved once with Do again by ${job.next} (double click), then undone back to ${before}`);
   }
 
   async function checkImport() {  // Import from a spreadsheet: read in the page, checked, sent to Review, accepted (decision 0080)
@@ -256,6 +282,7 @@ function expect(condition, message) { if (!condition) throw new Failed(message);
       await checkDates();
       if (plan.stock) { await checkStockIn(); await checkStocktake(); }
       if (plan.loan) await checkMarkReturned();
+      if (plan.job) await checkMarkDone();
       if (plan.csv) await checkImport();
       if (plan.private) { await checkPrivateDetail(); await checkPrivateSheet(); }
       await checkClose();

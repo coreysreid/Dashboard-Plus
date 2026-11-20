@@ -1,8 +1,9 @@
 # Each job is at one of the household's own Places (Household stock), and whoever usually does it is
 # one of its People, so a tradesperson's number is kept in one place (decision 0063). Smoke alarms and
 # fire extinguishers stay in Home layout, so their test dates are kept once. No interval is assumed and
-# nothing repeats by itself: the household types each "do again by" date, and logging work done changes
-# no dates. There is no field for alarm codes or how to get in.
+# nothing repeats by itself: Mark done adds Work done and the household chooses the next date each time,
+# perhaps from a repeat it chose itself (decision 0091); adding an older Work done entry changes no dates.
+# There is no field for alarm codes or how to get in.
 
 [tables.jobs]
 title = "Home care jobs"
@@ -20,6 +21,23 @@ columns.who_does_it = { type = "link", to = "people.people", on_delete = "clear"
 columns.last_done = { type = "date" }
 columns.next_due = { type = "date" }
 columns.notes = { type = "longtext" }
+# Optional and off by default: a repeat only offers one next date on Mark done; it never sets one by itself.
+columns.repeat_count = { type = "integer", min = 1, max = 99 }
+columns.repeat_unit = { type = "choice", choices = ["weeks", "months", "years"] }
+
+# Mark done (decision 0091): one save adds Work done, sets Last done and the chosen Do again by, and can be undone.
+[[tables.jobs.actions]]
+key = "done"
+label = "Mark done"
+title = "Mark “{record}” done"
+intro = "Record the work and choose when you want a reminder to do it again. Nothing changes until you save."
+done = "Marked done on {done_on}. Work done was saved."
+undo = "Undo this completion"
+adds = { table = "work_done", link = "job", ask = ["done_on", "done_by", "notes"], add_button = "Add an older Work done entry (does not change the job dates)" }
+latest = { date = "done_on", into = "last_done" }
+next_date = { into = "next_due", question = "When do you want to do it again?", repeat = { count = "repeat_count", unit = "repeat_unit" } }
+help = { done_on = "The day the work was finished.", done_by = "Choose one of your People if you know who did it. It starts blank even if someone usually does this job.", notes = "This is saved in Work done. Do not include alarm or access codes." }
+messages = { stale = "This job changed while you were marking it done. Check its dates and try again. Nothing was saved.", same_day = "Work done is already recorded for this job on {date}. Add an older Work done entry if you need another note.", undo_refused = "This job has changed since that completion. Nothing was undone. Check the job dates and Work done history before changing them." }
 
 [tables.jobs.watch]
 expiring = { date = "next_due", warn_days = 30, wording = "due", what = "job" }

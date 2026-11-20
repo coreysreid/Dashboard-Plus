@@ -112,7 +112,7 @@ def suggest_names(table):
 
 
 def _render_form(info, store, values, errors, from_form, record=None, status=200, saved=None, back=None,
-                 done=None):
+                 done=None, notice=None):
     fields = display.build_fields(store, info, values, errors, from_form, editing=record is not None)
     history = []
     if record:
@@ -128,7 +128,8 @@ def _render_form(info, store, values, errors, from_form, record=None, status=200
                                     "after": formatter.text(info, columns[name], after),
                                     "sensitive": columns[name].sensitive})
             history.append({"at": entry["at"].replace("T", " ")[:16], "who": display.actor_text(entry["actor"]),
-                            "action": display.ACTION_TEXT.get(entry["action"], entry["action"]), "changes": changes})
+                            "action": display.operation_text(store, info, entry) or
+                            display.ACTION_TEXT.get(entry["action"], entry["action"]), "changes": changes})
     record_name = display.display_name(info, record, store) if record else None
     if record and info.table.parent:
         chain = store.ancestors(info, record["id"])
@@ -161,12 +162,15 @@ def _render_form(info, store, values, errors, from_form, record=None, status=200
     related = []
     if record and not record.get("deleted_at"):
         for other, column in store._dependents(info):
+            # An action that adds these records may give this button clearer words (decision 0091).
+            words = next((a["adds"]["add_button"] for a in info.table.actions if a.get("adds") and
+                          a["adds"]["table"] == other.table.name and a["adds"]["link"] == column.name), None)
             related.append({"href": f"/t/{other.name}/new?{column.name}={record['id']}",
-                            "label": display.table_title(other)})
+                            "label": display.table_title(other), "words": words})
     return render_template("form.html", info=info, title=display.table_title(info), fields=fields, record=record,
                            record_name=record_name, errors=errors, history=history, saved=saved,
                            related=related, back=back, batches=batches, count_href=count_href,
-                           actions=display.actions_for(info, record), done=done), status
+                           actions=display.actions_for(info, record), done=done, notice=notice), status
 
 
 def _default_text(column) -> str:
@@ -259,7 +263,8 @@ def edit_record(table, record_id):
     except records.RecordNotFound:
         abort(404)
     return _render_form(info, store, record, {}, False, record=record, saved=request.args.get("saved"),
-                        done=display.done_words(info, request.args.get("done")))
+                        done=display.done_words(info, request.args.get("done")),
+                        notice=action_form.done_notice(store, info, record_id, request.args.get("op")))
 
 
 @pages.post("/t/<table>/<int:record_id>")
@@ -294,8 +299,11 @@ def delete_record(table, record_id):
 def run_action(table, record_id, key):
     """A one-step button such as "Mark returned": saved like any change, then back to the record (decision 0075)."""
     info, store = _info(table), _store()
-    if not any(a["key"] == key for a in info.table.actions):
+    action = next((a for a in info.table.actions if a["key"] == key), None)
+    if action is None:
         abort(404)
+    if action.get("adds"):  # an action with a small form, such as Mark done (decision 0091)
+        return action_form.save_action_form(table, record_id, key)
     try:
         store.action(table, record_id, key)
     except records.RecordNotFound:
@@ -323,4 +331,4 @@ def restore_record(table, record_id):
     return redirect(url_for("pages.edit_record", table=table, record_id=record_id))
 
 
-from dashboard.web import count  # noqa: E402,F401 - adds "Count this batch" to these pages
+from dashboard.web import action_form, count  # noqa: E402,F401 - adds action forms and "Count this batch" to these pages

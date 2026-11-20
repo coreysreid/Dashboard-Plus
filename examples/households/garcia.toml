@@ -661,6 +661,12 @@ next_due = "today+75"
 # ---- Important documents --------------------------------------------------------
 # Where the papers are and the dates the family chose. No document numbers or medical details are written down.
 
+[[documents.copy_places]]
+name = "Solicitor's office"
+
+[[documents.copy_places]]
+name = "Shared family drive"
+
 [[documents.documents]]
 name = "Apartment insurance policy"
 kind = "insurance"
@@ -680,6 +686,7 @@ kind = "property"
 holder = "Maria Garcia"
 place = "Hall closet"
 renew_by = "today+150"
+copies = ["Solicitor's office", "Shared family drive"]
 
 # ---- Home care ----------------------------------------------------------------
 # Smoke alarms and the extinguisher are in Home layout above. Every date is one the household chose.

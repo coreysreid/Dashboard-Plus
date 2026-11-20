@@ -719,17 +719,25 @@ next_due = "today+12"
 # ---- Important documents --------------------------------------------------------
 # Where the papers are and the dates the family chose. No document numbers are written down.
 
+[[documents.copy_places]]
+name = "Blue USB drive"
+
+[[documents.copy_places]]
+name = "Family cloud folder"
+
 [[documents.documents]]
 name = "Home insurance policy"
 kind = "insurance"
 place = "Study"
 renew_by = "today+25"
+copies = ["Blue USB drive", "Family cloud folder"]
 notes = "The renewal letter comes by email a month before."
 
 [[documents.documents]]
 name = "Family passports"
 kind = "passport"
 place = "Study"
+copies = ["Blue USB drive"]
 notes = "Check each person's passport separately before travel."
 
 [[documents.documents]]
@@ -740,7 +748,7 @@ place = "Car"
 
 # ---- Home care ----------------------------------------------------------------
 # Smoke alarms and the extinguisher are in Home layout above. Every "do again by" is a date the family
-# chose; logging work done does not change it, so they typed the next date on the job themselves.
+# chose. Adding Work done by itself does not change it; Mark done records the work and asks for the next date.
 
 [[home_care.jobs]]
 name = "Clean the gutters"
