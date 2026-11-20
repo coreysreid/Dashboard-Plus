@@ -8,6 +8,7 @@ sessions read this page first. Newest at the top of each section.
 
 | Date | Feedback | Plan |
 |---|---|---|
+| 2026-11-20 | Sync "similar to Anki's sync or maybe even like git": push, pull, merge requests; internet-based through the key process; "not a Fort Knox vault for your passwords, ID documents and gold bars". | Direction recorded in decision 0089: one main, members push requests to Review, a private device network (Tailscale or WireGuard), private details never travel in v1, two computers first, home server later. Built in stages after a security review. Corey also wants a macOS build and Android and iOS apps soon, joining as sync members (ROADMAP M3 and M3b). |
 | 2026-11-16 | "There is still a lot to add and update, manage." | Lane B batch 3 (docs/WORKSTREAMS.md) drafts the next modules and content; Lane A polishes and integrates; then a UX round with Corey. |
 
 ## Done

@@ -1,6 +1,6 @@
 # 0081. Sharing the records with your household: three options, Corey to choose
 
-- **Status:** Proposed — Corey to choose an option
+- **Status:** Superseded by 0089 (Corey chose the main-and-members direction)
 - **Date:** 2026-11-18
 - **Decided by:** Corey (needs his OK: any option changes the privacy and security rules); designed by Claude
 - **Would refine:** decisions 0011, 0055 and 0067, and DESIGN section 12; the full design is in
