@@ -273,11 +273,13 @@ def blank_choice(records: Records, info: TableInfo, column: Column, on_form: lis
 
 
 def build_fields(records: Records, info: TableInfo, values: dict, errors: dict, from_form: bool,
-                 editing: bool = False) -> list[Field]:
-    """Fields for a form. `values` are stored values, or raw form text when `from_form`."""
+                 editing: bool = False, only: list[str] | None = None) -> list[Field]:
+    """Fields for a form. `values` are stored values, or raw form text when `from_form`.
+    `only` lists the columns to ask, in order, for an action's small form (decision 0091)."""
     formatter = Formatter(records)
     fields = []
-    on_form = form_columns(info, batch_columns(records, info) if editing else ())
+    on_form = [info.table.columns[n] for n in only] if only is not None else \
+        form_columns(info, batch_columns(records, info) if editing else ())
     rule = info.table.adjusts or {}
     batch_field = rule["link"] if rule.get("belongs_to") and rule["link"] in {c.name for c in on_form} else None
     for column in on_form:
@@ -355,13 +357,15 @@ def build_fields(records: Records, info: TableInfo, values: dict, errors: dict, 
     return fields
 
 
-def values_from_form(info: TableInfo, form, date_style: str = dates.DAY_FIRST, hide=()) -> tuple[dict, dict]:
+def values_from_form(info: TableInfo, form, date_style: str = dates.DAY_FIRST, hide=(),
+                     only: list[str] | None = None) -> tuple[dict, dict]:
     """Read the submitted form into values for the record service, and any dates that could not be read.
 
-    Dates are typed the household's way (20/05/27) and handed on as 2027-05-20."""
+    Dates are typed the household's way (20/05/27) and handed on as 2027-05-20. `only` reads just those
+    columns, for an action's small form."""
     values, problems = {}, {}
     kept = set(form.getlist("_keep_private")) if hasattr(form, "getlist") else set()
-    for column in form_columns(info, hide):
+    for column in ([info.table.columns[n] for n in only] if only is not None else form_columns(info, hide)):
         if column.name in kept and column.sensitive:
             continue  # a private detail the person didn't open stays exactly as saved
         if column.type == "date" and form.get(column.name, "").strip():
@@ -390,7 +394,8 @@ def actor_text(actor: str) -> str:
 
 
 ACTION_TEXT = {"create": "added this", "update": "changed", "delete": "deleted this", "restore": "restored this",
-               "accept": "accepted a helper's suggestion", "reject": "rejected a helper's suggestion"}
+               "accept": "accepted a helper's suggestion", "reject": "rejected a helper's suggestion",
+               "action": "used a button", "undo": "undid a button"}
 
 
 def action_words(info: TableInfo, action: dict) -> tuple[str, str]:
@@ -399,15 +404,40 @@ def action_words(info: TableInfo, action: dict) -> tuple[str, str]:
     return words.get("label") or action["label"], words.get("done") or action["done"]
 
 
+def operation_text(records: Records, info: TableInfo, entry: dict) -> str | None:
+    """A history line for an action that added a record: "used Mark done: added Clean the gutters, done
+    19/11/26", or for its Undo "undid Mark done: removed ...". None for any other history entry."""
+    if entry["action"] not in ("action", "undo") or not isinstance(entry.get("after"), dict):
+        return None
+    after = entry["after"]
+    action = next((a for a in info.table.actions if a["key"] == after.get("key")), None)
+    label = action_words(info, action)[0] if action else after.get("key", "a button")
+    other = records.registry.get(after.get("added_table", ""))
+    name = "a record"
+    if other is not None:
+        try:
+            name = display_name(other, records.get(other.name, after["added"], include_deleted=True), records)
+        except Exception:  # noqa: BLE001 - a history line must never break the page
+            name = f"a {table_title(other).lower()} entry"
+    return f"used {label}: added {name}" if entry["action"] == "action" else f"undid {label}: removed {name}"
+
+
+def action_word(info: TableInfo, action: dict, name: str) -> str | None:
+    """One more of an action's words (its form's title or intro, or its Undo button), from labels.toml first."""
+    return _labels(info).get("actions", {}).get(action["key"], {}).get(name) or action.get(name)
+
+
 def actions_for(info: TableInfo, record: dict | None) -> list[dict]:
-    """The one-step buttons a record's page offers now: those whose `show_when` matches the record."""
+    """The buttons a record's page offers now: those whose `show_when` matches the record. An action that
+    adds a record opens its small form (a link); the others are pressed at once (a small POST form)."""
     if not record or record.get("deleted_at"):
         return []
-    return [{"key": a["key"], "label": action_words(info, a)[0]} for a in info.table.actions
-            if all(record.get(k) == v for k, v in a["show_when"].items())]
+    return [{"key": a["key"], "label": action_words(info, a)[0], "form": bool(a.get("adds"))}
+            for a in info.table.actions if all(record.get(k) == v for k, v in a["show_when"].items())]
 
 
 def done_words(info: TableInfo, key: str | None) -> str | None:
-    """The notice after an action was pressed, such as "Marked as returned today.", or None."""
-    action = next((a for a in info.table.actions if a["key"] == key), None)
+    """The notice after a one-step action was pressed, such as "Marked as returned today.", or None.
+    (An action that adds a record has its own notice, worked out from what it saved.)"""
+    action = next((a for a in info.table.actions if a["key"] == key and not a.get("adds")), None)
     return action_words(info, action)[1] if action else None

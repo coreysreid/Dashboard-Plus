@@ -1,0 +1,54 @@
+{# One form field: label, input, error and help. Shared by form.html and action_form.html. #}
+  <div class="{% if f.error %}has-error{% endif %}"{% if f.show_when %} data-show-when="{{ f.show_when[0] }}" data-show-value="{{ f.show_when[1] }}"{% endif %}{% if f.only_when_blank %} data-only-when-blank="{{ f.only_when_blank }}"{% endif %}>
+    {% set fid = "f-" ~ f.name %}
+    {% set described = ([fid ~ "-error"] if f.error else []) + ([fid ~ "-help"] if f.help else []) %}
+    {% set aria %}{% if f.error %} aria-invalid="true"{% endif %}{% if described %} aria-describedby="{{ described | join(' ') }}"{% endif %}{% endset %}
+    {% if f.kind == "boolean" and f.column.required_when %}
+      <fieldset style="border:0;padding:0;margin:0"><legend style="font-weight:600;margin-bottom:.25rem">{{ f.label }}</legend>
+        {% set answers = f.help_answers or ["Yes", "No"] %}
+        <label style="font-weight:400"><input type="radio" id="{{ fid }}-yes" name="{{ f.name }}" value="yes"{{ aria }} {% if f.value in (1, "1", "yes", True) %}checked{% endif %}> {{ answers[0] }}</label>
+        <label style="font-weight:400"><input type="radio" id="{{ fid }}-no" name="{{ f.name }}" value="no"{{ aria }} {% if f.value in (0, "0", "no", False) and f.value is not none and f.value != "" %}checked{% endif %}> {{ answers[1] }}</label>
+      </fieldset>
+    {% elif f.kind == "boolean" %}
+      <label><input type="checkbox" id="{{ fid }}" name="{{ f.name }}" value="yes"{{ aria }} {% if f.value in (1, "1", "yes", True) %}checked{% endif %}> {{ f.label }}</label>
+    {% else %}
+      <label for="{{ fid }}">{{ f.label }}{% if f.column.required %} <span class="required" title="required">*</span>{% endif %}{% if f.column.unit %} <span class="muted">({{ f.column.unit }})</span>{% endif %}</label>
+      {% if f.kept_private %}
+        <div class="private-closed" id="{{ fid }}-closed">
+          <p class="help" style="margin-top:0">Private detail saved. Show to read or change it.</p>
+          <input type="hidden" name="_keep_private" value="{{ f.name }}" id="{{ fid }}-keep">
+          <button type="button" class="quiet" data-reveal-field="/t/{{ info.name }}/{{ record.id }}/reveal?column={{ f.name }}" data-field="{{ fid }}">Show private detail</button>
+        </div>
+      {% endif %}
+      {% if f.kind == "longtext" %}
+        <textarea id="{{ fid }}" name="{{ f.name }}"{{ aria }}{% if f.kept_private %} hidden{% endif %}>{{ f.value or "" }}</textarea>
+      {% elif f.kind in ("choice", "link") %}
+        {% if f.kind == "link" and (f.options | length > 8 or f.search) %}
+        <input type="search" class="find" data-find-for="{{ fid }}" data-add-new="{{ f.add_new or '' }}" data-search="{{ f.search or '' }}" placeholder="Type to find…" aria-label="Find {{ f.label | lower }}" autocomplete="off">
+        {% endif %}
+        <select id="{{ fid }}" name="{{ f.name }}"{{ aria }}{% if f.follows %} data-follows="{{ f.follows }}"{% endif %}>
+          <option value=""{% if f.blank_follows %} data-blank-follows="{{ f.blank_follows }}" data-blank-words="{{ f.blank_words | tojson | forceescape }}"{% endif %}>{% if f.column.required %}Choose…{% else %}{{ f.blank or "(none)" }}{% endif %}</option>
+          {% for value, label in f.options %}<option value="{{ value }}"{% if f.owners and value in f.owners %} data-owner="{{ f.owners[value] }}"{% endif %} {% if value == (f.value | string) %}selected{% endif %}>{{ label }}</option>{% endfor %}
+        </select>
+        {% if f.follows %}<p class="help" data-follows-note="{{ fid }}" data-things="{{ f.things }}" hidden></p>
+        {% elif f.kind == "link" and not f.options %}<p class="help">There is nothing to choose yet.</p>{% endif %}
+      {% elif f.kind == "links" %}
+        <div class="choices" id="{{ fid }}">
+          {% for value, label in f.options %}<label style="font-weight:400"><input type="checkbox" name="{{ f.name }}" value="{{ value }}" {% if value in (f.value or []) %}checked{% endif %}> {{ label }}</label>{% endfor %}
+          {% if not f.options %}<p class="help">There is nothing to choose yet.</p>{% endif %}
+        </div>
+      {% elif f.kind == "date" %}
+        <input type="text" id="{{ fid }}" name="{{ f.name }}"{{ aria }} value="{{ f.value or '' }}" inputmode="numeric" autocomplete="off" size="12" data-date-style="{{ f.date_style }}">
+        <span class="date-preview help" id="{{ fid }}-preview" aria-live="polite"></span>
+      {% elif f.kind == "datetime" %}
+        <input type="datetime-local" id="{{ fid }}" name="{{ f.name }}"{{ aria }} value="{{ f.value or '' }}">
+      {% elif f.kind in ("integer", "decimal", "measure", "money") %}
+        <input type="text" inputmode="decimal" id="{{ fid }}" name="{{ f.name }}"{{ aria }} value="{{ f.value if f.value is not none else '' }}">
+      {% else %}
+        <div class="suggest-box"{% if f.kept_private %} hidden id="{{ fid }}-box"{% endif %}><input type="text" id="{{ fid }}" name="{{ f.name }}" value="{{ f.value or '' }}"{{ aria }} {% if first and not errors and not f.kept_private %}autofocus{% endif %}{% if f.suggest %} data-suggest="/t/{{ info.name }}/suggest?column={{ f.name }}" autocomplete="off" role="combobox" aria-autocomplete="list" aria-expanded="false" aria-controls="{{ fid }}-list"{% endif %}></div>
+      {% endif %}
+    {% endif %}
+    {% if f.error %}<p class="error" id="{{ fid }}-error">{% if f.error[:1].isupper() %}{{ f.error }}{% else %}{{ f.label }} {{ f.error }}{% endif %}</p>{% endif %}
+    {% if f.help %}<p class="help" id="{{ fid }}-help">{{ f.help }}</p>{% endif %}
+    {% if f.column.sensitive %}<p class="help">Private: not shown in lists, or when this page opens, until you choose to show it.</p>{% endif %}
+  </div>

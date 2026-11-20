@@ -9,14 +9,14 @@
 | grid.html | A table's records, a page at a time, sortable | changing the list of records |
 | rows.html | One page of grid rows (also loaded as you scroll) | changing a row |
 | form.html | Add and edit forms, delete and restore, and history | changing the form |
+| action_form.html | An action's small form, such as Mark done: what it asks, the next-date choice, Save once | changing the Mark done wording |
+| _*.html | Pieces shared by both forms: one field (_field), and the forms' styles and browser code (_form_script) | changing every form at once |
 | setup.html | First-run wizard and Settings (one form, two modes) | changing setup questions |
-| sheet.html | A printable sheet, styled to fit one page | changing how sheets print |
+| *sheet.html | A printable sheet styled to fit one page (sheet), and the step before one with private details (private_sheet) | changing how sheets print |
 | start.html | Shown to a browser that was not opened by the shortcut | changing that message |
 | report.html | Shown after saving a report | changing that message |
-| close.html | The "Save and exit" page | changing how closing works |
-| closed.html | Shown after a safe close | changing that message |
+| close*.html | The "Save and exit" page, and the page shown after a safe close | changing how closing works |
 | error.html | Plain-language error page with "Save a report" | changing error wording |
-| private_sheet.html | The step before a sheet with private details: show it only when you mean to print or share it | changing how private sheets open |
 | helpers.html | Settings, Helpers: the helper list, the address, and the form that makes a key | changing the Helpers settings page |
 | helper_key.html | The one page that shows a new helper key, with a Copy button and a warning to keep it private | changing the new-key page |
 | helper_connect.html | "Connect an AI assistant": settings to paste into an assistant's app, with a placeholder for the key | changing the assistant set-up words |

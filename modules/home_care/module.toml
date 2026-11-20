@@ -1,6 +1,6 @@
 name = "home_care"
 title = "Home care"
-version = "1.0.0"
+version = "1.1.0"
 description = "Jobs around the home such as gutters or the hot water system, who usually does them, when each was last done and when you want to do it again."
 core_api = "1"
 kind = "declarative"

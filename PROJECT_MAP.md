@@ -142,6 +142,7 @@ One record per decision, from `TEMPLATE.md`. Never deleted; reversed ones are ma
 | [0088](0088-limits-hold-under-simultaneous-requests.md) | Helper limits are checked again inside the write lock; other API versions answer plain 404 JSON; count pages say "1 tin" | Accepted |
 | [0089](0089-household-sync-main-and-members.md) | Household sync: one main, members push requests to Review, over a private network (Tailscale or WireGuard); private details never travel in v1 | Accepted (direction; security review before shipping) |
 | [0090](0090-documents-record-where-copies-are-kept.md) | Documents record where copies are also kept (a named place such as "Blue USB drive" ticked on each paper); never the paper, a scan or a number | Accepted |
+| [0091](0091-home-care-mark-done.md) | Home care Mark done: an action may add a linked record through a small form, saved once in one transaction with the record's revision and a one-use operation number, a deliberate next date (optional household repeat) and an Undo that refuses after any change | Accepted |
 | [0092](0092-steady-helper-address.md) | A steady helper address: Dashboard writes `data/run/helper-address.json` (address and run ID only) atomically at start and removes its own on close; the connector reads it for every call via `DASHBOARD_PLUS_ADDRESS_FILE`, then still does the 0086 hello before the key | Accepted |
 | [0093](0093-one-step-helper-key-rotation.md) | "Make a new key" for a helper: one press, one-use token, key shown once, old key stopped; same helper, grant and history; pause, file swap, finish in that order, failing closed; in-flight writes rechecked | Accepted |
 | [0094](0094-import-pauses-on-duplicates-and-unclear-dates.md) | Import pauses before sending: a name already in the list is skipped unless "Add anyway" is ticked, short dates that read either way need one tick, links that match nothing and skipped columns are summed up; Review wording trimmed | Accepted |
@@ -270,7 +271,7 @@ Generate the next one with: python tools/make_migration.py garden --name <what_c
 | Entry | What it is | Open it when |
 |---|---|---|
 | module.toml | Name, version, description; requires People (who does it) and Household stock (places) | changing the module's details |
-| tables.toml | Home care jobs with a do-again-by date and one gap question, and the work done on each | adding a field or a gap question |
+| tables.toml | Home care jobs with a do-again-by date, an optional household repeat, Mark done and one gap question, and the work done on each | adding a field or a gap question |
 | labels.toml | Friendly labels, help text, form and list order, which list is main on home | changing wording or order |
 | sheets.toml | Home care sheet: each job, where, who usually does it and its dates, with no notes | changing what prints |
 | migrations/ | Numbered database changes | after changing tables.toml |
@@ -281,6 +282,7 @@ Generate the next one with: python tools/make_migration.py home_care --name <wha
 | Entry | What it is | Open it when |
 |---|---|---|
 | 0001_first_tables.sql | The module's first tables, generated from tables.toml | checking how the tables are stored |
+| 0002_repeat_choice.sql | Adds the optional household repeat (every N weeks, months or years) to jobs, unset for every job | checking how the repeat is stored |
 
 ## modules/home_layout/  (summary: the Home layout module, files only; built on Lane B's draft, using Household stock's places)
 | Entry | What it is | Open it when |
@@ -441,6 +443,7 @@ Generate the next one with: python tools/make_migration.py vehicles --name <what
 | migrations.py | Apply numbered migrations, one track for the core and one per module. | changing how database changes are applied |
 | migrations/ | The core's own numbered database changes | adding a core table |
 | modules.py | Find module folders, check their files, and explain any mistakes in plain words. | changing what module files may say |
+| actions.py | Actions that add a linked record through a small form, like Mark done: one saved operation, a one-use number and Undo. | changing Mark done, its checks or Undo |
 | records.py | Create, change, delete and read records, checking every value and keeping a history. | changing how records are saved or checked |
 | settings.py | Read and write household settings kept in the database (core__settings). | storing a new setting |
 | schema.py | Turn a module's declared tables into SQL, and work out its next migration. | changing how tables are built |
@@ -472,6 +475,7 @@ Add a new file with the next number instead of changing an old one.
 | app.py | Build the Flask web application and its local-only protections. | changing sign-in, protections or reports |
 | pages.py | Pages built from module declarations: the record grid, add and edit forms, and history. | changing the grid or forms |
 | setup.py | The first-run wizard and the settings page: who lives here, the home, modules and backups. | changing setup questions or settings |
+| action_form.py | An action's small form, such as Mark done: open it, save it once as one operation, and Undo it (decision 0091). | changing Mark done or Undo screens |
 | count.py | Count this batch: a stocktake of one batch, reviewed and then saved as one stocktake correction. | changing the stocktake screens |
 | home.py | Group the home page by area: each module's main lists shown large, its other lists as one line of links. | changing how the home page is grouped or ordered |
 | sheets.py | One-page printable sheets declared by modules, such as the emergency sheet. | changing printable sheets |
@@ -496,14 +500,14 @@ Add a new file with the next number instead of changing an old one.
 | grid.html | A table's records, a page at a time, sortable | changing the list of records |
 | rows.html | One page of grid rows (also loaded as you scroll) | changing a row |
 | form.html | Add and edit forms, delete and restore, and history | changing the form |
+| action_form.html | An action's small form, such as Mark done: what it asks, the next-date choice, Save once | changing the Mark done wording |
+| _*.html | Pieces shared by both forms: one field (_field), and the forms' styles and browser code (_form_script) | changing every form at once |
 | setup.html | First-run wizard and Settings (one form, two modes) | changing setup questions |
-| sheet.html | A printable sheet, styled to fit one page | changing how sheets print |
+| *sheet.html | A printable sheet styled to fit one page (sheet), and the step before one with private details (private_sheet) | changing how sheets print |
 | start.html | Shown to a browser that was not opened by the shortcut | changing that message |
 | report.html | Shown after saving a report | changing that message |
-| close.html | The "Save and exit" page | changing how closing works |
-| closed.html | Shown after a safe close | changing that message |
+| close*.html | The "Save and exit" page, and the page shown after a safe close | changing how closing works |
 | error.html | Plain-language error page with "Save a report" | changing error wording |
-| private_sheet.html | The step before a sheet with private details: show it only when you mean to print or share it | changing how private sheets open |
 | helpers.html | Settings, Helpers: the helper list, the address, and the form that makes a key | changing the Helpers settings page |
 | helper_key.html | The one page that shows a new helper key, with a Copy button and a warning to keep it private | changing the new-key page |
 | helper_connect.html | "Connect an AI assistant": settings to paste into an assistant's app, with a placeholder for the key | changing the assistant set-up words |
@@ -524,7 +528,7 @@ How to run them is in AGENTS.md.
 | test_migrations.py | Tests for numbered migrations: tracks, checksums, newer databases, rollback and backups. | changing migrations |
 | test_csv_import.py | Tests for Import from a spreadsheet: reading a CSV, matching columns, the dry run, staging for Review and Accept. | changing spreadsheet import |
 | test_modules.py | Tests for loading module folders and the plain-language problems they report. | changing module rules |
-| test_actions.py | Tests for one-step actions (buttons like Mark returned) and the date order rule `not_before` (decision 0075). | changing actions or date order |
+| test_actions.py | Tests for actions: one-step buttons like Mark returned, the date order rule `not_before` (decision 0075), and the checks on actions that add a record (decision 0091). | changing actions or date order |
 | test_example_garden.py | Exercise the garden example with a temporary database and synthetic harvest. | changing the garden example |
 | test_records.py | Tests for saving, checking, linking, deleting and restoring records, and their history. | changing how records are saved |
 | test_schema.py | Tests for turning declared tables into SQL and generating the next migration. | changing table building |
@@ -581,6 +585,6 @@ How to run them is in AGENTS.md.
 | load_example.py | Load a made-up example household into an empty data folder, for demos, screenshots and testing. | demonstrating or testing with realistic data |
 | make_screenshots.py | Make the example screenshots: run each example household through every stage of using the dashboard. | the screens changed and the gallery needs remaking |
 | screenshots.js | Browser steps for make_screenshots.py (Node and Playwright) | changing how screenshots are taken |
-| browser_check.py | Click through the real dashboard in Chromium (setup, dates, stock in, stocktake, Mark returned, spreadsheet import, private details, closing) and fail loudly. | a screen or its browser code changed |
+| browser_check.py | Click through the real dashboard in Chromium (setup, dates, stock in, stocktake, Mark returned, Mark done, spreadsheet import, private details, closing) and fail loudly. | a screen or its browser code changed |
 | browser_check.js | Browser steps for browser_check.py (Node and Playwright): what is clicked and checked | changing what the browser check clicks |
 | make_project_map.py | Build PROJECT_MAP.md from every INDEX.md in the repository. | changing the map format |

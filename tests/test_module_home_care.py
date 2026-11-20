@@ -108,11 +108,12 @@ class HomeCareModuleTests(TempDirTestCase):
         self.records.update("home_care__jobs", job, {"last_done": done_on, "next_due": self.day(90)})
         self.assertEqual(self.due(), {})
 
-    def test_the_form_says_the_next_date_is_typed_by_the_household(self):
+    def test_the_form_says_the_next_date_is_chosen_by_the_household(self):
         page = self.page("/t/home_care__jobs/new")
         self.assertIn("Do again by", page)
-        self.assertIn("Nothing is worked out for you", page)
-        self.assertIn("type the next date here each time", page)
+        self.assertIn("Mark done records the work and lets you choose the next date.", page)
+        self.assertIn("Adding an older Work done entry changes no job dates.", page)
+        self.assertIn("not a maintenance schedule", page)  # a repeat is the household's own choice (decision 0091)
 
     def test_the_tradesperson_lives_in_people_so_one_change_shows_everywhere(self):
         plumber = self.records.create("people__people", {"name": "Example Plumbing", "phone": "0491 570 110"})
@@ -225,3 +226,7 @@ class HomeCareModuleTests(TempDirTestCase):
         self.assertTrue(created)
         self.assertTrue(all(name.startswith("home_care__") for name in created), created)
         self.assertNotRegex(sql, r"(?m)^\s*(ALTER|DROP|UPDATE|INSERT|DELETE)\b")
+        repeat = (ROOT / "modules" / "home_care" / "migrations" / "0002_repeat_choice.sql").read_text(encoding="utf-8")
+        self.assertEqual(re.findall(r"ALTER TABLE (\S+) ADD COLUMN (\w+)", repeat),
+                         [("home_care__jobs", "repeat_count"), ("home_care__jobs", "repeat_unit")])
+        self.assertNotRegex(repeat, r"(?m)^\s*(DROP|UPDATE|INSERT|DELETE|CREATE)\b")  # every job's repeat starts unset
