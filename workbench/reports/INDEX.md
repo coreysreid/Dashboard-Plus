@@ -43,3 +43,4 @@ expected, actual, severity (blocker, important, minor), suggested change.
 | 2026-11-19-agent-api-abuse-recheck.md | All 22 misuse cases checked against shipped code; concurrent cap race reproduced. | hardening the Agent API |
 | 2026-11-19-new-screens-wording.md | Exact replacements for Count, Review, Helpers and Mark returned. | polishing new screen words |
 | 2026-11-20-mcp-connector-acceptance.md | Shipped connector run against twelve checks, worst-first partials and exact probes. | accepting the MCP connector |
+| 2026-11-20-restore-export-import-ux.md | Three-household phone and desktop recovery, CSV and Review run, with exact import wording. | refining M2 data flows |
