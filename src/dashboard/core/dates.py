@@ -62,6 +62,23 @@ def parse(text: str, style: str) -> str:
         raise ValueError(problem(style)) from None
 
 
+def ambiguous(text: str, style: str) -> str | None:
+    """The stored date a short typed date is read as, when the other order would give a different real date.
+
+    "1/2/27" is 1 February day first and 2 January month first, so it is returned (as 2027-02-01 day first); "20/05/27"
+    and "5/5/27" are never in doubt, and neither is the international form 2027-05-20. Otherwise None."""
+    match = _TYPED.match((text or "").strip())
+    if not match or style == YEAR_FIRST:
+        return None
+    first, second = int(match.group(1)), int(match.group(2))
+    if first == second or not (1 <= first <= 12 and 1 <= second <= 12):
+        return None
+    try:
+        return parse(text, style)
+    except ValueError:
+        return None
+
+
 def show(value, style: str) -> str:
     """A stored date as the household reads it: 20/05/27, 05/20/27 or 2027-05-20."""
     when = value if isinstance(value, date) else _stored(value)

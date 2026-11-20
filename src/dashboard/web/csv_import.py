@@ -127,6 +127,13 @@ def _fingerprint(info, text: str, mapping: list[str]) -> str:
     return hashlib.sha256("\n".join([info.name, text, *mapping]).encode("utf-8")).hexdigest()
 
 
+def _chosen() -> tuple[set[int], bool]:
+    """The rows the person chose to add although their name is already in the list, and whether they ticked the
+    box saying they have looked at the dates that could be read either way. Neither is part of the fingerprint."""
+    add = {int(key[4:]) for key in request.form if key.startswith("add_") and key[4:].isdigit()}
+    return add, bool(request.form.get("dates_ok"))
+
+
 def _match_page(store, info, text, file_name, sheet, mapping, run=None, notice=None, status=200):
     usable, _private = csv_import.fields(store, info)
     options = [{"name": c.name, "label": display.column_label(info, c), "required": c.required and c.default is None}
@@ -140,12 +147,20 @@ def _match_page(store, info, text, file_name, sheet, mapping, run=None, notice=N
     if run is not None:
         for number, values in run.ready[:SHOWN_READY]:
             ready.append({"row": number, "text": describe(store, {"table_name": info.name, "values": values})})
+    add, dates_ok = _chosen() if run is not None else (set(), False)
+    sending = csv_import.chosen_rows(run, add) if run is not None else []
     return render_template(
         "import.html", step="match", info=info, title=display.table_title(info), file_name=file_name,
         data=base64.b64encode(text.encode("utf-8")).decode("ascii"), columns=columns, options=options,
         preview=preview, row_count=len(sheet.rows), run=run, ready=ready, problems=problems, notice=notice,
         fixes=[(n, [visible(m) for m in messages]) for n, messages in run.problems] if run else [],
-        checked=_fingerprint(info, text, mapping) if run is not None else ""), status
+        checked=_fingerprint(info, text, mapping) if run is not None else "",
+        unmatched=csv_import.unmatched_summary(store, info, run) if run is not None else [],
+        skipped=[csv_import.skip_text(h, n) for h, n in csv_import.skipped_columns(store, info, sheet, mapping, run)]
+        if run is not None else [],
+        same_name=[(n, run.same_name[n]) for n, _v in run.ready if n in run.same_name] if run else [],
+        unclear=[(n, run.unclear_dates[n]) for n, _v in run.ready if n in run.unclear_dates] if run else [],
+        add=add, dates_ok=dates_ok, sending=len(sending)), status
 
 
 def _check(store, info, text, file_name, sheet, mapping, notice=None):
@@ -187,6 +202,16 @@ def send():
                              "look it over, then send.")[1]
     if not run.ready:
         return page
-    batch = proposals.stage_import(store.conn, file_name, csv_import.staged(info, run))
-    return redirect(url_for("review.review", done="imported", count=len(run.ready), table=info.name,
+    add, dates_ok = _chosen()
+    rows = csv_import.chosen_rows(run, add)
+    if not rows:
+        return _check(store, info, text, file_name, sheet, mapping,
+                      notice="No rows are chosen to send: every ready row is already in your list. Tick Add anyway "
+                             "on any you want a second time.")[1]
+    if any(number in run.unclear_dates for number, _values in rows) and not dates_ok:
+        return _check(store, info, text, file_name, sheet, mapping,
+                      notice="Some dates could be read either way. Look at how each will be read, then tick the box "
+                             "to say they are right before sending.")[1]
+    batch = proposals.stage_import(store.conn, file_name, csv_import.staged(info, rows))
+    return redirect(url_for("review.review", done="imported", count=len(rows), table=info.name,
                             _anchor=f"batch-{batch}"))

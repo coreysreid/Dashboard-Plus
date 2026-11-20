@@ -149,7 +149,7 @@ class ReviewScreenTests(TempDirTestCase):
     # ----- Review ------------------------------------------------------------------------------------
     def test_an_empty_review_page(self):
         page = self.text("/review")
-        self.assertIn("Review", page)
+        self.assertIn("<h1>Review</h1>", page)
         self.assertIn("Nothing is waiting on Review.", page)
         self.assertNotIn("needs a look", self.text("/"))
 
@@ -224,7 +224,7 @@ class ReviewScreenTests(TempDirTestCase):
         pid = result["proposals"][0]["id"]
         self.post(f"/review/{pid}/reject")
         response = self.post(f"/review/{pid}/accept")
-        self.assertIn("already accepted or rejected", self.text(response.headers["Location"]))
+        self.assertIn("This row was already accepted or rejected.", self.text(response.headers["Location"]))
         self.assertEqual(self.store.count("stock__places"), 0)
 
     def test_text_a_helper_sends_is_shown_as_text_never_run(self):

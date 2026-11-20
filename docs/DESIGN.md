@@ -813,6 +813,19 @@ Accepting creates the record credited to `import:<file name>`. Helpers never
 see import batches. The file is read in memory and never written to disk;
 private (sensitive) columns cannot be imported.
 
+The check page pauses on four things before anything is sent (decision 0094).
+A row whose name is already in the target list (case and spacing ignored; for
+nested places, under the same parent) is shown as "Rice is already in Stock
+items. This row would add a second one." with an *Add anyway* box, off by
+default, so it is skipped unless chosen; Review shows "Already exists" beside
+such a row if it is added. A short date that reads either way (1/2/27, both
+parts 12 or less and different) is shown with how it will be read in the
+household's order, and sending needs one tick saying they are right; ISO
+dates are never flagged. A link column whose values match nothing is
+summarised once at the top with the count and the first three values. A
+column the person skipped that the heading named a field for says "Skipping
+Place leaves it blank on N rows" above the Send button.
+
 ### Inbox
 
 The **Inbox** holds unsorted items: a photo, a pasted note, a forwarded email's

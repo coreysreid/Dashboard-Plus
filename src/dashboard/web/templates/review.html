@@ -29,6 +29,7 @@
       {% else %}
       <p style="margin:0">{% if b.kind == "import" %}Row {{ p.source_row }} would add to{% else %}{{ b.helper }} suggests adding to{% endif %} <strong>{{ p.text.table }}</strong>: <span class="helper-text">{% for label, text in p.text.parts %}{{ label }}: <bdi>{{ text }}</bdi>{% if not loop.last %} · {% endif %}{% endfor %}</span></p>
       {% endif %}
+      {% if p.exists %}<p class="problem" role="status" style="margin:.4rem 0"><bdi>{{ p.exists }}</bdi></p>{% endif %}
       {% if p.reason %}<p class="problem" role="alert" style="margin:.4rem 0">{{ p.reason }}</p>{% endif %}
       <div class="actions" style="margin:.4rem 0 0">
         {% if not p.text.off %}
