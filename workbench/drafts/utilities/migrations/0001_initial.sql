@@ -16,10 +16,12 @@ CREATE TABLE utilities__services (
     provider INTEGER REFERENCES people__people(id) ON DELETE SET NULL,
     fault_contact INTEGER REFERENCES people__people(id) ON DELETE SET NULL,
     account_number TEXT,
-    meter TEXT,
+    meter INTEGER REFERENCES home_layout__meters(id) ON DELETE SET NULL,
     notes TEXT
 );
 
 CREATE INDEX utilities__services__provider__idx ON utilities__services(provider);
 
 CREATE INDEX utilities__services__fault_contact__idx ON utilities__services(fault_contact);
+
+CREATE INDEX utilities__services__meter__idx ON utilities__services(meter);

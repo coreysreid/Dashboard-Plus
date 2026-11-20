@@ -6,7 +6,7 @@ columns.kind = { type = "choice", required = true, choices = ["electricity", "ga
 columns.provider = { type = "link", to = "people.people", on_delete = "clear" }
 columns.fault_contact = { type = "link", to = "people.people", on_delete = "clear" }
 columns.account_number = { type = "text", sensitive = true }
-columns.meter = { type = "text" }
+columns.meter = { type = "link", to = "home_layout.meters", on_delete = "clear" }
 columns.notes = { type = "longtext", sensitive = true }
 
 [tables.services.watch]
