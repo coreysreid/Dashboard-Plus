@@ -46,3 +46,4 @@ expected, actual, severity (blocker, important, minor), suggested change.
 | 2026-11-20-restore-export-import-ux.md | Three-household phone and desktop recovery, CSV and Review run, with exact import wording. | refining M2 data flows |
 | 2026-11-20-sharing-option-a-ready-check.md | Unselected shared-folder option A blockers and two-device acceptance checks. | reconsidering sharing A after 0089 |
 | 2026-11-20-not-a-vault-wording.md | Exact help and setup replacements for document, access and private fields. | applying Corey's not-a-vault wording |
+| 2026-11-20-wine-final-check.md | Shipped Wine against all 15 old checks, including the Garcia example correction. | reviewing Wine promotion |
