@@ -1,10 +1,10 @@
 [[sheet]]
 name = "utility_contacts"
 title = "Utility contacts"
-intro = "A household reference. Check the provider's current fault number before relying on it. Account numbers and private notes are not printed. Meter locations are on the Our home sheet."
+intro = "The fault phone is the number you saved for this People contact. Check it with your provider before relying on this page. Account numbers and private notes are not printed. Meter locations are on the Our home sheet."
 
 [[sheet.section]]
 title = "Services"
 table = "services"
-columns = ["name", "kind", "provider", "fault_contact", "meter"]
+columns = ["name", "kind", "provider", "fault_contact", "fault_contact.phone", "meter"]
 order_by = "kind"

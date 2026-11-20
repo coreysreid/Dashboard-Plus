@@ -32,6 +32,12 @@ fault_contact = "Example Power Faults US"
 account_number = "DEMO-US-ACCOUNT-01"
 meter = "Apartment electricity meter"
 
+[[garcia.home_layout.meters]]
+name = "Apartment electricity meter"
+kind = "electricity"
+place = "Hall closet"
+how_to_find = "Inside the hall closet."
+
 [[taylor.people.people]]
 name = "Example Water UK"
 phone = "07700 900790"
@@ -47,3 +53,9 @@ provider = "Example Water UK"
 fault_contact = "Example Water Faults UK"
 account_number = "DEMO-UK-ACCOUNT-01"
 meter = "Flat water meter"
+
+[[taylor.home_layout.meters]]
+name = "Flat water meter"
+kind = "water"
+place = "Kitchen cupboard"
+how_to_find = "Inside the kitchen cupboard."
