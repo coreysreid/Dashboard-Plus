@@ -1,0 +1,17 @@
+# Settings for tools/build_macos.py. The Python version is pinned exactly.
+# It is python-build-standalone's ready-made, relocatable CPython (the same
+# 3.12.10 as the Windows folder), one download per kind of Mac processor.
+# sha256 is the checksum the project publishes in that release's SHA256SUMS,
+# checked again against our own download on 20 November 2026; the build refuses
+# a file that does not match.
+[python]
+version = "3.12.10"
+release = "20250409"
+
+[python.arm64]  # Apple silicon (M1 and later)
+url = "https://github.com/astral-sh/python-build-standalone/releases/download/20250409/cpython-3.12.10%2B20250409-aarch64-apple-darwin-install_only.tar.gz"
+sha256 = "2d6477ecd10191675b7e7979e4b9e811fef36833ef3a7f3aa445eec305ce59a2"
+
+[python.x86_64]  # Intel Macs
+url = "https://github.com/astral-sh/python-build-standalone/releases/download/20250409/cpython-3.12.10%2B20250409-x86_64-apple-darwin-install_only.tar.gz"
+sha256 = "d0d51fa22c0e99b58de1b1b4baeca467d6fd0a1424c7509ea280c0796306c481"

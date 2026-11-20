@@ -147,6 +147,7 @@ One record per decision, from `TEMPLATE.md`. Never deleted; reversed ones are ma
 | [0093](0093-one-step-helper-key-rotation.md) | "Make a new key" for a helper: one press, one-use token, key shown once, old key stopped; same helper, grant and history; pause, file swap, finish in that order, failing closed; in-flight writes rechecked | Accepted |
 | [0094](0094-import-pauses-on-duplicates-and-unclear-dates.md) | Import pauses before sending: a name already in the list is skipped unless "Add anyway" is ticked, short dates that read either way need one tick, links that match nothing and skipped columns are summed up; Review wording trimmed | Accepted |
 | [0095](0095-wine-promoted.md) | Wine collection is switched on from Lane B's draft: counts typed by hand, free-text place, ordinary price and tasting notes that enter exports (and say so), no reminders or advice, a wine with bottles or notes cannot be deleted; examples in Smith and Taylor | Accepted |
+| [0096](0096-macos-build.md) | An unsigned Mac app preview: `tools/build_macos.py` bundles python-build-standalone 3.12.10 (pinned checksums) into `Dashboard Plus.app` for the Mac's processor; inside an app the data folder defaults to `~/Library/Application Support/Dashboard Plus/` (0700), never inside the app; CI builds and starts it on Apple silicon; signing, notarisation and a real-Mac test still to come | Accepted |
 | [TEMPLATE](TEMPLATE.md) | Blank record to copy for a new decision | recording a decision |
 
 ## docs/plans/  (summary: build plans for larger pieces of work, written before building)
@@ -433,6 +434,7 @@ Generate the next one with: python tools/make_migration.py wine --name <what_cha
 | __init__.py | Dashboard Plus: a local-first home dashboard (package root). | checking the version |
 | __main__.py | Command-line entry point: open the dashboard, or close a running one safely. | changing how it starts |
 | errors.py | Errors whose message is written for the person using the program, not a programmer. | adding an error people will see |
+| data_location.py | Choose the data folder: --data if given, Application Support inside a Mac app, else ./data. | changing where records are kept by default |
 | server.py | Start and stop the local web server, and remember how to reach it. | changing startup, closing or ports |
 | core/ | Core services: records, links, review, audit, backups | changing anything topic-neutral |
 | web/ | Web layer: pages, forms, Agent API | changing screens or the API |
@@ -577,6 +579,8 @@ How to run them is in AGENTS.md.
 | test_main.py | Tests for the command-line entry point and its plain-language messages. | changing the command line |
 | test_home_page.py | Tests for the grouped home page: one group per area, main lists large, other lists as links, all reachable. | changing the home page or `home` in labels.toml |
 | test_build_portable.py | Tests for the portable Windows build, using a stand-in for the Python download. | changing the build |
+| test_build_macos.py | Tests for the unsigned Mac app build, using a stand-in for the Python download (runs on any system). | changing the Mac build |
+| test_data_location.py | Tests for choosing the data folder: Application Support inside a Mac app, never inside the app (decision 0096). | changing where records are kept by default |
 | test_lock_requirements.py | Tests for the requirements lock generator. | changing how libraries are locked |
 | test_repofiles.py | Tests for the shared list of repository files, including during a merge with conflicts. | a tool counts a file twice |
 | test_repository.py | Tests that this repository passes its own checks. | CI fails on the repo itself |
@@ -598,7 +602,9 @@ How to run them is in AGENTS.md.
 | lock_requirements.py | Write requirements.lock: every pinned library with the checksums PyPI publishes. | updating a library |
 | build_portable.py | Build the portable Windows folder and zip: bundled Python, libraries and launchers. | changing what ships in the folder |
 | portable.toml | Pinned Python version, download address and checksum for the build | updating the bundled Python |
-| smoke_test_portable.py | Start the built portable folder, check it answers, and close it safely. | the Windows build check fails |
+| smoke_test_portable.py | Start the built portable folder or Mac app, check it answers, and close it safely. | the Windows or Mac build check fails |
+| build_macos.py | Build the unsigned Mac app and zip (Dashboard Plus.app) for this Mac's processor: bundled Python, libraries, launcher. | changing what ships in the Mac app |
+| macos.toml | Pinned Mac Python version, downloads and checksums for the Mac build | updating the Mac app's Python |
 | make_migration.py | Write a module's next numbered migration from its tables.toml. | a module's tables changed |
 | load_example.py | Load a made-up example household into an empty data folder, for demos, screenshots and testing. | demonstrating or testing with realistic data |
 | make_screenshots.py | Make the example screenshots: run each example household through every stage of using the dashboard. | the screens changed and the gallery needs remaking |

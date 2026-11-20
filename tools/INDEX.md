@@ -8,7 +8,9 @@
 | lock_requirements.py | Write requirements.lock: every pinned library with the checksums PyPI publishes. | updating a library |
 | build_portable.py | Build the portable Windows folder and zip: bundled Python, libraries and launchers. | changing what ships in the folder |
 | portable.toml | Pinned Python version, download address and checksum for the build | updating the bundled Python |
-| smoke_test_portable.py | Start the built portable folder, check it answers, and close it safely. | the Windows build check fails |
+| smoke_test_portable.py | Start the built portable folder or Mac app, check it answers, and close it safely. | the Windows or Mac build check fails |
+| build_macos.py | Build the unsigned Mac app and zip (Dashboard Plus.app) for this Mac's processor: bundled Python, libraries, launcher. | changing what ships in the Mac app |
+| macos.toml | Pinned Mac Python version, downloads and checksums for the Mac build | updating the Mac app's Python |
 | make_migration.py | Write a module's next numbered migration from its tables.toml. | a module's tables changed |
 | load_example.py | Load a made-up example household into an empty data folder, for demos, screenshots and testing. | demonstrating or testing with realistic data |
 | make_screenshots.py | Make the example screenshots: run each example household through every stage of using the dashboard. | the screens changed and the gallery needs remaking |

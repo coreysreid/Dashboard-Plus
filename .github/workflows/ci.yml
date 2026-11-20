@@ -76,3 +76,28 @@ jobs:
           name: dashboard-plus-windows
           path: dist/*.zip
           retention-days: 14
+
+  macos:
+    # The unsigned Mac app preview (decision 0096). It is not signed or notarised; no secrets are used.
+    # macos-latest runs on Apple silicon, so this builds the arm64 app; an Intel build needs an Intel runner.
+    name: Mac app (unsigned preview, Apple silicon)
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Install the pinned libraries (checksums verified)
+        run: python -m pip install --require-hashes -r requirements.lock
+      - name: Every check, on a Mac
+        run: python tools/check_all.py
+      - name: Build the unsigned Mac app and zip
+        run: python tools/build_macos.py --out dist
+      - name: Start it through its launcher, check it answers, close it safely
+        run: python tools/smoke_test_portable.py "dist/Dashboard Plus/Dashboard Plus.app"
+      - name: Keep the zip for testing
+        uses: actions/upload-artifact@v4
+        with:
+          name: dashboard-plus-macos-arm64-unsigned
+          path: dist/*.zip
+          retention-days: 14

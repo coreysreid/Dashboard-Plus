@@ -26,7 +26,8 @@ def write_report(data_dir: Path, error: BaseException) -> Path | None:
 def main(argv: list[str] | None = None) -> int:
     """Parse the command line and run; failures are explained in plain words."""
     parser = argparse.ArgumentParser(prog="dashboard", description="Dashboard Plus")
-    parser.add_argument("--data", default="data", help="the data folder (default: ./data)")
+    parser.add_argument("--data", help="the data folder (default: ./data; in the Mac app, this account's "
+                        "Application Support folder)")
     parser.add_argument("--no-browser", action="store_true", help="do not open a browser window")
     parser.add_argument("--close", action="store_true", help="close a running dashboard safely")
     parser.add_argument("--modules", help="the modules folder (default: the one shipped with the program)")
@@ -39,7 +40,15 @@ def main(argv: list[str] | None = None) -> int:
         print(f"Dashboard Plus {__version__}")
         return 0
 
-    data_dir = Path(args.data).resolve()
+    from dashboard import data_location
+
+    chosen = args.data is not None
+    data_dir = Path(args.data if chosen else data_location.default_data_dir()).resolve()
+    try:
+        data_location.check_not_in_bundle(data_dir)
+    except data_location.DataFolderError as error:
+        print(str(error))  # no report file: it would be written inside the app
+        return 1
     try:
         from dashboard import server
 
@@ -49,6 +58,8 @@ def main(argv: list[str] | None = None) -> int:
             else:
                 print("Dashboard is not running, so there is nothing to close.")
             return 0
+        if not chosen:
+            data_location.prepare(data_dir)
         modules_dir = Path(args.modules).resolve() if args.modules else None
         from dashboard.core.backups import default_extra_dir
 

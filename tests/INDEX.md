@@ -38,6 +38,8 @@ How to run them is in AGENTS.md.
 | test_main.py | Tests for the command-line entry point and its plain-language messages. | changing the command line |
 | test_home_page.py | Tests for the grouped home page: one group per area, main lists large, other lists as links, all reachable. | changing the home page or `home` in labels.toml |
 | test_build_portable.py | Tests for the portable Windows build, using a stand-in for the Python download. | changing the build |
+| test_build_macos.py | Tests for the unsigned Mac app build, using a stand-in for the Python download (runs on any system). | changing the Mac build |
+| test_data_location.py | Tests for choosing the data folder: Application Support inside a Mac app, never inside the app (decision 0096). | changing where records are kept by default |
 | test_lock_requirements.py | Tests for the requirements lock generator. | changing how libraries are locked |
 | test_repofiles.py | Tests for the shared list of repository files, including during a merge with conflicts. | a tool counts a file twice |
 | test_repository.py | Tests that this repository passes its own checks. | CI fails on the repo itself |

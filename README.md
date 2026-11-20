@@ -126,6 +126,42 @@ about the problem; read it before sharing it with anyone. Report problems on the
 [Issues page](https://github.com/coreysreid/Dashboard-Plus/issues), and never
 include real names, phone numbers or other personal details.
 
+## On a Mac (preview, not signed yet)
+
+There is an early **test build** for Macs. It is not yet signed or checked
+("notarised") by Apple, so macOS will warn you before it opens. Use it only if
+you are helping to test; a signed version comes later. It has only been built
+and checked automatically on GitHub's Apple silicon Macs, not yet tried by a
+person on a real Mac. You need macOS 11 (Big Sur) or later and a Mac with
+Apple silicon (M1 or later); an Intel version is not built yet.
+
+1. **Get the zip.** On the [Actions page](https://github.com/coreysreid/Dashboard-Plus/actions),
+   open the newest run on `main` with a green tick and download
+   **dashboard-plus-macos-arm64-unsigned** under *Artifacts*. Inside is
+   `Dashboard-Plus-<version>-macos-arm64-unsigned.zip`. Double-click it to unzip.
+2. **Drag `Dashboard Plus.app` into your Applications folder.**
+3. **Double-click Dashboard Plus.** The first time, macOS says it could not
+   verify that Dashboard Plus is free of malware. Click **Done** (not *Move to
+   Bin*). Then open **System Settings**, choose **Privacy & Security**, scroll
+   down to the message about Dashboard Plus and click **Open Anyway**, then
+   confirm with your password or Touch ID. You only do this once. On macOS 14
+   or earlier you can instead Control-click the app, choose **Open**, then
+   **Open** again. Do not change any other security setting.
+4. Your browser shows the dashboard. Answer the setup questions as on Windows.
+
+There is no window or Dock icon: the dashboard is the page in your browser. To
+**close it**, click **Save and exit** on the page. If you close the browser tab
+by mistake, open Dashboard Plus again and the page comes back.
+
+**Where your data is:** in your own Mac account, in the folder
+`Library/Application Support/Dashboard Plus` inside your home folder (in
+Finder, choose *Go*, *Go to Folder…* and paste
+`~/Library/Application Support/Dashboard Plus`). Only your account can open it.
+It is **not inside the app**, so replacing or deleting the app does not touch
+your records. To **update**, use Save and exit, then replace the app in
+Applications. To remove Dashboard Plus completely, delete the app and then that
+folder (and `~/.local/share/dashboard-plus`, which holds the second backup copy).
+
 ## About the project
 
 Start with the documents in `docs/`:
@@ -163,9 +199,10 @@ PYTHONPATH=src python -m dashboard --data <a folder outside this project>   # op
 python tools/make_migration.py <module> --name <what_changed>   # after editing a module's tables.toml
 ```
 
-On Mac or Linux, running from the project folder as above is the way to use it
-for now; the portable folder is Windows only.
+On Linux, running from the project folder as above is the way to use it for
+now. The portable folder is Windows only; Macs have their own app, built with
+`python tools/build_macos.py` on a Mac (unsigned for now, decision 0096).
 
-GitHub runs the same checks on Windows and Linux for every change. Start at
+GitHub runs the same checks on Windows, Linux and macOS for every change. Start at
 [`INDEX.md`](INDEX.md) and follow the index in each folder. See
 [`AGENTS.md`](AGENTS.md) for the working rules.

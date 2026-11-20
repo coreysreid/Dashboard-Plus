@@ -1417,6 +1417,34 @@ only to choose which pack applies; nothing is looked up online.
   release tag, runs the test suite on the built folder, computes a checksum, and
   attaches both to the release.
 
+### Mac app (unsigned preview)
+
+Decision 0096. `tools/build_macos.py`, run on a Mac, makes `Dashboard Plus.app`
+for that Mac's processor (Apple silicon or Intel) and zips it with a read-me.
+
+- **Inside the app:** `Contents/Resources/python` is python-build-standalone's
+  CPython 3.12.10 (the same version as Windows), pinned with its checksum in
+  `tools/macos.toml`, with pip removed. `Resources/lib` holds the locked Mac
+  libraries (checksums verified), `Resources/src` and `Resources/modules` our
+  code. A `dashboard-plus.pth` file points the bundled Python at those two
+  folders only, and the launcher runs it with `-I`, so nothing from the Mac's
+  own Python or settings is used.
+- **Launcher:** `Contents/MacOS/Dashboard Plus` is a short shell script. It
+  starts the server in the background, waits until it says it is running (up to
+  20 seconds), and ends, so opening the app again reopens the browser page. If
+  start-up fails it shows the last lines of the message in a macOS alert. The
+  app has no Dock icon or menu (`LSUIElement`); *Save and exit* on the page
+  closes it.
+- **Data folder:** with no `--data`, a program running inside a `.app` keeps its
+  records in `~/Library/Application Support/Dashboard Plus/` (made with
+  permissions 0700), never inside the app, so the app can be replaced, or run
+  from the read-only place macOS sometimes moves downloaded apps to, without
+  touching them. A `--data` inside the app is refused. Given `--data` always
+  wins; running from source keeps `./data`.
+- **Not done yet:** Developer ID signing, notarisation and a universal
+  (both-processor) app. Gatekeeper warns on first open; the README explains
+  *Open Anyway*. CI builds and starts the Apple silicon app on every change.
+
 ### Choosing the bundling method
 
 See decision record 0003. Both options keep the same folder layout so the choice can be
@@ -1457,6 +1485,10 @@ changed later.
 - **Portable build test.** The built zip is unpacked in a clean runner
   and started; the acceptance list in `CORE.md` is checked where it can be
   automated.
+- **Mac app test.** On `macos-latest` (Apple silicon) every check runs, then the
+  unsigned app is built, started through its own launcher, checked and closed
+  safely (`tools/smoke_test_portable.py`), and its zip kept for 14 days
+  (decision 0096).
 
 ## 15. Decisions and their records
 
