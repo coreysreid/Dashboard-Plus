@@ -12,6 +12,7 @@
 | MCP_CONNECTOR.md | Local process, key hand-off and household wording | reviewing connector design |
 | MCP_ACCEPTANCE.md | Twelve checks for tool, transport and grant boundaries | testing a future connector |
 | STEADY_ADDRESS.md | Per-run address file, alternatives, words and acceptance checks | avoiding a new paste after restart |
+| ROTATE_KEY.md | One-step replacement key, stable helper history, failure rules and checks | changing a helper's key |
 | PRIVATE_GRANT.md | Narrow one-read Settings grant, warnings and audit design | reviewing later private access |
 | PRIVATE_GRANT_ACCEPTANCE.md | Twelve checks for expiry, revocation and non-disclosure | testing later grants |
 | HOUSEHOLD_QUICK_START.md | One-page key, MCP settings, access and turn-off guide | connecting a household assistant |
