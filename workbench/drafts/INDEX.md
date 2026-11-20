@@ -30,3 +30,4 @@ and made-up example rows. Add a row here for each draft folder you create.
 | corey_test/ | One-hour solo Windows test and BACKLOG-ready feedback form | planning Corey's hands-on round |
 | speed_fixture/ | Large made-up household file for speed testing | measuring scale |
 | sync/ | Optional main/member household sync, conflicts, privacy and offline bundles | deciding sync |
+| macos/ | Researched app-bundle build, data location and release checks | preparing a Mac release |
