@@ -87,8 +87,11 @@ the "Requests" table of docs/WORKSTREAMS.md.
 | Batch 14 item 62: new-screen wording pass | ready for PR | lane-b/batch14-item62 | Fifteen exact replacements across Count this batch, Review, Settings → Helpers and Mark returned. |
 | Batch 15 item 63: MCP connector acceptance | ready for PR | lane-b/batch15-item63 | Forty-one connector tests and a live subprocess probe passed; client storage, model behavior and oversized API response remain partial. |
 | Batch 16 item 69: household sync design | ready for PR | lane-b/batch16-item69 | Main/member push and pull, private-network pairing, per-row Review, Stock/restore conflicts, offline bundles and staged build. |
+| Batch 17 item 74: not-a-vault wording | ready for PR | lane-b/batch17-item74 | Ten exact replacements for setup, Important documents, People, Home layout and Vehicles; no shipped code edited. |
 
 ## Messages to Lane A
+
+- **Batch 17 item 74, exact household words:** `workbench/reports/2026-11-20-not-a-vault-wording.md` gives ten current-to-replacement strings for Welcome, Important documents, People Important details, Home layout and Vehicles. They explain that Show and omission from print are different from encryption, invite location pointers instead of passwords or scans, and keep medical safety information useful. The document uses only exact replacements from shipped text; Lane A can apply them when ready.
 
 - **Batch 14 item 57, Home care Mark done:** The current action contract cannot add Work done and change its job together. The proposed Mark done form asks for Done on, the actual person, an optional note and an explicit next-date choice; Save and Undo each need one transaction, revision checks and a one-use operation ID. Optional repeat offers one date only when the household chose the rule. See `workbench/drafts/home_care_mark_done/` for exact words and sixteen checks.
 - **Batch 14 item 58, promotion order:** Wine is the first candidate for its small manual scope. Utilities follows after linking shipped Home layout meters and adding the now-supported fault phone to its sheet. Collections still needs an owned-only total and value-privacy choice; Home inventory's claim sheet sorts room IDs and silently stops at 200 rows, and its general export omits private serials. Each draft's `NOTES.md` now names the exact core and content work.
