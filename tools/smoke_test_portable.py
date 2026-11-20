@@ -1,8 +1,9 @@
-"""Start the built portable folder, check it answers, and close it safely."""
+"""Start the built portable folder or Mac app, check it answers, and close it safely."""
 from __future__ import annotations
 
 import http.cookiejar
 import json
+import os
 import subprocess
 import sys
 import tempfile
@@ -39,14 +40,39 @@ def fetch(url: str, host: str | None = None) -> tuple[int, str]:
         return error.code, error.read().decode("utf-8", "replace")
 
 
+def commands(folder: Path) -> tuple[list[str], list[str]]:
+    """How to start the build, and how to run its bundled Python: (start, python).
+
+    A Mac app (a folder ending in .app) is started through its own launcher, as Finder would; the
+    launcher's failure window is turned off so a test machine never waits for a click."""
+    if folder.suffix == ".app":
+        python = [str(folder / "Contents" / "Resources" / "python" / "bin" / "python3"), "-I"]
+        return [str(folder / "Contents" / "MacOS" / "Dashboard Plus")], python
+    python = [str(folder / "app" / "python" / ("python.exe" if sys.platform == "win32" else "python"))]
+    return python + ["-m", "dashboard"], python
+
+
+def check_mac_default(python: list[str]) -> list[str]:
+    """Inside a Mac app, the records' default home must be Application Support, outside the app."""
+    found = subprocess.run(python + ["-c", "from dashboard import data_location as d; print(d.default_data_dir())"],
+                           capture_output=True, text=True, timeout=60).stdout.strip()
+    expected = str(Path.home() / "Library" / "Application Support" / "Dashboard Plus")
+    if found != expected:
+        return [f"the Mac app's default data folder was {found!r}, not {expected!r}"]
+    return []
+
+
 def run(folder: Path) -> list[str]:
     """Run the checks and return a list of failures (empty means it worked)."""
-    python = folder / "app" / "python" / ("python.exe" if sys.platform == "win32" else "python")
+    start, python = commands(folder)
     failures: list[str] = []
+    if folder.suffix == ".app" and sys.platform == "darwin":
+        failures += check_mac_default(python)
     with tempfile.TemporaryDirectory() as tmp:
         data = Path(tmp) / "data"
-        process = subprocess.Popen([str(python), "-m", "dashboard", "--data", str(data), "--no-browser"],
-                                   stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True)
+        process = subprocess.Popen(start + ["--data", str(data), "--no-browser"],
+                                   stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True,
+                                   env=dict(os.environ, DASHBOARD_PLUS_NO_ALERT="1"))
         state_path = data / "run" / "dashboard.json"
         try:
             if not wait_for(state_path.exists, 30):
@@ -62,7 +88,7 @@ def run(folder: Path) -> list[str]:
             status, _ = fetch(base, host="evil.example")
             if status != 403:
                 failures.append(f"a request naming another host was not refused (got {status})")
-            close = subprocess.run([str(python), "-m", "dashboard", "--data", str(data), "--close"],
+            close = subprocess.run(python + ["-m", "dashboard", "--data", str(data), "--close"],
                                    capture_output=True, text=True, timeout=60)
             if "Saved and closed" not in close.stdout:
                 failures.append(f"close command said: {close.stdout.strip()}")
@@ -86,7 +112,7 @@ def main(argv: list[str] | None = None) -> int:
     """Command-line entry point; returns 1 if any check fails."""
     args = argv if argv is not None else sys.argv[1:]
     if len(args) != 1:
-        print("Usage: python tools/smoke_test_portable.py <built folder>")
+        print("Usage: python tools/smoke_test_portable.py <built folder, or the built Dashboard Plus.app>")
         return 2
     failures = run(Path(args[0]))
     if failures:
