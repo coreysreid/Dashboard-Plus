@@ -49,3 +49,5 @@ expected, actual, severity (blocker, important, minor), suggested change.
 | 2026-11-20-batch18-ux.md | Three-household phone and desktop checks of Mark done, copies, import and Helpers. | fixing 20 November build UX |
 | 2026-11-20-helper-address-rotation-run.md | Live MCP connector through two restarts and one-step key rotation. | checking helper continuity |
 | 2026-11-20-wine-final-check.md | Shipped Wine against all 15 old checks, including the Garcia example correction. | reviewing Wine promotion |
+| 2026-11-21-receipt-group-review.md | Live connector receipt rerun with source lines and dependent new-item Review decisions. | refining grouped receipt Review |
+| 2026-11-21-mac-preview-readthrough.md | Exact household wording changes and physical-Mac checks for the unsigned preview. | improving Mac preview guidance |
