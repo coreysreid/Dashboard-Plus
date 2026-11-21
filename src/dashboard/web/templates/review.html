@@ -22,6 +22,11 @@
   .review-group > .group-label { margin: 0 .4rem .3rem 0; font-size: .95rem; }
   .review-group .review-row:first-child { border-top: 0; }
   .review-list { --decide: 12rem; }
+  .hidden-words { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+  .decide .button { display: block; box-sizing: border-box; width: calc((var(--decide) - var(--gap)) / 2); text-align: center;
+                    padding-left: .4rem; padding-right: .4rem; }
+  .receipt-line { background: var(--bg); }
+  .repeat-warning { border: 2px solid var(--bad); border-radius: 10px; padding: .6rem .9rem; margin: .8rem 0; }
   .ticked-bar { position: sticky; bottom: 0; z-index: 2; background: var(--card); border: 1px solid var(--line);
                 border-radius: 10px; padding: .5rem .8rem; margin: 1rem 0; box-shadow: 0 -2px 10px rgba(0,0,0,.06); }
   .ticked-bar .actions { margin: 0; }
@@ -34,7 +39,7 @@
   @media (max-width: 40rem) {
     .review-list { --decide: 6rem; }
     .decide { flex-direction: column; align-items: stretch; }
-    .decide button { width: 100%; }
+    .decide button, .decide .button { width: 100%; }
     .card.review-batch { padding: 1rem .7rem; }
     .ticked-bar { padding: .4rem .5rem; }
     .ticked-bar .actions { flex-wrap: nowrap; gap: .4rem; }
@@ -63,35 +68,100 @@
 <form id="ticked" method="post" action="/review/ticked/accept"><input type="hidden" name="_csrf" value="{{ csrf_token }}"></form>
 {% endif %}
 {% for b in batches %}
+{% set ready = b.proposals | length %}
 <section class="card review-batch" aria-labelledby="batch-{{ b.id }}">
   {% if b.kind == "import" %}
-  <h2 id="batch-{{ b.id }}" style="margin-top:0">{{ b.helper }} · {{ b.proposals | length }} row{{ "" if b.proposals | length == 1 else "s" }} waiting</h2>
-  <p class="muted" style="margin:.2rem 0">You imported these rows from the spreadsheet <bdi>{{ b.source_name }}</bdi> on {{ b.when }}. Check them before you accept: each is added as a new record.</p>
+  <h2 id="batch-{{ b.id }}" style="margin-top:0">{{ b.helper }} · {{ ready }} row{{ "" if ready == 1 else "s" }} waiting</h2>
+  <p class="muted" style="margin:.2rem 0">You imported these rows from the spreadsheet <bdi>{{ b.source_name }}</bdi> on {{ b.when }}{% if b.receipt %}, as one receipt{% endif %}. Check them before you accept: each is added as a new record.</p>
   {% else %}
-  <h2 id="batch-{{ b.id }}" style="margin-top:0">{{ b.helper }} · {{ b.proposals | length }} suggestion{{ "" if b.proposals | length == 1 else "s" }}</h2>
+  <h2 id="batch-{{ b.id }}" style="margin-top:0">{{ b.helper }} · {{ ready }} suggestion{{ "" if ready == 1 else "s" }}{% if b.lines %} · {{ b.lines | length }} receipt line{{ "" if b.lines | length == 1 else "s" }}{% endif %}</h2>
   <p class="muted" style="margin:.2rem 0">Suggested {{ b.when }}. The reason and the values below were written by {{ b.helper }}, not by Dashboard Plus: check them before you accept.</p>
+  {% if b.lines_waiting %}<p style="margin:.4rem 0"><strong>{{ b.helper }} read {{ ready + b.lines_waiting }} good{{ "" if ready + b.lines_waiting == 1 else "s" }}{% if b.receipt %} from one receipt{% endif %}. {{ ready }} row{{ " is" if ready == 1 else "s are" }} ready to check; {{ b.lines_waiting }} line{{ " needs" if b.lines_waiting == 1 else "s need" }} your choice. Nothing has been added.</strong></p>{% endif %}
   <figure class="helper-text" style="margin:.4rem 0">
     <figcaption class="muted">{{ b.helper }} says why:</figcaption>
     <blockquote style="margin:.2rem 0;padding:.3rem .8rem;border-left:3px solid var(--line);white-space:pre-line"><bdi>{{ b.why }}</bdi></blockquote>
   </figure>
   {% endif %}
   {% if b.helper_off %}<p class="muted">This helper's access is off. Its earlier suggestions still need your decision.</p>{% endif %}
-  {% if b.proposals | length > 1 %}
+  {% set r = b.repeat %}
+  {% if r and r.level == "repeat" and not r.kept %}
+  <div class="repeat-warning" role="alert" data-repeat>
+    <p style="margin:0"><strong>This may be the same receipt again. Nothing from this copy has been added.</strong></p>
+    <p style="margin:.3rem 0">These {{ r.goods }} good{{ "" if r.goods == 1 else "s" }}, amounts and purchase date match a receipt put on Review on {{ r.when }} <bdi>{{ r.who }}</bdi>. It may still be waiting, or may already be in your Stock. Check the earlier receipt before accepting this one.</p>
+    <p style="margin:.3rem 0"><strong>{{ r.state }}</strong></p>
+    <div class="actions" style="margin:.4rem 0 0">
+      <a class="button quiet" href="{% if r.on_review %}#batch-{{ r.earlier }}{% else %}/review/batch/{{ r.earlier }}{% endif %}">Open earlier receipt</a>
+      <form method="post" action="/review/batch/{{ b.id }}/reject-copy"><input type="hidden" name="_csrf" value="{{ csrf_token }}"><button type="submit">Reject this copy</button></form>
+      <form method="post" action="/review/batch/{{ b.id }}/keep"><input type="hidden" name="_csrf" value="{{ csrf_token }}"><button type="submit" class="quiet">Keep this as another purchase</button></form>
+    </div>
+  </div>
+  {% elif r and r.level == "repeat" %}
+  <p class="muted" data-repeat-kept>You chose to keep this as another purchase, separate from the receipt put on Review on {{ r.when }} <bdi>{{ r.who }}</bdi>. Check each row before accepting.</p>
+  {% elif r and r.level == "similar" %}
+  <div class="repeat-warning" role="status" data-repeat-similar>
+    <p style="margin:0"><strong>Some lines look like an earlier receipt.</strong> {{ r.matched }} of these {{ r.goods }} good{{ "" if r.goods == 1 else "s" }} match a receipt put on Review on {{ r.when }} <bdi>{{ r.who }}</bdi>. {{ r.state }} Check the differences before you accept: this may be another purchase.</p>
+    {% if r.only_here %}<p style="margin:.3rem 0">Only in this copy: {% for t in r.only_here %}<bdi>{{ t }}</bdi>{% if not loop.last %}; {% endif %}{% endfor %}.</p>{% endif %}
+    {% if r.only_there %}<p style="margin:.3rem 0">Only in the earlier receipt: {% for t in r.only_there %}<bdi>{{ t }}</bdi>{% if not loop.last %}; {% endif %}{% endfor %}.</p>{% endif %}
+    {% if b.lines_waiting %}<p style="margin:.3rem 0">Choose or skip the receipt lines below before you decide.</p>{% endif %}
+    <p style="margin:.3rem 0 0"><a href="{% if r.on_review %}#batch-{{ r.earlier }}{% else %}/review/batch/{{ r.earlier }}{% endif %}">Open earlier receipt</a></p>
+  </div>
+  {% elif r and r.level == "undone" %}
+  <p class="muted" data-repeat-undone>These goods match a receipt put on Review on {{ r.when }} <bdi>{{ r.who }}</bdi>. {{ r.state }} Check this one as usual.</p>
+  {% endif %}
+  {% if ready > 1 or (ready and b.lines_waiting) %}
   <div class="actions">
+    {% if b.held %}
+    <button type="button" disabled title="Choose Reject this copy or Keep this as another purchase first.">Accept all {{ ready }}</button>
+    {% else %}
     <details class="confirm-all">
-      <summary class="button" role="button">Accept all {{ b.proposals | length }}</summary>
-      <div class="confirm-box" role="group" aria-label="Accept all {{ b.proposals | length }}: check first">
-        <p style="margin:0">This adds {{ b.proposals | length }} new records: {{ b.adds }}. Rows marked "Added together" go in together. If one of them cannot be added, its whole group stays waiting with the reason shown, and the others still go in.</p>
-        <form method="post" action="/review/batch/{{ b.id }}/accept-all" class="actions" style="margin:.6rem 0 0"><input type="hidden" name="_csrf" value="{{ csrf_token }}"><button type="submit">Yes, accept all {{ b.proposals | length }}</button></form>
+      <summary class="button" role="button">{% if b.lines_waiting %}Accept {{ ready }} ready row{{ "" if ready == 1 else "s" }}; {{ b.lines_waiting }} line{{ " still needs" if b.lines_waiting == 1 else "s still need" }} your choice{% else %}Accept all {{ ready }}{% endif %}</summary>
+      <div class="confirm-box" role="group" aria-label="Accept all {{ ready }}: check first">
+        <p style="margin:0">This adds {{ ready }} new record{{ "" if ready == 1 else "s" }}: {{ b.adds }}. Rows marked "Added together" go in together. If one of them cannot be added, its whole group stays waiting with the reason shown, and the others still go in.{% if b.lines_waiting %} The {{ b.lines_waiting }} receipt line{{ "" if b.lines_waiting == 1 else "s" }} that need{{ "s" if b.lines_waiting == 1 else "" }} your choice stay{{ "s" if b.lines_waiting == 1 else "" }} waiting; nothing is added for {{ "it" if b.lines_waiting == 1 else "them" }}.{% endif %}</p>
+        <form method="post" action="/review/batch/{{ b.id }}/accept-all" class="actions" style="margin:.6rem 0 0"><input type="hidden" name="_csrf" value="{{ csrf_token }}"><button type="submit">Yes, accept {{ "these" if b.lines_waiting else "all" }} {{ ready }}</button></form>
       </div>
     </details>
-    <form method="post" action="/review/batch/{{ b.id }}/reject-all"><input type="hidden" name="_csrf" value="{{ csrf_token }}"><button type="submit" class="quiet">Reject all {{ b.proposals | length }}</button></form>
+    {% endif %}
+    {% if ready > 1 %}<form method="post" action="/review/batch/{{ b.id }}/reject-all"><input type="hidden" name="_csrf" value="{{ csrf_token }}"><button type="submit" class="quiet">Reject all {{ ready }}</button></form>{% endif %}
   </div>
   {% endif %}
   <ul class="review-list">
-  {% for group in b.groups %}
+  {% for unit in b.units %}
+  {% if unit.kind == "line" %}
+  {% set l = unit.line %}
+    <li class="review-row receipt-line" id="line-{{ l.id }}" data-line="{{ l.status }}">
+      <div class="tick"></div>
+      <div class="what">
+      {% if l.status == "waiting" %}
+      <p><strong>Could not match this receipt line to your Stock</strong></p>
+      {% elif l.status == "added" %}
+      <p><strong>Receipt line: added</strong></p>
+      {% else %}
+      <p><strong>Receipt line: skipped</strong></p>
+      {% endif %}
+      <p class="helper-text more">{% if l.source.line %}<q><bdi>{{ l.source.line }}</bdi></q>{% endif %}{% if l.source.price %} · Price shown on paper: <bdi>{{ l.source.price }}</bdi>{% endif %}</p>
+      {% if l.hints %}<p class="muted helper-text more">{% for h in l.hints %}<bdi>{{ h }}</bdi>{% if not loop.last %} · {% endif %}{% endfor %}</p>{% endif %}
+      {% if l.status == "waiting" %}
+      {% if l.off %}<p class="muted more">This is for {{ l.module }}, which is switched off. Skip it, or switch it on in Settings first.</p>
+      {% else %}<p class="muted more">{{ b.helper }} could not tell which good this is. No Stock amount will change until you choose an item and confirm the amount. As {{ b.helper }} read it; shown for checking only, not saved in your records.</p>{% endif %}
+      {% elif l.status == "added" %}
+      <p class="more"><bdi>{{ l.added }}</bdi>{% if l.now %} <bdi>{{ l.now }}</bdi>{% endif %}</p>
+      {% else %}
+      <p class="muted more">No Stock was added for this line.{% if not b.finished %} You can undo the skip until you press Finish receipt review.{% endif %}</p>
+      {% endif %}
+      </div>
+      <div class="decide">
+        {% if l.status == "waiting" %}
+        {% if l.off %}<button type="button" disabled>Choose item</button>{% else %}<a class="button" href="/review/line/{{ l.id }}">Choose item</a>{% endif %}
+        <form method="post" action="/review/line/{{ l.id }}/skip"><input type="hidden" name="_csrf" value="{{ csrf_token }}"><button type="submit" class="quiet">Skip line</button></form>
+        {% elif l.status == "skipped" %}
+        <form method="post" action="/review/line/{{ l.id }}/undo-skip"><input type="hidden" name="_csrf" value="{{ csrf_token }}"><button type="submit" class="quiet">Undo skip</button></form>
+        {% endif %}
+      </div>
+    </li>
+  {% else %}
+  {% set group = unit.rows %}
   {% set together = group | length > 1 %}
-  {% if together %}<li class="review-group" data-group="g{{ b.id }}-{{ loop.index }}"><p class="group-label"><strong>Added together</strong> · These {{ group | length }} rows go together: accepting a row also adds the new record it needs, and rejecting a new record also rejects the rows that need it. Ticking one ticks them all.</p>
+  {% if together %}<li class="review-group" data-group="g{{ b.id }}-{{ loop.index }}"><p class="group-label"><strong>Added together</strong> · {{ unit.words }}</p>
     <ul>{% endif %}
   {% for p in group %}
     <li class="review-row" data-row id="row-{{ p.id }}" tabindex="-1">
@@ -100,27 +170,36 @@
       {% if p.text.off %}
       <p>This is for {{ p.text.module }}, which is switched off.</p>
       {% else %}
-      <p>{% if b.kind == "import" %}Row {{ p.source_row }} would add to{% else %}{{ b.helper }} suggests adding to{% endif %} <strong>{{ p.text.table }}</strong>: <span class="helper-text">{% for label, text in p.text.parts %}{{ label }}: <bdi>{{ text }}</bdi>{% if not loop.last %} · {% endif %}{% endfor %}</span></p>
+      <p>{% if b.kind == "import" %}Row {{ p.source_row }} would add to{% else %}{{ b.helper }} suggests adding to{% endif %} <strong>{{ p.text.table }}</strong>: <span class="helper-text">{% for label, text in p.text.parts %}{% if label %}{{ label }}: {% endif %}<bdi>{{ text }}</bdi>{% if not loop.last %} · {% endif %}{% endfor %}</span></p>
       {% endif %}
       {% if p.source %}<p class="muted helper-text more">From the receipt or paper, as {{ b.helper }} read it:{% if p.source.line %} <q><bdi>{{ p.source.line }}</bdi></q>{% endif %}{% if p.source.price %} · Price: <bdi>{{ p.source.price }}</bdi>{% endif %}. Shown for checking only; it is not saved in your records.</p>{% endif %}
-      {% if p.needs %}<p class="muted more">Accepting this also adds the new record{{ "" if p.needs | length == 1 else "s" }} above that it needs.</p>{% endif %}
-      {% if p.needed_by %}<p class="muted more">Rejecting this also rejects the {{ p.needed_by }} row{{ "" if p.needed_by == 1 else "s" }} below that need{{ "s" if p.needed_by == 1 else "" }} it.</p>{% endif %}
+      {% if p.needs %}<p class="muted more">{% if p.needs | length == 1 %}Accepting this {{ p.text.noun }} also adds its new {{ p.needs_nouns[0] }} above.{% else %}Accepting this also adds the {{ p.needs | length }} new records above that it needs.{% endif %}</p>{% endif %}
+      {% if p.needed_by %}<p class="muted more">Accepting only this leaves the {{ p.needed_by }} row{{ "" if p.needed_by == 1 else "s" }} below waiting. Rejecting this also rejects the {{ p.needed_by }} row{{ "" if p.needed_by == 1 else "s" }} below that need{{ "s" if p.needed_by == 1 else "" }} it.</p>{% endif %}
       {% if p.exists %}<p class="problem" role="status" style="margin:.4rem 0"><bdi>{{ p.exists }}</bdi></p>{% endif %}
       {% if p.reason %}<p class="problem" role="alert" style="margin:.4rem 0">{{ p.reason }}</p>{% endif %}
       </div>
       <div class="decide">
         {% if p.text.off %}
         <button type="button" disabled title="Its part is switched off, so it can only be rejected.">Accept</button>
+        {% elif b.held %}
+        <button type="button" disabled title="This may be the same receipt again. Choose Reject this copy or Keep this as another purchase first.">Accept</button>
         {% else %}
-        <form method="post" action="/review/{{ p.id }}/accept"><input type="hidden" name="_csrf" value="{{ csrf_token }}"><button type="submit" data-accept>Accept</button></form>
+        <form method="post" action="/review/{{ p.id }}/accept"><input type="hidden" name="_csrf" value="{{ csrf_token }}"><button type="submit" data-accept>Accept{% if p.needs | length == 1 %}<span class="hidden-words"> {{ p.text.noun }} and its new {{ p.needs_nouns[0] }}</span>{% endif %}</button></form>
         {% endif %}
         <form method="post" action="/review/{{ p.id }}/reject"><input type="hidden" name="_csrf" value="{{ csrf_token }}"><button type="submit" class="quiet" data-reject>Reject</button></form>
       </div>
     </li>
   {% endfor %}
   {% if together %}</ul></li>{% endif %}
+  {% endif %}
   {% endfor %}
   </ul>
+  {% if b.finishing %}
+  <div class="confirm-box" data-finish>
+    <p style="margin:0">Every row and line of this receipt is decided: {{ b.outcome }} Press Finish receipt review when you are done. After that, skipped lines stay skipped.</p>
+    <form method="post" action="/review/batch/{{ b.id }}/finish" class="actions" style="margin:.6rem 0 0"><input type="hidden" name="_csrf" value="{{ csrf_token }}"><button type="submit">Finish receipt review</button></form>
+  </div>
+  {% endif %}
 </section>
 {% endfor %}
 {% if batches %}

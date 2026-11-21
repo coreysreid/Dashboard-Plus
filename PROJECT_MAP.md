@@ -156,6 +156,7 @@ One record per decision, from `TEMPLATE.md`. Never deleted; reversed ones are ma
 | [0102](0102-helper-starting-prompt-and-stock-with-amount.md) | A starting message for the helper's assistant in Settings, Helpers (copy box) and as `GET /api/v1/guide` and the `dashboard_how_to_help` tool: its lists, fields, private fields by name, links to look up first, the stock model and today's limits, never records or the key; a new Stock item may carry its amount, use-by date and place as one suggestion, added with its first batch on Accept | Accepted |
 | [0103](0103-set-up-my-home.md) | Set up my home: one page for rooms and areas (Places), storage spots inside them and which rooms connect (new `stock__connections`, migration 0006 in Household stock); offered after the welcome and always on Home and Settings; `pair` in tables.toml refuses self-links and repeats either way round; doors to outside marked by kind; a deleted room takes its connections; nothing private | Accepted |
 | [0104](0104-readiness-questions.md) | Readiness switched on from Lane B's draft: 49 sourced "Have you thought about…?" questions in a module `prompts.toml` (schema 1), fitted only from Settings; exact record matches offered, never assumed; answers Yes / Not relevant / Not yet as ordinary records with the record's permanent ID and a revision fingerprint; back for review on the chosen date, after 12 months or when that record changes; at most two on Home; "looked at", never "safe"; helpers look but never answer (`suggestions = false`); answers travel; drills later reuse the same answers | Accepted |
+| [0105](0105-receipt-review-unmatched-and-repeat.md) | Receipts on Review: each Stock in in one line with its unit, group words true under group-by-group Accept, the result names what was added; a receipt line a helper could not match waits for Choose item or Skip line (undoable until Finish receipt review); a receipt that looks sent before (same dated items, amounts and units, never its text) waits for Reject this copy or Keep this as another purchase, rechecked under the write lock; card-shaped numbers refused | Accepted |
 | [0106](0106-mac-wording-meter-paths-sync-checks.md) | Mac preview wording follows the 21 November read-through (no absolute "nothing is sent", no "only once", two ZIPs, chip check); a link column may say `with_place` so Utilities shows the meter's full place path; Utilities still requires Home layout; sync check also names a pair pointing at nothing, with six more stage 1 tests | Accepted |
 | [TEMPLATE](TEMPLATE.md) | Blank record to copy for a new decision | recording a decision |
 
@@ -519,6 +520,7 @@ Generate the next one with: python tools/make_migration.py wine --name <what_cha
 | helper_address.py | The small address file a connector reads to find Dashboard after a restart: only the address and a run ID (0092). | changing how a connector finds Dashboard |
 | helpers.py | Helpers the household has given a key to: making a key, checking it, replacing it, and turning it off. | changing how helper keys work |
 | hello.py | Proof that an address is the real Dashboard Plus, worked out from a key without ever sending it (decision 0086). | changing the check the connector makes before sending a key |
+| receipts.py | Receipt lines a helper could not match, and receipts sent twice: kept on Review, decided only by a person (0105). | changing receipt lines, Finish receipt review or the repeat-receipt warning |
 | proposals.py | Suggestions from helpers and rows imported from a spreadsheet: checked, kept waiting, added only when a person accepts. | changing suggestions, limits or accepting |
 | export.py | Export my records: one zip with a spreadsheet file for every table, a manifest and a plain-words README. | changing what the export contains |
 | sync.py | Permanent record IDs, revisions and the filtered change log (sync stage 1): nothing leaves this computer. | changing record IDs, the change log or what may travel to another computer |
@@ -537,6 +539,7 @@ Add a new file with the next number instead of changing an old one.
 | 0006_proposal_source_lines.sql | A helper's suggestion can keep the line it was read from (a receipt line and price), shown on Review only | checking how source lines are stored |
 | 0007_sync_identity.sql | Sync stage 1: the household ID and epochs, the change log, and values held after a kind change (decision 0100) | checking how permanent IDs and the change log are stored |
 | 0008_helper_daily_allowance.sql | "Allow 200 more today": each press adds to one helper's daily limit for that day only, with who and when (decision 0101) | checking how a raised daily limit is stored |
+| 0009_receipt_lines_and_repeats.sql | Receipt lines a helper could not match wait on Review as their own kind; a batch can be one receipt, stay open until finished, and be kept as another purchase (decision 0105) | checking how receipt lines and repeat receipts are stored |
 
 ## src/dashboard/web/  (summary: the screens: pages, forms and their protections)
 | Entry | What it is | Open it when |
@@ -555,6 +558,7 @@ Add a new file with the next number instead of changing an old one.
 | templates/ | The HTML pages | changing what a page looks like |
 | api.py | The helper API (/api/v1): programs the household gave a key to can look at records and suggest new ones. | changing what helpers can read or send |
 | review.py | The Review screen: helpers' suggested new records and imported rows, waiting for a person to accept or reject each one. | changing the Review page |
+| receipt_line.py | Review, a receipt line the helper could not match: choose its Stock item or make a new one, then confirm amount and date. | changing Choose item for a receipt line |
 | csv_import.py | Settings, Import from a spreadsheet: choose a table, upload a CSV, match its columns, check the rows, send to Review. | changing the import screens |
 | helper_guide.py | The starting message for a helper's assistant: what it may use, how to send, and its limits, from list and field names only. | changing the starting message or GET /api/v1/guide |
 | helper_settings.py | Settings, Helpers: give an assistant a key, choose what it may do, give it a new key, and turn its access off. | changing the Helpers settings page |
@@ -587,7 +591,9 @@ Add a new file with the next number instead of changing an old one.
 | helper*_key.html | The one page that shows a key: helper_key for a new helper, helper_new_key for a new key for one already made; each with Copy and a warning | changing the key pages |
 | helper_connect.html | "Connect an AI assistant": settings to paste into an assistant's app (pointing at the address file), with a placeholder for the key, and Connection details | changing the assistant set-up words |
 | helper_start_message.html | "Starting message for your assistant": the guide for one helper to paste into its chat, with a Copy button | changing the starting message box |
-| review.html | Review suggestions: each helper's waiting suggestions with Accept and Reject | changing the Review page |
+| review.html | Review: each helper's waiting suggestions with Accept and Reject | changing the Review page |
+| review_line.html | Choose item for a receipt line the helper could not match: pick or make the item, confirm amount and date | changing the Choose item screens |
+| review_batch.html | Open earlier receipt: what became of each row of a receipt, read only | changing the earlier receipt page |
 | export.html | Settings, Export my records: what is in the export and the download button | changing the Export page |
 | restore_*.html | Settings, Backups: the list of backups, the check-and-compare page, the result, and the shared Undo restore box | changing the restore pages |
 
@@ -649,6 +655,7 @@ How to run them is in AGENTS.md.
 | test_grouped_suggestions.py | Tests for receipt lines on suggestions and for suggestions that point at an earlier one in the same batch (decision 0097). | changing source lines, refs or grouped Review rows |
 | test_sync_extra_checks.py | Sync stage 1 extra checks from STAGE1_ACCEPTANCE.md: Utilities and Pets values, held People details, corrupt IDs and links, confinement, Set up my home rows. | changing sync checks or what may travel |
 | test_review_speedups.py | Tests for faster Review (decision 0101): Accept all by group, ticked rows, keys, fixed buttons and Allow 200 more today. | changing Accept all, ticked rows, Review keys or the daily limit |
+| test_receipt_review.py | Tests for receipts on Review (decision 0105): clearer group words, lines a helper could not match, and repeat receipts. | changing receipt lines, Finish receipt review or the repeat-receipt warning |
 
 ## tools/  (summary: scripts that check, lock and build the project; run by CI)
 | Entry | What it is | Open it when |

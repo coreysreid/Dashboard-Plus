@@ -853,7 +853,7 @@
           "Suggesting"
         ],
         "summary": "Suggest new records (all or nothing)",
-        "description": "Suggestions only ever ADD records, and only wait on Review until a person accepts or rejects each one. Up to 50 entries and 65,536 bytes per request, 200 suggested rows per helper per day (the household's own calendar day; the household can allow 200 more for today, decision 0101), and at most `limits.review_queue_limit` of the helper's suggestions waiting on Review at once. Send the same `request_key` and body again to retry safely: you get the first answer (200) and nothing is added twice. A request that would take the helper over its Review limit is refused whole with `review_queue_full`. An entry may point at an earlier entry of the same request with `{\"ref\": N}` in a `link` field, so a new record and one that needs it arrive together; a ref to a later entry, to itself, or to an entry for a different table than the link points at is refused (422 `invalid`, naming the entry and field). An entry may also carry `source`, the line it was read from, shown on Review only (decision 0097).",
+        "description": "Suggestions only ever ADD records, and only wait on Review until a person accepts or rejects each one. Up to 50 entries and 65,536 bytes per request, 200 suggested rows per helper per day (the household's own calendar day; the household can allow 200 more for today, decision 0101), and at most `limits.review_queue_limit` of the helper's suggestions waiting on Review at once. Send the same `request_key` and body again to retry safely: you get the first answer (200) and nothing is added twice. A request that would take the helper over its Review limit is refused whole with `review_queue_full`. An entry may point at an earlier entry of the same request with `{\"ref\": N}` in a `link` field, so a new record and one that needs it arrive together; a ref to a later entry, to itself, or to an entry for a different table than the link points at is refused (422 `invalid`, naming the entry and field). An entry may also carry `source`, the line it was read from, shown on Review only (decision 0097). When the entries come from one receipt, `receipt_context` gives its purchase date; Review warns the household if the same purchase was sent before. A bought product line the helper cannot match may be sent as an `unmatched_product_line` entry: the household chooses its item and amount on Review (decision 0105). A ref may not point at one.",
         "requestBody": {
           "required": true,
           "content": {
@@ -943,6 +943,42 @@
                           "expires": "2027-09-20",
                           "place": 3
                         }
+                      }
+                    ]
+                  }
+                },
+                "receipt_with_unmatched_line": {
+                  "summary": "One receipt: a Stock in, and a line the helper could not match (decision 0105)",
+                  "value": {
+                    "request_key": "example-market-2026-11-20-lines-1",
+                    "why": "I read this invented receipt; one product line needs your choice.",
+                    "receipt_context": {
+                      "purchase_date": "2026-11-20",
+                      "shop_label": "Example Market"
+                    },
+                    "entries": [
+                      {
+                        "table": "stock__movements",
+                        "values": {
+                          "item": 5,
+                          "reason": "bought",
+                          "amount": 3,
+                          "happened_on": "2026-11-20"
+                        },
+                        "source": {
+                          "line": "TINNED TOMATOES 400G x3",
+                          "price": "3.30"
+                        }
+                      },
+                      {
+                        "kind": "unmatched_product_line",
+                        "source": {
+                          "line": "TOM SPECIAL 400G 1 @ 1.50",
+                          "price": "1.50"
+                        },
+                        "receipt_date": "2026-11-20",
+                        "quantity_hint": "1",
+                        "unit_hint": "tin"
                       }
                     ]
                   }
@@ -1036,7 +1072,7 @@
             }
           },
           "400": {
-            "description": "The body could not be read (`bad_request`), or contains something that looks like a helper key (`looks_like_a_key`) or hidden characters (`hidden_characters`). None of it is kept or repeated.",
+            "description": "The body could not be read (`bad_request`), or contains something that looks like a helper key (`looks_like_a_key`) or hidden characters (`hidden_characters`), or a number shaped like a payment card (`payment_detail`). None of it is kept or repeated.",
             "content": {
               "application/json": {
                 "schema": {
@@ -1059,6 +1095,12 @@
                     "value": {
                       "error": "hidden_characters",
                       "message": "This request contains hidden control characters, such as marks that turn text around on screen. Remove them and send it again. Line breaks are fine."
+                    }
+                  },
+                  "payment_detail": {
+                    "value": {
+                      "error": "payment_detail",
+                      "message": "This request contains a long number shaped like a payment card number. Leave card, loyalty and account numbers out of receipt lines and send it again."
                     }
                   }
                 }
@@ -1780,6 +1822,7 @@
               "bad_request",
               "looks_like_a_key",
               "hidden_characters",
+              "payment_detail",
               "not_allowed",
               "private_detail",
               "look_only",
@@ -1795,7 +1838,7 @@
               "refused",
               "server_error"
             ],
-            "description": "A short code to act on: `no_key`: The key is missing, wrong or turned off. `from_a_web_page`: The request carried an Origin header, so it came from a web page. `forbidden`: The request named a host other than this computer. `bad_request`: The request could not be read, or a field of it is missing or the wrong kind. `looks_like_a_key`: Some text looked like a helper key. It is never kept or repeated. `hidden_characters`: Some text had hidden or text-reversing characters. Line breaks are fine. `not_allowed`: A field links into a part of the records this helper was not given. `private_detail`: A suggestion named a private detail, which helpers never share. `look_only`: This helper may look but not suggest. `not_found`: No such table, record or batch for this helper. A table in a part the helper was not given answers exactly like one that does not exist. `method_not_allowed`: That address does not accept this method. `request_key_reused`: The request key was already used for different suggestions. `too_large`: The body is over 65,536 bytes. `needs_json`: The body must be JSON with Content-Type application/json. `invalid`: Some values could not be used. Nothing was saved. `problems` names entry, table and field. `daily_limit`: The helper has already sent its suggestions for today (the household's day). Stop and ask the household: only they can allow more, on the Review page. `review_queue_full`: Too many of this helper's suggestions are already waiting on Review. Nothing was saved. No Retry-After: the wait is for a person, not a clock. `too_many_requests`: More requests in a minute than allowed. See the Retry-After header. `refused`: Any other refusal the web server itself makes. `server_error`: Something went wrong. Nothing was changed."
+            "description": "A short code to act on: `no_key`: The key is missing, wrong or turned off. `from_a_web_page`: The request carried an Origin header, so it came from a web page. `forbidden`: The request named a host other than this computer. `bad_request`: The request could not be read, or a field of it is missing or the wrong kind. `looks_like_a_key`: Some text looked like a helper key. It is never kept or repeated. `hidden_characters`: Some text had hidden or text-reversing characters. Line breaks are fine. `payment_detail`: Some text held a number shaped like a payment card number. Leave card, loyalty and account numbers out. `not_allowed`: A field links into a part of the records this helper was not given. `private_detail`: A suggestion named a private detail, which helpers never share. `look_only`: This helper may look but not suggest. `not_found`: No such table, record or batch for this helper. A table in a part the helper was not given answers exactly like one that does not exist. `method_not_allowed`: That address does not accept this method. `request_key_reused`: The request key was already used for different suggestions. `too_large`: The body is over 65,536 bytes. `needs_json`: The body must be JSON with Content-Type application/json. `invalid`: Some values could not be used. Nothing was saved. `problems` names entry, table and field. `daily_limit`: The helper has already sent its suggestions for today (the household's day). Stop and ask the household: only they can allow more, on the Review page. `review_queue_full`: Too many of this helper's suggestions are already waiting on Review. Nothing was saved. No Retry-After: the wait is for a person, not a clock. `too_many_requests`: More requests in a minute than allowed. See the Retry-After header. `refused`: Any other refusal the web server itself makes. `server_error`: Something went wrong. Nothing was changed."
           },
           "message": {
             "type": "string",
@@ -2363,6 +2406,17 @@
         ]
       },
       "Entry": {
+        "description": "One entry: a suggested record, or a receipt line the helper could not match (decision 0105).",
+        "anyOf": [
+          {
+            "$ref": "#/components/schemas/RecordEntry"
+          },
+          {
+            "$ref": "#/components/schemas/UnmatchedLine"
+          }
+        ]
+      },
+      "RecordEntry": {
         "type": "object",
         "properties": {
           "table": {
@@ -2383,6 +2437,41 @@
         "required": [
           "table",
           "values"
+        ],
+        "additionalProperties": false
+      },
+      "UnmatchedLine": {
+        "type": "object",
+        "description": "A bought product line the helper read but could not match to a Stock item. It waits on Review as its own row: the person chooses the item (or makes a new one) and confirms the amount and date, which adds one Stock in; or skips it. The hints are shown for checking and never saved in the records. Never send a total, tax, discount, coupon, payment or refund line this way (refused with `bad_request`).",
+        "properties": {
+          "kind": {
+            "type": "string",
+            "enum": [
+              "unmatched_product_line"
+            ]
+          },
+          "source": {
+            "$ref": "#/components/schemas/Source",
+            "description": "Must include `line`."
+          },
+          "receipt_date": {
+            "type": "string",
+            "description": "The date printed on the paper, like 2026-11-20."
+          },
+          "quantity_hint": {
+            "type": "string",
+            "maxLength": 20,
+            "description": "The amount as printed, a number above 0 written as text, like \"1\"."
+          },
+          "unit_hint": {
+            "type": "string",
+            "maxLength": 30,
+            "description": "The unit as printed, like \"tin\"."
+          }
+        },
+        "required": [
+          "kind",
+          "source"
         ],
         "additionalProperties": false
       },
@@ -2409,6 +2498,9 @@
             "items": {
               "$ref": "#/components/schemas/Entry"
             }
+          },
+          "receipt_context": {
+            "$ref": "#/components/schemas/ReceiptContext"
           }
         },
         "required": [
@@ -2444,6 +2536,13 @@
               "type": "integer"
             },
             "description": "Present only when this suggestion points at earlier ones with `{\"ref\": N}`: their positions. On Review they are shown as one group; accepting this one adds those first, in the same step, and rejecting one of those rejects this one too."
+          },
+          "kind": {
+            "type": "string",
+            "enum": [
+              "unmatched_product_line"
+            ],
+            "description": "Present only for a receipt line the helper could not match. `accepted` then means the person added a Stock in for it (record_id is that Stock in) and `rejected` means they skipped it."
           }
         },
         "required": [
@@ -2497,6 +2596,13 @@
               "type": "integer"
             },
             "description": "Present only when this suggestion points at earlier ones with `{\"ref\": N}`: their positions. On Review they are shown as one group; accepting this one adds those first, in the same step, and rejecting one of those rejects this one too."
+          },
+          "kind": {
+            "type": "string",
+            "enum": [
+              "unmatched_product_line"
+            ],
+            "description": "Present only for a receipt line the helper could not match. `accepted` then means the person added a Stock in for it (record_id is that Stock in) and `rejected` means they skipped it."
           }
         },
         "required": [
@@ -2692,6 +2798,25 @@
           "hello",
           "proof"
         ]
+      },
+      "ReceiptContext": {
+        "type": "object",
+        "description": "Optional: every entry of this request comes from one receipt. Review compares it with earlier receipts by date, item, amount and unit (never by the receipt's text) and, if it looks like the same purchase, holds Accept until the person rejects this copy or keeps it as another purchase. Nothing is ever refused for looking like a repeat.",
+        "properties": {
+          "purchase_date": {
+            "type": "string",
+            "description": "Like 2026-11-20."
+          },
+          "shop_label": {
+            "type": "string",
+            "maxLength": 80,
+            "description": "The shop's name, never a loyalty or card number."
+          }
+        },
+        "required": [
+          "purchase_date"
+        ],
+        "additionalProperties": false
       },
       "Source": {
         "type": "object",

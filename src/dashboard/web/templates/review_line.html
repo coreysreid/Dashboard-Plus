@@ -1,0 +1,63 @@
+{% extends "base.html" %}
+{% block title %}Choose item · Review · Dashboard Plus{% endblock %}
+{% block body %}
+<p class="muted"><a href="/review">Review</a></p>
+<h1>What did this line add to your Stock?</h1>
+<section class="card" aria-label="The receipt line">
+  <p style="margin:0" class="helper-text">{% if ctx.source.line %}<q><bdi>{{ ctx.source.line }}</bdi></q>{% endif %}{% if ctx.source.price %} · Price shown on paper: <bdi>{{ ctx.source.price }}</bdi>{% endif %}</p>
+  <p class="muted" style="margin:.3rem 0 0">As <bdi>{{ ctx.who }}</bdi> read it from the receipt. It may be misread: compare it with the paper. It is not saved in your records, and no Stock amount changes until you save below.</p>
+</section>
+
+{% if step == "pick" %}
+{% if error %}<p class="problem" role="alert">{{ error }}</p>{% endif %}
+<form class="record" method="get" action="/review/line/{{ ctx.row.id }}">
+  <div><label for="line-item">Which of your {{ owner_title | lower }} is it?</label>
+    {% if options %}
+    <select id="line-item" name="item" required>
+      <option value="">Choose one</option>
+      {% for id, label in options %}<option value="{{ id }}">{{ label }}</option>{% endfor %}
+    </select>
+    {% else %}
+    <p class="help" style="margin:.2rem 0">There are no {{ owner_title | lower }} yet.</p>
+    {% endif %}
+  </div>
+  <div class="actions">{% if options %}<button type="submit">Next</button>{% endif %}<a href="/review">Back to Review</a></div>
+</form>
+<p>Not in your list? <a class="button quiet" href="/review/line/{{ ctx.row.id }}?new=1">Make a new {{ owner_noun }}</a></p>
+{% else %}
+{% if errors and errors._form %}<p class="problem" role="alert" id="error-summary" tabindex="-1">{{ errors._form }}</p>
+{% elif errors %}<p class="problem" role="alert" id="error-summary" tabindex="-1">Nothing was saved. Check the answers marked below.</p>{% endif %}
+{% if note %}<p class="notice" role="status">{{ note }}</p>{% endif %}
+<form class="record" method="post" action="/review/line/{{ ctx.row.id }}/save" data-once>
+  <input type="hidden" name="_csrf" value="{{ csrf_token }}">
+  {% if step == "amount" %}
+  <input type="hidden" name="item" value="{{ item.id }}">
+  <input type="hidden" name="revision" value="{{ revision }}">
+  <p style="margin:0">Item: <strong><bdi>{{ item_name }}</bdi></strong>{% if unit %}, counted in <bdi>{{ units }}</bdi>{% endif %}. <a href="/review/line/{{ ctx.row.id }}">Choose another</a></p>
+  {% else %}
+  <input type="hidden" name="new" value="1">
+  <p style="margin:0">A new {{ owner_noun }}, added together with its first Stock in, or neither. <a href="/review/line/{{ ctx.row.id }}">Choose one already in your list instead</a></p>
+  {% if ctx.hints.unit_hint %}<p class="help" style="margin:.2rem 0">The helper read the unit as <bdi>{{ ctx.hints.unit_hint }}</bdi>. Type the unit you count this in; it is not filled in for you.</p>{% endif %}
+  {% with info = item_info, record = none %}
+  {% for f in fields %}
+  {% with first = loop.first %}{% include "_field.html" %}{% endwith %}
+  {% endfor %}
+  {% endwith %}
+  {% endif %}
+  <div class="{% if errors.amount %}has-error{% endif %}">
+    <label for="line-amount">How much did you bring home?{% if unit %} <span class="muted">(<bdi>{{ units }}</bdi>)</span>{% endif %}</label>
+    <input type="text" id="line-amount" name="amount" value="{{ amount }}" inputmode="decimal" autocomplete="off" size="8"{% if errors.amount %} aria-invalid="true" aria-describedby="line-amount-error"{% endif %}>
+    {% if errors.amount %}<p class="error" id="line-amount-error">{{ errors.amount }}</p>{% endif %}
+    {% if ctx.hints.quantity_hint %}<p class="help">The helper read: <bdi>{{ ctx.hints.quantity_hint }}{% if ctx.hints.unit_hint %} {{ ctx.hints.unit_hint }}{% endif %}</bdi>.</p>{% endif %}
+  </div>
+  <div class="{% if errors.when %}has-error{% endif %}">
+    <label for="line-when">Date bought</label>
+    <input type="text" id="line-when" name="when" value="{{ when }}" inputmode="numeric" autocomplete="off" size="12"{% if errors.when %} aria-invalid="true" aria-describedby="line-when-error"{% endif %}>
+    {% if errors.when %}<p class="error" id="line-when-error">{{ errors.when }}</p>{% endif %}
+    <p class="help">{{ hint }}{% if ctx.hints.receipt_date %} This is the date the helper read from the paper: check it.{% endif %}</p>
+  </div>
+  <div class="actions"><button type="submit">Save this Stock in</button><a href="/review">Back to Review</a></div>
+</form>
+{% if step == "new" %}{% include "_form_script.html" %}{% endif %}
+{% endif %}
+{% endblock %}

@@ -36,10 +36,11 @@ AU = {"household": "smith", "locale": "en-AU", "timezone": "Australia/Sydney",
               "note": "Top shelf, left\nbehind the flour",
               "text": "\ufeffName,Keep at least,Use by,Notes\r\nBrowser import rice,2,20/05/27,\"Top shelf, left\r\n"
                       "behind the flour\"\r\nBrowser import oats,1,,\r\nBrowser import salt,1,31/02/27,\r\n"},
-      # A made-up helper's receipt on Review: a new item with its Stock in (one group), and a Stock in on its own.
       "questions": {"id": "medical-kit-location", "table": "medical__kits"},
+      # A made-up helper's receipt on Review: a new item with its Stock in (one group), a Stock in on its own,
+      # and a line the helper could not match, which the person turns into a Stock in (decision 0105).
       "review": {"helper": "Browser check helper", "item": "Browser check lentils", "existing": "Kidney beans",
-                 "rows": 3}}
+                 "rows": 3, "line": "BRWSR TOM 400G 1 @ 1.50", "hint": "1"}}
 US = {"household": "garcia", "locale": "en-US", "timezone": "America/Los_Angeles",
       "dates": {"item": "Browser check tins", "typed": "05/20/27", "words": "May 20, 2027",
                 "wrongOrder": "20/05/27", "hint": "Use MM/DD/YY"}}
@@ -133,7 +134,9 @@ def suggest_receipt(conn, registry: dict, data_dir: Path) -> None:
     proposals.submit(conn, registry, helper, {"request_key": "browser-check", "why": "A made-up receipt", "entries": [
         {"table": "stock__items", "values": {"name": r["item"], "category": "pantry", "unit": "bags"}},
         {"table": "stock__movements", "values": dict(bought, item={"ref": 0})},
-        {"table": "stock__movements", "values": dict(bought, item=existing)}]})
+        {"table": "stock__movements", "values": dict(bought, item=existing)},
+        {"kind": "unmatched_product_line", "source": {"line": r["line"], "price": "1.50"},
+         "receipt_date": "2026-11-20", "quantity_hint": r["hint"], "unit_hint": "tin"}]})
 
 
 def run_au(work: Path, executable: str | None) -> list[str]:

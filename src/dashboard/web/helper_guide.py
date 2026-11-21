@@ -1,7 +1,7 @@
 """The starting message for a helper's assistant: what it may use, how to send, and its limits, from list and field names only."""
 from __future__ import annotations
 
-from dashboard.core import helpers, records, schema
+from dashboard.core import helpers, receipts, records, schema
 from dashboard.web import api, display
 
 GUIDE_ROUTE = "GET /api/v1/guide (the dashboard_how_to_help tool)"
@@ -84,6 +84,7 @@ def guide_text(conn, full_registry: dict, helper: helpers.Helper) -> str:
                   "\"price\": \"3.80\"}. It is shown on Review for checking and never saved in the records.",
                   "- To add a new record and one that links to it, put both in the same send, the new one first, and "
                   "set the link to {\"ref\": N}. Review shows them as one group.",
+                  *_receipt_lines(allowed),
                   "",
                   "LIMITS",
                   f"- This helper may send {limits['suggestions_per_day']} suggestions today (the household's own "
@@ -97,6 +98,22 @@ def guide_text(conn, full_registry: dict, helper: helpers.Helper) -> str:
               "- Tell the person plainly what you could not fit: private details for them to type, things that have "
               "no list here, and anything refused, with the reason Dashboard Plus gave."]
     return "\n".join(lines)
+
+
+def _receipt_lines(allowed: dict) -> list[str]:
+    """How to send one receipt (decision 0105), for a helper that may use a list a receipt line can become."""
+    if receipts.line_table(allowed) is None:
+        return []
+    return ["- One receipt in one send: add \"receipt_context\": {\"purchase_date\": \"2026-11-20\", \"shop_label\": "
+            "\"Example Market\"}. If the same purchase was sent before, Review asks the person whether this is "
+            "another purchase; nothing is refused for it.",
+            "- A bought product line you cannot match to an item already in the list, and cannot safely suggest as a "
+            "new one: send {\"kind\": \"unmatched_product_line\", \"source\": {\"line\": \"TOM SPECIAL 400G 1 @ 1.50\", "
+            "\"price\": \"1.50\"}, \"receipt_date\": \"2026-11-20\", \"quantity_hint\": \"1\", \"unit_hint\": \"tin\"} "
+            "(the three hints are optional; leave out any you are unsure of). The person chooses the item and the "
+            "amount on Review. A ref cannot point at it.",
+            "- Never send totals, tax, discounts, coupons, payments, refunds, card or loyalty numbers. Tell the person "
+            "about any line you left out."]
 
 
 def _field_line(column: dict, worked_out: list[str]) -> str:

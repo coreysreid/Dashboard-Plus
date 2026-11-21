@@ -125,7 +125,7 @@ class ToolListTests(LiveDashboard):
         listing = self.send(self.connector(), "tools/list")["result"]["tools"]
         self.assertEqual([t["name"] for t in listing], EXPECTED_TOOLS)
         samples = {"table": "demo__items", "record_id": 1, "batch_id": 1, "request_key": "k", "why": "w",
-                   "entries": [], "after": 0, "limit": 5}
+                   "entries": [], "after": 0, "limit": 5, "receipt_context": {}}
         adapter = self.app.url_map.bind("127.0.0.1")
         reached = set()
         for tool in tools.TOOLS:
