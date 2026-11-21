@@ -1,6 +1,8 @@
-# Sync stage 1: stable identities, revisions and filtered local change log
+# Sync stage 1: original design for identities, revisions and filtered local change log
 
-Prepared **20 November 2026** for batch 18 item 78 against accepted decision 0089, the **35 shipped module tables**, their migrations, the one `documents__documents__copies` relation table, and current core migrations 0001–0005. This is a core design for Lane A, not a migration or network feature. Stage 0's independent remote-boundary review remains the gate before stage 2 ships. All examples below are invented.
+**Current status, 21 November 2026:** Decision 0100 shipped the offline stage 1 foundation. Use [STAGE1_ACCEPTANCE.md](STAGE1_ACCEPTANCE.md) for exact tests against it. This file records the earlier proposal; the shipped core adds identity columns after each module's migrations (rather than editing their migrations), and holds an access/other → medical People detail locally until the text is retyped (rather than blocking the kind edit in stage 1). Utilities is now a twelfth module, making 36 record tables. Pairing and transfer have not shipped.
+
+Prepared **20 November 2026** for batch 18 item 78 against accepted decision 0089, the **35 then-shipped module tables**, their migrations, the one `documents__documents__copies` relation table, and then-current core migrations 0001–0005. This is the historical core design, not a migration or network feature. Stage 0's independent remote-boundary review remains the gate before stage 2 ships. All examples below are invented.
 
 ## What stage 1 must leave behind
 
