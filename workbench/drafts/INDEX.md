@@ -33,3 +33,4 @@ and made-up example rows. Add a row here for each draft folder you create.
 | pet_feeding/ | Event-based pet food records, daily totals and phone/helper flow | designing pet feeding |
 | medicine_doses/ | Proposed human dose history linked to People's medication summaries | deciding safe medical scope |
 | vehicle_running/ | Odometer history and service quote comparison linked to Vehicles | designing running records |
+| purchase_history/ | Stock purchase lines, confirmed prices and receipt Review words | designing cost history |
