@@ -37,3 +37,4 @@ and made-up example rows. Add a row here for each draft folder you create.
 | exit_map/ | Fire-service research and a simple room-and-connection sketch | planning a home exit map |
 | helper_move_in/ | First-time helper move checklist and remaining traps | guiding household imports |
 | think_it_through/ | Eight sourced scenario drills tied to household records | building readiness practice |
+| routine_checklists/ | Today/week/month/year tasks reconciled with Home care and Garden | designing recurring work |
