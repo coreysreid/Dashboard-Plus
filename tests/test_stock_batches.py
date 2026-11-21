@@ -312,6 +312,10 @@ class UpgradeTests(TempDirTestCase):
         newest = modules_dir / "stock" / "migrations" / "0005_batches.sql"
         held_back = newest.read_text(encoding="utf-8")
         newest.unlink()  # start as a household did before this update
+        later = {path: path.read_text(encoding="utf-8")
+                 for path in sorted((modules_dir / "stock" / "migrations").glob("000[6-9]_*.sql"))}
+        for path in later:
+            path.unlink()  # and before the ones after it (they come back with the update below)
         data = self.tmp / "data"
         startup.prepare(data, modules_dir)
         conn = db.connect(data / "dashboard.db")
@@ -330,6 +334,8 @@ class UpgradeTests(TempDirTestCase):
         conn.close()
 
         newest.write_text(held_back, encoding="utf-8")
+        for path, text in later.items():
+            path.write_text(text, encoding="utf-8")
         report = startup.prepare(data, modules_dir)
         self.assertEqual(report.module_problems, {})
         self.assertTrue(list((data / "backups").glob("*before-update*")), "a backup is made before the change")

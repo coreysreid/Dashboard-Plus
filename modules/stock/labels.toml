@@ -33,3 +33,11 @@ columns.happened_on = { label = "Date" }
 columns.lot = { label = "Which batch", help = "Only this item's batches are listed. Choose one to add to it or take from it.", blank = { takes = "Use the batch with the earliest use-by date" } }
 columns.expires = { label = "Use by", help = "For the new batch.", show_when = { reason = "bought" } }
 columns.place = { label = "Where you put it", help = "For the new batch.", show_when = { reason = "bought" } }
+
+[tables.connections]
+home = "more"
+form = ["place", "connects_to", "kind", "notes"]
+list = ["place", "connects_to", "kind", "notes"]
+columns.place = { label = "From" }
+columns.connects_to = { label = "Connects to", help = "Leave blank for a door straight outside." }
+columns.kind = { label = "Through", help = "Choose “Door to outside” for any door that takes you out of the home, even into a yard you have listed as a place." }

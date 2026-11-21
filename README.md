@@ -29,6 +29,10 @@ is new: keep a copy of anything important somewhere else too. See
   until you choose to show them.
 - **A one-page emergency sheet** to print and put on the fridge. It needs no
   internet. A second version also lists the medical details.
+- **Set up my home:** one page, offered after the welcome questions and always
+  on Home and in Settings, to add your rooms and areas, the storage spots inside
+  them (Kitchen › Pantry › Shelf 3), and which rooms connect, through a door,
+  an open doorway, stairs or a door to outside.
 - **Household stock:** what you have, where it is kept, how many to keep at
   least, and when it expires. Record what comes in and goes out (bought, used,
   expired, thrown away, given away) and the count updates itself.

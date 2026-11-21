@@ -31,7 +31,10 @@ TRAVELS = ("always", "never")
 
 MODULE_KEYS = ("name", "title", "version", "description", "core_api", "kind", "requires", "outbound_hosts")
 MODULE_REQUIRED = ("name", "title", "version", "description", "core_api", "kind")
-TABLE_KEYS = ("title", "description", "columns", "watch", "adjusts", "parent", "total", "record_name", "actions")
+TABLE_KEYS = ("title", "description", "columns", "watch", "adjusts", "parent", "total", "record_name", "actions",
+              "pair")
+# A record that joins two records of one table, like two rooms with a door between them (decision 0103).
+PAIR_KEYS = ("columns", "blank_when")
 # A one-step button on a record's page, such as "Mark returned" (decision 0075).
 ACTION_KEYS = ("key", "label", "show_when", "set", "done")
 # An action that also adds a linked record through a small form, like Home care's "Mark done" (decision 0091).
@@ -112,6 +115,7 @@ class Table:
     total: dict = field(default_factory=dict)  # checked `total` section: batches add up into a record (5.7)
     record_name: str | None = None  # how to name a record with no name of its own, like "{quantity} {item.unit} of {item}"
     actions: list = field(default_factory=list)  # checked one-step buttons, like "Mark returned" (decision 0075)
+    pair: dict = field(default_factory=dict)  # checked `pair`: joins two different records, each pair once (5.6)
 
 
 @dataclass
@@ -563,6 +567,40 @@ def _check_total(file: str, table: Table, tables: dict[str, Table], raw, problem
     return rule
 
 
+def _check_pair(file: str, table: Table, raw, problems: list[str]) -> dict:
+    """Check `pair`: two link columns of this table that point at the same table, such as two places joined
+    by a door. Saving then refuses a record that joins a place to itself, or a pair already joined either way
+    round. `blank_when` names the one choice that lets the second be left blank, like a door straight outside."""
+    where = f"In {file}, table '{table.name}', pair"
+    example = 'pair = { columns = ["place", "connects_to"] }'
+    if not isinstance(raw, dict):
+        problems.append(f"{where}: write it like {example}.")
+        return {}
+    problems.extend(_unknown_keys(where, raw, PAIR_KEYS))
+    names = raw.get("columns")
+    ok_names = isinstance(names, list) and len(names) == 2 and all(isinstance(n, str) for n in names)
+    columns = [table.columns.get(n) for n in names] if ok_names else []
+    if len(columns) != 2 or None in columns or names[0] == names[1] \
+            or any(c.type != "link" for c in columns) or columns[0].to != columns[1].to:
+        problems.append(f"{where}: columns names two different link columns of this table that point at the same "
+                        f"table, like {example}.")
+        return {}
+    if not columns[0].required:
+        problems.append(f"{where}: the first column, '{names[0]}', must be required.")
+        return {}
+    rule = {"columns": list(names), "blank_when": {}}
+    if "blank_when" in raw:
+        blank = raw["blank_when"]
+        key, value = next(iter(blank.items())) if isinstance(blank, dict) and len(blank) == 1 else (None, None)
+        choice = table.columns.get(key) if isinstance(key, str) else None
+        if choice is None or choice.type != "choice" or value not in [c.key for c in choice.choices]:
+            problems.append(f"{where}: blank_when names one choice column of this table and one of its choices, "
+                            f"like blank_when = {{ kind = \"outside_door\" }}.")
+            return {}
+        rule["blank_when"] = {key: value}
+    return rule
+
+
 def _check_record_name(file: str, table: Table, tables: dict[str, Table], template, problems: list[str]) -> str | None:
     """Check `record_name`: a pattern like "{quantity} {item.unit} of {item}" naming a record."""
     where = f"In {file}, table '{table.name}', record_name"
@@ -650,6 +688,8 @@ def _check_tables(module: str, data: dict, requires: list[str], problems: list[s
             if "record_name" in raw:
                 tables[tname].record_name = _check_record_name(file, tables[tname], tables, raw["record_name"],
                                                                problems)
+            if "pair" in raw:
+                tables[tname].pair = _check_pair(file, tables[tname], raw["pair"], problems)
     for table in tables.values():
         for column in table.columns.values():
             if column.type in ("link", "links") and column.to:

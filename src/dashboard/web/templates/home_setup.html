@@ -1,0 +1,163 @@
+{% extends "base.html" %}
+{% block title %}Set up my home · Dashboard Plus{% endblock %}
+{% block body %}
+<style>
+  .rooms { display: grid; gap: .8rem; grid-template-columns: repeat(auto-fill, minmax(min(100%, 21rem), 1fr)); }
+  .rooms .card { margin: 0; }
+  .room h3 { margin: 0 0 .4rem; font-size: 1.15rem; }
+  .room ul { list-style: none; margin: 0 0 .5rem; padding: 0; }
+  .room li { padding: .2rem 0; }
+  .room .spot { border-left: 2px solid var(--line); padding-left: .6rem; }
+  .room .joined li { display: flex; flex-wrap: wrap; gap: .3rem .6rem; align-items: baseline; }
+  .room form.inline { display: inline; }
+  .room button.small, .room .small { padding: .2rem .6rem; font-size: .9rem; }
+  .room details { border-top: 1px solid var(--line); padding: .45rem 0 .1rem; }
+  .room summary { cursor: pointer; color: var(--accent); padding: .15rem 0; }
+  .room form.record { gap: .6rem; margin: .5rem 0; }
+  .room h4 { font-size: 1rem; margin: .6rem 0 .2rem; }
+</style>
+<p class="muted"><a href="/">Home</a> · <a href="/settings">Settings</a></p>
+<h1>Set up my home</h1>
+<p class="lead">Add your rooms and areas, the storage spots inside them, and which rooms lead into which.
+Come back any time: this page is on Home and in Settings.</p>
+
+{% if welcome %}
+<div class="card start-here">
+  <p style="margin-top:0"><strong>Setup is saved.</strong> Setting up your home is the next step, if you like. It is optional:
+  you can skip it now and come back later.</p>
+  <a class="button quiet" href="/" id="skip">Skip for now and go to Home</a>
+</div>
+{% endif %}
+{% if notice %}<p class="notice" role="status">{{ notice.text }}{% if notice.undo %} Changed your mind? <a href="/t/stock__places/{{ notice.undo }}">Open it and choose Restore</a>.{% endif %}</p>{% endif %}
+{% if problem %}<p class="problem" role="alert">{{ problem }}</p>{% endif %}
+
+{% if not ready %}
+<div class="card">
+  <p style="margin-top:0">Rooms and storage spots are kept in Places, part of <strong>Household stock</strong>, which is switched off.
+  Switch it on in <a href="/settings">Settings</a> to set up your home.</p>
+</div>
+{% else %}
+<datalist id="room-names">{% for n in names.rooms %}<option value="{{ n }}">{% endfor %}</datalist>
+<datalist id="spot-names">{% for n in names.spots %}<option value="{{ n }}">{% endfor %}</datalist>
+
+<h2>1. Add a room or area</h2>
+<form class="record" method="post" action="/set-up-home/places">
+  <input type="hidden" name="_csrf" value="{{ csrf_token }}">
+  <input type="hidden" name="form" value="room">
+  {% if welcome %}<input type="hidden" name="welcome" value="1">{% endif %}
+  <div><label for="new-room">Name of the room or area</label>
+    <input type="text" id="new-room" name="name" list="room-names" maxlength="80" value="{{ typed.name if typed.form == 'room' else '' }}" {% if not rooms %}autofocus{% endif %}>
+    <p class="help">Such as Kitchen, Hallway, Garage or Backyard. Start typing to pick a common name, or type your own.</p></div>
+  <div class="actions" style="margin:0"><button type="submit" id="add-room">Add room or area</button></div>
+</form>
+
+<h2>2. Your home</h2>
+{% if rooms %}
+{% set spots = places | length - rooms | length %}
+<p class="muted">{{ rooms | length }} room{{ "" if rooms | length == 1 else "s" }} or area{{ "" if rooms | length == 1 else "s" }} · {{ spots }} storage spot{{ "" if spots == 1 else "s" }} · {{ connection_count }} connection{{ "" if connection_count == 1 else "s" }} · {{ ways_out }} door{{ "" if ways_out == 1 else "s" }} to outside</p>
+<div class="rooms">
+  {% for room in rooms %}
+  {% set r = room.place %}
+  <section class="card room" id="place-{{ r.id }}" aria-labelledby="room-{{ r.id }}">
+    <h3 id="room-{{ r.id }}">{{ r.name }}</h3>
+
+    <h4>Inside it</h4>
+    {% if room.inside %}
+    <ul aria-label="Storage spots in {{ r.name }}">
+      {% for s in room.inside %}
+      <li class="spot" style="margin-left:{{ (s.depth - 1) * 1.1 }}rem">{{ s.name }}
+        {% for c in s.connections %}<br><span class="muted">Connects to {{ c.other or "outside" }} ({{ c.how | lower }})</span>{% endfor %}</li>
+      {% endfor %}
+    </ul>
+    {% else %}<p class="muted" style="margin:0 0 .5rem">No storage spots yet.</p>{% endif %}
+
+    <h4>Connects to</h4>
+    {% if room.connections %}
+    <ul class="joined" aria-label="What {{ r.name }} connects to">
+      {% for c in room.connections %}
+      <li><span>{% if c.other %}{{ c.other }}{% else %}Outside{% endif %} <span class="muted">· {{ c.how }}</span></span>
+        <form class="inline" method="post" action="/set-up-home/connections/{{ c.id }}/delete">
+          <input type="hidden" name="_csrf" value="{{ csrf_token }}">
+          <input type="hidden" name="from" value="{{ r.id }}">
+          {% if welcome %}<input type="hidden" name="welcome" value="1">{% endif %}
+          <button type="submit" class="quiet small" aria-label="Remove the connection from {{ r.name }} to {{ c.other or 'outside' }}">Remove</button>
+        </form></li>
+      {% endfor %}
+    </ul>
+    {% else %}<p class="muted" style="margin:0 0 .5rem">No connections yet.</p>{% endif %}
+
+    <details {% if typed.form == 'spot-' ~ r.id %}open{% endif %}>
+      <summary>Add a storage spot in {{ r.name }}</summary>
+      <form class="record" method="post" action="/set-up-home/places">
+        <input type="hidden" name="_csrf" value="{{ csrf_token }}">
+        <input type="hidden" name="form" value="spot-{{ r.id }}">
+        {% if welcome %}<input type="hidden" name="welcome" value="1">{% endif %}
+        <div><label for="spot-{{ r.id }}">Name of the storage spot</label>
+          <input type="text" id="spot-{{ r.id }}" name="name" list="spot-names" maxlength="80" value="{{ typed.name if typed.form == 'spot-' ~ r.id else '' }}">
+          <p class="help">Such as Pantry, Shelf 3 or Top drawer.</p></div>
+        <div><label for="spot-in-{{ r.id }}">Inside</label>
+          <select id="spot-in-{{ r.id }}" name="inside">
+            {% for p in room.within %}<option value="{{ p.id }}" {% if p.id == r.id %}selected{% endif %}>{{ p.path }}</option>{% endfor %}
+          </select></div>
+        <div><button type="submit" class="small">Add storage spot</button></div>
+      </form>
+    </details>
+
+    <details>
+      <summary>Connect {{ r.name }} to another place</summary>
+      <form class="record" method="post" action="/set-up-home/connections">
+        <input type="hidden" name="_csrf" value="{{ csrf_token }}">
+        <input type="hidden" name="place" value="{{ r.id }}">
+        {% if welcome %}<input type="hidden" name="welcome" value="1">{% endif %}
+        <div><label for="join-{{ r.id }}">Connects to</label>
+          <select id="join-{{ r.id }}" name="connects_to">
+            <option value="">(choose)</option>
+            <option value="{{ outside }}">Outside</option>
+            {% for p in places if p.id != r.id %}<option value="{{ p.id }}">{{ p.path }}</option>{% endfor %}
+          </select></div>
+        <div><label for="join-kind-{{ r.id }}">Through</label>
+          <select id="join-kind-{{ r.id }}" name="kind">
+            {% for key, label in kinds %}<option value="{{ key }}" {% if key == "door" %}selected{% endif %}>{{ label }}</option>{% endfor %}
+          </select>
+          <p class="help">Choosing Outside saves it as a door to outside. A door into a yard you have listed is a door to outside too.</p></div>
+        <div><button type="submit" class="small">Add connection</button></div>
+      </form>
+    </details>
+
+    {% for p in room.within %}
+    <details>
+      <summary>Rename, move or delete {{ p.name }}</summary>
+      <form class="record" method="post" action="/set-up-home/places/{{ p.id }}">
+        <input type="hidden" name="_csrf" value="{{ csrf_token }}">
+        {% if welcome %}<input type="hidden" name="welcome" value="1">{% endif %}
+        <div><label for="name-{{ p.id }}">Name</label>
+          <input type="text" id="name-{{ p.id }}" name="name" maxlength="80" value="{{ p.name }}"></div>
+        <div><label for="inside-{{ p.id }}">Inside</label>
+          <select id="inside-{{ p.id }}" name="inside">
+            <option value="" {% if not p.inside %}selected{% endif %}>Nothing: it is a room or area</option>
+            {% for o in places if o.id != p.id %}<option value="{{ o.id }}" {% if o.id == p.inside %}selected{% endif %}>{{ o.path }}</option>{% endfor %}
+          </select></div>
+        <div><button type="submit" class="small">Save {{ p.name }}</button></div>
+      </form>
+      <form method="post" action="/set-up-home/places/{{ p.id }}/delete" style="margin:.2rem 0 .5rem">
+        <input type="hidden" name="_csrf" value="{{ csrf_token }}">
+        {% if welcome %}<input type="hidden" name="welcome" value="1">{% endif %}
+        <button type="submit" class="danger small">Delete {{ p.name }}</button>
+        <p class="help muted" style="margin:.2rem 0 0;font-size:.9rem">Its connections go with it. A place with things kept in it, or spots inside it, is not deleted.</p>
+      </form>
+    </details>
+    {% endfor %}
+  </section>
+  {% endfor %}
+</div>
+{% else %}
+<p class="muted">No rooms or areas yet. Add the first one above.</p>
+{% endif %}
+
+<div class="actions">
+  <a class="button" href="/" id="done">Done: go to Home</a>
+  <a href="/t/stock__places">Every place as a list</a>
+  <a href="/t/stock__connections">Every connection as a list</a>
+</div>
+{% endif %}
+{% endblock %}

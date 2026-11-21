@@ -34,8 +34,10 @@ STAGES = [
      {"goto": "/setup"}),
     ("02-setup-answered", "Setup, answered", "Who lives here, the home, what to track and backups.",
      {"wizard": True}),
-    ("03-first-home", "The first home page", "Straight after setup: the household is in People, and the "
-     "dashboard says what to do first.", {"submit_wizard": True}),
+    ("02b-set-up-my-home", "Set up my home, offered next", "Straight after setup: add rooms, storage spots and "
+     "which rooms connect, or skip it for now.", {"submit_wizard": True}),
+    ("03-first-home", "The first home page", "After setup: the household is in People, and the "
+     "dashboard says what to do first.", {"goto": "/"}),
     ("load", None, None, None),
     ("04-home", "Home, in everyday use", "Days of water, what needs attention, then one card per area: its "
      "main list, its other lists as links, and its sheets to print.", {"goto": "/"}),
@@ -52,6 +54,8 @@ STAGES = [
     ("10-emergency-sheet-medical", "Emergency sheet with private medical details", "As it prints, for "
      "responders and carers.", {"goto": "/sheet/people/emergency_medical", "submit": "text=Show private sheet", "media": "print"}),
     ("11-places", "Places", "Where things are kept.", {"goto": "/t/stock__places"}),
+    ("11b-set-up-my-home", "Set up my home", "One card per room or area: the storage spots inside it, what it "
+     "connects to, and doors to outside.", {"goto": "/set-up-home"}),
     ("12-stock", "Stock items", "What the household has, how much, and how much to keep.",
      {"goto": "/t/stock__items"}),
     ("12b-adding-stock", "Adding a stock item", "Start typing and pick from 800 common goods; picking one fills "
