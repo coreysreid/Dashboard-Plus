@@ -55,6 +55,7 @@ How to run them is in AGENTS.md.
 | test_restore.py | Tests for restoring a backup: checks that change nothing, the safe swap, Undo after a restart, and refusals. | changing restore or Undo |
 | test_api_contract.py | Tests that the published API description (openapi-v1.json) matches the real /api/v1 routes, errors and replies. | changing a helper route, reply or error code |
 | test_helper_starting_amounts.py | Tests for decision 0102: a new Stock item with its starting amount as one suggestion, and the helper's starting message. | changing starting amounts on suggestions or the starting message |
+| test_done_history_and_move_in.py | Tests for decision 0112: one-press actions leave a named history entry with Undo, and the move-in traps from Lane B's read-through. | changing one-step actions, their Undo, or the move-in checks |
 | test_grouped_suggestions.py | Tests for receipt lines on suggestions and for suggestions that point at an earlier one in the same batch (decision 0097). | changing source lines, refs or grouped Review rows |
 | test_sync_extra_checks.py | Sync stage 1 extra checks from STAGE1_ACCEPTANCE.md: Utilities and Pets values, held People details, corrupt IDs and links, confinement, Set up my home rows. | changing sync checks or what may travel |
 | test_review_speedups.py | Tests for faster Review (decision 0101): Accept all by group, ticked rows, keys, fixed buttons and Allow 200 more today. | changing Accept all, ticked rows, Review keys or the daily limit |

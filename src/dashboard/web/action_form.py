@@ -159,6 +159,8 @@ def done_notice(store, info, record_id: int, op: str | None) -> dict | None:
     result = actions.operation(store, info, record_id, op) if op else None
     if result is None:
         return None
+    if not result.get("added_table"):  # a one-step button, such as Mark returned (decision 0112)
+        return _pressed_notice(store, info, record_id, op, result)
     action = next((a for a in info.table.actions if a["key"] == result["key"] and a.get("adds")), None)
     other = store.registry.get(result["added_table"])
     if action is None or other is None:
@@ -187,6 +189,20 @@ def done_notice(store, info, record_id: int, op: str | None) -> dict | None:
     label = display.action_word(info, action, "undo")
     return {"words": words, "undo": {"label": label, "href": f"/t/{info.name}/{record_id}/undo/{op}"}
             if can and label else None}
+
+
+def _pressed_notice(store, info, record_id: int, op: str, result: dict) -> dict | None:
+    """After a one-step button: its own words, with Undo while nothing has changed since (decision 0112)."""
+    action = next((a for a in info.table.actions if a["key"] == result["key"] and not a.get("adds")), None)
+    if action is None:
+        return None
+    if result["undone"]:
+        return {"words": f"Undone. {display.action_words(info, action)[0]} was taken back, so this is as it was "
+                         f"before.", "undo": None}
+    label = display.undo_word(info, action)
+    can = label and actions.can_undo(store, info, record_id, op)
+    return {"words": display.action_words(info, action)[1],
+            "undo": {"label": label, "href": f"/t/{info.name}/{record_id}/undo/{op}"} if can else None}
 
 
 @pages.post("/t/<table>/<int:record_id>/undo/<op>")

@@ -117,8 +117,11 @@ class AcceptanceChecks(ChecklistTestCase):
         self.assertIn(f'action="/t/{GARDEN}/{job}/do/done"', html)
         response = client.post(f"/t/{GARDEN}/{job}/do/done", data={"_csrf": self.csrf, "back": "/to-do"},
                                base_url=BASE)
-        self.assertEqual(response.headers["Location"], f"/to-do?table={GARDEN}&record={job}&pressed=done")
-        self.assertIn("Marked as done.", self.page(client, response.headers["Location"]))
+        self.assertTrue(response.headers["Location"].startswith(f"/to-do?table={GARDEN}&record={job}&op="))
+        after = self.page(client, response.headers["Location"])
+        self.assertIn("Marked as done.", after)
+        self.assertIn("Undo Mark done", after)  # the press is named in history now (decision 0112)
+        self.assertIn("Done today", after)
         self.assertTrue(self.store.get(GARDEN, job)["done"])
         self.assertNotIn((GARDEN, job), self.keys("year"))
         self.assertNotIn(GARDEN, [i.table for i in watch.expiring(self.conn, self.registry, self.today)])

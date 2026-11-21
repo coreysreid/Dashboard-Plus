@@ -116,7 +116,7 @@ the "Requests" table of docs/WORKSTREAMS.md.
 | Batch 20 item 91: vehicle running log | ready for PR | lane-b/batch20-item91 | Loadable reading/estimate draft, three invented examples, careful due wording and eight checks. |
 | Batch 20 item 92: purchase and price history | ready for PR | lane-b/batch20-item92 | Stock purchase contract, exact form and Review words, cost coverage rule and eleven checks. |
 | Batch 20 item 93: simple exit map | ready for PR | lane-b/batch20-item93 | NSW and London fire guidance checked, minimal map input, privacy and flat limits, nine checks. |
-| Batch 20 item 94: moving in with a helper | ready for PR | lane-b/batch20-item94 | Invented end-to-end checklist, 13 ranked remaining traps and nine checks after reading the generated guide. |
+| Batch 20 item 94: moving in with a helper | acted on by Lane A (decision 0112): traps 1 to 6, 10 and 11 in the guide or core; draft kept | lane-b/batch20-item94 | Invented end-to-end checklist, 13 ranked remaining traps and nine checks after reading the generated guide. |
 | Batch 20 item 95: Think it through drills | ready for PR | lane-b/batch20-item95 | Eight original sourced scenarios, exact record/missing maps, practice state and twelve checks. |
 | Batch 20 item 96: routine checklists | promoted by Lane A to Things to do and modules/routines (decision 0107) | lane-b/batch20-item96 | Four time windows, source-owned ticks, missed/repeat behavior, eleven checks (automated); seasonal questions still to come; the draft folder is in git history. |
 | Batch 20 item 97: first two charts | ready for PR | lane-b/batch20-item97 | Current drinking-water composition and pet weight, exact data/empty/table views and nine checks. |

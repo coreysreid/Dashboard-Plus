@@ -5,7 +5,7 @@ import json
 
 from flask import Blueprint, current_app, redirect, render_template, request, url_for
 
-from dashboard.core import csv_import, dates, helpers, proposals, receipts, records
+from dashboard.core import csv_import, dates, helpers, move_in, proposals, receipts, records
 from dashboard.core.proposals import HIDDEN_CHARACTERS
 from dashboard.core.units import unit_for
 from dashboard.errors import PlainError
@@ -373,10 +373,25 @@ def _repeat_view(conn, store: records.Records, batch: dict, style: str, on_revie
             "on_review": earlier["id"] in on_review}
 
 
+def private_words(store: records.Records, hits: list[tuple[str, str]]) -> str | None:
+    """"This may hold a private detail you keep in Vehicles (Registration)...": which private field, never its value."""
+    named = []
+    for table, column in hits:
+        info = store.registry.get(table)
+        if info is not None and column in info.table.columns:
+            named.append(f"{display.table_title(info)} ({display.column_label(info, info.table.columns[column])})")
+    if not named:
+        return None
+    return (f"This may hold a private detail you keep in {_and(named)}. Private details belong only in their "
+            f"private field, typed by you. Reject this, or accept it and then remove that text.")
+
+
 @review_pages.get("/review")
 def review():
     conn, store = current_app.config["CONNECT"](), _store()
     batches = proposals.pending(conn)
+    # Private text the household already keeps, compared in memory for this page only (decision 0112).
+    known = move_in.private_values(conn, store.registry) if batches else {}
     style = dates.household_style(conn)
     same = {}  # one look at each table's names, for imported rows that repeat one
     number = 0  # each row's place on the page, for the keys (Up, Down, A, R, Space)
@@ -385,8 +400,13 @@ def review():
         batch["when"] = dates.show(batch["created_at"][:10], style)
         batch["why"] = visible(batch["why"])
         waiting = {item["position"]: item for item in batch["proposals"]}
+        twice = move_in.count_twice(store.registry, batch["records"])  # a starting amount counted twice (0112)
+        batch["private"] = private_words(store, move_in.private_copies(known, batch["why"])) \
+            if batch["kind"] != "import" else None
         for item in batch["proposals"]:
             item["text"] = describe(store, item, batch["made"], waiting)
+            item["twice"] = twice.get(item["position"])
+            item["private"] = private_words(store, move_in.private_copies(known, item["values"], item["source"]))
             item["exists"] = _already_there(store, same, item) if batch["kind"] == "import" else None
             item["source"] = {k: visible(v) for k, v in item["source"].items()} if item["source"] else None
             item["needs"] = sorted({ref for ref in item["refs"].values() if ref in waiting})
@@ -394,6 +414,7 @@ def review():
         for item in batch["proposals"]:
             item["needs_nouns"] = [waiting[ref]["text"]["noun"] for ref in item["needs"]]
         batch["adds"] = _adds(batch["proposals"])
+        batch["twice"] = sum(1 for item in batch["proposals"] if item["twice"])
         batch["lines"] = [_line_view(store, line, style) for line in batch["lines"]]
         batch["lines_waiting"] = sum(1 for line in batch["lines"] if line["status"] == "waiting")
         batch["repeat"] = _repeat_view(conn, store, batch, style, on_review) if batch["receipt"] else None

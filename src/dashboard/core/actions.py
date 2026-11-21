@@ -7,6 +7,9 @@ writes one named operation in history. The form carries the record's revision (t
 for it), so a form left open while the record changed saves nothing, and a one-use operation number, so
 a double click or a retried request returns the first result instead of saving twice. Undo is its own
 audited transaction, refused when either record changed since.
+
+A one-step button (decision 0075) saves its own named operation in `Records.action` (decision 0112): no record
+is added, so its Undo only puts the record's fields back, under the same revision rule.
 """
 from __future__ import annotations
 
@@ -15,6 +18,7 @@ import secrets
 from datetime import date
 
 from dashboard.core import dates, db
+from dashboard.core.modules import DEFAULT_MESSAGES
 from dashboard.core.records import (OPERATION, ActionNotAvailable, ActionStale, RecordNotFound, Records,
                                     TableInfo, ValidationError, resolve_word)
 from dashboard.core.schema import table_name
@@ -230,22 +234,34 @@ def complete(store: Records, name: str, record_id: int, key: str, answers: dict,
         return dict(result, repeated=False)
 
 
+def declared(info: TableInfo, key: str) -> dict | None:
+    """The declared action `key` of either kind (a one-step button or a small form), or None."""
+    return next((a for a in info.table.actions if a["key"] == key), None)
+
+
 def _undo_check(store: Records, info: TableInfo, record_id: int, op: str):
-    """The saved operation, if it can still be undone; otherwise ActionNotAvailable or ActionStale."""
+    """The saved operation, if it can still be undone; otherwise ActionNotAvailable or ActionStale.
+
+    A one-step press (decision 0112) added no record, so only the record itself must be as the press left it."""
     row = _find(store, op, info=info, record_id=record_id) if isinstance(op, str) and OPERATION.match(op) else None
     if row is None:
         raise RecordNotFound("That completion was not found.")
     result = json.loads(row["after"])
     if _find(store, op, "undo", info, record_id) is not None:
         raise ActionNotAvailable("That was already undone. Nothing was changed.")
-    action = form_action(info, result["key"])
-    refused = ActionStale(action["messages"]["undo_refused"])
-    other = store.registry.get(result["added_table"])
-    if other is None or revision(store, info, record_id) != row["id"]:
+    action = declared(info, result["key"])
+    if action is None:
+        raise RecordNotFound("That completion was not found.")
+    refused = ActionStale((action.get("messages") or DEFAULT_MESSAGES)["undo_refused"])
+    one_step = not result.get("added_table")
+    other = None if one_step else store.registry.get(result["added_table"])
+    if (other is None and not one_step) or revision(store, info, record_id) != row["id"]:
         raise refused  # the record changed, a later operation was saved, or it was deleted and restored
-    added = store.conn.execute(f"SELECT deleted_at FROM {other.name} WHERE id = ?", (result["added"],)).fetchone()
-    if added is None or added["deleted_at"] or revision(store, other, result["added"]) != result["added_revision"]:
-        raise refused
+    if not one_step:
+        added = store.conn.execute(f"SELECT deleted_at FROM {other.name} WHERE id = ?",
+                                   (result["added"],)).fetchone()
+        if added is None or added["deleted_at"] or revision(store, other, result["added"]) != result["added_revision"]:
+            raise refused
     try:
         store._row(info, record_id)
     except RecordNotFound:
@@ -264,14 +280,17 @@ def can_undo(store: Records, info: TableInfo, record_id: int, op: str) -> bool:
 
 def undo(store: Records, name: str, record_id: int, op: str, actor: str = "person") -> dict:
     """Undo one saved operation, in one transaction: delete the record it added (kept in history, as every
-    delete is) and put this record's fields back exactly as they were. Refused, changing nothing, if either
-    record changed since or it was already undone. Returns the operation as it was saved."""
+    delete is) and put this record's fields back exactly as they were. A one-step press (decision 0112) only
+    puts the fields back. Refused, changing nothing, if either record changed since or it was already undone.
+    Returns the operation as it was saved."""
     store._check_actor(actor)
     info = store.info(name)
     with db.transaction(store.conn):
         result, other = _undo_check(store, info, record_id, op)
-        store._delete(other, result["added"], actor, set(), f"{other.name}:{result['added']}")
+        if other is not None:
+            store._delete(other, result["added"], actor, set(), f"{other.name}:{result['added']}")
         store._update(info, record_id, dict(result["before"]), actor)
         store._audit(actor, "undo", info, record_id, result["after"],
-                     {"key": result["key"], "operation": op, "added_table": other.name, "added": result["added"]})
+                     {"key": result["key"], "operation": op, "added_table": other.name if other else None,
+                      "added": result["added"]})
     return result

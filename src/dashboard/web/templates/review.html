@@ -82,6 +82,7 @@
     <blockquote style="margin:.2rem 0;padding:.3rem .8rem;border-left:3px solid var(--line);white-space:pre-line"><bdi>{{ b.why }}</bdi></blockquote>
   </figure>
   {% endif %}
+  {% if b.private %}<p class="problem" role="status" data-private-copy style="margin:.4rem 0">The reason above: {{ b.private }}</p>{% endif %}
   {% if b.helper_off %}<p class="muted">This helper's access is off. Its earlier suggestions still need your decision.</p>{% endif %}
   {% set r = b.repeat %}
   {% if r and r.level == "repeat" and not r.kept %}
@@ -116,7 +117,7 @@
     <details class="confirm-all">
       <summary class="button" role="button">{% if b.lines_waiting %}Accept {{ ready }} ready row{{ "" if ready == 1 else "s" }}; {{ b.lines_waiting }} line{{ " still needs" if b.lines_waiting == 1 else "s still need" }} your choice{% else %}Accept all {{ ready }}{% endif %}</summary>
       <div class="confirm-box" role="group" aria-label="Accept all {{ ready }}: check first">
-        <p style="margin:0">This adds {{ ready }} new record{{ "" if ready == 1 else "s" }}: {{ b.adds }}. Rows marked "Added together" go in together. If one of them cannot be added, its whole group stays waiting with the reason shown, and the others still go in.{% if b.lines_waiting %} The {{ b.lines_waiting }} receipt line{{ "" if b.lines_waiting == 1 else "s" }} that need{{ "s" if b.lines_waiting == 1 else "" }} your choice stay{{ "s" if b.lines_waiting == 1 else "" }} waiting; nothing is added for {{ "it" if b.lines_waiting == 1 else "them" }}.{% endif %}</p>
+        <p style="margin:0">This adds {{ ready }} new record{{ "" if ready == 1 else "s" }}: {{ b.adds }}. Rows marked "Added together" go in together. If one of them cannot be added, its whole group stays waiting with the reason shown, and the others still go in.{% if b.twice %} <strong>{{ b.twice }} Stock in{{ "" if b.twice == 1 else "s" }} below may count a new item's starting amount twice: check {{ "it" if b.twice == 1 else "them" }} first, and reject {{ "it" if b.twice == 1 else "them" }} if the starting amount is already what is on hand.</strong>{% endif %}{% if b.lines_waiting %} The {{ b.lines_waiting }} receipt line{{ "" if b.lines_waiting == 1 else "s" }} that need{{ "s" if b.lines_waiting == 1 else "" }} your choice stay{{ "s" if b.lines_waiting == 1 else "" }} waiting; nothing is added for {{ "it" if b.lines_waiting == 1 else "them" }}.{% endif %}</p>
         <form method="post" action="/review/batch/{{ b.id }}/accept-all" class="actions" style="margin:.6rem 0 0"><input type="hidden" name="_csrf" value="{{ csrf_token }}"><button type="submit">Yes, accept {{ "these" if b.lines_waiting else "all" }} {{ ready }}</button></form>
       </div>
     </details>
@@ -175,6 +176,8 @@
       {% if p.source %}<p class="muted helper-text more">From the receipt or paper, as {{ b.helper }} read it:{% if p.source.line %} <q><bdi>{{ p.source.line }}</bdi></q>{% endif %}{% if p.source.price %} · Price: <bdi>{{ p.source.price }}</bdi>{% endif %}. Shown for checking only; it is not saved in your records.</p>{% endif %}
       {% if p.needs %}<p class="muted more">{% if p.needs | length == 1 %}Accepting this {{ p.text.noun }} also adds its new {{ p.needs_nouns[0] }} above.{% else %}Accepting this also adds the {{ p.needs | length }} new records above that it needs.{% endif %}</p>{% endif %}
       {% if p.needed_by %}<p class="muted more">Accepting only this leaves the {{ p.needed_by }} row{{ "" if p.needed_by == 1 else "s" }} below waiting. Rejecting this also rejects the {{ p.needed_by }} row{{ "" if p.needed_by == 1 else "s" }} below that need{{ "s" if p.needed_by == 1 else "" }} it.</p>{% endif %}
+      {% if p.twice %}<p class="problem" role="status" data-count-twice style="margin:.4rem 0"><bdi>{{ p.twice }}</bdi></p>{% endif %}
+      {% if p.private %}<p class="problem" role="status" data-private-copy style="margin:.4rem 0">{{ p.private }}</p>{% endif %}
       {% if p.exists %}<p class="problem" role="status" style="margin:.4rem 0"><bdi>{{ p.exists }}</bdi></p>{% endif %}
       {% if p.reason %}<p class="problem" role="alert" style="margin:.4rem 0">{{ p.reason }}</p>{% endif %}
       </div>

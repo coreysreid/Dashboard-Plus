@@ -3,7 +3,7 @@ from datetime import date
 
 from support import DEMO_MODULE, TempDirTestCase
 import make_migration
-from dashboard.core import db, modules, records, startup
+from dashboard.core import actions, db, modules, records, startup
 
 TABLES = '''[tables.items]
 title = "Items"
@@ -147,7 +147,21 @@ class ActionSavingTests(TempDirTestCase):
         self.assertEqual((lot["state"], lot["finished_on"], lot["amount"]), ("finished", date.today().isoformat(), 0))
         self.assertEqual(changed["state"], ["open", "finished"])
         self.assertEqual(self.quantity(), 0)  # the item's total follows, as for any change
-        self.assertEqual(self.records.history("demo__lots", self.lot)[-1]["after"]["state"], "finished")
+        history = self.records.history("demo__lots", self.lot)
+        self.assertEqual(history[-2]["after"]["state"], "finished")
+        self.assertEqual(history[-1]["action"], "action")  # the press itself is named (decision 0112)
+        self.assertEqual(history[-1]["after"]["after"]["state"], "finished")
+
+    def test_undo_of_a_press_puts_the_fields_and_the_total_back(self):
+        """A one-step press is named in history and can be undone while nothing changed since (decision 0112)."""
+        op = actions.new_operation()
+        self.records.action("demo__lots", self.lot, "finish", op=op)
+        self.assertEqual(self.quantity(), 0)
+        actions.undo(self.records, "demo__lots", self.lot, op)
+        lot = self.records.get("demo__lots", self.lot)
+        self.assertEqual((lot["state"], lot["finished_on"], lot["amount"]), ("open", None, 4))
+        self.assertEqual(self.quantity(), 4)
+        self.assertEqual(self.records.history("demo__lots", self.lot)[-1]["action"], "undo")
 
     def test_pressed_twice_it_is_refused_and_nothing_changes(self):
         self.records.action("demo__lots", self.lot, "finish")

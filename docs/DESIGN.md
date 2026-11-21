@@ -482,6 +482,11 @@ columns.returned_on = { type = "date", not_before = "lent_on" }
   history, batches and totals, in one transaction. If the record no longer
   matches `show_when` (a double click or an old page), nothing changes and the
   page says so.
+- Each press also writes one named `action` history entry with a one-use
+  operation number, the fields before and after and the day pressed (decision
+  0112), so Things to do counts it as done, and the notice offers Undo while
+  the record is unchanged since. Optional `undo = "Undo Mark returned"` names
+  that button (default "Undo"); labels.toml can reword it.
 - `with_place` (on a single link column, naming a link column of the linked
   table) shows that record's own place path after its name wherever the link is
   shown or chosen: `meter = { type = "link", to = "home_layout.meters", with_place = "place" }`

@@ -4,6 +4,7 @@ from __future__ import annotations
 import difflib
 import json
 import re
+import secrets
 import sqlite3
 from dataclasses import dataclass
 from datetime import date, datetime, timezone
@@ -753,24 +754,43 @@ class Records:
         with db.transaction(self.conn):
             return self._update(info, record_id, values, actor)
 
-    def action(self, name: str, record_id: int, key: str, actor: str = "person") -> dict:
+    def action(self, name: str, record_id: int, key: str, actor: str = "person", op: str | None = None,
+               today: date | None = None) -> dict:
         """Press a one-step button declared in tables.toml, such as "Mark returned" (decision 0075).
 
-        Its fields are saved through the same checks, history and totals as any change, all in one go.
-        If the record no longer matches the action's `show_when` (pressed twice, or from an old page),
-        ActionNotAvailable is raised and nothing changes. Returns what changed, like `update`."""
+        Its fields are saved through the same checks, history and totals as any change, all in one go, and one
+        named `action` entry in history records the press with its operation number `op` (a fresh one when not
+        given), the fields before and after, and the day it was pressed (decision 0112), so Things to do can list
+        it as done and Undo can put it back. If the record no longer matches the action's `show_when` (pressed
+        twice, or from an old page), ActionNotAvailable is raised and nothing changes. Returns what changed,
+        like `update`."""
         self._check_actor(actor)
         info = self.info(name)
         action = next((a for a in info.table.actions if a["key"] == key), None)
         if action is None:
             raise RecordNotFound(f"There is no '{key}' action for {info.table.title.lower()}.")
+        if op is None:
+            op = secrets.token_urlsafe(18)
+        if not isinstance(op, str) or not OPERATION.match(op):
+            raise ActionNotAvailable("This button is out of date. Open the record's page again.")
         with db.transaction(self.conn):
             current = self._row(info, record_id)
             if any(current.get(k) != v for k, v in action["show_when"].items()):
                 raise ActionNotAvailable("That was already done, or the record changed since this page was opened. "
                                          "Nothing was changed.")
+            if self.conn.execute("SELECT 1 FROM core__audit WHERE action = 'action' AND "
+                                 "json_extract(after, '$.operation') = ? LIMIT 1", (op,)).fetchone():
+                raise ActionNotAvailable("That button was already used. Nothing was changed.")
             values = {k: resolve_word(info.table.columns[k], v) for k, v in action["set"].items()}
-            return self._update(info, record_id, values, actor)
+            changed = self._update(info, record_id, values, actor)
+            saved = self._row(info, record_id)
+            before = {k: current.get(k) for k in values}
+            self._audit(actor, "action", info, record_id, before,
+                        {"key": key, "operation": op, "one_step": True, "added_table": None, "added": None,
+                         "before": before, "after": {k: saved.get(k) for k in values}, "next": None,
+                         "answers": {}, "copied": {}, "counts_as": "done", "missed": False,
+                         "on": (today or date.today()).isoformat()})
+            return changed
 
     def _update(self, info: TableInfo, record_id: int, values: dict, actor: str) -> dict:
         """`update` inside a transaction the caller has already started."""

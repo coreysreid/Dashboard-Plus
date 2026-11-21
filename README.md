@@ -47,7 +47,8 @@ is new: keep a copy of anything important somewhere else too. See
   as on its own page (Home care's Mark done, Garden's Mark done, or Open record
   to update). Something late shows once, as "Due since", never as a pile of
   missed days or a streak; a repeat only ever offers the next date, and Undo
-  puts a tick back straight after. Weeks start on the day you choose in Settings.
+  puts a tick (or a press of Mark done or Mark returned) back straight after.
+  Weeks start on the day you choose in Settings.
 - **The first charts:** *What is counted* on Home's water card shows each
   water item behind the days of drinking water, as a bar with its litres, and
   every item left out with the reason (not safe to drink, or not in litres).
@@ -99,7 +100,11 @@ is new: keep a copy of anything important somewhere else too. See
   has a message to copy into the assistant's chat. It lists the lists that
   helper may use, their fields, what is private, how stock amounts work and
   today's limits. It holds no records, private details or key. The assistant
-  can read the same guide itself (the `dashboard_how_to_help` tool).
+  can read the same guide itself (the `dashboard_how_to_help` tool). While
+  moving records in, Review warns when a new item's amount and a Stock in for
+  it would count twice, and when a suggestion's text holds a private detail
+  you already keep; a helper that names a place instead of picking it is told
+  the exact matches and to ask you.
 - **Connect an AI assistant:** assistant apps that support MCP can use a
   helper through the connector that comes with Dashboard Plus
   (`python -m dashboard.connector`). Settings, Helpers shows the settings to

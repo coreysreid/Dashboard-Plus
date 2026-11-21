@@ -337,7 +337,7 @@ def one_batch(batch_id):
     conn = current_app.config["CONNECT"]()
     if not proposals.owns(conn, g.helper, batch_id):
         return api_error(404, "not_found", "That batch could not be found.")
-    return reply(proposals.batch_result(conn, batch_id, detail=True))
+    return reply(proposals.batch_result(conn, batch_id, detail=True, registry=_full()))
 
 
 @helper_api.post("/hello")

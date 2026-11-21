@@ -218,7 +218,15 @@ function expect(condition, message) { if (!condition) throw new Failed(message);
     expect(await page.inputValue('#f-status') === 'returned', 'After Mark returned, "Is it back?" should read Yes, returned.');
     expect(await page.inputValue('#f-returned_on') !== '', 'After Mark returned, Returned on should be filled in with today.');
     expect(!(await page.locator(button).count()), 'Mark returned should go away once the loan is back.');
-    ok(`Mark returned: one press on "${name}" saves it as back today, says so, and the button goes`);
+    // The press is named in history, so it can be undone straight away (decision 0112).
+    expect((await text('button[data-undo]')).includes('Undo Mark returned'), 'After Mark returned the notice should offer "Undo Mark returned".');
+    await submit('button[data-undo]');
+    expect((await text('[role=status]')).includes('Undone. Mark returned was taken back'), `Undo should say the press was taken back; it says "${await text('[role=status]')}".`);
+    expect(await page.inputValue('#f-status') === 'out', 'After Undo, "Is it back?" should read No, still out again.');
+    expect(await page.locator(button).count() === 1, 'After Undo, Mark returned should be offered again.');
+    await submit(button);
+    expect(await page.inputValue('#f-status') === 'returned', 'Mark returned should work again after an Undo.');
+    ok(`Mark returned: one press on "${name}" saves it as back today, says so, the button goes, and Undo puts it back`);
   }
 
   async function checkMarkDone() {  // an action with a small form that adds Work done, saved once, with Undo (decision 0091)

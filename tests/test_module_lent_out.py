@@ -160,12 +160,13 @@ class LentOutModuleTests(TempDirTestCase):
         self.assertEqual(self.records.get("lent_out__loans", loan)["status"], "out")
         answer = client.post(f"{path}/do/returned", data={"_csrf": csrf}, base_url=BASE)
         self.assertEqual(answer.status_code, 302)
-        self.assertTrue(answer.headers["Location"].endswith(f"{path}?done=returned"), answer.headers["Location"])
+        self.assertIn(f"{path}?op=", answer.headers["Location"])  # the press is named in history (0112)
         row = self.records.get("lent_out__loans", loan)
         self.assertEqual((row["status"], row["returned_on"]), ("returned", self.day(0)))
         self.assertEqual(self.due(), {})  # no longer overdue
-        page = client.get(f"{path}?done=returned", base_url=BASE).get_data(as_text=True)
+        page = client.get(answer.headers["Location"], base_url=BASE).get_data(as_text=True)
         self.assertIn("Marked returned today.", page)
+        self.assertIn(">Undo Mark returned</button>", page)
         self.assertNotIn(">Mark returned</button>", page)
         self.assertIn('from "No, still out" to "Yes, returned"', page)  # in the loan's history like any change
         history = len(self.records.history("lent_out__loans", loan))
