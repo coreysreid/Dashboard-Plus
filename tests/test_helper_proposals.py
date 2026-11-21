@@ -173,7 +173,9 @@ class ProposalTests(TempDirTestCase):
             self.send([self.bought(1)] * 50, key=f"day-{n}")
         self.assertEqual(proposals.used_today(self.conn, self.helper), 200)
         error = self.refused([self.bought(1)], 429, "daily_limit", key="one-too-many")
-        self.assertEqual(str(error), "This helper has reached 200 suggestions today. Try again tomorrow.")
+        self.assertEqual(str(error), "This helper has used all 200 of its suggestions for today, so nothing was saved. "
+                                     "Stop sending now and ask the household: they can allow more on the Review page "
+                                     "in Dashboard Plus (\"Allow 200 more today\"). Otherwise, try again tomorrow.")
         self.assertEqual(self.count("core__proposals"), 200)
         self.assertEqual(self.count("core__helper_batches"), 4)
         self.send([self.bought(1)], key="other-helper-fine", helper=self.other)
@@ -271,11 +273,11 @@ class ProposalTests(TempDirTestCase):
         self.assertEqual(self.quantity(), 5)
         self.assertEqual(self.count("stock__items"), 1)
 
-    def test_a_worked_out_column_must_not_be_suggested(self):
+    def test_a_new_item_may_carry_its_starting_amount_but_adds_nothing_yet(self):
         item = {"table": "stock__items", "values": {"name": "Rice", "quantity": 4}}
-        error = self.refused([item], 422, "invalid")
-        self.assertIn("worked out", error.problems[0]["message"])
-        self.assertEqual(self.count("stock__items"), 1)
+        result, _ = self.send([item])  # decision 0102; tests/test_helper_starting_amounts.py has the rest
+        self.assertEqual(result["state"], "waiting")
+        self.assertEqual((self.count("stock__items"), self.count("stock__lots")), (1, 1))
 
     def test_a_look_only_helper_cannot_suggest(self):
         reader, _ = helpers.issue(self.conn, self.data, "Reader", "read", ["stock"])

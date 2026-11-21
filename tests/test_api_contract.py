@@ -167,6 +167,12 @@ class ReplyShapeTests(ApiTestCase):
         self.assertIn("message", body)
         self.assertEqual(body["limits"]["requests_per_minute"], 120)
 
+    def test_guide(self):
+        for key in (self.key, self.stock_key, self.reader_key):
+            body = self.valid(self.api_get("/api/v1/guide", key=key), "/api/v1/guide")
+            self.assertIn("HOW IT WORKS", body["text"])
+            self.assertEqual(body["limits"]["review_queue_limit"], proposals.MAX_WAITING)
+
     def test_tables_for_each_kind_of_helper(self):
         for key, seen in ((self.key, "demo__items"), (self.stock_key, "stock__items"), (self.reader_key, "demo__items")):
             body = self.valid(self.api_get("/api/v1/tables", key=key), "/api/v1/tables")
@@ -315,6 +321,22 @@ class ReplyShapeTests(ApiTestCase):
         self.assertEqual(self.conn.execute("SELECT COUNT(*) FROM core__proposals").fetchone()[0], 2)
         one = dict(two, request_key="third", entries=two["entries"][:1])
         self.assertEqual(self.api_post("/api/v1/proposals", one).status_code, 201)  # exactly full is allowed
+
+    def test_a_new_item_with_its_starting_amount_is_one_entry(self):
+        """The request example for decision 0102 is accepted as written (with a real place), and one place that
+        is not there is refused with the plain next step."""
+        media = SPEC["paths"]["/api/v1/proposals"]["post"]["requestBody"]["content"]["application/json"]
+        example = json.loads(json.dumps(media["examples"]["counted_item"]["value"]))
+        shelf = self.store.create("stock__places", {"name": "Shelf 3"})
+        wrong = dict(example, request_key="no-such-place")
+        wrong["entries"] = [{"table": "stock__items", "values": dict(example["entries"][0]["values"], place=99999)}]
+        response = self.api_post("/api/v1/proposals", wrong, key=self.stock_key)
+        self.assertEqual((response.status_code, response.get_json()["error"]), (422, "invalid"))
+        self.assertIn("Look up Places first", response.get_json()["problems"][0]["message"])
+        example["entries"][0]["values"]["place"] = shelf
+        body = self.valid(self.api_post("/api/v1/proposals", example, key=self.stock_key), "/api/v1/proposals", 201,
+                          "post")
+        self.assertEqual(len(body["proposals"]), 1)
 
     def test_a_receipt_with_a_new_item_its_stock_in_and_source_lines(self):
         """The request example for decision 0097 is accepted as written, and its reply fits the file."""

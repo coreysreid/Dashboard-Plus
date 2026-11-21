@@ -1,0 +1,4 @@
+<h{{ level or 3 }} id="{{ box_id }}-heading" style="margin-bottom:.25rem">Starting message for your assistant</h{{ level or 3 }}>
+<p style="margin-top:0">Paste this into the chat when you start, so the assistant knows which lists it may use, their fields, how to send suggestions, and its limits. It holds no records, no private details and no key. Copy it again later: the numbers for today change.</p>
+<pre id="{{ box_id }}" tabindex="0" aria-labelledby="{{ box_id }}-heading" style="overflow:auto;max-height:24rem;max-width:100%;white-space:pre-wrap;background:var(--bg);border:1px solid var(--line);padding:.75rem;border-radius:6px">{{ message }}</pre>
+<div class="actions"><button type="button" class="copy-block" data-copy="{{ box_id }}" data-say="{{ box_id }}-copied">Copy starting message</button><span id="{{ box_id }}-copied" class="muted" role="status"></span></div>

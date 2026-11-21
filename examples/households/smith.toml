@@ -318,6 +318,43 @@ name = "Upstairs hall"
 name = "Study"
 notes = "The small room off the upstairs hall."
 
+# Which rooms lead into which (Set up my home, decision 0103).
+[[stock.connections]]
+place = "Front hall"
+kind = "outside_door"
+notes = "Front door."
+
+[[stock.connections]]
+place = "Front hall"
+connects_to = "Kitchen"
+kind = "opening"
+
+[[stock.connections]]
+place = "Front hall"
+connects_to = "Upstairs hall"
+kind = "stairs"
+
+[[stock.connections]]
+place = "Kitchen"
+connects_to = "Laundry"
+
+[[stock.connections]]
+place = "Laundry"
+connects_to = "Backyard"
+kind = "outside_door"
+
+[[stock.connections]]
+place = "Front hall"
+connects_to = "Garage"
+
+[[stock.connections]]
+place = "Upstairs hall"
+connects_to = "Study"
+
+[[stock.connections]]
+place = "Upstairs hall"
+connects_to = "Bathroom"
+
 # Amounts are what is on hand today, after the stock in and out below.
 [[stock.items]]
 name = "Water casks (10 L)"

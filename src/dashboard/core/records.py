@@ -405,6 +405,38 @@ class Records:
         if problems:
             raise ValidationError(problems)
 
+    def pair_problems(self, info: TableInfo, record_id: int | None, record: dict) -> dict[str, str]:
+        """What is wrong with a record that joins two others (`pair` in tables.toml, decision 0103): a place
+        joined to itself, a pair already joined (either way round), or the second left blank when it may not be."""
+        rule = info.table.pair
+        if not rule:
+            return {}
+        first, second = rule["columns"]
+        one, two = record.get(first), record.get(second)
+        if two in (None, ""):
+            blank = rule["blank_when"]
+            if blank and one is not None and not all(record.get(k) == v for k, v in blank.items()):
+                (key, value), = blank.items()
+                label = next(c.label for c in info.table.columns[key].choices if c.key == value)
+                return {second: f"is needed. Leave it blank only for “{label}”."}
+            return {}
+        if one is None:
+            return {}
+        if int(one) == int(two):
+            return {second: f"can't be the same as “{self._label(info, first)}”. Choose a different one."}
+        clash = self.conn.execute(
+            f"SELECT id FROM {info.name} WHERE deleted_at IS NULL AND id != ? AND "
+            f"(({first} = ? AND {second} = ?) OR ({first} = ? AND {second} = ?)) LIMIT 1",
+            (record_id or 0, one, two, two, one)).fetchone()
+        if clash is not None:
+            return {second: "is already joined to it. Change that one instead of adding another."}
+        return {}
+
+    def _check_pair(self, info: TableInfo, record_id: int | None, record: dict) -> None:
+        problems = self.pair_problems(info, record_id, record)
+        if problems:
+            raise ValidationError(problems)
+
     def create(self, name: str, values: dict, actor: str = "person", review_status: str = "confirmed",
                batch_id: int | None = None) -> int:
         """Save a new record and return its id."""
@@ -429,7 +461,8 @@ class Records:
         an empty result means every entry would be saved.
 
         Amounts worked out from batches are refused, except that `starting_amounts` lets a new record start its
-        first batch the way the add form does (a spreadsheet import, decision 0080); helpers never get this.
+        first batch the way the add form does (a spreadsheet import, decision 0080, and a helper's suggested new
+        item, decision 0102). Afterwards the amount changes only through its batches.
 
         `resolve(values, made)` may swap a value that points at an earlier entry for that entry's new record id;
         `made` maps each earlier position that was added to its id, and it raises ValidationError if it cannot."""
@@ -485,6 +518,7 @@ class Records:
         self._check_required_when(info, cleaned)
         self._check_date_order(info, cleaned)
         self._check_nesting(info, None, cleaned)
+        self._check_pair(info, None, cleaned)
         self._choose_batch(info, cleaned, None, actor, review_status, batch_id)
         stored = {k: v for k, v in cleaned.items() if info.table.columns[k].type != "links"}
         now = self.clock()
@@ -745,6 +779,7 @@ class Records:
         self._check_required_when(info, dict(current, **cleaned))
         self._check_date_order(info, dict(current, **cleaned))
         self._check_nesting(info, record_id, cleaned)
+        self._check_pair(info, record_id, dict(current, **cleaned))
         self._choose_batch(info, cleaned, current, actor)
         changed = {k: v for k, v in cleaned.items() if current.get(k) != v}
         total = info.table.total
@@ -858,6 +893,10 @@ class Records:
                         raise ValidationError({"restore": f"needs its “{self._label(info, column.name)}” back "
                                                f"first: restore that record in {target.table.title}, and this "
                                                f"one comes back with it."})
+            clash = self.pair_problems(info, record_id, row)
+            if clash:  # the same two places were joined again since: keep that one (decision 0103)
+                raise ValidationError({"restore": "can't be done: these two are joined again already, by another "
+                                                  "record. Change that one instead."})
             self._restore_one(info, record_id, actor)
             key = f"{info.name}:{record_id}"
             for entry in self.conn.execute(
@@ -866,7 +905,7 @@ class Records:
                     "AND json_extract(after, '$.with') = ? AND NOT (table_name = ? AND record_id = ?)",
                     (key, info.name, record_id)).fetchall():
                 other = self.registry.get(entry["table_name"])
-                if other is not None:
+                if other is not None and not self._pair_taken(other, entry["record_id"]):
                     self._restore_one(other, entry["record_id"], actor)
             for entry in self.conn.execute(
                     "SELECT table_name, record_id, before FROM core__audit WHERE action = 'update' "
@@ -878,6 +917,13 @@ class Records:
                     self.conn.execute(f"UPDATE {other.name} SET {column} = ?, updated_at = ? "
                                       f"WHERE id = ? AND {column} IS NULL", (value, self.clock(), entry["record_id"]))
                     self._audit(actor, "update", other, entry["record_id"], {column: None}, {column: value})
+
+    def _pair_taken(self, info: TableInfo, record_id: int) -> bool:
+        """True if bringing back this joining record would join a pair that is joined again already."""
+        if not info.table.pair:
+            return False
+        row = self.conn.execute(f"SELECT * FROM {info.name} WHERE id = ?", (record_id,)).fetchone()
+        return row is not None and bool(self.pair_problems(info, record_id, dict(row)))
 
     def _restore_one(self, info: TableInfo, record_id: int, actor: str) -> None:
         row = self.conn.execute(f"SELECT * FROM {info.name} WHERE id = ?", (record_id,)).fetchone()

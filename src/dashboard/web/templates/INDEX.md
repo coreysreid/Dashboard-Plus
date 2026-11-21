@@ -11,6 +11,7 @@
 | form.html | Add and edit forms, delete and restore, and history | changing the form |
 | action_form.html | An action's small form, such as Mark done: what it asks, the next-date choice, Save once | changing the Mark done wording |
 | _*.html | Pieces shared by both forms: one field (_field), and the forms' styles and browser code (_form_script) | changing every form at once |
+| home_setup.html | Set up my home: add rooms and storage spots, rename, move or delete them, and connect rooms; no scripts needed | changing the Set up my home wording |
 | setup.html | First-run wizard and Settings (one form, two modes) | changing setup questions |
 | *sheet.html | A printable sheet styled to fit one page (sheet), and the step before one with private details (private_sheet) | changing how sheets print |
 | start.html | Shown to a browser that was not opened by the shortcut | changing that message |
@@ -24,6 +25,7 @@
 | helpers.html | Settings, Helpers: the helper list with Make a new key and Turn off access, and the form that makes a key | changing the Helpers settings page |
 | helper*_key.html | The one page that shows a key: helper_key for a new helper, helper_new_key for a new key for one already made; each with Copy and a warning | changing the key pages |
 | helper_connect.html | "Connect an AI assistant": settings to paste into an assistant's app (pointing at the address file), with a placeholder for the key, and Connection details | changing the assistant set-up words |
+| helper_start_message.html | "Starting message for your assistant": the guide for one helper to paste into its chat, with a Copy button | changing the starting message box |
 | review.html | Review suggestions: each helper's waiting suggestions with Accept and Reject | changing the Review page |
 | export.html | Settings, Export my records: what is in the export and the download button | changing the Export page |
 | restore_*.html | Settings, Backups: the list of backups, the check-and-compare page, the result, and the shared Undo restore box | changing the restore pages |

@@ -1,4 +1,4 @@
-"""Click through the real dashboard in Chromium (setup, dates, stock in, stocktake, Mark returned, Mark done, spreadsheet import, private details, closing) and fail loudly."""
+"""Click through the real dashboard in Chromium (setup, Set up my home, dates, stock in, stocktake, Mark returned, Mark done, spreadsheet import, Review keys and buttons, private details, closing) and fail loudly."""
 from __future__ import annotations
 
 import argparse
@@ -17,7 +17,7 @@ sys.path.insert(0, str(ROOT / "src"))
 
 import load_example  # noqa: E402
 from make_screenshots import wizard_steps  # noqa: E402
-from dashboard.core import db, modules, records  # noqa: E402
+from dashboard.core import db, helpers, modules, proposals, records  # noqa: E402
 
 DRIVER = ROOT / "tools" / "browser_check.js"
 TIME_LIMIT = 120  # seconds for one browser run; the whole check normally takes about 20
@@ -35,7 +35,10 @@ AU = {"household": "smith", "locale": "en-AU", "timezone": "Australia/Sydney",
       "csv": {"file": "browser-check.csv", "ready": 2, "fixing": 1, "item": "Browser import rice",
               "note": "Top shelf, left\nbehind the flour",
               "text": "\ufeffName,Keep at least,Use by,Notes\r\nBrowser import rice,2,20/05/27,\"Top shelf, left\r\n"
-                      "behind the flour\"\r\nBrowser import oats,1,,\r\nBrowser import salt,1,31/02/27,\r\n"}}
+                      "behind the flour\"\r\nBrowser import oats,1,,\r\nBrowser import salt,1,31/02/27,\r\n"},
+      # A made-up helper's receipt on Review: a new item with its Stock in (one group), and a Stock in on its own.
+      "review": {"helper": "Browser check helper", "item": "Browser check lentils", "existing": "Kidney beans",
+                 "rows": 3}}
 US = {"household": "garcia", "locale": "en-US", "timezone": "America/Los_Angeles",
       "dates": {"item": "Browser check tins", "typed": "05/20/27", "words": "May 20, 2027",
                 "wrongOrder": "20/05/27", "hint": "Use MM/DD/YY"}}
@@ -120,6 +123,18 @@ def drive(plan: dict, work: Path, phase: str) -> list[str]:
     return [line for line in lines if line.startswith("ok ")]
 
 
+def suggest_receipt(conn, registry: dict, data_dir: Path) -> None:
+    """Put a made-up helper's receipt on Review, as a helper would send it, for the Review keys check."""
+    r = AU["review"]
+    existing = conn.execute("SELECT id FROM stock__items WHERE name = ?", (r["existing"],)).fetchone()[0]
+    helper, _key = helpers.issue(conn, data_dir, r["helper"], "suggest", ["stock"])
+    bought = {"reason": "bought", "amount": 2, "happened_on": "2026-11-20"}
+    proposals.submit(conn, registry, helper, {"request_key": "browser-check", "why": "A made-up receipt", "entries": [
+        {"table": "stock__items", "values": {"name": r["item"], "category": "pantry", "unit": "bags"}},
+        {"table": "stock__movements", "values": dict(bought, item={"ref": 0})},
+        {"table": "stock__movements", "values": dict(bought, item=existing)}]})
+
+
 def run_au(work: Path, executable: str | None) -> list[str]:
     """Australia: answer the setup wizard in the browser, add the Smiths' records, then check everything."""
     example = load_example.read(AU["household"])
@@ -133,11 +148,13 @@ def run_au(work: Path, executable: str | None) -> list[str]:
         conn = db.connect(data_dir / "dashboard.db")
         try:
             found, _ = modules.discover(ROOT / "modules")
-            load_example.load_records(conn, records.build_registry(found), example)
+            registry = records.build_registry(found)
+            load_example.load_records(conn, registry, example)
+            suggest_receipt(conn, registry, data_dir)
         finally:
             conn.close()
         done += drive(dict(plan, dates=AU["dates"], stock=AU["stock"], private=AU["private"], loan=AU["loan"],
-                           job=AU["job"], csv=AU["csv"]), work, "main")
+                           job=AU["job"], csv=AU["csv"], review=AU["review"]), work, "main")
         closed = True
     finally:
         stop_server(process, closed)

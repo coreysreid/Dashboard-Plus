@@ -50,12 +50,55 @@ function expect(condition, message) { if (!condition) throw new Failed(message);
     }
   }
 
+  async function checkHomeSetup() {  // Set up my home (decision 0103): rooms, a spot inside one, a connection, with the keyboard
+    const card = (name) => page.locator(`section.room:has(h3:text-is("${name}"))`);
+    for (const name of ['Check room A', 'Check room B']) {
+      await page.focus('#new-room');
+      await page.keyboard.type(name);
+      await Promise.all([page.waitForNavigation(), page.keyboard.press('Enter')]);
+      expect(await card(name).count() === 1, `Adding the room "${name}" should show its card; it did not.`);
+    }
+    await card('Check room A').locator('summary', { hasText: 'Add a storage spot' }).click();
+    await card('Check room A').locator('input[name=name]').first().fill('Check shelf');
+    await submit(`section.room:has(h3:text-is("Check room A")) button:text-is("Add storage spot")`);
+    expect((await card('Check room A').innerText()).includes('Check shelf'), 'The new storage spot should show inside its room.');
+    const join = async () => {
+      await card('Check room A').locator('summary', { hasText: 'Connect Check room A' }).click();
+      const select = card('Check room A').locator('select[name=connects_to]');
+      const value = await select.locator('option', { hasText: 'Check room B' }).getAttribute('value');
+      await select.selectOption(value);
+      await Promise.all([page.waitForNavigation(), card('Check room A').locator('button:text-is("Add connection")').click()]);
+    };
+    await join();
+    expect((await card('Check room B').innerText()).includes('Check room A'), 'A connection should show on both rooms.');
+    refusalExpected = true;  // the same two rooms again is refused, in words
+    await join();
+    refusalExpected = false;
+    const refused = (await page.locator('.problem').allTextContents()).join(' ');
+    expect(refused.includes('already joined'), `Connecting the same two rooms twice should be refused; the page said "${refused}".`);
+    await page.goto(base + '/set-up-home?welcome=1');
+    await card('Check room A').locator('summary', { hasText: 'Rename, move or delete Check shelf' }).click();
+    await submit(`section.room:has(h3:text-is("Check room A")) button:text-is("Delete Check shelf")`);
+    await card('Check room A').locator('summary', { hasText: 'Rename, move or delete Check room A' }).click();
+    await submit(`section.room:has(h3:text-is("Check room A")) button:text-is("Delete Check room A")`);
+    expect(await card('Check room A').count() === 0, 'A deleted room should leave the page.');
+    expect(!(await card('Check room B').innerText()).includes('Check room A'), "A deleted room's connections should go with it.");
+    await card('Check room B').locator('summary', { hasText: 'Rename, move or delete Check room B' }).click();
+    await submit(`section.room:has(h3:text-is("Check room B")) button:text-is("Delete Check room B")`);
+    expect(await page.locator('#skip').count() === 1, 'Set up my home should still offer "Skip for now" after changes.');
+    ok('Set up my home: rooms added with the keyboard, a storage spot, a connection on both rooms, a repeat refused, deleting a room takes its connections');
+  }
+
   async function checkSetup() {
     await goto(plan.launch);
     expect(new URL(page.url()).pathname === '/setup', `A new data folder should open the setup questions, but opened ${page.url()}.`);
     await steps(plan.wizard);
     await submit('form.record button[type=submit]');
-    expect(new URL(page.url()).pathname === '/', `After setup the browser should be on Home, but is on ${page.url()}.`);
+    expect(new URL(page.url()).pathname === '/set-up-home', `After setup the browser should offer Set up my home, but is on ${page.url()}.`);
+    await checkHomeSetup();
+    await Promise.all([page.waitForNavigation(), page.click('#skip')]);
+    expect(new URL(page.url()).pathname === '/', `"Skip for now" should go to Home, but went to ${page.url()}.`);
+    expect(await page.locator('#my-home a[href="/set-up-home"]').count() === 1, 'Home should always link to Set up my home.');
     const areas = await page.locator('.areas section.area h2').allTextContents();
     expect(areas.length >= 2, `Home should show a card for each area, but showed ${areas.length}.`);
     expect(areas.includes('People'), `Home should have a People card; it has: ${areas.join(', ')}.`);
@@ -216,12 +259,68 @@ function expect(condition, message) { if (!condition) throw new Failed(message);
     await Promise.all([page.waitForNavigation(), page.click(`button:has-text("Send ${c.ready} rows to Review")`)]);
     expect(new URL(page.url()).pathname === '/review', `Send to Review should open Review, not ${page.url()}.`);
     expect((await html()).includes(`Import &#39;${c.file}&#39;`) || (await html()).includes(`Import '${c.file}'`), 'Review does not show the import by its file name.');
-    await submit(`button:has-text("Accept all ${c.ready}")`);
+    await page.click(`summary:has-text("Accept all ${c.ready}")`);  // Accept all asks first (decision 0101)
+    expect((await text('details.confirm-all[open]')).includes(`This adds ${c.ready} new records`), 'Accept all should say how many records it adds before it adds them.');
+    await submit(`button:has-text("Yes, accept all ${c.ready}")`);
     await goto('/t/stock__items');
     await Promise.all([page.waitForNavigation(), page.click(`a[aria-label="Open ${c.item}"]`)]);
     const note = await page.inputValue('#f-notes');
     expect(note.replace(/\r\n/g, '\n') === c.note, `The imported note should read "${c.note}"; it reads "${note}".`);
     ok(`spreadsheet import: ${c.ready} rows ready and ${c.fixing} to fix, sent to Review, accepted; a quoted two-line note kept`);
+  }
+
+  async function sameColumn(width) {  // Accept and Reject sit in one fixed column on every row, grouped or not
+    await page.setViewportSize({ width, height: 900 });
+    for (const which of ['[data-accept]', '[data-reject]']) {
+      const boxes = await page.locator(`[data-row] ${which}`).evaluateAll((els) => els.map((e) => {
+        const r = e.getBoundingClientRect(); return [Math.round(r.left), Math.round(r.width)];
+      }));
+      expect(boxes.length === plan.review.rows, `Review should show ${which} on every row; found ${boxes.length}.`);
+      const moved = boxes.filter((b) => Math.abs(b[0] - boxes[0][0]) > 1 || Math.abs(b[1] - boxes[0][1]) > 1);
+      expect(!moved.length, `At ${width}px wide, the ${which} buttons are not all in the same place: ${JSON.stringify(boxes)}.`);
+    }
+    const sideways = await page.evaluate(() => document.documentElement.scrollWidth - window.innerWidth);
+    expect(sideways <= 0, `At ${width}px wide, Review scrolls sideways by ${sideways}px.`);
+  }
+
+  async function checkReview() {  // a helper's receipt: fixed buttons, keys, group ticking, Accept all (decision 0101)
+    const r = plan.review;
+    await goto('/review');
+    const rows = () => page.locator('[data-row]').count();
+    expect(await rows() === r.rows, `Review should show ${r.rows} rows from ${r.helper}.`);
+    expect(await page.isVisible('#review-keys'), 'Review should show the keys hint when its script runs.');
+    expect((await text('.review-group .group-label')).includes('Added together'), 'The group should be labelled "Added together".');
+    await sameColumn(1280);
+    await sameColumn(375);
+    await page.setViewportSize({ width: 1280, height: 900 });
+    const current = () => page.evaluate(() => Array.from(document.querySelectorAll('[data-row]')).findIndex((e) => e.classList.contains('current')));
+    const ticks = async () => JSON.stringify(await page.locator('[data-row] input[type=checkbox]').evaluateAll((els) => els.map((e) => e.checked)));
+    expect(await current() === 0, 'The first row should be highlighted when Review opens.');
+    await page.keyboard.press('j');
+    expect(await current() === 1, 'J should move the highlight to the next row.');
+    await page.keyboard.press('ArrowUp');
+    await page.keyboard.press('ArrowDown');
+    expect(await current() === 1, 'Up and Down should move the highlight.');
+    await page.keyboard.press(' ');
+    expect(await ticks() === '[true,true,false]', `Space should tick the row and the rest of its group; ticks are ${await ticks()}.`);
+    await page.keyboard.press(' ');
+    expect(await ticks() === '[false,false,false]', 'Space again should untick the whole group.');
+    await page.evaluate(() => { const i = document.createElement('input'); i.id = 'typing'; i.type = 'text'; document.querySelector('h1').after(i); });
+    await page.focus('#typing');
+    await page.keyboard.type('ar jk');
+    expect(new URL(page.url()).pathname === '/review' && await current() === 1 && await rows() === r.rows && await ticks() === '[false,false,false]',
+      'Keys typed in a field should not move, tick, accept or reject anything.');
+    await page.click('h1');
+    for (const key of ['k', 'k', 'j', 'j']) await page.keyboard.press(key);
+    expect(await current() === 2, 'K and J should move the highlight up and down.');
+    await Promise.all([page.waitForNavigation(), page.keyboard.press('a')]);
+    expect((await text('[role=status]')).includes('Added to Stock in and out.'), `A should accept the highlighted row; Review says "${await text('[role=status]')}".`);
+    expect(await rows() === r.rows - 1, 'After A, the accepted row should be gone from Review.');
+    await page.click(`summary:has-text("Accept all ${r.rows - 1}")`);
+    expect((await text('details.confirm-all[open]')).includes('1 to Stock items and 1 to Stock in and out'), 'Accept all should say which lists get records.');
+    await submit(`button:has-text("Yes, accept all ${r.rows - 1}")`);
+    expect((await text('[role=status]')).includes(`Added ${r.rows - 1} records.`), `Accept all should add the group; Review says "${await text('[role=status]')}".`);
+    ok(`Review: Accept and Reject stay in one column at 1280px and 375px; J, K and arrows move, Space ticks a whole group, A accepts, keys in a field do nothing; Accept all asks first, then adds "${r.item}" with its Stock in`);
   }
 
   async function checkPrivateDetail() {
@@ -284,6 +383,7 @@ function expect(condition, message) { if (!condition) throw new Failed(message);
       if (plan.loan) await checkMarkReturned();
       if (plan.job) await checkMarkDone();
       if (plan.csv) await checkImport();
+      if (plan.review) await checkReview();
       if (plan.private) { await checkPrivateDetail(); await checkPrivateSheet(); }
       await checkClose();
     }

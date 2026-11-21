@@ -153,6 +153,115 @@
         }
       }
     },
+    "/api/v1/guide": {
+      "get": {
+        "operationId": "getGuide",
+        "tags": [
+          "Looking"
+        ],
+        "summary": "How to help this household: a plain-text guide for an assistant",
+        "responses": {
+          "200": {
+            "description": "Success.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Guide"
+                },
+                "example": {
+                  "text": "You are helping a household keep its records in Dashboard Plus, a record keeper that runs on their own computer. ...\n\nLISTS YOU MAY USE (send values by the field name before the colon)\n\nPets (pets__pets): you may suggest new records here.\n- name: Name (text, required).\n...",
+                  "limits": {
+                    "entries_per_call": 50,
+                    "suggestions_per_day": 200,
+                    "suggestions_left_today": 196,
+                    "review_queue_limit": 500,
+                    "suggestions_waiting": 4,
+                    "max_body_bytes": 65536,
+                    "requests_per_minute": 120
+                  },
+                  "message": "Read this before you start. It holds no household records and never the key."
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "No key, a wrong key, a key turned off, or a key sent anywhere but the Authorization header (`no_key`).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                },
+                "example": {
+                  "error": "no_key",
+                  "message": "This helper's access key is missing or no longer works. Ask the household to check Helpers in Settings."
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "The request carried an Origin header (`from_a_web_page`), or named a host other than this computer (`forbidden`).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                },
+                "examples": {
+                  "from_a_web_page": {
+                    "value": {
+                      "error": "from_a_web_page",
+                      "message": "The helper API cannot be used from a web page."
+                    }
+                  },
+                  "forbidden": {
+                    "value": {
+                      "error": "forbidden",
+                      "message": "This request was refused because it did not come from this computer."
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "More than `limits.requests_per_minute` requests in a minute (`too_many_requests`). Wait as long as Retry-After says.",
+            "headers": {
+              "Retry-After": {
+                "description": "Seconds to wait before trying again.",
+                "schema": {
+                  "type": "integer"
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                },
+                "example": {
+                  "error": "too_many_requests",
+                  "message": "This helper is sending requests too quickly. Wait 12 seconds, then try again."
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "An unexpected problem (`server_error`). Nothing was changed.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                },
+                "example": {
+                  "error": "server_error",
+                  "message": "Something went wrong. Nothing was changed."
+                }
+              }
+            }
+          }
+        },
+        "description": "The same words as the starting message on Settings, Helpers (decision 0102): which lists this helper may use, their fields, which are required, links and private fields, how amounts worked out from batches are set, how to send, and today's limits. Built from list and field names only: it never holds a record, a private value or the key."
+      }
+    },
     "/api/v1/tables": {
       "get": {
         "operationId": "listTables",
@@ -744,7 +853,7 @@
           "Suggesting"
         ],
         "summary": "Suggest new records (all or nothing)",
-        "description": "Suggestions only ever ADD records, and only wait on Review until a person accepts or rejects each one. Up to 50 entries and 65,536 bytes per request, 200 suggested rows per helper per UTC day, and at most `limits.review_queue_limit` of the helper's suggestions waiting on Review at once. Send the same `request_key` and body again to retry safely: you get the first answer (200) and nothing is added twice. A request that would take the helper over its Review limit is refused whole with `review_queue_full`. An entry may point at an earlier entry of the same request with `{\"ref\": N}` in a `link` field, so a new record and one that needs it arrive together; a ref to a later entry, to itself, or to an entry for a different table than the link points at is refused (422 `invalid`, naming the entry and field). An entry may also carry `source`, the line it was read from, shown on Review only (decision 0097).",
+        "description": "Suggestions only ever ADD records, and only wait on Review until a person accepts or rejects each one. Up to 50 entries and 65,536 bytes per request, 200 suggested rows per helper per day (the household's own calendar day; the household can allow 200 more for today, decision 0101), and at most `limits.review_queue_limit` of the helper's suggestions waiting on Review at once. Send the same `request_key` and body again to retry safely: you get the first answer (200) and nothing is added twice. A request that would take the helper over its Review limit is refused whole with `review_queue_full`. An entry may point at an earlier entry of the same request with `{\"ref\": N}` in a `link` field, so a new record and one that needs it arrive together; a ref to a later entry, to itself, or to an entry for a different table than the link points at is refused (422 `invalid`, naming the entry and field). An entry may also carry `source`, the line it was read from, shown on Review only (decision 0097).",
         "requestBody": {
           "required": true,
           "content": {
@@ -813,6 +922,26 @@
                         "source": {
                           "line": "KIDNEY BEANS 400G x2",
                           "price": "2.40"
+                        }
+                      }
+                    ]
+                  }
+                },
+                "counted_item": {
+                  "summary": "A new Stock item with its starting amount, use-by date and place, as one entry (decision 0102)",
+                  "value": {
+                    "request_key": "pantry-count-2026-11-21-1",
+                    "why": "Counted in the invented pantry on 21/11/26.",
+                    "entries": [
+                      {
+                        "table": "stock__items",
+                        "values": {
+                          "name": "Rice",
+                          "category": "pantry",
+                          "quantity": 2,
+                          "unit": "kg",
+                          "expires": "2027-09-20",
+                          "place": 3
                         }
                       }
                     ]
@@ -1051,7 +1180,7 @@
             }
           },
           "429": {
-            "description": "Too many requests in a minute (`too_many_requests`, with Retry-After); the helper has used its suggestions for today (`daily_limit`); or too many of its suggestions are already waiting on Review (`review_queue_full`). Whichever it is, nothing was saved. `review_queue_full` has no Retry-After: it clears when the household accepts or rejects suggestions, so stop sending and tell them.",
+            "description": "Too many requests in a minute (`too_many_requests`, with Retry-After); the helper has used its suggestions for today (`daily_limit`: stop sending and ask the household, who can allow more on the Review page); or too many of its suggestions are already waiting on Review (`review_queue_full`). Whichever it is, nothing was saved. `review_queue_full` has no Retry-After: it clears when the household accepts or rejects suggestions, so stop sending and tell them.",
             "headers": {
               "Retry-After": {
                 "description": "Only with `too_many_requests`: seconds to wait.",
@@ -1075,7 +1204,7 @@
                   "daily_limit": {
                     "value": {
                       "error": "daily_limit",
-                      "message": "This helper has reached 200 suggestions today. Try again tomorrow."
+                      "message": "This helper has used all 200 of its suggestions for today, so nothing was saved. Stop sending now and ask the household: they can allow more on the Review page in Dashboard Plus (\"Allow 200 more today\"). Otherwise, try again tomorrow."
                     }
                   },
                   "review_queue_full": {
@@ -1666,7 +1795,7 @@
               "refused",
               "server_error"
             ],
-            "description": "A short code to act on: `no_key`: The key is missing, wrong or turned off. `from_a_web_page`: The request carried an Origin header, so it came from a web page. `forbidden`: The request named a host other than this computer. `bad_request`: The request could not be read, or a field of it is missing or the wrong kind. `looks_like_a_key`: Some text looked like a helper key. It is never kept or repeated. `hidden_characters`: Some text had hidden or text-reversing characters. Line breaks are fine. `not_allowed`: A field links into a part of the records this helper was not given. `private_detail`: A suggestion named a private detail, which helpers never share. `look_only`: This helper may look but not suggest. `not_found`: No such table, record or batch for this helper. A table in a part the helper was not given answers exactly like one that does not exist. `method_not_allowed`: That address does not accept this method. `request_key_reused`: The request key was already used for different suggestions. `too_large`: The body is over 65,536 bytes. `needs_json`: The body must be JSON with Content-Type application/json. `invalid`: Some values could not be used. Nothing was saved. `problems` names entry, table and field. `daily_limit`: The helper has already sent its suggestions for today (UTC). `review_queue_full`: Too many of this helper's suggestions are already waiting on Review. Nothing was saved. No Retry-After: the wait is for a person, not a clock. `too_many_requests`: More requests in a minute than allowed. See the Retry-After header. `refused`: Any other refusal the web server itself makes. `server_error`: Something went wrong. Nothing was changed."
+            "description": "A short code to act on: `no_key`: The key is missing, wrong or turned off. `from_a_web_page`: The request carried an Origin header, so it came from a web page. `forbidden`: The request named a host other than this computer. `bad_request`: The request could not be read, or a field of it is missing or the wrong kind. `looks_like_a_key`: Some text looked like a helper key. It is never kept or repeated. `hidden_characters`: Some text had hidden or text-reversing characters. Line breaks are fine. `not_allowed`: A field links into a part of the records this helper was not given. `private_detail`: A suggestion named a private detail, which helpers never share. `look_only`: This helper may look but not suggest. `not_found`: No such table, record or batch for this helper. A table in a part the helper was not given answers exactly like one that does not exist. `method_not_allowed`: That address does not accept this method. `request_key_reused`: The request key was already used for different suggestions. `too_large`: The body is over 65,536 bytes. `needs_json`: The body must be JSON with Content-Type application/json. `invalid`: Some values could not be used. Nothing was saved. `problems` names entry, table and field. `daily_limit`: The helper has already sent its suggestions for today (the household's day). Stop and ask the household: only they can allow more, on the Review page. `review_queue_full`: Too many of this helper's suggestions are already waiting on Review. Nothing was saved. No Retry-After: the wait is for a person, not a clock. `too_many_requests`: More requests in a minute than allowed. See the Retry-After header. `refused`: Any other refusal the web server itself makes. `server_error`: Something went wrong. Nothing was changed."
           },
           "message": {
             "type": "string",
@@ -1750,43 +1879,7 @@
             "description": "Always false in v1: private details are never shared."
           },
           "limits": {
-            "type": "object",
-            "properties": {
-              "entries_per_call": {
-                "type": "integer",
-                "description": "Most entries in one POST /proposals."
-              },
-              "suggestions_per_day": {
-                "type": "integer",
-                "description": "Most suggested rows per UTC day."
-              },
-              "suggestions_left_today": {
-                "type": "integer"
-              },
-              "review_queue_limit": {
-                "type": "integer",
-                "description": "Most suggestions from this helper that may wait on Review at once. A POST that would go over is refused whole (`review_queue_full`)."
-              },
-              "suggestions_waiting": {
-                "type": "integer",
-                "description": "How many of this helper's suggestions are waiting on Review now. Spreadsheet imports never count."
-              },
-              "max_body_bytes": {
-                "type": "integer"
-              },
-              "requests_per_minute": {
-                "type": "integer"
-              }
-            },
-            "required": [
-              "entries_per_call",
-              "suggestions_per_day",
-              "suggestions_left_today",
-              "review_queue_limit",
-              "suggestions_waiting",
-              "max_body_bytes",
-              "requests_per_minute"
-            ]
+            "$ref": "#/components/schemas/Limits"
           },
           "api_version": {
             "type": "string",
@@ -1807,6 +1900,66 @@
           "limits",
           "api_version",
           "program_version"
+        ]
+      },
+      "Guide": {
+        "type": "object",
+        "properties": {
+          "text": {
+            "type": "string",
+            "description": "The guide, in plain text, ready to read before starting."
+          },
+          "limits": {
+            "$ref": "#/components/schemas/Limits"
+          },
+          "message": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "text",
+          "limits",
+          "message"
+        ]
+      },
+      "Limits": {
+        "type": "object",
+        "properties": {
+          "entries_per_call": {
+            "type": "integer",
+            "description": "Most entries in one POST /proposals."
+          },
+          "suggestions_per_day": {
+            "type": "integer",
+            "description": "Most suggested rows today: 200, plus 200 for each time the household pressed \"Allow 200 more today\" today. The day is the household's own calendar day."
+          },
+          "suggestions_left_today": {
+            "type": "integer",
+            "description": "How many more rows may be suggested today. At 0, stop and ask the household."
+          },
+          "review_queue_limit": {
+            "type": "integer",
+            "description": "Most suggestions from this helper that may wait on Review at once. A POST that would go over is refused whole (`review_queue_full`)."
+          },
+          "suggestions_waiting": {
+            "type": "integer",
+            "description": "How many of this helper's suggestions are waiting on Review now. Spreadsheet imports never count."
+          },
+          "max_body_bytes": {
+            "type": "integer"
+          },
+          "requests_per_minute": {
+            "type": "integer"
+          }
+        },
+        "required": [
+          "entries_per_call",
+          "suggestions_per_day",
+          "suggestions_left_today",
+          "review_queue_limit",
+          "suggestions_waiting",
+          "max_body_bytes",
+          "requests_per_minute"
         ]
       },
       "Choice": {
@@ -1879,7 +2032,7 @@
           },
           "note": {
             "type": "string",
-            "description": "Money columns: send and read whole units, like 12.50."
+            "description": "Money columns: send and read whole units, like 12.50. A field that starts a new record's first batch (a Stock item's amount, use-by date and place, decision 0102): send it only when suggesting a new record."
           }
         },
         "required": [
