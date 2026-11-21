@@ -13,5 +13,6 @@ numbered migrations. See docs/DESIGN.md section 6 for the module contract.
 | people/ | Who lives here, who to call, important details, emergency sheets | changing people, contacts or the emergency sheet |
 | pets/ | Pets, their vet, treatments and medicine with due dates, weigh-ins, vet visits; a pet details sheet | changing pets |
 | stock/ | Pantry, water, first aid, tools and hardware, with places, minimums and use-by dates | changing stock, running low or days of water |
+| utilities/ | Utilities and accounts: each service, its provider, fault contact (from People) and meter (from Home layout), a private account reference; a Utility contacts sheet | changing utility records |
 | vehicles/ | Each vehicle, who to call if it breaks down, registration, insurance and service dates; a Vehicles sheet | changing vehicle records |
 | wine/ | Wine collection: wines, bottle counts you type, a free-text place, tasting notes; a Wine collection sheet | changing wine records |

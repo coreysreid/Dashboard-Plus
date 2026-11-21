@@ -150,6 +150,7 @@ One record per decision, from `TEMPLATE.md`. Never deleted; reversed ones are ma
 | [0096](0096-macos-build.md) | An unsigned Mac app preview: `tools/build_macos.py` bundles python-build-standalone 3.12.10 (pinned checksums) into `Dashboard Plus.app` for the Mac's processor; inside an app the data folder defaults to `~/Library/Application Support/Dashboard Plus/` (0700), never inside the app; CI builds and starts it on Apple silicon; signing, notarisation and a real-Mac test still to come | Accepted |
 | [0097](0097-receipt-lines-and-grouped-suggestions.md) | A suggestion may carry the receipt line and price it was read from (screened, shown on Review as the helper's words, never saved in records); an entry may point at an earlier one with `{"ref": N}`, so a new Stock item and its Stock in are one group: accepting the Stock in adds the item first in one transaction, rejecting the item rejects what needs it | Accepted |
 | [0098](0098-empty-pickers-offer-to-add-and-import-waits-for-dates.md) | An empty picker offers to add one in a new tab; Import's Send waits for date choices; Documents Notes help points to the copies field | Accepted |
+| [0099](0099-utilities-promoted.md) | Utilities and accounts is switched on from Lane B's draft: services link to People (provider, fault contact) and to an exact Home layout meter; the sheet prints the People fault phone; the account reference and notes stay private and off lists, sheets, exports and helpers; deleting a contact or meter clears the link; examples in all three households | Accepted |
 | [TEMPLATE](TEMPLATE.md) | Blank record to copy for a new decision | recording a decision |
 
 ## docs/plans/  (summary: build plans for larger pieces of work, written before building)
@@ -236,6 +237,7 @@ numbered migrations. See docs/DESIGN.md section 6 for the module contract.
 | people/ | Who lives here, who to call, important details, emergency sheets | changing people, contacts or the emergency sheet |
 | pets/ | Pets, their vet, treatments and medicine with due dates, weigh-ins, vet visits; a pet details sheet | changing pets |
 | stock/ | Pantry, water, first aid, tools and hardware, with places, minimums and use-by dates | changing stock, running low or days of water |
+| utilities/ | Utilities and accounts: each service, its provider, fault contact (from People) and meter (from Home layout), a private account reference; a Utility contacts sheet | changing utility records |
 | vehicles/ | Each vehicle, who to call if it breaks down, registration, insurance and service dates; a Vehicles sheet | changing vehicle records |
 | wine/ | Wine collection: wines, bottle counts you type, a free-text place, tasting notes; a Wine collection sheet | changing wine records |
 
@@ -392,6 +394,22 @@ Generate the next one with: python tools/make_migration.py stock --name <what_ch
 | 0004_places_inside_places.sql | Places can sit inside other places ("Inside") | checking how nested places are stored |
 | 0003_drinking_water.sql | "Safe to drink" on items; existing water stays counted | checking how drinking water is stored |
 | 0005_batches.sql | Batches: an item's stock split by use-by date and place; each existing item becomes one batch | checking how the tables are stored |
+
+## modules/utilities/  (summary: the Utilities module, files only; built on Lane B's draft, linking to People and Home layout)
+| Entry | What it is | Open it when |
+|---|---|---|
+| module.toml | Name, version, description; requires People (provider and fault contact) and Home layout (meter) | changing the module's details |
+| tables.toml | Services with a private account reference and notes, and two gap questions about the fault contact | adding a field or a gap question |
+| labels.toml | Friendly labels, help text (says what is private), form and list order | changing wording or order |
+| sheets.toml | Utility contacts sheet: service, provider, fault contact, their phone and the meter, with nothing private | changing what prints |
+| migrations/ | Numbered database changes | after changing tables.toml |
+
+## modules/utilities/migrations/  (summary: this module's numbered database changes; never edit a released one)
+Generate the next one with: python tools/make_migration.py utilities --name <what_changed>
+
+| Entry | What it is | Open it when |
+|---|---|---|
+| 0001_initial.sql | The module's first table, generated from tables.toml | checking how services are stored |
 
 ## modules/vehicles/  (summary: the Vehicles module, files only; built on Lane B's draft, linking to People and Household stock)
 | Entry | What it is | Open it when |

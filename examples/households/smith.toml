@@ -16,7 +16,7 @@ home_type = "house"
 storeys = 2
 mobility_needs = false
 hazards = ["bushfire", "heat", "storm"]
-modules = ["documents", "garden", "home_care", "home_layout", "lent_out", "medical", "people", "pets", "stock", "vehicles", "wine"]
+modules = ["documents", "garden", "home_care", "home_layout", "lent_out", "medical", "people", "pets", "stock", "utilities", "vehicles", "wine"]
 
 # ---- People -----------------------------------------------------------------
 
@@ -857,3 +857,22 @@ bought_on = "today-30"
 wine = "Evening Red"
 tasted_on = "today-5"
 notes = "Remembered the fruit flavour; one bottle opened, count updated separately."
+
+# ---- Utilities ----------------------------------------------------------------
+# Invented provider and fault line; the number lives in People, and the account reference is made up.
+
+[[people.people]]
+name = "Example Energy AU"
+phone = "0491 570 161"
+
+[[people.people]]
+name = "Example Energy Faults AU"
+phone = "0491 570 162"
+
+[[utilities.services]]
+name = "Home electricity"
+kind = "electricity"
+provider = "Example Energy AU"
+fault_contact = "Example Energy Faults AU"
+account_number = "DEMO-AU-ACCOUNT-01"
+meter = "Electricity meter"

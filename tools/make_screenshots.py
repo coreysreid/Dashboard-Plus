@@ -102,6 +102,12 @@ STAGES = [
      "kept; the count is typed, never worked out.", {"goto": "/t/wine__bottles", "module": "wine"}),
     ("18q-wine-sheet", "Wine collection sheet", "As it prints: wine, count, place and bought on, with no price "
      "or tasting notes.", {"goto": "/sheet/wine/collection", "media": "print", "module": "wine"}),
+    ("18r-utilities", "Utilities and household accounts", "Each service, its provider, who to contact about a fault "
+     "and its meter; the account reference stays hidden until Show.", {"goto": "/t/utilities__services",
+                                                                       "module": "utilities"}),
+    ("18s-utilities-sheet", "Utility contacts sheet", "As it prints: service, provider, fault contact and their "
+     "phone from People, and the meter, with no account numbers or notes.",
+     {"goto": "/sheet/utilities/utility_contacts", "media": "print", "module": "utilities"}),
     ("19-needs-attention", "Needs attention", "Days of water with the working shown, running low, use-by "
      "and due dates, and details worth filling in.", {"goto": "/attention"}),
     ("20-supplies-sheet", "Emergency supplies sheet", "As it prints: water, first aid, power and food, and "

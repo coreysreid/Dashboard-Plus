@@ -17,7 +17,7 @@ home_type = "apartment"
 storeys = 1
 mobility_needs = false
 hazards = ["flood", "snow", "storm"]
-modules = ["documents", "garden", "home_care", "home_layout", "lent_out", "medical", "people", "stock", "vehicles", "wine"]
+modules = ["documents", "garden", "home_care", "home_layout", "lent_out", "medical", "people", "stock", "utilities", "vehicles", "wine"]
 
 # ---- People -----------------------------------------------------------------
 
@@ -371,3 +371,28 @@ bought_on = "today-8"
 wine = "Weekend Rosé"
 tasted_on = "today-3"
 notes = "Light and easy to remember."
+
+# ---- Utilities ----------------------------------------------------------------
+# Invented provider and fault line; the number lives in People, and the account reference is made up.
+
+[[people.people]]
+name = "Example Water UK"
+phone = "07700 900790"
+
+[[people.people]]
+name = "Example Water Faults UK"
+phone = "07700 900791"
+
+[[home_layout.meters]]
+name = "Flat water meter"
+kind = "water"
+place = "Kitchen cupboard"
+how_to_find = "Inside the kitchen cupboard."
+
+[[utilities.services]]
+name = "Flat water"
+kind = "water"
+provider = "Example Water UK"
+fault_contact = "Example Water Faults UK"
+account_number = "DEMO-UK-ACCOUNT-01"
+meter = "Flat water meter"

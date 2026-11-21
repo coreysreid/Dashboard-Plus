@@ -1629,6 +1629,7 @@ Open a module's own INDEX.md before its files.
 | garden/ | Vegetable garden; the worked example module (files only) | learning to build a module |
 | stock/ | Pantry, emergency water, tools and hardware, receipts (files only) | changing stock, reorder or supply-cover behaviour |
 | wine/ | Wine collection (files only; compact module; shipped, decision 0095) | changing wine tables |
+| utilities/ | Utilities and accounts (files only; links People and Home layout; shipped, decision 0099) | changing utility records |
 | graphing/ | Charts over any table | changing chart behaviour |
 | analysis/ | Statistics and the question loop | changing how findings are made |
 | api_connector/ | Pulls data from outside APIs | adding or fixing a source |
