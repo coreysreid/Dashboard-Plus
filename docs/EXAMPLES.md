@@ -296,6 +296,24 @@ Its questions in order, Start or Not now, its sources with the date each was che
 
 ![One drill](screenshots/smith/18z-drill.png)
 
+### Food put out, one pet's day
+
+Pet feeding log: one pet's entries on one day, totals only in matching units, entries with no amount counted, then Add food and recent entries to start from.
+
+![Food put out, one pet's day](screenshots/smith/18za-feeding.png)
+
+### Food put out, on a phone
+
+The same day at 320 pixels wide, for one-handed entry.
+
+![Food put out, on a phone](screenshots/smith/18zb-feeding-phone.png)
+
+### Pet feeding log sheet
+
+As it prints: every entry of the last 14 days with each day's totals by unit, and "Food put out, not necessarily eaten"; notes are left off.
+
+![Pet feeding log sheet](screenshots/smith/18zc-feeding-sheet.png)
+
 ### Needs attention
 
 Days of water with the working shown, running low, use-by and due dates, and details worth filling in.
@@ -613,6 +631,24 @@ Eight calm practice runs, the emergency number for the household's country first
 Its questions in order, Start or Not now, its sources with the date each was checked, and earlier practice.
 
 ![One drill](screenshots/garcia/18z-drill.png)
+
+### Food put out, one pet's day
+
+Pet feeding log: one pet's entries on one day, totals only in matching units, entries with no amount counted, then Add food and recent entries to start from.
+
+![Food put out, one pet's day](screenshots/garcia/18za-feeding.png)
+
+### Food put out, on a phone
+
+The same day at 320 pixels wide, for one-handed entry.
+
+![Food put out, on a phone](screenshots/garcia/18zb-feeding-phone.png)
+
+### Pet feeding log sheet
+
+As it prints: every entry of the last 14 days with each day's totals by unit, and "Food put out, not necessarily eaten"; notes are left off.
+
+![Pet feeding log sheet](screenshots/garcia/18zc-feeding-sheet.png)
 
 ### Needs attention
 

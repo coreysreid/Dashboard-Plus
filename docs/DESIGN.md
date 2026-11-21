@@ -850,6 +850,20 @@ number and the core can load both for a transition period.
   ordinary fields: a helper granted Wine reads them and the spreadsheet export
   includes them, and the forms say so. No drinking, storage, buying, health or
   value advice is stored or worked out.
+- **Pet feeding log** (declarative; requires Pets; shipped, decision 0110).
+  One table, Food given: each bowl, refill or treat with its time, food,
+  optional bowl and an optional amount with its unit (food put out, not
+  eaten). A table may declare `[tables.<name>.daily]` with `when` (a required
+  datetime), `per` (a required link), `amount` and `unit` (optional, set
+  together), the words `entry`, `what`, `verb`, `add`, `sheet` and `caveat`, and
+  an optional `repeat = { minutes, same }`. The core (`core/daily.py`) then adds
+  up accepted rows by the household's own day (the `household.timezone`
+  setting, else this computer's clock; a value with an offset is an instant
+  moved into that zone, a value without one is local time), one total per
+  unit, and counts rows with no amount. It never infers a missed entry. Pages:
+  Home's card, the subject's page, `/daily/<table>` and `/daily/<table>/sheet`
+  (complete or refused: at most 92 days and 1,000 rows). Review marks a
+  suggestion matching another within `minutes` as a possible repeat.
 - **Graphing** (module). Charts over any table or measure or daily-fact view.
   Chart configurations are saved as records. Annotations and events are drawn on
   charts. **Started (decision 0109):** the first two charts are drawn as SVG on

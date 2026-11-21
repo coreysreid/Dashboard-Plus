@@ -1,0 +1,29 @@
+# One row is one deliberate addition of food: food put out, never a claim that the animal ate it (decision 0110).
+[tables.servings]
+title = "Food given"
+description = "Each time food is placed in a bowl or given as a treat."
+record_name = "{pet}: {food}"
+columns.pet = { type = "link", to = "pets.pets", required = true, on_delete = "restrict" }
+columns.given_at = { type = "datetime", required = true, default = "now" }
+columns.kind = { type = "choice", required = true, default = "bowl", choices = ["bowl", "refill", "treat"] }
+columns.bowl = { type = "text" }
+columns.food = { type = "text", required = true }
+columns.amount = { type = "decimal", min = 0.01 }
+columns.unit = { type = "choice", choices = ["g", "ml", "pouch", "scoop", "piece"] }
+columns.notes = { type = "text" }
+
+# Daily totals by the household's own local day (decision 0110): accepted rows only, matching units only, and
+# a day with no entry is never read as a missed meal. A suggestion that looks like one already recorded, or like
+# another one waiting, is shown on Review as a possible repeat; nothing is merged without a person.
+[tables.servings.daily]
+when = "given_at"
+per = "pet"
+amount = "amount"
+unit = "unit"
+entry = ["feeding", "feedings"]
+what = "Food put out"
+verb = "put out"
+add = "Add food"
+sheet = "Pet feeding log"
+caveat = "Food put out, not necessarily eaten. Check for entries made elsewhere."
+repeat = { minutes = 30, same = ["food", "amount", "unit"] }

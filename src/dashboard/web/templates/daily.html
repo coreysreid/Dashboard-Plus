@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+{% block title %}{{ view.heading if view else title }} · Dashboard Plus{% endblock %}
+{% block body %}
+<p class="muted"><a href="/">Home</a> · <a href="/t/{{ table }}">List of every entry</a></p>
+{% if no_subject %}
+<h1>{{ title }}</h1>
+<p role="status"><strong>{{ no_subject }}</strong></p>
+<p><a class="button" href="{{ add_subject }}">Add one</a></p>
+{% else %}
+<h1>{{ view.heading }}</h1>
+{% if subjects | length > 1 %}
+<nav aria-label="Choose whose log" class="daily-who"><ul>
+  {% for s in subjects %}<li>{% if s.id == chosen.id %}<strong aria-current="page">{{ s.name }}</strong>{% else %}<a href="/daily/{{ table }}?subject={{ s.id }}&amp;day={{ view.day }}">{{ s.name }}</a>{% endif %}</li>{% endfor %}
+</ul></nav>
+{% endif %}
+<p class="daily-days"><a href="/daily/{{ table }}?subject={{ chosen.id }}&amp;day={{ view.before }}">Day before</a>{% if view.after %} · <a href="/daily/{{ table }}?subject={{ chosen.id }}&amp;day={{ view.after }}">Day after</a>{% endif %}{% if not view.is_today %} · <a href="/daily/{{ table }}?subject={{ chosen.id }}">Today</a>{% endif %}</p>
+{% include "_daily_panel.html" %}
+<p><a href="{{ view.sheet }}">Print: {{ view.rule.sheet }} (last 14 days, or dates you choose)</a> · <a href="{{ view.subject_href }}">{{ view.name }}'s page</a></p>
+<style>
+  .daily-who ul { list-style: none; padding: 0; display: flex; flex-wrap: wrap; gap: .3rem 1rem; }
+</style>
+{% endif %}
+{% endblock %}

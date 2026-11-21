@@ -176,6 +176,9 @@
       {% if p.needs %}<p class="muted more">{% if p.needs | length == 1 %}Accepting this {{ p.text.noun }} also adds its new {{ p.needs_nouns[0] }} above.{% else %}Accepting this also adds the {{ p.needs | length }} new records above that it needs.{% endif %}</p>{% endif %}
       {% if p.needed_by %}<p class="muted more">Accepting only this leaves the {{ p.needed_by }} row{{ "" if p.needed_by == 1 else "s" }} below waiting. Rejecting this also rejects the {{ p.needed_by }} row{{ "" if p.needed_by == 1 else "s" }} below that need{{ "s" if p.needed_by == 1 else "" }} it.</p>{% endif %}
       {% if p.exists %}<p class="problem" role="status" style="margin:.4rem 0"><bdi>{{ p.exists }}</bdi></p>{% endif %}
+      {% if p.repeat %}<div class="problem" role="status" style="margin:.4rem 0"><p style="margin:0"><strong>{{ p.repeat.title }}.</strong> It looks like:</p>
+        <ul style="margin:.2rem 0">{% for m in p.repeat.matches %}<li><bdi>{{ m }}</bdi></li>{% endfor %}</ul>
+        <p style="margin:0">{{ p.repeat.words }}</p></div>{% endif %}
       {% if p.reason %}<p class="problem" role="alert" style="margin:.4rem 0">{{ p.reason }}</p>{% endif %}
       </div>
       <div class="decide">
@@ -184,9 +187,9 @@
         {% elif b.held %}
         <button type="button" disabled title="This may be the same receipt again. Choose Reject this copy or Keep this as another purchase first.">Accept</button>
         {% else %}
-        <form method="post" action="/review/{{ p.id }}/accept"><input type="hidden" name="_csrf" value="{{ csrf_token }}"><button type="submit" data-accept>Accept{% if p.needs | length == 1 %}<span class="hidden-words"> {{ p.text.noun }} and its new {{ p.needs_nouns[0] }}</span>{% endif %}</button></form>
+        <form method="post" action="/review/{{ p.id }}/accept"><input type="hidden" name="_csrf" value="{{ csrf_token }}"><button type="submit" data-accept>{{ p.repeat.accept if p.repeat else "Accept" }}{% if p.needs | length == 1 %}<span class="hidden-words"> {{ p.text.noun }} and its new {{ p.needs_nouns[0] }}</span>{% endif %}</button></form>
         {% endif %}
-        <form method="post" action="/review/{{ p.id }}/reject"><input type="hidden" name="_csrf" value="{{ csrf_token }}"><button type="submit" class="quiet" data-reject>Reject</button></form>
+        <form method="post" action="/review/{{ p.id }}/reject"><input type="hidden" name="_csrf" value="{{ csrf_token }}"><button type="submit" class="quiet" data-reject>{{ p.repeat.reject if p.repeat else "Reject" }}</button></form>
       </div>
     </li>
   {% endfor %}

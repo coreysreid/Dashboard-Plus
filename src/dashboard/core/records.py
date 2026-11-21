@@ -391,6 +391,12 @@ class Records:
         problems = {c.name: "Please choose one." for c in info.table.columns.values()
                     if c.required_when and record.get(c.name) is None
                     and all(record.get(k) == v for k, v in c.required_when.items())}
+        daily = info.table.daily  # an amount and its unit go together, so totals never guess one (decision 0110)
+        if daily and (record.get(daily["amount"]) is None) != (record.get(daily["unit"]) in (None, "")):
+            if record.get(daily["amount"]) is None:
+                problems[daily["amount"]] = "is needed with a unit. Enter both, or leave both blank."
+            else:
+                problems[daily["unit"]] = "is needed with an amount. Choose one, or leave the amount blank."
         if problems:
             raise ValidationError(problems)
 

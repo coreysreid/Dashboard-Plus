@@ -55,6 +55,20 @@ is new: keep a copy of anything important somewhere else too. See
   the pet and the dates. Each chart has a table with the same values, prints,
   and works with a keyboard or screen reader. They show what was written down,
   never a health or safety verdict.
+- **Pet feeding log:** each time you put food in a pet's bowl, refill it or
+  give a treat, from the pet's page with **Add food** (a phone-sized form that
+  fills in the time now and, for you to check, your last choices). An amount is
+  food *put out*, not food eaten. Home says, for each pet, "Rex · 2 feedings
+  recorded today · 240 g put out", and the day's page adds up only matching
+  units ("120 g and 1 pouch put out"; a scoop is never turned into grams) and
+  says when an entry has no amount. A day with no entry says "No feeding entry
+  recorded today", never that a pet was not fed. Days follow your household's
+  own time zone. A **Pet feeding log** sheet prints every entry for the last 14
+  days (or dates you choose) with each day's totals, or says the range is too
+  long and offers shorter ones. A helper may suggest feedings; one that looks
+  like an entry already there, or like another waiting, is marked **Possible
+  repeat feeding entry** on Review with **Accept as another feeding** and
+  **Reject this copy**.
 - **Have you thought about…?** (Readiness) 49 calm questions about fire,
   flood, storms, heat, power cuts, medical needs and leaving home quickly, each
   with the official page it came from and the date that page was checked. Only

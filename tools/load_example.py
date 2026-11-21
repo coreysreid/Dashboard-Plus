@@ -176,6 +176,9 @@ def load_records(conn: sqlite3.Connection, registry: dict, data: dict, today: da
                     value = ids
                 elif col.type == "date":
                     value = _date(value, today)
+                elif col.type == "datetime" and isinstance(value, str) and "T" in value:
+                    day, _, clock = value.partition("T")  # "today-1T07:15": a time on a day relative to today
+                    value = f"{_date(day, today)}T{clock}"
                 values[column] = value
             name_column = _name_column(info)
             label = row.get(name_column) if name_column else None

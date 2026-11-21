@@ -434,6 +434,36 @@ function expect(condition, message) { if (!condition) throw new Failed(message);
     }
   }
 
+  async function checkFeeding() {  // Pet feeding log (decision 0110): Add food at 320px, last choices shown, back to the pet
+    const f = plan.feeding;
+    await page.setViewportSize({ width: 320, height: 800 });
+    try {
+      await goto('/t/pets__pets');
+      await Promise.all([page.waitForNavigation(), page.click(`a[aria-label="Open ${f.pet}"]`)]);
+      expect((await text('main')).includes('Food put out today'), `${f.pet}'s page should show "Food put out today".`);
+      await Promise.all([page.waitForNavigation(), page.click('a[data-add-food]')]);
+      const wide = await page.evaluate(() => document.documentElement.scrollWidth);
+      expect(wide <= 320, `At 320px the Add food form is ${wide}px wide; it should not scroll sideways.`);
+      expect((await text('main')).includes('Filled in from a recent entry'), 'Add food should say it filled in a recent entry.');
+      const amount = await page.inputValue('#f-amount');
+      const when = await page.inputValue('#f-given_at');
+      expect(amount === f.amount, `Add food should show the last amount (${f.amount}) for checking; it shows "${amount}".`);
+      expect(/^\d{4}-\d\d-\d\dT\d\d:\d\d$/.test(when), `Add food should fill in the time now; it shows "${when}".`);
+      const box = await page.locator('button[name=then][value=back]').boundingBox();
+      expect(box && box.height >= 40, 'The Save button should be easy to press with one thumb (at least 40px tall).');
+      await submit('button[name=then][value=back]');
+      const words = await text('main');
+      expect(words.includes(f.after), `After Add food, ${f.pet}'s page should say "${f.after}".`);
+      const pwide = await page.evaluate(() => document.documentElement.scrollWidth);
+      expect(pwide <= 320, `At 320px ${f.pet}'s page is ${pwide}px wide; it should not scroll sideways.`);
+      await goto('/');
+      expect((await text('main')).includes(`${f.pet} · 1 feeding recorded today`), `Home should say "${f.pet} · 1 feeding recorded today".`);
+      ok(`pet feeding at 320px: Add food showed the last ${f.amount} ${f.unit}, saved, and ${f.pet}'s page and Home say so`);
+    } finally {
+      await page.setViewportSize({ width: 1280, height: 720 });
+    }
+  }
+
   async function checkDrills() {  // Think it through (decision 0108): a step, Continue later, own words behind Show
     const d = plan.drills;
     await goto('/drills/readiness');
@@ -529,6 +559,7 @@ function expect(condition, message) { if (!condition) throw new Failed(message);
       if (plan.review) await checkReview();
       if (plan.questions) await checkQuestions();
       if (plan.charts) await checkCharts();
+      if (plan.feeding) await checkFeeding();
       if (plan.drills) await checkDrills();
       if (plan.private) { await checkPrivateDetail(); await checkPrivateSheet(); }
       await checkClose();

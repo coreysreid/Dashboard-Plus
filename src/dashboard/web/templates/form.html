@@ -83,6 +83,11 @@
 {% with view = c.view %}{% include "_dot_chart.html" %}{% endwith %}
 <p><a href="{{ c.href }}">Choose dates for this chart</a></p>
 {% endfor %}
+{% for view in feeding %}
+<h2>{{ view.rule.what }} today</h2>
+{% include "_daily_panel.html" %}
+<p><a href="{{ view.href }}">See {{ view.rule.sheet | lower }}</a> · <a href="{{ view.sheet }}">Print the last 14 days</a></p>
+{% endfor %}
 {% if related %}
 <div class="actions">{% for r in related %}<a class="button quiet" href="{{ r.href }}">{% if r.words %}{{ r.words }}{% else %}Add to {{ r.label | lower }}{% endif %}</a>{% endfor %}</div>
 {% endif %}

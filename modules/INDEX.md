@@ -11,6 +11,7 @@ numbered migrations. See docs/DESIGN.md section 6 for the module contract.
 | lent_out/ | Things lent out: what, to whom (one of your People), lent on, due back and returned on; a Things still lent out sheet | changing loans |
 | medical/ | First aid kits and where they are, kit checks, first aid training renewals; a first aid sheet | changing first aid records |
 | people/ | Who lives here, who to call, important details, emergency sheets | changing people, contacts or the emergency sheet |
+| pet_feeding/ | Pet feeding log: each bowl, refill or treat as food put out (not eaten), honest daily totals by the household's day in matching units, fast Add food, a 14-day sheet | changing feeding records |
 | pets/ | Pets, their vet, treatments and medicine with due dates, weigh-ins, vet visits; a pet details sheet | changing pets |
 | readiness/ | "Have you thought about…?": 49 questions in seven groups with official sources, the household's answers, and what may already be recorded | changing readiness questions or answers |
 | routines/ | Routines: your own repeating tasks with a repeat you choose (days to years), one next date at a time, and each time done or skipped; shown on Things to do | changing routines |
