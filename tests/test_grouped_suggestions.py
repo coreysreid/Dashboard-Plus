@@ -277,13 +277,15 @@ class ReviewPageTests(GroupedTestCase):
     def test_the_group_and_its_receipt_lines_are_shown_as_the_helpers_words(self):
         self.receipt()
         page = self.page()
-        self.assertIn("These 2 rows go together", page)
-        self.assertIn("Item: <bdi>Red lentils (new, suggested above)</bdi>", page)
+        self.assertIn("Accepting the Stock in also adds its new Stock item. Accepting only the Stock item leaves the "
+                      "Stock in waiting. Rejecting the Stock item rejects the Stock in too.", page)
+        self.assertIn("<bdi>Add 2 bags of Red lentils on 20/11/26</bdi>", page)
         self.assertIn("From the receipt or paper, as Pantry helper read it: <q><bdi>RED LENTILS 500G x2</bdi></q> · "
                       "Price: <bdi>3.80</bdi>. Shown for checking only; it is not saved in your records.", page)
-        self.assertIn("Accepting this also adds the new record above that it needs.", page)
-        self.assertIn("Rejecting this also rejects the 1 row below that needs it.", page)
-        self.assertEqual(page.count("go together"), 1)  # the Kidney beans row stands alone
+        self.assertIn("Accepting this Stock in also adds its new Stock item above.", page)
+        self.assertIn("Accepting only this leaves the 1 row below waiting. Rejecting this also rejects the 1 row below "
+                      "that needs it.", page)
+        self.assertEqual(page.count("<strong>Added together</strong>"), 1)  # the Kidney beans row stands alone
 
     def test_text_in_a_source_line_is_escaped(self):
         self.send([self.bought(self.beans, source={"line": "<b>BEANS</b>"})])
@@ -302,7 +304,7 @@ class ReviewPageTests(GroupedTestCase):
         result = self.receipt()
         self.post(f"/review/{result['proposals'][0]['id']}/accept")
         page = self.page()
-        self.assertRegex(page, r"Item: <bdi>Red lentils")
+        self.assertIn("<bdi>Add 2 bags of Red lentils on 20/11/26</bdi>", page)
         self.assertNotIn("go together", page)
 
     def test_rejecting_the_item_on_review_says_what_went_with_it(self):
@@ -315,13 +317,13 @@ class ReviewPageTests(GroupedTestCase):
         result = self.receipt()
         page = self.post(f"/review/{result['proposals'][2]['id']}/reject")
         self.assertIn("Rejected. Nothing was added to Stock in and out.", page)
-        self.assertIn("These 2 rows go together", page)
+        self.assertIn("<strong>Added together</strong>", page)
         self.assertEqual(len(re.findall(r'action="/review/\d+/accept"', page)), 2)
 
     def test_accept_all_on_review(self):
         result = self.receipt()
         page = self.post(f"/review/batch/{result['batch_id']}/accept-all")
-        self.assertIn("Added 3 records.", page)
+        self.assertIn("Added 1 to Stock items and 2 to Stock in and out.", page)
         self.assertEqual(self.lentils()["quantity"], 2)
 
 

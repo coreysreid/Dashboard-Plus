@@ -59,7 +59,14 @@ is new: keep a copy of anything important somewhere else too. See
   the Stock in adds the item too, rejecting the item rejects both. A new Stock
   item can also arrive as one suggestion with its amount on hand, unit, use-by
   date and place, just like your own Add form: accepting it adds the item and
-  its first batch together.
+  its first batch together. Review says each Stock in plainly ("Add 1 pack
+  of Red lentils on 20/11/26") and, after Accept all, what was added. A
+  receipt line the helper could not match waits on Review with **Choose
+  item** (pick one of your Stock items or make a new one, then confirm the
+  amount and date) and **Skip line**, which you can undo until **Finish
+  receipt review**. If a receipt looks like one already sent, by a helper or
+  a spreadsheet import, Review says so and waits until you choose **Reject
+  this copy** or **Keep this as another purchase**.
 - **Starting message for your assistant:** each helper in Settings, Helpers
   has a message to copy into the assistant's chat. It lists the lists that
   helper may use, their fields, what is private, how stock amounts work and

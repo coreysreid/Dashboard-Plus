@@ -83,6 +83,15 @@
       <li style="padding:.3rem 0;border-top:1px solid var(--line)">Row {{ r.row }}: {% for label, text in r.text.parts %}{{ label }}: <bdi>{{ text }}</bdi>{% if not loop.last %} · {% endif %}{% endfor %}</li>
     {% endfor %}</ul>
     {% for line in skipped %}<p class="problem" role="status" style="margin:.4rem 0">{{ line }} These values will not be added. Check each row on Review, or go back and fix the file first.</p>{% endfor %}
+    {% if receipt %}
+    <h3>One receipt?</h3>
+    <p style="margin:.4rem 0"><label><input type="checkbox" name="receipt" value="1"{% if receipt.on %} checked{% endif %}> These rows are from one receipt</label></p>
+    <div><label for="purchase-date">Date on the receipt</label>
+      <input type="text" id="purchase-date" name="purchase_date" value="{{ receipt.typed }}" inputmode="numeric" autocomplete="off" size="12">
+      <p class="help" style="margin:.2rem 0 0">{{ receipt.hint }} Tick this only when every row is from the same receipt. Review then tells you if the same goods, amounts and date were sent before, and asks you to choose. Press Check again after ticking.</p></div>
+    {% if receipt.error %}<p class="problem" role="alert" style="margin:.4rem 0">{{ receipt.error }}</p>{% endif %}
+    {% if receipt.lookalike %}<p class="notice" role="status" style="margin:.4rem 0" data-lookalike>These receipt rows look like one put on Review on {{ receipt.lookalike }}. You can still send them to Review, where you must choose whether this is another purchase.</p>{% endif %}
+    {% endif %}
     {% set waiting_dates = unclear and not dates_ok %}
     {% if waiting_dates %}<p class="notice" role="status" style="margin:.4rem 0">{{ unclear | length }} row{{ " needs" if unclear | length == 1 else "s need" }} your date choice before {{ "it" if unclear | length == 1 else "they" }} can be sent. Tick "These dates are read the way I meant" above, then press Check again. Nothing has been sent.</p>{% endif %}
     <div class="actions"><button type="submit" formaction="/settings/import/send"{% if waiting_dates %} disabled aria-disabled="true"{% endif %}>Send {{ sending }} row{{ "" if sending == 1 else "s" }} to Review</button></div>

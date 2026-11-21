@@ -19,6 +19,8 @@ import make_migration
 MODULES_DIR = ROOT / "modules"
 SYNC_TABLES = ("core__sync_state", "core__sync_epochs", "core__sync_tables", "core__sync_changes", "core__sync_held")
 LATER_CORE_TABLES = ("core__helper_allowances",)  # core 0008 (decision 0101), released after stage 1
+LATER_CORE_COLUMNS = {"core__proposals": ("entry_kind",),  # core 0009 (decision 0105), released after stage 1
+                      "core__helper_batches": ("receipt_json", "finished_at", "repeat_ok_json")}
 MEDICAL = ("allergy", "condition", "medication", "care_need", "dietary")
 
 
@@ -29,6 +31,9 @@ def make_old(path):
     try:
         for name in SYNC_TABLES + LATER_CORE_TABLES:
             conn.execute(f"DROP TABLE IF EXISTS {name}")
+        for name, later in LATER_CORE_COLUMNS.items():
+            for column in later:
+                conn.execute(f"ALTER TABLE {name} DROP COLUMN {column}")
         for (name,) in conn.execute("SELECT name FROM sqlite_master WHERE type = 'table'").fetchall():
             columns = {r[1] for r in conn.execute(f"PRAGMA table_info({name})")}
             if sync.ID in columns:

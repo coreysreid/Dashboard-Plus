@@ -13,7 +13,7 @@ import io
 from flask import Blueprint, Request, current_app, redirect, render_template, request, url_for
 from werkzeug.exceptions import RequestEntityTooLarge
 
-from dashboard.core import csv_import, proposals, records
+from dashboard.core import csv_import, dates, proposals, receipts, records
 from dashboard.errors import PlainError
 from dashboard.web import display
 from dashboard.web.review import describe, visible
@@ -134,6 +134,30 @@ def _chosen() -> tuple[set[int], bool]:
     return add, bool(request.form.get("dates_ok"))
 
 
+def _receipt(store, info, run) -> dict | None:
+    """"These rows are from one receipt" (decision 0105), offered for Stock in and out only: whether it is ticked,
+    the purchase date typed and stored, a problem with it, and an earlier receipt these rows look like."""
+    if not (info.table.adjusts and info.table.adjusts.get("belongs_to")):
+        return None
+    style = dates.household_style(store.conn)
+    found = {"on": bool(request.form.get("receipt")), "typed": request.form.get("purchase_date", "").strip(),
+             "date": None, "error": None, "lookalike": None, "hint": dates.HINTS[style] + "."}
+    if not found["on"]:
+        return found
+    try:
+        found["date"] = dates.parse(found["typed"], style) if found["typed"] else None
+    except ValueError as error:
+        found["error"] = str(error)
+    if found["date"] is None and not found["error"]:
+        found["error"] = "Type the date on the receipt, so Review can tell this receipt from another."
+    if found["date"] and run is not None and run.ready:
+        earlier = receipts.lookalike(store.conn, store.registry, [(info.name, v) for _n, v in run.ready],
+                                     found["date"])
+        if earlier is not None and earlier["level"] in ("repeat", "similar"):
+            found["lookalike"] = dates.show(earlier["batch"]["created_at"][:10], style)
+    return found
+
+
 def _match_page(store, info, text, file_name, sheet, mapping, run=None, notice=None, status=200):
     usable, _private = csv_import.fields(store, info)
     options = [{"name": c.name, "label": display.column_label(info, c), "required": c.required and c.default is None}
@@ -160,7 +184,7 @@ def _match_page(store, info, text, file_name, sheet, mapping, run=None, notice=N
         if run is not None else [],
         same_name=[(n, run.same_name[n]) for n, _v in run.ready if n in run.same_name] if run else [],
         unclear=[(n, run.unclear_dates[n]) for n, _v in run.ready if n in run.unclear_dates] if run else [],
-        add=add, dates_ok=dates_ok, sending=len(sending)), status
+        add=add, dates_ok=dates_ok, sending=len(sending), receipt=_receipt(store, info, run)), status
 
 
 def _check(store, info, text, file_name, sheet, mapping, notice=None):
@@ -212,6 +236,10 @@ def send():
         return _check(store, info, text, file_name, sheet, mapping,
                       notice="Some dates could be read either way. Look at how each will be read, then tick the box "
                              "to say they are right before sending.")[1]
-    batch = proposals.stage_import(store.conn, file_name, csv_import.staged(info, rows))
+    receipt = _receipt(store, info, run)
+    if receipt and receipt["on"] and receipt["error"]:
+        return _check(store, info, text, file_name, sheet, mapping, notice=receipt["error"])[1]
+    batch = proposals.stage_import(store.conn, file_name, csv_import.staged(info, rows),
+                                   receipt={"purchase_date": receipt["date"]} if receipt and receipt["on"] else None)
     return redirect(url_for("review.review", done="imported", count=len(rows), table=info.name,
                             _anchor=f"batch-{batch}"))

@@ -14,10 +14,13 @@ JSON_TYPES = {"string": str, "boolean": bool, "object": dict, "array": list, "nu
 
 def check(value, schema, root=SPEC, path="$") -> list[str]:
     """Problems found comparing `value` with a schema, using only the parts of JSON Schema this file uses:
-    $ref, type (one or a list), enum, required, properties, additionalProperties, items. An object that
+    $ref, anyOf, type (one or a list), enum, required, properties, additionalProperties, items. An object that
     lists `properties` and says nothing about `additionalProperties` may not carry any other key."""
     if "$ref" in schema:
         return check(value, root["components"]["schemas"][schema["$ref"].rsplit("/", 1)[-1]], root, path)
+    if "anyOf" in schema:
+        found = [check(value, option, root, path) for option in schema["anyOf"]]
+        return [] if any(not f for f in found) else min(found, key=len)
     problems = []
     if "type" in schema:
         kinds = schema["type"] if isinstance(schema["type"], list) else [schema["type"]]
@@ -337,6 +340,24 @@ class ReplyShapeTests(ApiTestCase):
         body = self.valid(self.api_post("/api/v1/proposals", example, key=self.stock_key), "/api/v1/proposals", 201,
                           "post")
         self.assertEqual(len(body["proposals"]), 1)
+
+    def test_a_receipt_with_a_line_the_helper_could_not_match(self):
+        """The request example for decision 0105 is accepted as written, and its reply fits the file."""
+        media = SPEC["paths"]["/api/v1/proposals"]["post"]["requestBody"]["content"]["application/json"]
+        example = json.loads(json.dumps(media["examples"]["receipt_with_unmatched_line"]["value"]))
+        example["entries"][0]["values"]["item"] = self.conn.execute(
+            "SELECT id FROM stock__items WHERE name = 'Torch batteries'").fetchone()[0]
+        body = self.valid(self.api_post("/api/v1/proposals", example, key=self.stock_key), "/api/v1/proposals", 201,
+                          "post")
+        self.assertEqual([p.get("kind") for p in body["proposals"]], [None, "unmatched_product_line"])
+        self.assertEqual(body["message"], "1 suggestion is ready to check and 1 receipt line needs the household's "
+                                          "choice. Nothing has changed yet.")
+        self.valid(self.api_get(f"/api/v1/batches/{body['batch_id']}", key=self.stock_key), "/api/v1/batches/{batch_id}")
+        card = dict(example, request_key="card", entries=[dict(example["entries"][1], source={
+            "line": "PAID 4111 1111 1111 1111"})])
+        response = self.api_post("/api/v1/proposals", card, key=self.stock_key)
+        self.assertEqual((response.status_code, response.get_json()["error"]), (400, "payment_detail"))
+        self.assertEqual(check(response.get_json(), SPEC["components"]["schemas"]["Error"]), [])
 
     def test_a_receipt_with_a_new_item_its_stock_in_and_source_lines(self):
         """The request example for decision 0097 is accepted as written, and its reply fits the file."""
