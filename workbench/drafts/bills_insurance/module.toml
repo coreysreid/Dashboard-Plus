@@ -1,0 +1,8 @@
+name = "bills_insurance"
+title = "Bills and insurance"
+version = "0.1.0"
+description = "Dates you choose for regular bills and policy renewals, with broad links to a vehicle or place."
+core_api = "1"
+kind = "declarative"
+requires = ["people", "stock", "vehicles"]
+outbound_hosts = []
