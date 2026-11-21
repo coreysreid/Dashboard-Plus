@@ -591,6 +591,7 @@ Add a new file with the next number instead of changing an old one.
 | helper*_key.html | The one page that shows a key: helper_key for a new helper, helper_new_key for a new key for one already made; each with Copy and a warning | changing the key pages |
 | helper_connect.html | "Connect an AI assistant": settings to paste into an assistant's app (pointing at the address file), with a placeholder for the key, and Connection details | changing the assistant set-up words |
 | helper_start_message.html | "Starting message for your assistant": the guide for one helper to paste into its chat, with a Copy button | changing the starting message box |
+| review.html | Review: each helper's waiting suggestions with Accept and Reject | changing the Review page |
 | review_line.html | Choose item for a receipt line the helper could not match: pick or make the item, confirm amount and date | changing the Choose item screens |
 | review_batch.html | Open earlier receipt: what became of each row of a receipt, read only | changing the earlier receipt page |
 | export.html | Settings, Export my records: what is in the export and the download button | changing the Export page |
