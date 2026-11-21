@@ -1,0 +1,13 @@
+# What official home fire escape guidance actually shows
+
+Checked **21 November 2026**. This is research for a future simple household sketch, not a fire-service approved plan. The links below were opened and their page text checked on that date. We use our own words and do not reproduce their diagrams or artwork.
+
+| Public safety source | What it says that affects our design | Boundary |
+|---|---|---|
+| [Fire and Rescue NSW, Home escape plans](https://www.fire.nsw.gov.au/page.php?id=883) | Draw a floor plan with two ways out of each room; consider children, older people and disabled people; keep exits clear; decide an outside meeting place; practise; leave and stay out. It says high-rise residents should follow their building's evacuation plan. | Its example and emergency number are NSW-specific. The app cannot certify a second route from a room-to-room graph. |
+| [London Fire Brigade, houses and converted flats](https://www.london-fire.gov.uk/safety/the-home/escape-plan/escape-plan-houses-and-converted-flats/) | The normal way in and out is a first route, with a second considered if blocked. Practise, make sure household members understand, and plan extra help where someone may have difficulty leaving. | A window is only a possible alternative; a drawing must not label every window safe or suggest a jump. Its 999 instruction is UK-specific. |
+| [London Fire Brigade, purpose-built blocks of flats](https://www.london-fire.gov.uk/safety/the-home/escape-plan/escape-plan-blocks-of-flats/) | Building arrangements may call for staying put or evacuation; residents should learn the plan from the landlord, housing provider or managing agent. People who need help may need a personal evacuation plan. | A generic “always leave by this line” map would contradict some buildings' instructions. The household's recorded building plan is a prompt to verify, not an inferred route. |
+
+The NSW and London guidance agree on a household-understood, practised route and planning for people who need assistance. They differ in building context. The first Dashboard drawing should therefore **show recorded possibilities and unknowns**, not calculate a safest route or assert that a second way is usable. Country packs can point at the local fire authority; never embed NSW or UK phone numbers in a general map. The map is for thinking and practising ahead of time, not for opening during an active fire instead of following alarms, local emergency advice and the building's instructions.
+
+The [NFPA home escape planning page](https://www.nfpa.org/education-and-research/home-fire-safety/escape-planning) also opened on **21 November 2026**, but its substantive text was not available in the retrieved HTML. No specific NFPA claim is used here.
