@@ -167,8 +167,15 @@ def _render_form(info, store, values, errors, from_form, record=None, status=200
                           a["adds"]["table"] == other.table.name and a["adds"]["link"] == column.name), None)
             related.append({"href": f"/t/{other.name}/new?{column.name}={record['id']}",
                             "label": display.table_title(other), "words": words})
+    charts = []  # a pet's recorded weights, drawn on its own page (decision 0109)
+    if record and not record.get("deleted_at"):
+        from dashboard.web.chart_pages import chart_tables, dots_view
+        for other in chart_tables(store.registry, info):
+            charts.append({"title": f"Recorded {other.table.chart['what'][1]}",
+                           "view": dots_view(store, other, record["id"]),
+                           "href": f"/charts/{other.name}?subject={record['id']}"})
     return render_template("form.html", info=info, title=display.table_title(info), fields=fields, record=record,
-                           record_name=record_name, errors=errors, history=history, saved=saved,
+                           record_name=record_name, errors=errors, history=history, saved=saved, charts=charts,
                            related=related, back=back, batches=batches, count_href=count_href,
                            actions=display.actions_for(info, record), done=done, notice=notice), status
 
@@ -304,11 +311,14 @@ def run_action(table, record_id, key):
         abort(404)
     if action.get("adds"):  # an action with a small form, such as Mark done (decision 0091)
         return action_form.save_action_form(table, record_id, key)
+    back = action_form.back_to()  # pressed on Things to do (decision 0107): go back there
     try:
         store.action(table, record_id, key)
     except records.RecordNotFound:
         abort(404)
     except (records.ActionNotAvailable, records.ValidationError) as error:
+        if back and isinstance(error, records.ActionNotAvailable):
+            return redirect(f"{back}?changed=1")
         if isinstance(error, records.ValidationError):  # e.g. "Returned on can't be before Lent on."
             columns = info.table.columns
             said = [m if m[:1].isupper() else f"{display.column_label(info, columns[f])} {m}" if f in columns else m
@@ -318,6 +328,8 @@ def run_action(table, record_id, key):
             message = str(error)
         record = store.get(table, record_id)
         return _render_form(info, store, record, {"_form": message}, False, record=record, status=409)
+    if back:
+        return redirect(action_form.back_with(back, table, record_id, pressed=key))
     return redirect(url_for("pages.edit_record", table=table, record_id=record_id, done=key))
 
 

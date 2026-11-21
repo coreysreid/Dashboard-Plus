@@ -16,7 +16,7 @@ home_type = "house"
 storeys = 2
 mobility_needs = false
 hazards = ["bushfire", "heat", "storm"]
-modules = ["documents", "garden", "home_care", "home_layout", "lent_out", "medical", "people", "pets", "readiness", "stock", "utilities", "vehicles", "wine"]
+modules = ["documents", "garden", "home_care", "home_layout", "lent_out", "medical", "people", "pets", "readiness", "routines", "stock", "utilities", "vehicles", "wine"]
 
 # ---- People -----------------------------------------------------------------
 
@@ -937,3 +937,62 @@ prompt = "leaving-contact-away"
 answer = "yes"
 answered_on = "today-2"
 note = "The household confirmed Mary is the contact after leaving."
+
+# ---- Routines -----------------------------------------------------------------
+# The household's own repeating tasks. The bins were missed for a few days: they show once as "Due since",
+# never as a pile of missed weeks. The pot plants were watered yesterday, so today is the next planned day.
+
+[[routines.routines]]
+name = "Water the pot plants"
+place = "Backyard"
+who = "Emily Smith"
+repeat_count = 1
+repeat_unit = "days"
+first_due = "today-30"
+next_due = "today"
+last_done = "today-1"
+paused = false
+
+[[routines.routines]]
+name = "Put the bins out"
+who = "John Smith"
+repeat_count = 1
+repeat_unit = "weeks"
+first_due = "today-38"
+next_due = "today-3"
+last_done = "today-10"
+paused = false
+
+[[routines.routines]]
+name = "Check the fridge seals"
+place = "Kitchen"
+repeat_count = 1
+repeat_unit = "months"
+first_due = "today-60"
+next_due = "today+10"
+last_done = "today-20"
+paused = false
+
+[[routines.times]]
+routine = "Water the pot plants"
+outcome = "done"
+planned_for = "today-1"
+done_on = "today-1"
+done_by = "Emily Smith"
+
+[[routines.times]]
+routine = "Put the bins out"
+outcome = "done"
+planned_for = "today-10"
+done_on = "today-10"
+done_by = "John Smith"
+
+# A "Think it through" practice run (decision 0108): which drill, when it was practised and when to look
+# again. Each step's own words are private and never part of an example.
+[[readiness.drill_runs]]
+scenario = "pipe-in-wall"
+scenario_version = 1
+started_on = "today-14"
+practised_on = "today-14"
+review_on = "today+351"
+status = "practised"

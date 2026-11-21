@@ -95,6 +95,14 @@
   <fieldset style="border:0;padding:0;margin:0"><legend style="font-weight:600">Things that can happen where you live (optional)</legend>
     <div class="choices">{% for key, label in hazards %}<label style="font-weight:400"><input type="checkbox" name="hazards" value="{{ key }}" {% if key in (values.hazards or []) %}checked{% endif %}> {{ label }}</label>{% endfor %}</div>
     <p class="help">Only used on this computer, to choose which "have you thought about…?" questions make sense for you.</p></fieldset>
+  {% if mode == "settings" %}
+  <div id="week-starts" class="{% if errors.week_starts %}has-error{% endif %}"><label for="week_starts">Weeks start on</label>
+    <select id="week_starts" name="week_starts">
+      {% for key, label in [("monday", "Monday"), ("sunday", "Sunday"), ("saturday", "Saturday")] %}<option value="{{ key }}" {% if values.week_starts == key %}selected{% endif %}>{{ label }}</option>{% endfor %}
+    </select>
+    {% if errors.week_starts %}<p class="error">{{ errors.week_starts }}</p>{% endif %}
+    <p class="help">Used by Things to do for This week.</p></div>
+  {% endif %}
 
   <h2>3. What to track</h2>
   {% if modules %}

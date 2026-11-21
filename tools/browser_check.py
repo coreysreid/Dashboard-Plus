@@ -1,4 +1,4 @@
-"""Click through the real dashboard in Chromium (setup, Set up my home, dates, stock in, stocktake, Mark returned, Mark done, spreadsheet import, Review keys and buttons, readiness questions, private details, closing) and fail loudly."""
+"""Click through the real dashboard in Chromium (setup, Set up my home, dates, stock in, stocktake, Mark returned, Mark done, Things to do, spreadsheet import, Review keys and buttons, readiness questions, Think it through drills, charts, private details, closing) and fail loudly."""
 from __future__ import annotations
 
 import argparse
@@ -31,12 +31,17 @@ AU = {"household": "smith", "locale": "en-AU", "timezone": "Australia/Sydney",
       "private": {"person": "Emily Smith", "secret": "Peanut allergy"},
       "loan": {"name": "Cordless drill, lent to Dave Wilson"},
       "job": {"name": "Clean the gutters", "next": "20/05/27"},
+      "routine": {"name": "Put the bins out"},  # late by three days: shown once as "Due since" (decision 0107)
       # A made-up spreadsheet: a byte order mark, CRLF, a quoted note with a comma and a line break, a bad date.
       "csv": {"file": "browser-check.csv", "ready": 2, "fixing": 1, "item": "Browser import rice",
               "note": "Top shelf, left\nbehind the flour",
               "text": "\ufeffName,Keep at least,Use by,Notes\r\nBrowser import rice,2,20/05/27,\"Top shelf, left\r\n"
                       "behind the flour\"\r\nBrowser import oats,1,,\r\nBrowser import salt,1,31/02/27,\r\n"},
       "questions": {"id": "medical-kit-location", "table": "medical__kits"},
+      "charts": {"pet": "Rex", "dots": 3},  # the first charts (decision 0109): Rex has three weigh-ins
+      # Think it through (decision 0108): the pipe drill offers the Smiths' water main at step 2.
+      "drills": {"scenario": "pipe-in-wall", "number": "000", "record": "Water main", "steps": 4,
+                 "words": "Browser check: made-up words about the spare key"},
       # A made-up helper's receipt on Review: a new item with its Stock in (one group), a Stock in on its own,
       # and a line the helper could not match, which the person turns into a Stock in (decision 0105).
       "review": {"helper": "Browser check helper", "item": "Browser check lentils", "existing": "Kidney beans",
@@ -158,7 +163,8 @@ def run_au(work: Path, executable: str | None) -> list[str]:
         finally:
             conn.close()
         done += drive(dict(plan, dates=AU["dates"], stock=AU["stock"], private=AU["private"], loan=AU["loan"],
-                           job=AU["job"], csv=AU["csv"], review=AU["review"], questions=AU["questions"]), work,
+                           job=AU["job"], routine=AU["routine"], csv=AU["csv"], review=AU["review"], questions=AU["questions"],
+                           charts=AU["charts"], drills=AU["drills"]), work,
                            "main")
         closed = True
     finally:

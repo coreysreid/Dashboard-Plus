@@ -13,12 +13,14 @@
 | modules.py | Find module folders, check their files, and explain any mistakes in plain words. | changing what module files may say |
 | actions.py | Actions that add a linked record through a small form, like Mark done: one saved operation, a one-use number and Undo. | changing Mark done, its checks or Undo |
 | records.py | Create, change, delete and read records, checking every value and keeping a history. | changing how records are saved or checked |
-| prompts.py | Read and check a module's prompts.toml: "Have you thought about…?" questions, their groups and exact record matches. | changing what prompts.toml may say |
+| prompts.py | Read and check a module's prompts.toml: "Have you thought about…?" questions, their groups, exact record matches and "Think it through" drills. | changing what prompts.toml may say |
+| drills.py | Think it through: which drills fit the household, what each step may find in its records, and the practice runs kept with their dates. | changing how drills fit, cite sources, save runs or keep own words private |
 | questions.py | Which "Have you thought about…?" questions fit the household, what may already be recorded, and how many were looked at. | changing how questions fit, match records, come back or are counted |
 | settings.py | Read and write household settings kept in the database (core__settings). | storing a new setting |
 | schema.py | Turn a module's declared tables into SQL, and work out its next migration. | changing how tables are built |
 | suggest.py | Suggestions while typing: a household's own records first, then a module's list of common things. | changing how picking from a list matches |
 | watch.py | Work out what is running low, what expires soon, how many days of supplies are on hand, and what is worth filling in. | changing running low, expiring, days of cover or gaps |
+| checklist.py | Things to do: Today, This week, This month and This year over the due dates modules already keep (decision 0107). | changing which tasks show, their windows, week start or what counts as done |
 | startup.py | Prepare the database at start-up: load modules, back up if needed, migrate, and give permanent record IDs. | changing what happens at start-up |
 | helper_address.py | The small address file a connector reads to find Dashboard after a restart: only the address and a run ID (0092). | changing how a connector finds Dashboard |
 | helpers.py | Helpers the household has given a key to: making a key, checking it, replacing it, and turning it off. | changing how helper keys work |

@@ -55,7 +55,7 @@ One record per decision, from `TEMPLATE.md`. Never deleted; reversed ones are ma
 | [0001](0001-write-down-every-technical-decision.md) | Write down every technical decision | Accepted |
 | [0002](0002-python-with-server-built-pages-for-the-web-side.md) | Python with server-built pages for the web side | Accepted |
 | [0003](0003-bundle-python-using-the-official-embeddable-package.md) | Bundle Python using the official embeddable package | Accepted |
-| [0004](0004-apache-echarts-for-charts.md) | Apache ECharts for charts | Accepted |
+| [0004](0004-apache-echarts-for-charts.md) | Apache ECharts for charts | Superseded by 0109 (for now) |
 | [0005](0005-statistics-with-the-standard-library-only-v1.md) | Statistics with the standard library only (v1) | Accepted |
 | [0006](0006-second-automatic-backup-on-the-computer-itself.md) | Second automatic backup on the computer itself | Accepted |
 | [0007](0007-two-trust-levels-for-modules-with-an-honest-warning.md) | Two trust levels for modules, with an honest warning | Accepted |
@@ -158,6 +158,9 @@ One record per decision, from `TEMPLATE.md`. Never deleted; reversed ones are ma
 | [0104](0104-readiness-questions.md) | Readiness switched on from Lane B's draft: 49 sourced "Have you thought about…?" questions in a module `prompts.toml` (schema 1), fitted only from Settings; exact record matches offered, never assumed; answers Yes / Not relevant / Not yet as ordinary records with the record's permanent ID and a revision fingerprint; back for review on the chosen date, after 12 months or when that record changes; at most two on Home; "looked at", never "safe"; helpers look but never answer (`suggestions = false`); answers travel; drills later reuse the same answers | Accepted |
 | [0105](0105-receipt-review-unmatched-and-repeat.md) | Receipts on Review: each Stock in in one line with its unit, group words true under group-by-group Accept, the result names what was added; a receipt line a helper could not match waits for Choose item or Skip line (undoable until Finish receipt review); a receipt that looks sent before (same dated items, amounts and units, never its text) waits for Reject this copy or Keep this as another purchase, rechecked under the write lock; card-shaped numbers refused | Accepted |
 | [0106](0106-mac-wording-meter-paths-sync-checks.md) | Mac preview wording follows the 21 November read-through (no absolute "nothing is sent", no "only once", two ZIPs, chip check); a link column may say `with_place` so Utilities shows the meter's full place path; Utilities still requires Home layout; sync check also names a pair pointing at nothing, with six more stage 1 tests | Accepted |
+| [0107](0107-routine-checklists.md) | Things to do: Today, This week, This month, This year and No date yet over every table whose reminder says `wording = "due"`, read fresh with no stored ticks; each row finished by its record's own Mark done form, a one-step button that ends the reminder, or Open record to update; a late task shows once as Due since; Routines module (repeat in days to years, Mark this occurrence done, Skip this time, Undo); `adds.copy`, `latest` without `into`, `repeat.from`/`anchor` and `counts_as`; household week start in Settings | Accepted |
+| [0108](0108-think-it-through-drills.md) | Think it through: eight calm drills (`[[scenario]]` with ordered steps in `prompts.toml` schema 2, drill-only `[[step]]` with exact missing words, `[[emergency]]` numbers by country), fitted from Settings and `has_records`, country-limited sources marked "Source needs checking" when old or broken; a shared step also saves its Questions answer; practice runs (`drill_runs`, `drill_steps`) with Continue later, practised and look-again dates and history; own words private, `travels = "never"`, never exported or shown to helpers | Accepted |
+| [0109](0109-first-charts.md) | The first two charts, drawn on the server as SVG with an equal table: today's drinking water by item from the same `watch.supplies` result as Home (left-out items with their reason), and one pet's recorded weigh-ins as dots (a `chart` line in tables.toml); exact empty words, nothing private, no library | Accepted |
 | [TEMPLATE](TEMPLATE.md) | Blank record to copy for a new decision | recording a decision |
 
 ## docs/plans/  (summary: build plans for larger pieces of work, written before building)
@@ -244,6 +247,7 @@ numbered migrations. See docs/DESIGN.md section 6 for the module contract.
 | people/ | Who lives here, who to call, important details, emergency sheets | changing people, contacts or the emergency sheet |
 | pets/ | Pets, their vet, treatments and medicine with due dates, weigh-ins, vet visits; a pet details sheet | changing pets |
 | readiness/ | "Have you thought about…?": 49 questions in seven groups with official sources, the household's answers, and what may already be recorded | changing readiness questions or answers |
+| routines/ | Routines: your own repeating tasks with a repeat you choose (days to years), one next date at a time, and each time done or skipped; shown on Things to do | changing routines |
 | stock/ | Pantry, water, first aid, tools and hardware, with places (and which rooms connect), minimums and use-by dates | changing stock, running low or days of water |
 | utilities/ | Utilities and accounts: each service, its provider, fault contact (from People) and meter (from Home layout), a private account reference; a Utility contacts sheet | changing utility records |
 | vehicles/ | Each vehicle, who to call if it breaks down, registration, insurance and service dates; a Vehicles sheet | changing vehicle records |
@@ -381,13 +385,13 @@ Generate the next one with: python tools/make_migration.py pets --name <what_cha
 |---|---|---|
 | 0001_first_tables.sql | The module's first tables, generated from tables.toml | checking how the tables are stored |
 
-## modules/readiness/  (summary: the Readiness module, files only: 49 "Have you thought about…?" questions and the household's answers)
+## modules/readiness/  (summary: the Readiness module, files only: 49 "Have you thought about…?" questions, eight "Think it through" drills and the household's answers and practice runs)
 | Entry | What it is | Open it when |
 |---|---|---|
 | module.toml | Name, version, description; needs no other module (record matches into other modules find nothing while those are off) | changing the module's details |
-| tables.toml | Your answers: one record per question, answer, dates, note and the record used to confirm it; helpers may look, never suggest | changing how answers are kept |
-| labels.toml | Friendly labels and help for Your answers, form and list order | changing wording or order |
-| prompts.toml | The questions in seven groups, each with why, what it fits, the exact record match, review interval and official source | changing a question, a source or a record match |
+| tables.toml | Your answers (one per question); Practice runs (drill, dates, Continue later or Practised); Practice answers (each step's choice, record chosen and private own words that never travel); helpers may look, never suggest | changing how answers or practice runs are kept |
+| labels.toml | Friendly labels and help for Your answers, Practice runs and Practice answers, form and list order | changing wording or order |
+| prompts.toml | The questions in seven groups (why, fits, exact record match, interval, source); then emergency numbers by country, drill-only steps with their missing-record words, and the eight drills with their sources | changing a question, a drill, a source or a record match |
 | migrations/ | Numbered database changes | after changing tables.toml |
 
 ## modules/readiness/migrations/  (summary: this module's numbered database changes; never edit a released one)
@@ -396,6 +400,22 @@ Generate the next one with: python tools/make_migration.py readiness --name <wha
 | Entry | What it is | Open it when |
 |---|---|---|
 | 0001_first_tables.sql | The answers table, generated from tables.toml | checking how answers are stored |
+| 0002_drill_runs.sql | Practice runs and practice answers for Think it through (decision 0108) | checking how practice runs are stored |
+
+## modules/routines/  (summary: the Routines module, files only; the household's own repeating tasks, promoted from Lane B's routine checklist draft)
+| Entry | What it is | Open it when |
+|---|---|---|
+| module.toml | Name, version, description; requires People (who) and Household stock (places) | changing the module's details |
+| tables.toml | Routines with an optional repeat (days, weeks, months, years) and one next date; Done or skipped keeps the planned date; Mark this occurrence done and Skip this time | adding a field or changing the actions |
+| labels.toml | Friendly labels, help text, form and list order, routines main on home | changing wording or order |
+| migrations/ | Numbered database changes | after changing tables.toml |
+
+## modules/routines/migrations/  (summary: this module's numbered database changes; never edit a released one)
+Generate the next one with: python tools/make_migration.py routines --name <what_changed>
+
+| Entry | What it is | Open it when |
+|---|---|---|
+| 0001_first_tables.sql | The module's first tables, generated from tables.toml | checking how the tables are stored |
 
 ## modules/stock/  (summary: the Household stock module, files only)
 | Entry | What it is | Open it when |
@@ -510,12 +530,14 @@ Generate the next one with: python tools/make_migration.py wine --name <what_cha
 | modules.py | Find module folders, check their files, and explain any mistakes in plain words. | changing what module files may say |
 | actions.py | Actions that add a linked record through a small form, like Mark done: one saved operation, a one-use number and Undo. | changing Mark done, its checks or Undo |
 | records.py | Create, change, delete and read records, checking every value and keeping a history. | changing how records are saved or checked |
-| prompts.py | Read and check a module's prompts.toml: "Have you thought about…?" questions, their groups and exact record matches. | changing what prompts.toml may say |
+| prompts.py | Read and check a module's prompts.toml: "Have you thought about…?" questions, their groups, exact record matches and "Think it through" drills. | changing what prompts.toml may say |
+| drills.py | Think it through: which drills fit the household, what each step may find in its records, and the practice runs kept with their dates. | changing how drills fit, cite sources, save runs or keep own words private |
 | questions.py | Which "Have you thought about…?" questions fit the household, what may already be recorded, and how many were looked at. | changing how questions fit, match records, come back or are counted |
 | settings.py | Read and write household settings kept in the database (core__settings). | storing a new setting |
 | schema.py | Turn a module's declared tables into SQL, and work out its next migration. | changing how tables are built |
 | suggest.py | Suggestions while typing: a household's own records first, then a module's list of common things. | changing how picking from a list matches |
 | watch.py | Work out what is running low, what expires soon, how many days of supplies are on hand, and what is worth filling in. | changing running low, expiring, days of cover or gaps |
+| checklist.py | Things to do: Today, This week, This month and This year over the due dates modules already keep (decision 0107). | changing which tasks show, their windows, week start or what counts as done |
 | startup.py | Prepare the database at start-up: load modules, back up if needed, migrate, and give permanent record IDs. | changing what happens at start-up |
 | helper_address.py | The small address file a connector reads to find Dashboard after a restart: only the address and a run ID (0092). | changing how a connector finds Dashboard |
 | helpers.py | Helpers the household has given a key to: making a key, checking it, replacing it, and turning it off. | changing how helper keys work |
@@ -550,9 +572,11 @@ Add a new file with the next number instead of changing an old one.
 | setup.py | The first-run wizard and the settings page: who lives here, the home, modules and backups. | changing setup questions or settings |
 | home_setup.py | Set up my home: rooms and areas, the storage spots inside them, and which rooms connect, on one page. | changing the Set up my home page |
 | action_form.py | An action's small form, such as Mark done: open it, save it once as one operation, and Undo it (decision 0091). | changing Mark done or Undo screens |
+| checklist.py | Things to do: the Today, This week, This month, This year and No date yet pages, each row with its record's own action. | changing the Things to do pages or the Home card |
 | count.py | Count this batch: a stocktake of one batch, reviewed and then saved as one stocktake correction. | changing the stocktake screens |
 | home.py | Group the home page by area: each module's main lists shown large, its other lists as one line of links. | changing how the home page is grouped or ordered |
 | questions.py | The "Have you thought about…?" screens: the questions by group, one question with its four answers, and Not now. | changing the question screens |
+| drills.py | The "Think it through" screens: the drills that fit, one drill's sources and steps, each step with its records, and saving a practice. | changing the drill screens |
 | sheets.py | One-page printable sheets declared by modules, such as the emergency sheet. | changing printable sheets |
 | display.py | Turn declared tables and stored values into friendly labels, form fields and text. | changing how values look |
 | templates/ | The HTML pages | changing what a page looks like |
@@ -563,6 +587,7 @@ Add a new file with the next number instead of changing an old one.
 | helper_guide.py | The starting message for a helper's assistant: what it may use, how to send, and its limits, from list and field names only. | changing the starting message or GET /api/v1/guide |
 | helper_settings.py | Settings, Helpers: give an assistant a key, choose what it may do, give it a new key, and turn its access off. | changing the Helpers settings page |
 | export_page.py | Settings, Export my records: a page and a button that downloads a zip of spreadsheet files. | changing the Export page |
+| chart*.py | Charts drawn on the server as SVG, labelled bars and dated dots (charts), and the pages showing today's drinking water and one pet's recorded weights (chart_pages, decision 0109) | changing a chart or its empty words |
 | restore.py | Settings, Backups: the list of backups, a preview of one, putting it back, and Undo restore. | changing the restore pages |
 | openapi-v1.json | The published OpenAPI 3.1 description of the helper API, served at GET /api/v1/openapi.json. | changing a helper route, reply or error code (edit it too) |
 
@@ -570,6 +595,7 @@ Add a new file with the next number instead of changing an old one.
 | Entry | What it is | Open it when |
 |---|---|---|
 | base.html | Shared layout, colours (light and dark), header and footer | changing the overall look |
+| *chart.html | Charts with their equal tables: today's drinking water by item (supply_chart), one pet's recorded weights with a pet and date picker (dot_chart) and the piece shared with the pet's page (_dot_chart) | changing a chart page's wording |
 | home.html | Home page: days of cover, needs attention, tables with counts, backup and data file status | changing the home screen |
 | attention.html | Running low, expiring soon, days of cover with the working shown, and gaps worth filling in | changing the attention page |
 | count.html | Count this batch: the count, its review and what was saved | changing the stocktake wording |
@@ -578,8 +604,10 @@ Add a new file with the next number instead of changing an old one.
 | rows.html | One page of grid rows (also loaded as you scroll) | changing a row |
 | form.html | Add and edit forms, delete and restore, and history | changing the form |
 | action_form.html | An action's small form, such as Mark done: what it asks, the next-date choice, Save once | changing the Mark done wording |
+| checklist.html | Things to do: the tabs, rows with their own button, Done with Undo, and the year by month | changing the Things to do wording |
 | _*.html | Pieces shared by both forms: one field (_field), and the forms' styles and browser code (_form_script) | changing every form at once |
 | question*.html | "Have you thought about…?": the questions by group with what was looked at (questions), and one question with Yes, Not relevant, Not yet and Tell me more (question) | changing the question wording |
+| drill*.html | "Think it through": the drills that fit (drills), one drill with its sources and earlier practice (drill), one step with its records or missing words (drill_step), a practice and Save this practice (drill_run), and the emergency-number box on each (drill_first) | changing the drill wording |
 | home_setup.html | Set up my home: add rooms and storage spots, rename, move or delete them, and connect rooms; no scripts needed | changing the Set up my home wording |
 | setup.html | First-run wizard and Settings (one form, two modes) | changing setup questions |
 | *sheet.html | A printable sheet styled to fit one page (sheet), and the step before one with private details (private_sheet) | changing how sheets print |
@@ -607,6 +635,7 @@ How to run them is in AGENTS.md.
 | test_csv_import.py | Tests for Import from a spreadsheet: reading a CSV, matching columns, the dry run, staging for Review and Accept. | changing spreadsheet import |
 | test_modules.py | Tests for loading module folders and the plain-language problems they report. | changing module rules |
 | test_actions.py | Tests for actions: one-step buttons like Mark returned, the date order rule `not_before` (decision 0075), and the checks on actions that add a record (decision 0091). | changing actions or date order |
+| test_routine_checklists.py | Tests for Things to do and Routines (decision 0107): the eleven checks in Lane B's routine checklist draft, and more. | changing Things to do, Routines or repeats |
 | test_example_garden.py | Exercise the garden example with a temporary database and synthetic harvest. | changing the garden example |
 | test_records.py | Tests for saving, checking, linking, deleting and restoring records, and their history. | changing how records are saved |
 | test_schema.py | Tests for turning declared tables into SQL and generating the next migration. | changing table building |
@@ -616,6 +645,7 @@ How to run them is in AGENTS.md.
 | test_project_map.py | Tests for the project map generator. | changing the map |
 | test_server.py | Tests for starting, protecting and safely closing the local web server. | changing startup or closing |
 | test_watch.py | Tests for running low, expiring soon and days of cover, and for checking `watch` sections. | changing watch rules |
+| test_charts.py | Tests for the first charts (decision 0109): the drinking-water breakdown, one pet's weigh-ins and the SVG drawing. | changing a chart |
 | test_gaps.py | Tests for gaps: details worth filling in, declared in a table's `watch.gaps` and asked as questions. | changing gaps |
 | test_examples.py | Tests for the example households: each loads cleanly and shows exactly what it was written to show. | changing an example household |
 | test_suggest.py | Tests for suggestions while typing: matching, the household's own records first, and module catalogues. | changing picking from a list |
@@ -674,6 +704,6 @@ How to run them is in AGENTS.md.
 | load_example.py | Load a made-up example household into an empty data folder, for demos, screenshots and testing. | demonstrating or testing with realistic data |
 | make_screenshots.py | Make the example screenshots: run each example household through every stage of using the dashboard. | the screens changed and the gallery needs remaking |
 | screenshots.js | Browser steps for make_screenshots.py (Node and Playwright) | changing how screenshots are taken |
-| browser_check.py | Click through the real dashboard in Chromium (setup, Set up my home, dates, stock in, stocktake, Mark returned, Mark done, spreadsheet import, Review keys and buttons, readiness questions, private details, closing) and fail loudly. | a screen or its browser code changed |
+| browser_check.py | Click through the real dashboard in Chromium (setup, Set up my home, dates, stock in, stocktake, Mark returned, Mark done, Things to do, spreadsheet import, Review keys and buttons, readiness questions, Think it through drills, charts, private details, closing) and fail loudly. | a screen or its browser code changed |
 | browser_check.js | Browser steps for browser_check.py (Node and Playwright): what is clicked and checked | changing what the browser check clicks |
 | make_project_map.py | Build PROJECT_MAP.md from every INDEX.md in the repository. | changing the map format |

@@ -47,24 +47,58 @@ def revision(store: Records, info: TableInfo, record_id: int) -> int:
     return row[0] or 0
 
 
-def offer(action: dict, record: dict, done_on: str | None) -> str | None:
-    """The one next date the household's own repeat offers from `done_on`, or None without a repeat."""
+def _repeat(action: dict, record: dict):
+    """(count, unit, planned date, anchor day) of the record's own repeat, or None without one."""
     rule = (action.get("next_date") or {}).get("repeat")
-    if not rule or not done_on:
+    if not rule:
         return None
     count, unit = record.get(rule["count"]), record.get(rule["unit"])
     if not count or unit not in dates.REPEAT_UNITS:
         return None
+    planned = record.get(rule["from"]) if rule.get("from") else None
+    anchor = record.get(rule["anchor"]) if rule.get("anchor") else None
     try:
-        return dates.add_period(done_on, int(count), unit)
+        day = date.fromisoformat(str(anchor)[:10]).day if anchor else None
+    except ValueError:
+        day = None
+    return int(count), unit, planned, day
+
+
+def offer(action: dict, record: dict, done_on: str | None) -> str | None:
+    """The one next date the household's own repeat offers, or None without a repeat.
+
+    Without `from`, it is one step after `done_on` (Home care, decision 0091). With `from` (a routine's planned
+    date, decision 0107) it is the first repeat date after `done_on`, stepping from the planned date and keeping
+    the anchor's day of the month; the dates in between are skipped, never filled in."""
+    found = _repeat(action, record)
+    if found is None or not done_on:
+        return None
+    count, unit, planned, day = found
+    try:
+        if (action["next_date"]["repeat"] or {}).get("from") and planned:
+            return dates.next_after(planned, count, unit, done_on, day)
+        return dates.add_period(done_on, count, unit, day)
     except (ValueError, OverflowError):
         return None
+
+
+def missed(action: dict, record: dict, done_on: str | None) -> bool:
+    """True when at least one whole repeat passed between the planned date and `done_on`: "Earlier times were
+    not recorded." Nothing is filled in for them."""
+    found = _repeat(action, record)
+    if found is None or not done_on or not found[2] or not (action["next_date"]["repeat"] or {}).get("from"):
+        return False
+    count, unit, planned, day = found
+    try:
+        return dates.add_period(planned, count, unit, day) <= str(done_on)
+    except (ValueError, OverflowError):
+        return False
 
 
 def same_day(store: Records, info: TableInfo, action: dict, record_id: int, day: str | None) -> bool:
     """True if a live linked record is already dated `day` (such as Work done for this job that day)."""
     latest = action.get("latest")
-    if not latest or not day:
+    if not latest or not latest.get("into") or not day:
         return False
     other, adds = added_table(store, info, action), action["adds"]
     return store.conn.execute(
@@ -130,6 +164,7 @@ def complete(store: Records, name: str, record_id: int, key: str, answers: dict,
         other, adds = added_table(store, info, action), action["adds"]
         values = {n: answers.get(n) for n in adds["ask"]}
         values.update({k: resolve_word(other.table.columns[k], v) for k, v in adds["values"].items()})
+        values.update({into: current.get(source) for into, source in adds.get("copy", {}).items()})
         values[adds["link"]] = record_id
         problems: dict[str, str] = {}
         latest, rule = action.get("latest"), action.get("next_date")
@@ -144,7 +179,8 @@ def complete(store: Records, name: str, record_id: int, key: str, answers: dict,
         style = dates.household_style(store.conn)
         day = cleaned.get(latest["date"]) if latest and latest["date"] not in problems else None
         if day:
-            label, previous = store._label(other, latest["date"]), current.get(latest["into"])
+            label = store._label(other, latest["date"])
+            previous = current.get(latest["into"]) if latest.get("into") else None
             if day > today_text:
                 problems[latest["date"]] = f"{label} can't be after today."
             elif previous and day < str(previous):
@@ -153,7 +189,7 @@ def complete(store: Records, name: str, record_id: int, key: str, answers: dict,
                                             f"entry instead; that changes no dates here.")
             elif same_day(store, info, action, record_id, day):
                 problems[latest["date"]] = action["messages"]["same_day"].replace("{date}", dates.show(day, style))
-            else:
+            elif latest.get("into"):
                 sets[latest["into"]] = day
         if rule:
             into_label, chosen = store._label(info, rule["into"]), None
@@ -187,7 +223,9 @@ def complete(store: Records, name: str, record_id: int, key: str, answers: dict,
         result = {"key": key, "operation": op, "added_table": other.name, "added": added,
                   "added_revision": revision(store, other, added), "before": before,
                   "after": {k: saved.get(k) for k in sets}, "next": rule["into"] if rule else None,
-                  "answers": {k: cleaned.get(k) for k in adds["ask"]}}
+                  "answers": {k: cleaned.get(k) for k in adds["ask"]},
+                  "copied": {k: cleaned.get(k) for k in adds.get("copy", {})},
+                  "counts_as": action.get("counts_as", "done"), "missed": missed(action, current, day)}
         store._audit(actor, "action", info, record_id, before, result)
         return dict(result, repeated=False)
 

@@ -1,0 +1,26 @@
+[tables.routines]
+home = "main"
+empty = "Add a task you repeat, such as watering the pot plants or putting the bins out."
+form = ["name", "place", "who", "first_due", "next_due", "repeat_count", "repeat_unit", "paused", "last_done", "notes"]
+list = ["name", "place", "who", "next_due", "repeat_count", "repeat_unit", "last_done"]
+columns.name = { label = "Task", help = "For example, Water the pot plants or Put the bins out. Jobs already in Home care or the Vegetable garden stay there and show on Things to do by themselves." }
+columns.place = { label = "Where", help = "Optional. Choose one of your Places, or leave it blank." }
+columns.who = { label = "Who usually does it", help = "Optional. Choose one of your People, or leave it blank." }
+columns.repeat_count = { label = "Repeat every", help = "Optional, and only if you want one: a number from 1 to 99, then days, weeks, months or years below. When you mark it done or skip it, we offer the next date. You can change it, or choose No date yet." }
+columns.repeat_unit = { label = "Days, weeks, months or years", help = "Leave both blank for no repeat. Changing the repeat changes only the dates offered from now on, never what was already done." }
+columns.first_due = { label = "First date", help = "The first time you planned to do it. A monthly routine on the 31st keeps coming back to the 31st, or the month's last day." }
+columns.next_due = { label = "Next date", help = "The one date it shows on Things to do. If it has passed, it shows once as Due since that date." }
+columns.last_done = { label = "Last done" }
+columns.paused = { label = "Paused", help = "A paused routine keeps its dates and history but does not show on Things to do." }
+columns.notes = { help = "Anything that helps, such as which tap or which bin. Do not write down alarm codes, where a key is hidden or how to get in." }
+
+[tables.times]
+home = "more"
+empty = "Nothing yet. Each time a routine is marked done or skipped, it is added here."
+form = ["routine", "outcome", "planned_for", "done_on", "done_by", "notes"]
+list = ["done_on", "routine", "outcome", "planned_for", "done_by"]
+columns.outcome = { label = "Done or skipped" }
+columns.planned_for = { label = "Was planned for" }
+columns.done_on = { label = "On", help = "The day it was done, or the day you decided to skip it." }
+columns.done_by = { label = "Who did it", help = "Optional. Choose one of your People." }
+columns.notes = { help = "Adding an entry here by hand changes no routine dates. To mark the next time done, use Mark this occurrence done on the routine." }

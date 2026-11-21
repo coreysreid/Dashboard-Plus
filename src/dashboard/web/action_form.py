@@ -1,11 +1,28 @@
 """An action's small form, such as Mark done: open it, save it once as one operation, and Undo it (decision 0091)."""
 from __future__ import annotations
 
+import re
+
 from flask import abort, redirect, render_template, request, url_for
 
 from dashboard.core import actions, dates, records
 from dashboard.web import display
 from dashboard.web.pages import _info, _render_form, _store, pages
+
+# Things to do (decision 0107) may send a person here and ask to come back: only to its own addresses.
+BACK = re.compile(r"^/to-do(/(week|month|year|no-date))?$")
+
+
+def back_to() -> str | None:
+    """Where to go after saving when Things to do opened the form: one of its own pages, never anywhere else."""
+    back = (request.form.get("back") if request.method == "POST" else None) or request.args.get("back") or ""
+    return back if BACK.match(back) else None
+
+
+def back_with(back: str, table: str, record_id: int, op: str | None = None, pressed: str | None = None) -> str:
+    """The Things to do address to return to, naming what was just saved so its notice (and Undo) shows."""
+    tail = f"&op={op}" if op else f"&pressed={pressed}" if pressed else ""
+    return f"{back}?table={table}&record={record_id}{tail}"
 
 
 def _setup(table: str, record_id: int, key: str):
@@ -52,12 +69,15 @@ def _render(info, store, action, record, other, values, errors=None, from_form=F
         next_box = {"question": rule["question"], "name": rule["into"], "hint": dates.HINTS[style] + ".",
                     "label": display.column_label(info, info.table.columns[rule["into"]]),
                     "current": dates.show(current, style) if current else None,
-                    "has_repeat": bool(count and unit in dates.REPEAT_UNITS), "count": count, "unit": unit,
+                    "has_repeat": bool(count and unit in dates.REPEAT_UNITS), "unit": unit,
+                    # The page works the offer out again as Done on is typed, except for a repeat that steps from
+                    # the planned date (decision 0107): then the server's offer is shown as it is.
+                    "count": None if repeat.get("from") else count,
                     "offered": dates.show(offered, style) if offered else None,
                     "choice": request.form.get("next_choice") if from_form else None,
                     "date": request.form.get("next_date", "") if from_form else "",
                     "error": (errors or {}).get(rule["into"]) or (errors or {}).get("_next")}
-    last = record.get(latest["into"]) if latest else None
+    last = record.get(latest["into"]) if latest and latest.get("into") else None
     adds = action["adds"]
     return render_template(
         "action_form.html", info=info, other=other, record=record, record_name=name, title=title,
@@ -69,7 +89,7 @@ def _render(info, store, action, record, other, values, errors=None, from_form=F
         older=adds["add_button"] or f"Add to {display.table_title(other).lower()}",
         older_href=f"/t/{other.name}/new?{adds['link']}={record['id']}",
         record_href=f"/t/{info.name}/{record['id']}", table_title=display.table_title(info),
-        date_field=latest["date"] if latest else None,
+        date_field=latest["date"] if latest else None, back=back_to(),
         **extra), status
 
 
@@ -127,6 +147,9 @@ def save_action_form(table, record_id, key):
             actions.offer(action, record, values.get((action.get("latest") or {}).get("date")))
         return _render(info, store, action, record, other, raw, errors, True, status=422, past=past,
                        past_ok=chosen if past else None, **keep)
+    back = back_to()
+    if back:
+        return redirect(back_with(back, table, record_id, op=op))
     return redirect(url_for("pages.edit_record", table=table, record_id=record_id, done=key, op=op))
 
 
@@ -149,10 +172,12 @@ def done_notice(store, info, record_id: int, op: str | None) -> dict | None:
                             f"{'they were' if ' and ' in changed else 'it was'}." if changed else "."),
                 "undo": None}
     words = display.action_words(info, action)[1]
-    for name, value in result["answers"].items():
+    for name, value in {**result.get("copied", {}), **result["answers"]}.items():
         column = other.table.columns.get(name)
         if column is not None:
             words = words.replace("{" + name + "}", formatter.text(other, column, value) or "(blank)")
+    if result.get("missed"):  # a routine done after more than one planned date (decision 0107)
+        words += " Earlier times were not recorded."
     if result.get("next"):
         due = result["after"].get(result["next"])
         column = info.table.columns[result["next"]]
@@ -178,4 +203,7 @@ def undo_action(table, record_id, op):
         except records.RecordNotFound:
             abort(404)
         return _render_form(info, store, record, {"_form": str(error)}, False, record=record, status=409)
+    back = back_to()
+    if back:
+        return redirect(back_with(back, table, record_id, op=op))
     return redirect(url_for("pages.edit_record", table=table, record_id=record_id, op=op))

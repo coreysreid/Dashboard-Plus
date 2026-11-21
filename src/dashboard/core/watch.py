@@ -1,6 +1,7 @@
 """Work out what is running low, what expires soon, how many days of supplies are on hand, and what is worth filling in."""
 from __future__ import annotations
 
+import math
 import sqlite3
 import string
 from dataclasses import dataclass, field
@@ -49,6 +50,8 @@ class Supply:
     not_counted: float = 0  # amount that matches but is left out by `counts_only` (e.g. water for flushing)
     wrong_unit: list = field(default_factory=list)  # names of rows recorded in another unit (e.g. bottles)
     notes: list[str] = field(default_factory=list)
+    items: list = field(default_factory=list)  # every SupplyRow behind the total, counted or left out (0109)
+    household: Household | None = None  # the people and pets count the daily need was worked out from
 
 
 def _name_column(info: TableInfo) -> str | None:
@@ -167,6 +170,52 @@ def household(conn: sqlite3.Connection, registry: dict[str, TableInfo]) -> House
     return Household(None, pets, "not set yet")
 
 
+@dataclass
+class SupplyRow:
+    """One record a `supply` rule looked at, and whether its amount was added up (the working behind Home's days)."""
+    record_id: int
+    name: str
+    amount: float | None  # None: no amount recorded (unknown, never zero)
+    unit: str | None
+    answer: object  # the stored `counts_only` answer (for water: safe to drink now), None if not answered
+    counted: float  # what this row adds to the total: its amount when counted, otherwise 0
+    status: str  # "counted", "no_amount", "not_counted" (counts_only says no or is blank) or "wrong_unit"
+    updated_at: str = ""
+
+
+def supply_rows(conn: sqlite3.Connection, info: TableInfo, rule: dict) -> list[SupplyRow]:
+    """Every record a supply rule looks at, each sorted into counted or left out, in one read (decision 0109)."""
+    filters = rule["where"]
+    clause = "".join(f" AND {name} = ?" for name in filters)
+    only = rule.get("counts_only") or {}
+    accepted = None
+    if rule.get("unit_from"):
+        # Only rows in the supply's own unit are added up; "6 bottles" is not 6 litres.
+        accepted = {"", rule["unit"].lower(), rule["unit"].lower().rstrip("s"), *rule.get("unit_words", [])}
+    name_column = _name_column(info) or "id"
+    picked = ["id", f"{name_column} AS _name", f"{rule['quantity']} AS _amount", "updated_at"]
+    if rule.get("unit_from"):
+        picked.append(f"{rule['unit_from']} AS _unit")
+    picked += [f"{name} AS _only_{i}" for i, name in enumerate(only)]
+    rows = []
+    for row in conn.execute(f"SELECT {', '.join(picked)} FROM {info.name} WHERE deleted_at IS NULL{clause} "
+                            f"ORDER BY id", list(filters.values())):
+        amount = None if row["_amount"] is None else float(row["_amount"])
+        unit = row["_unit"] if rule.get("unit_from") else rule["unit"]
+        answers = [row[f"_only_{i}"] for i in range(len(only))]
+        if not all((a or 0) == int(v) for a, v in zip(answers, only.values())):
+            status = "not_counted"
+        elif accepted is not None and (unit or "").strip().lower() not in accepted:
+            status = "wrong_unit"
+        elif amount is None:
+            status = "no_amount"
+        else:
+            status = "counted"
+        rows.append(SupplyRow(row["id"], str(row["_name"]), amount, unit, answers[0] if answers else None,
+                              amount if status == "counted" else 0.0, status, row["updated_at"] or ""))
+    return rows
+
+
 def supplies(conn: sqlite3.Connection, registry: dict[str, TableInfo]) -> list[Supply]:
     """Days of cover for every table with a `supply` rule, with the working shown."""
     home = household(conn, registry)
@@ -175,30 +224,11 @@ def supplies(conn: sqlite3.Connection, registry: dict[str, TableInfo]) -> list[S
         rule = info.table.watch.get("supply")
         if not rule:
             continue
-        filters = rule["where"]
-        clause = "".join(f" AND {name} = ?" for name in filters)
-        row = conn.execute(f"SELECT COALESCE(SUM({rule['quantity']}), 0) AS total, COUNT(*) AS n FROM {info.name} "
-                           f"WHERE deleted_at IS NULL{clause}", list(filters.values())).fetchone()
-        total, count = float(row["total"]), row["n"]
-        not_counted = 0.0
-        only = rule.get("counts_only") or {}
-        if only:
-            extra = "".join(f" AND COALESCE({name}, 0) = ?" for name in only)
-            counted = conn.execute(f"SELECT COALESCE(SUM({rule['quantity']}), 0) FROM {info.name} "
-                                   f"WHERE deleted_at IS NULL{clause}{extra}",
-                                   list(filters.values()) + [int(v) for v in only.values()]).fetchone()[0]
-            not_counted, total = total - float(counted), float(counted)
-        wrong_unit = []
-        if rule.get("unit_from"):
-            # Only rows in the supply's own unit are added up; "6 bottles" is not 6 litres.
-            accepted = {"", rule["unit"].lower(), rule["unit"].lower().rstrip("s"), *rule.get("unit_words", [])}
-            extra = "".join(f" AND COALESCE({name}, 0) = ?" for name in only)
-            for bad in conn.execute(f"SELECT {_name_column(info) or 'id'} AS name, {rule['quantity']} AS amount, "
-                                    f"{rule['unit_from']} AS unit FROM {info.name} WHERE deleted_at IS NULL"
-                                    f"{clause}{extra}", list(filters.values()) + [int(v) for v in only.values()]):
-                if (bad["unit"] or "").strip().lower() not in accepted:
-                    wrong_unit.append(f"{bad['name']} ({_number(bad['amount'] or 0)} {bad['unit']})")
-                    total -= float(bad["amount"] or 0)
+        rows = supply_rows(conn, info, rule)
+        count = len(rows)
+        total = math.fsum(r.counted for r in rows)
+        not_counted = math.fsum(r.amount or 0 for r in rows if r.status == "not_counted")
+        wrong_unit = [f"{r.name} ({_number(r.amount or 0)} {r.unit})" for r in rows if r.status == "wrong_unit"]
         unit = rule["unit"]
         u = f" {unit}" if unit else ""
         basis = f"{_number(rule['per_person_per_day'])}{u} per person a day"
@@ -209,7 +239,7 @@ def supplies(conn: sqlite3.Connection, registry: dict[str, TableInfo]) -> list[S
             results.append(Supply(info.name, title, unit, total, 0, None, rule["target_days"], 0,
                                   "Tell the program how many people live here to work out days of cover.",
                                   needs_household=True, rows=count, label=rule["label"], basis=basis,
-                                  not_counted=not_counted))
+                                  not_counted=not_counted, wrong_unit=wrong_unit, items=rows, household=home))
             continue
         need = home.people * rule["per_person_per_day"] + home.pets * rule["per_pet_per_day"]
         target = rule["target_days"]
@@ -219,7 +249,8 @@ def supplies(conn: sqlite3.Connection, registry: dict[str, TableInfo]) -> list[S
         if need <= 0:
             results.append(Supply(info.name, title, unit, total, 0, None, target, 0,
                                   "The daily need works out as zero, so days of cover cannot be calculated.", rows=count,
-                                  label=rule["label"], basis=basis, not_counted=not_counted))
+                                  label=rule["label"], basis=basis, not_counted=not_counted, wrong_unit=wrong_unit,
+                                  items=rows, household=home))
             continue
         days = total / need
         shortfall = max(0.0, target * need - total)
@@ -233,7 +264,7 @@ def supplies(conn: sqlite3.Connection, registry: dict[str, TableInfo]) -> list[S
                             f"(for example water for washing or flushing).")
         results.append(Supply(info.name, title, unit, total, need, days, target, shortfall, working,
                               rows=count, notes=notes, label=rule["label"], basis=basis, not_counted=not_counted,
-                              wrong_unit=wrong_unit))
+                              wrong_unit=wrong_unit, items=rows, household=home))
     return results
 
 

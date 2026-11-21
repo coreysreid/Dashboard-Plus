@@ -298,7 +298,9 @@ def one_record(table, record_id):
 
 
 def _plain(items) -> list[dict]:
-    return [{k: v for k, v in asdict(item).items() if k not in ("sort_key", "fix")} for item in items]
+    # A supply's per-record working (`items`, `household`) is for the screen's breakdown only (decision 0109).
+    return [{k: v for k, v in asdict(item).items() if k not in ("sort_key", "fix", "items", "household")}
+            for item in items]
 
 
 @helper_api.get("/attention")

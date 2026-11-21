@@ -39,6 +39,22 @@ is new: keep a copy of anything important somewhere else too. See
 - **Needs attention:** what is running low, what expires soon, about how many
   days of water you have for the people (and pets) in the house, and details
   worth filling in, such as an emergency contact with no phone number.
+- **Things to do:** Today, This week, This month and This year (and No date
+  yet) in one place, from the dates you already recorded: Home care and Garden
+  jobs, alarm and kit checks, pet treatments, vehicle dates, document reviews,
+  things lent out, and **Routines**, your own repeating tasks such as watering
+  the pot plants or putting the bins out. Each task is finished the same way
+  as on its own page (Home care's Mark done, Garden's Mark done, or Open record
+  to update). Something late shows once, as "Due since", never as a pile of
+  missed days or a streak; a repeat only ever offers the next date, and Undo
+  puts a tick back straight after. Weeks start on the day you choose in Settings.
+- **The first charts:** *What is counted* on Home's water card shows each
+  water item behind the days of drinking water, as a bar with its litres, and
+  every item left out with the reason (not safe to drink, or not in litres).
+  A pet's page shows its recorded weights as dots by date, and you can choose
+  the pet and the dates. Each chart has a table with the same values, prints,
+  and works with a keyboard or screen reader. They show what was written down,
+  never a health or safety verdict.
 - **Have you thought about…?** (Readiness) 49 calm questions about fire,
   flood, storms, heat, power cuts, medical needs and leaving home quickly, each
   with the official page it came from and the date that page was checked. Only
@@ -50,6 +66,18 @@ is new: keep a copy of anything important somewhere else too. See
   answered for you; if that record changes, the question comes back. Home
   shows at most two at a time, and the count says how many you have looked
   at, never whether you are "safe".
+- **Think it through** (Readiness) eight calm practice runs, one question at
+  a time: water behind a bathroom wall, a bedroom fire at night, a kitchen
+  fire, a break-in at 2 am, the car stopping far from home, three days without
+  power, a regional tap-water warning and a cyclone forecast (where cyclones
+  are ticked in Settings). Each step shows the records that may help, such as
+  your water shut-off and its place, or says exactly what is not recorded yet
+  with a link to add it. Your own words stay private on this computer: never
+  exported, sent or shown to a helper. Stop part-way and continue later, or
+  save the practice with the date you choose to look again. Every drill first
+  says to phone the emergency service if anyone is in danger (000, 911 or 999
+  by country, otherwise your local number) and lists its sources with the date
+  each was checked; it never says your home is safe.
 - **Helpers (early):** give an assistant, such as an AI program, a key in
   Settings so it can look at the parts of your records you choose and suggest
   new ones. Nothing is added until you accept it on the Review page. Private

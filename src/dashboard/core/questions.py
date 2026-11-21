@@ -81,7 +81,12 @@ def fits(prompt: Prompt, home: dict, hazard_names: dict | None = None) -> list[s
 
     Only a setting the household actually gave can rule a question out. Storeys and kind of home not given
     leave the question in; a hazard, pets, mobility needs or a country count only when the household said so."""
-    reasons, rule = [], prompt.fits
+    return fits_rule(prompt.fits, home, hazard_names)
+
+
+def fits_rule(rule: dict, home: dict, hazard_names: dict | None = None) -> list[str]:
+    """The same as `fits` for any `fits` table, such as a drill's or one of its steps' (decision 0108)."""
+    reasons = []
     names = hazard_names or {}
     storeys = home.get("storeys")
     if "storeys_min" in rule and storeys is not None and int(storeys) < rule["storeys_min"]:
@@ -94,7 +99,8 @@ def fits(prompt: Prompt, home: dict, hazard_names: dict | None = None) -> list[s
     if rule.get("mobility_needs") and not home["mobility_needs"]:
         reasons.append("Settings do not say that someone here has mobility or care needs.")
     if "country" in rule and home["country"] not in rule["country"]:
-        reasons.append("It is written for another country.")
+        reasons.append("It is written for another country." if home["country"] else
+                       "Settings do not say which country you live in.")
     if "home_type" in rule and home["home_type"] and home["home_type"] not in rule["home_type"]:
         reasons.append("It is written for another kind of home.")
     return reasons

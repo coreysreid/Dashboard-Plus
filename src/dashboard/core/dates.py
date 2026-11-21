@@ -113,24 +113,46 @@ def is_stored(text: str) -> bool:
     return bool(re.match(r"^\d{4}-\d{2}-\d{2}$", text.strip()))
 
 
-REPEAT_UNITS = ("weeks", "months", "years")
+REPEAT_UNITS = ("days", "weeks", "months", "years")
 
 
-def add_period(start, count: int, unit: str) -> str:
-    """The stored date `count` weeks, months or years after `start`, on the calendar (decision 0091).
+def add_period(start, count: int, unit: str, day: int | None = None) -> str:
+    """The stored date `count` days, weeks, months or years after `start`, on the calendar (decisions 0091, 0107).
 
-    Weeks are seven days each. Months and years keep the day of the month, or use the month's last day
-    when it has no such day: 31 January plus one month is 28 February (29 in a leap year), and 29 February
-    plus one year is 28 February. Only dates are involved, so no time of day or time zone can move it."""
+    Days are calendar days and weeks seven of them. Months and years keep the day of the month (or `day`,
+    the routine's own anchor, when given), or use the month's last day when it has no such day: 31 January
+    plus one month is 28 February (29 in a leap year), and 29 February plus one year is 28 February. Only
+    dates are involved, so no time of day, daylight-saving change or time zone can move it."""
     when = start if isinstance(start, date) else date.fromisoformat(str(start)[:10])
-    if unit == "weeks":
-        return date.fromordinal(when.toordinal() + 7 * count).isoformat()
+    if unit in ("days", "weeks"):
+        return date.fromordinal(when.toordinal() + count * (7 if unit == "weeks" else 1)).isoformat()
     months = count * (12 if unit == "years" else 1) if unit in ("months", "years") else None
     if months is None:
-        raise ValueError(f"'{unit}' is not weeks, months or years.")
+        raise ValueError(f"'{unit}' is not days, weeks, months or years.")
     index = when.year * 12 + (when.month - 1) + months
     year, month = divmod(index, 12)
     month += 1
     following = date(year + (month == 12), month % 12 + 1, 1)
     last = date.fromordinal(following.toordinal() - 1).day
-    return date(year, month, min(when.day, last)).isoformat()
+    return date(year, month, min(day or when.day, last)).isoformat()
+
+
+def next_after(start, count: int, unit: str, after, day: int | None = None) -> str:
+    """The first date of the repeat from `start` that falls after `after`, skipping (never filling in) the
+    dates in between: a weekly routine due 2 November and done 21 November offers 23 November. Months and
+    years step from `start` keeping `day`, so a routine on the 31st comes back to the 31st after February."""
+    begin = start if isinstance(start, date) else date.fromisoformat(str(start)[:10])
+    limit = after if isinstance(after, date) else date.fromisoformat(str(after)[:10])
+    if unit in ("days", "weeks"):
+        step = count * (7 if unit == "weeks" else 1)
+        steps = max(1, (limit.toordinal() - begin.toordinal()) // step + 1)
+        return date.fromordinal(begin.toordinal() + steps * step).isoformat()
+    per = count * (12 if unit == "years" else 1)
+    if unit not in ("months", "years"):
+        raise ValueError(f"'{unit}' is not days, weeks, months or years.")
+    steps = max(1, ((limit.year - begin.year) * 12 + limit.month - begin.month) // per)
+    while True:
+        offered = add_period(begin, steps * count, unit, day or begin.day)
+        if offered > limit.isoformat():
+            return offered
+        steps += 1

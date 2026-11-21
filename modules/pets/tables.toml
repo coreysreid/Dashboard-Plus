@@ -67,6 +67,8 @@ columns.pet = { type = "link", to = "pets", required = true, on_delete = "cascad
 columns.day = { type = "date", required = true, default = "today" }
 columns.weight = { type = "decimal", required = true, min = 0, unit = "kg" }
 columns.notes = { type = "text" }
+# One pet's recorded weights as dots on its page: never joined, averaged or mixed with another pet (decision 0109).
+chart = { kind = "dots", x = "day", y = "weight", per = "pet", what = ["weight", "weights"], entry = ["weigh-in", "weigh-ins"], subject = "pet" }
 
 [tables.vet_visits]
 title = "Vet visits"

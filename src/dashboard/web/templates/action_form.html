@@ -20,6 +20,7 @@
   <input type="hidden" name="_csrf" value="{{ csrf_token }}">
   <input type="hidden" name="operation" value="{{ operation }}">
   <input type="hidden" name="revision" value="{{ revision }}">
+  {% if back %}<input type="hidden" name="back" value="{{ back }}">{% endif %}
   {% if past_ok %}<input type="hidden" name="past_ok" value="{{ past_ok }}">{% endif %}
   {% with info = other, record = none %}
   {% for f in fields %}
@@ -48,7 +49,7 @@
   {% endif %}
   <div class="actions">
     <button type="submit">{{ save }}</button>
-    <a href="{{ record_href }}">Cancel</a>
+    <a href="{{ back or record_href }}">Cancel</a>
   </div>
 </form>
 <p><a href="{{ older_href }}">{{ older }}</a></p>
@@ -79,7 +80,7 @@
       return when.getUTCFullYear() === y && when.getUTCMonth() === mo - 1 && when.getUTCDate() === d ? [y, mo, d] : null;
     }
     function add(y, mo, d) {
-      if (unit === "weeks") { var w = new Date(Date.UTC(y, mo - 1, d + 7 * count)); return [w.getUTCFullYear(), w.getUTCMonth() + 1, w.getUTCDate()]; }
+      if (unit === "weeks" || unit === "days") { var w = new Date(Date.UTC(y, mo - 1, d + (unit === "weeks" ? 7 : 1) * count)); return [w.getUTCFullYear(), w.getUTCMonth() + 1, w.getUTCDate()]; }
       var index = y * 12 + (mo - 1) + count * (unit === "years" ? 12 : 1), ny = Math.floor(index / 12), nm = index % 12;
       var last = new Date(Date.UTC(ny, nm + 1, 0)).getUTCDate();
       return [ny, nm + 1, Math.min(d, last)];

@@ -67,7 +67,8 @@ STAGES = [
     ("15-stock-in-and-out", "Stock in and out", "Everything bought, used, expired or thrown away.",
      {"goto": "/t/stock__movements"}),
     ("16-pets", "Pets", "Every pet, its vet and when vaccinations are due.", {"goto": "/t/pets__pets", "module": "pets"}),
-    ("17-pet", "One pet's page", "Its details, treatments and medicine, weigh-ins and vet visits.",
+    ("17-pet", "One pet's page", "Its details, its recorded weights as dots with the same values in a table, "
+     "and buttons to add treatments, weigh-ins and vet visits.",
      {"goto": "/t/pets__pets/{id:pets__pets:pet}", "module": "pets"}),
     ("18-pet-sheet", "Pet details sheet", "As it prints: for a sitter, a kennel or an evacuation centre.",
      {"goto": "/sheet/pets/pets", "media": "print", "module": "pets"}),
@@ -117,8 +118,26 @@ STAGES = [
     ("18u-question", "One question", "Why it may matter, its official source and the date checked, a record that may "
      "already answer it for the household to confirm, and Yes, Not relevant, Not yet or Tell me more.",
      {"goto": "/questions/readiness/medical-kit-location", "module": "readiness"}),
+    ("18v-things-to-do", "Things to do, Today", "What is due today and anything late, each shown once as Due since, "
+     "with the button its own list uses: Mark done, Mark this occurrence done, or Open record to update.",
+     {"goto": "/to-do", "module": "routines"}),
+    ("18w-things-to-do-month", "Things to do, This month", "The calendar month by week, from the dates the household "
+     "recorded; a task with no date is under No date yet.", {"goto": "/to-do/month", "module": "routines"}),
+    ("18x-routines", "Routines", "The household's own repeating tasks: the repeat it chose, the next date and when "
+     "each was last done.", {"goto": "/t/routines__routines", "module": "routines"}),
+    ("18y-drills", "Think it through", "Eight calm practice runs, the emergency number for the household's country "
+     "first, when each was practised and when to look again; drills that do not fit the settings listed apart.",
+     {"goto": "/drills/readiness", "module": "readiness"}),
+    ("18z-drill", "One drill", "Its questions in order, Start or Not now, its sources with the date each was checked, "
+     "and earlier practice.", {"goto": "/drills/readiness/pipe-in-wall", "module": "readiness"}),
     ("19-needs-attention", "Needs attention", "Days of water with the working shown, running low, use-by "
      "and due dates, and details worth filling in.", {"goto": "/attention"}),
+    ("19b-drinking-water", "Drinking water counted today", "Each water item behind Home's days of water, as a "
+     "bar with its litres, then a table of every water item, counted or left out with the reason.",
+     {"goto": "/supplies/stock__items", "module": "stock"}),
+    ("19c-drinking-water-phone", "Drinking water, on a phone", "The same page at 320 pixels wide: the bars stay "
+     "readable and each table row becomes a card.", {"goto": "/supplies/stock__items", "module": "stock",
+                                                     "width": PHONE_WIDTH}),
     ("20-supplies-sheet", "Emergency supplies sheet", "As it prints: water, first aid, power and food, and "
      "where each is kept.", {"goto": "/sheet/stock/supplies", "media": "print"}),
     ("21-settings", "Settings", "The setup answers, which can be changed at any time.",

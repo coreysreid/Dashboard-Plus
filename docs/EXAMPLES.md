@@ -136,7 +136,7 @@ Every pet, its vet and when vaccinations are due.
 
 ### One pet's page
 
-Its details, treatments and medicine, weigh-ins and vet visits.
+Its details, its recorded weights as dots with the same values in a table, and buttons to add treatments, weigh-ins and vet visits.
 
 ![One pet's page](screenshots/smith/17-pet.png)
 
@@ -266,11 +266,53 @@ Why it may matter, its official source and the date checked, a record that may a
 
 ![One question](screenshots/smith/18u-question.png)
 
+### Things to do, Today
+
+What is due today and anything late, each shown once as Due since, with the button its own list uses: Mark done, Mark this occurrence done, or Open record to update.
+
+![Things to do, Today](screenshots/smith/18v-things-to-do.png)
+
+### Things to do, This month
+
+The calendar month by week, from the dates the household recorded; a task with no date is under No date yet.
+
+![Things to do, This month](screenshots/smith/18w-things-to-do-month.png)
+
+### Routines
+
+The household's own repeating tasks: the repeat it chose, the next date and when each was last done.
+
+![Routines](screenshots/smith/18x-routines.png)
+
+### Think it through
+
+Eight calm practice runs, the emergency number for the household's country first, when each was practised and when to look again; drills that do not fit the settings listed apart.
+
+![Think it through](screenshots/smith/18y-drills.png)
+
+### One drill
+
+Its questions in order, Start or Not now, its sources with the date each was checked, and earlier practice.
+
+![One drill](screenshots/smith/18z-drill.png)
+
 ### Needs attention
 
 Days of water with the working shown, running low, use-by and due dates, and details worth filling in.
 
 ![Needs attention](screenshots/smith/19-needs-attention.png)
+
+### Drinking water counted today
+
+Each water item behind Home's days of water, as a bar with its litres, then a table of every water item, counted or left out with the reason.
+
+![Drinking water counted today](screenshots/smith/19b-drinking-water.png)
+
+### Drinking water, on a phone
+
+The same page at 320 pixels wide: the bars stay readable and each table row becomes a card.
+
+![Drinking water, on a phone](screenshots/smith/19c-drinking-water-phone.png)
 
 ### Emergency supplies sheet
 
@@ -424,7 +466,7 @@ Every pet, its vet and when vaccinations are due.
 
 ### One pet's page
 
-Its details, treatments and medicine, weigh-ins and vet visits.
+Its details, its recorded weights as dots with the same values in a table, and buttons to add treatments, weigh-ins and vet visits.
 
 ![One pet's page](screenshots/garcia/17-pet.png)
 
@@ -542,11 +584,53 @@ Why it may matter, its official source and the date checked, a record that may a
 
 ![One question](screenshots/garcia/18u-question.png)
 
+### Things to do, Today
+
+What is due today and anything late, each shown once as Due since, with the button its own list uses: Mark done, Mark this occurrence done, or Open record to update.
+
+![Things to do, Today](screenshots/garcia/18v-things-to-do.png)
+
+### Things to do, This month
+
+The calendar month by week, from the dates the household recorded; a task with no date is under No date yet.
+
+![Things to do, This month](screenshots/garcia/18w-things-to-do-month.png)
+
+### Routines
+
+The household's own repeating tasks: the repeat it chose, the next date and when each was last done.
+
+![Routines](screenshots/garcia/18x-routines.png)
+
+### Think it through
+
+Eight calm practice runs, the emergency number for the household's country first, when each was practised and when to look again; drills that do not fit the settings listed apart.
+
+![Think it through](screenshots/garcia/18y-drills.png)
+
+### One drill
+
+Its questions in order, Start or Not now, its sources with the date each was checked, and earlier practice.
+
+![One drill](screenshots/garcia/18z-drill.png)
+
 ### Needs attention
 
 Days of water with the working shown, running low, use-by and due dates, and details worth filling in.
 
 ![Needs attention](screenshots/garcia/19-needs-attention.png)
+
+### Drinking water counted today
+
+Each water item behind Home's days of water, as a bar with its litres, then a table of every water item, counted or left out with the reason.
+
+![Drinking water counted today](screenshots/garcia/19b-drinking-water.png)
+
+### Drinking water, on a phone
+
+The same page at 320 pixels wide: the bars stay readable and each table row becomes a card.
+
+![Drinking water, on a phone](screenshots/garcia/19c-drinking-water-phone.png)
 
 ### Emergency supplies sheet
 
@@ -812,11 +896,53 @@ Why it may matter, its official source and the date checked, a record that may a
 
 ![One question](screenshots/taylor/18u-question.png)
 
+### Things to do, Today
+
+What is due today and anything late, each shown once as Due since, with the button its own list uses: Mark done, Mark this occurrence done, or Open record to update.
+
+![Things to do, Today](screenshots/taylor/18v-things-to-do.png)
+
+### Things to do, This month
+
+The calendar month by week, from the dates the household recorded; a task with no date is under No date yet.
+
+![Things to do, This month](screenshots/taylor/18w-things-to-do-month.png)
+
+### Routines
+
+The household's own repeating tasks: the repeat it chose, the next date and when each was last done.
+
+![Routines](screenshots/taylor/18x-routines.png)
+
+### Think it through
+
+Eight calm practice runs, the emergency number for the household's country first, when each was practised and when to look again; drills that do not fit the settings listed apart.
+
+![Think it through](screenshots/taylor/18y-drills.png)
+
+### One drill
+
+Its questions in order, Start or Not now, its sources with the date each was checked, and earlier practice.
+
+![One drill](screenshots/taylor/18z-drill.png)
+
 ### Needs attention
 
 Days of water with the working shown, running low, use-by and due dates, and details worth filling in.
 
 ![Needs attention](screenshots/taylor/19-needs-attention.png)
+
+### Drinking water counted today
+
+Each water item behind Home's days of water, as a bar with its litres, then a table of every water item, counted or left out with the reason.
+
+![Drinking water counted today](screenshots/taylor/19b-drinking-water.png)
+
+### Drinking water, on a phone
+
+The same page at 320 pixels wide: the bars stay readable and each table row becomes a card.
+
+![Drinking water, on a phone](screenshots/taylor/19c-drinking-water-phone.png)
 
 ### Emergency supplies sheet
 

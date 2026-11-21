@@ -541,6 +541,38 @@ messages = { stale = "...", same_day = "... {date} ...", undo_refused = "..." } 
   transaction, with an `undo` history entry; otherwise it says
   `messages.undo_refused` and changes nothing.
 - labels.toml may reword `label`, `done`, `title`, `intro` and `undo`.
+- **For routines** (decision 0107), four optional settings: `adds.copy =
+  { planned_for = "next_due" }` copies fields of this record into the added
+  one (same kind, public); `latest` may leave out `into`, so a "Skip this time"
+  records its day without setting Last done; `repeat` may add `from` (a date
+  column of this record: the repeat steps from that planned date to the first
+  date after the day it was done, skipping the dates in between and never
+  filling them in) and `anchor` (a date column whose day of the month is kept,
+  so the 31st comes back after February); and `counts_as = "skipped"` marks an
+  action that is a decision, not work done. Repeats may also be in days. When
+  `from` is used and at least one whole repeat passed, the notice adds
+  "Earlier times were not recorded."
+
+### 5.9 Things to do
+
+**Things to do** (`/to-do`, decision 0107) has tabs Today, This week, This month,
+This year and No date yet. It reads, on each view, every table of a switched-on
+module whose `watch.expiring` has `wording = "due"`, with the same `where`, so
+it always agrees with Needs attention; use-by dates are not tasks. Nothing is
+stored by the page.
+
+- One record is one row, read from its own table: late rows show once, as
+  "Due since 18/11/26", in every window; in This year, late rows from an earlier
+  year are under "Still to decide". A record with no date is under No date yet.
+- A row's button comes from the table's own `actions`: an action with `adds`
+  opens its form; a one-step action whose `set` takes the row out of `where`
+  is pressed at once; otherwise "Open record to update". Forms and buttons
+  return to Things to do (only to its own addresses) with their notice and Undo.
+- Week, month and year are calendar ranges; the week starts on the household's
+  setting `household.week_starts` (Monday, Sunday or Saturday; unset, Sunday
+  where dates are written month first). Done lists and This year's counts come
+  from saved operations in history, dated by the day entered, leaving out ones
+  undone or whose records were deleted.
 
 ## 6. Modules
 
@@ -761,6 +793,15 @@ number and the core can load both for a transition period.
   a borrower with no phone, once per borrower, only while something is out; a
   **Things still lent out** sheet prints open loans with the borrower's phone
   from People, without notes. Nothing is ever sent to the borrower.
+- **Routines** (declarative; requires People and Household stock; shipped,
+  decision 0107). Tables: routines (a task, an optional place and person, an
+  optional repeat every 1 to 99 days, weeks, months or years, first date, next
+  date, last done, paused, notes) and done or skipped (the routine, done or
+  skipped this time, the date it was planned for, the day it happened, who,
+  notes). Behaviour: due from a week before the next date while not paused;
+  **Mark this occurrence done** and **Skip this time** each ask for the next
+  date, offered from the repeat and never chosen for the person; Undo straight
+  after. Shown with every other due date on Things to do (section 5.9).
 - **Readiness** (declarative; the home of the prompts in section 10.5).
   Tables: plans (a situation the household has thought through: what we would
   do, who does what, the answer to "could we get down from upstairs?"), drills
@@ -809,10 +850,18 @@ number and the core can load both for a transition period.
   ordinary fields: a helper granted Wine reads them and the spreadsheet export
   includes them, and the forms say so. No drinking, storage, buying, health or
   value advice is stored or worked out.
-- **Graphing** (module). Charts over any table or measure or daily-fact view,
-  using one well-trodden JavaScript charting library (see section 15). Chart
-  configurations are saved as records. Annotations and events are drawn on
-  charts.
+- **Graphing** (module). Charts over any table or measure or daily-fact view.
+  Chart configurations are saved as records. Annotations and events are drawn on
+  charts. **Started (decision 0109):** the first two charts are drawn as SVG on
+  the server, each with an equal table and exact empty words, no script or
+  library. *Drinking water counted today* (`/supplies/<table>`) shows each item
+  behind Home's days of water from the same `watch.supplies` result, and each
+  item left out with its reason. A table can declare
+  `chart = { kind = "dots", x = "day", y = "weight", per = "pet", what = ["weight", "weights"], entry = ["weigh-in", "weigh-ins"], subject = "pet" }`;
+  Pets' Weigh-ins does, so a pet's page shows its recorded weights as dots
+  (never joined, from zero, one pet at a time) and `/charts/<table>` chooses
+  the pet and dates. Time series, annotations and saved chart settings are
+  still to come; a charting library (0004) may return for those.
 - **Analysis** (module, section 10.3).
 - **API connector** (module, section 6.1).
 
@@ -1603,7 +1652,7 @@ choice; its "costs" and "revisit if" sections must be honest.
 |---|---|---|
 | Web side | Python, server-built pages, light browser scripting | 0002 |
 | Bundling | Official embeddable Python in a plain folder | 0003 |
-| Charts | Apache ECharts, bundled locally | 0004 |
+| Charts | SVG drawn on the server for the first charts; Apache ECharts (0004) only if annotated time series need it | 0109 |
 | Statistics | Standard library only for v1 | 0005 |
 | Backups | A second copy on the computer itself | 0006 |
 | Modules from others | Two trust levels, honest warning, no fake sandbox | 0007 |

@@ -78,6 +78,11 @@
 <p>Counted this batch? Record what you found; the difference is saved as a stocktake correction in Stock in and out.</p>
 <div class="actions"><a class="button" href="{{ count_href }}">Count this batch</a></div>
 {% endif %}
+{% for c in charts %}
+<h2>{{ c.title }}</h2>
+{% with view = c.view %}{% include "_dot_chart.html" %}{% endwith %}
+<p><a href="{{ c.href }}">Choose dates for this chart</a></p>
+{% endfor %}
 {% if related %}
 <div class="actions">{% for r in related %}<a class="button quiet" href="{{ r.href }}">{% if r.words %}{{ r.words }}{% else %}Add to {{ r.label | lower }}{% endif %}</a>{% endfor %}</div>
 {% endif %}

@@ -1,0 +1,8 @@
+<div class="card drill-first" role="note">
+  {% if emergency %}
+  <p style="margin-top:0"><strong>If anyone is in danger now, phone the emergency service first: {{ emergency.number }}.</strong> Follow the operator, current official warnings and your building's own instructions.</p>
+  {% else %}
+  <p style="margin-top:0"><strong>If anyone is in danger now, contact the emergency service first. {{ local_number }}.</strong> Follow the operator, current official warnings and your building's own instructions.</p>
+  {% endif %}
+  <p class="muted" style="margin-bottom:0">This is practice for a calm moment, not advice for a real emergency. It does not replace official advice and does not say your home is prepared.{% if emergency %} The number is from <a href="{{ emergency.source.url }}" rel="noopener noreferrer">{{ emergency.source.title }}</a>, checked {{ show_date(emergency.source.checked) }}.{% endif %}</p>
+</div>

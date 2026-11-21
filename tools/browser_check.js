@@ -247,6 +247,34 @@ function expect(condition, message) { if (!condition) throw new Failed(message);
     ok(`Mark done: "${job.name}" saved once with Do again by ${job.next} (double click), then undone back to ${before}`);
   }
 
+  async function checkThingsToDo() {  // Things to do (decision 0107): a late routine once, ticked once, undone, at phone width
+    const name = plan.routine.name;
+    await page.setViewportSize({ width: 320, height: 900 });
+    await goto('/to-do');
+    const wide = await page.evaluate(() => document.documentElement.scrollWidth);
+    expect(wide <= 320, `Things to do should fit a 320 pixel phone screen; it is ${wide} pixels wide.`);
+    const row = page.locator('li.todo-row', { hasText: name });
+    expect(await row.count() === 1, `"${name}" should show once on Today; it shows ${await row.count()} times.`);
+    const when = await row.locator('.todo-when').innerText();
+    expect(when.startsWith('Due since'), `A late routine should say "Due since"; it says "${when}".`);
+    await Promise.all([page.waitForNavigation(), page.click(`a[aria-label="Mark this occurrence done: ${name}"]`)]);
+    expect(!(await page.locator('input[name=next_choice]:checked').count()), 'No next date should be chosen before the person chooses one.');
+    await page.check('input[name=next_choice][value=repeat]');
+    const [response] = await Promise.all([page.waitForNavigation(), page.dblclick('form.record button[type=submit]')]);
+    expect(response && response.ok(), `Saving the routine answered ${response ? response.status() : 'nothing'}.`);
+    expect(new URL(page.url()).pathname === '/to-do', `Saving from Things to do should come back to it; it went to ${page.url()}.`);
+    const said = await text('[role=status]');
+    expect(said.includes('Marked done on'), `After the tick Things to do should say "Marked done on"; it says "${said}".`);
+    expect(await page.locator('#done-title + ul li', { hasText: name }).count() === 1, `"${name}" should be listed once under Done today after a double click.`);
+    expect(!(await page.locator('section:not([aria-labelledby=done-title]) li.todo-row', { hasText: name }).count()), `"${name}" should leave Late once it is done.`);
+    await Promise.all([page.waitForNavigation(), page.click(`button[aria-label="Undo this tick: ${name}"]`)]);
+    expect((await text('[role=status]')).startsWith('Undone.'), `Undo should say "Undone."; it says "${await text('[role=status]')}".`);
+    const back = await page.locator('li.todo-row', { hasText: name }).locator('.todo-when').innerText();
+    expect(back === when, `After Undo "${name}" should be back as "${when}"; it says "${back}".`);
+    await page.setViewportSize({ width: 1280, height: 900 });
+    ok(`Things to do: "${name}" shown once as ${when}, ticked once at 320 pixels, then undone back to the same date`);
+  }
+
   async function checkReceiptLine(r) {  // a receipt line the helper could not match (decision 0105)
     expect((await text('[data-line=waiting]')).includes(r.line), 'The unmatched receipt line should still wait after Accept all.');
     await page.setViewportSize({ width: 320, height: 800 });
@@ -377,6 +405,66 @@ function expect(condition, message) { if (!condition) throw new Failed(message);
     ok(`questions: "${q.id}" offered the household's record, Yes saved with it, count ${looked} -> ${looked + 1}, fits 320 pixels`);
   }
 
+  async function checkCharts() {  // the first charts (decision 0109): drawn on the server, readable at 320px, keyboard reachable
+    const c = plan.charts;
+    await page.setViewportSize({ width: 320, height: 800 });
+    try {
+      await goto('/');
+      await Promise.all([page.waitForNavigation(), page.click('a:has-text("What is counted")')]);
+      const wide = await page.evaluate(() => document.documentElement.scrollWidth);
+      expect(wide <= 320, `At 320px the drinking-water page is ${wide}px wide; it should not scroll sideways.`);
+      const bars = await page.locator('svg.chart-svg a').count();
+      const counted = await page.locator('table.chart-table tbody tr:not(.left-out)').count();
+      expect(bars > 0 && bars <= counted, `The water chart should draw a bar for each counted item (${counted}); it drew ${bars}.`);
+      const size = await page.$eval('svg.chart-svg text', (t) => t.getBoundingClientRect().height);
+      expect(size >= 10, `Chart labels at 320px should stay readable; they are ${size.toFixed(1)}px tall.`);
+      await page.focus('svg.chart-svg a');
+      await page.keyboard.press('Enter');
+      expect(/-row-\d+$/.test(page.url()), `Choosing a bar with the keyboard should go to its table row; the page is at ${page.url()}.`);
+      await goto('/t/pets__pets');
+      await Promise.all([page.waitForNavigation(), page.click(`a[aria-label="Open ${c.pet}"]`)]);
+      const dots = await page.locator('svg.chart-svg a').count();
+      const rows = await page.locator('table.chart-table tbody tr').count();
+      expect(dots === c.dots && rows === c.dots, `${c.pet}'s page should show ${c.dots} weigh-in dots and ${c.dots} table rows; it shows ${dots} and ${rows}.`);
+      const pwide = await page.evaluate(() => document.documentElement.scrollWidth);
+      expect(pwide <= 320, `At 320px ${c.pet}'s page is ${pwide}px wide; it should not scroll sideways.`);
+      ok(`charts at 320px: ${bars} water bars for ${counted} counted items, keyboard reaches a row; ${c.pet}: ${dots} dots, ${rows} rows`);
+    } finally {
+      await page.setViewportSize({ width: 1280, height: 720 });
+    }
+  }
+
+  async function checkDrills() {  // Think it through (decision 0108): a step, Continue later, own words behind Show
+    const d = plan.drills;
+    await goto('/drills/readiness');
+    expect((await text('.drill-first')).includes(`first: ${d.number}`), `Think it through should name the emergency number ${d.number} first.`);
+    await Promise.all([page.waitForNavigation(), page.click(`a[href="/drills/readiness/${d.scenario}"]`)]);
+    expect((await text('main')).includes('Sources and local limits'), 'A drill should list its sources.');
+    await submit('.drill-start button[type=submit]');
+    await page.setViewportSize({ width: 320, height: 800 });
+    const wide = await page.evaluate(() => document.documentElement.scrollWidth);
+    expect(wide <= 321, `A drill step is ${wide} pixels wide on a 320-pixel screen.`);
+    await page.setViewportSize({ width: 1280, height: 800 });
+    await page.check('input[name=choice][value=plan]');
+    await page.fill('#own_words', d.words);
+    await submit('button[name=action][value=later]');
+    expect((await text('[role=status]')).includes('it is not marked as practised yet'), 'Continue later should say it is not marked as practised.');
+    await submit('.drill-start button[type=submit]');
+    expect((await text('main')).includes(d.record), `Step 2 should offer the household's own record "${d.record}".`);
+    expect(!(await page.isChecked('input[name=record]:not([value=""])')), 'A record must not be chosen before the person chooses it.');
+    for (let step = 2; step <= d.steps; step++) {
+      await page.check('input[name=choice][value=check]');
+      await submit('button[name=action][value=next]');
+    }
+    await submit('button:text-is("Save this practice")');
+    expect((await text('[role=status]')).startsWith('Practised on'), 'Saving the practice should confirm "Practised on … · Look again on …".');
+    expect(!(await html()).includes(d.words), 'The practice page sent the household\'s own words before Show was pressed.');
+    await page.locator('button.secret').first().click();
+    await page.locator('span', { hasText: d.words }).waitFor({ timeout: 5000 }).catch(() => {});
+    expect((await text('main')).includes(d.words), 'Pressing Show did not show the household\'s own words.');
+    ok(`drills: "${d.scenario}" names ${d.number}, Continue later is not practised, "${d.record}" offered not chosen, saved with own words behind Show, fits 320 pixels`);
+  }
+
   async function checkPrivateDetail() {
     const p = plan.private;
     await goto('/t/people__important_info');
@@ -436,9 +524,12 @@ function expect(condition, message) { if (!condition) throw new Failed(message);
       if (plan.stock) { await checkStockIn(); await checkStocktake(); }
       if (plan.loan) await checkMarkReturned();
       if (plan.job) await checkMarkDone();
+      if (plan.routine) await checkThingsToDo();
       if (plan.csv) await checkImport();
       if (plan.review) await checkReview();
       if (plan.questions) await checkQuestions();
+      if (plan.charts) await checkCharts();
+      if (plan.drills) await checkDrills();
       if (plan.private) { await checkPrivateDetail(); await checkPrivateSheet(); }
       await checkClose();
     }

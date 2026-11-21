@@ -33,18 +33,25 @@ TRAVELS = ("always", "never")
 MODULE_KEYS = ("name", "title", "version", "description", "core_api", "kind", "requires", "outbound_hosts")
 MODULE_REQUIRED = ("name", "title", "version", "description", "core_api", "kind")
 TABLE_KEYS = ("title", "description", "columns", "watch", "adjusts", "parent", "total", "record_name", "actions",
-              "pair", "suggestions")
+              "pair", "suggestions", "chart")
+# A chart of one subject's dated readings, such as one pet's weigh-ins as dots (decision 0109).
+CHART_KEYS = ("kind", "x", "y", "per", "what", "entry", "subject")
+CHART_KINDS = ("dots",)
 # A record that joins two records of one table, like two rooms with a door between them (decision 0103).
 PAIR_KEYS = ("columns", "blank_when")
 # A one-step button on a record's page, such as "Mark returned" (decision 0075).
 ACTION_KEYS = ("key", "label", "show_when", "set", "done")
 # An action that also adds a linked record through a small form, like Home care's "Mark done" (decision 0091).
-FORM_ACTION_KEYS = ("title", "intro", "adds", "latest", "next_date", "help", "undo", "messages")
-ADDS_KEYS = ("table", "link", "ask", "values", "add_button")
+FORM_ACTION_KEYS = ("title", "intro", "adds", "latest", "next_date", "help", "undo", "messages", "counts_as")
+# What a saved form counts as on Things to do (decision 0107): work done, or a decision to skip this time.
+COUNTS_AS = ("done", "skipped")
+ADDS_KEYS = ("table", "link", "ask", "values", "add_button", "copy")
 LATEST_KEYS = ("date", "into")
 NEXT_DATE_KEYS = ("into", "question", "repeat")
-REPEAT_KEYS = ("count", "unit")
-REPEAT_UNITS = ("weeks", "months", "years")
+# `from` steps the repeat from a date of this record (its planned date) instead of the day it was done, and
+# `anchor` keeps the day of the month of another date, so the 31st comes back after February (decision 0107).
+REPEAT_KEYS = ("count", "unit", "from", "anchor")
+REPEAT_UNITS = ("days", "weeks", "months", "years")
 MESSAGE_KEYS = ("stale", "same_day", "undo_refused")
 DEFAULT_MESSAGES = {
     "stale": "This record changed while the form was open. Check it and try again. Nothing was saved.",
@@ -121,6 +128,7 @@ class Table:
     # from a spreadsheet; helpers may still look, as their grant allows (decision 0104).
     suggestions: bool = True
     pair: dict = field(default_factory=dict)  # checked `pair`: joins two different records, each pair once (5.6)
+    chart: dict = field(default_factory=dict)  # checked `chart`: one subject's dated readings drawn as dots (0109)
 
 
 @dataclass
@@ -609,6 +617,38 @@ def _check_pair(file: str, table: Table, raw, problems: list[str]) -> dict:
     return rule
 
 
+def _check_chart(file: str, table: Table, raw, problems: list[str]) -> dict:
+    """Check `chart`: one subject's dated readings drawn as dots, like one pet's weigh-ins (decision 0109).
+    `what` and `entry` are the words for one reading and for one record, singular then plural."""
+    where = f"In {file}, table '{table.name}', chart"
+    example = ('chart = { kind = "dots", x = "day", y = "weight", per = "pet", what = ["weight", "weights"], '
+               'entry = ["weigh-in", "weigh-ins"], subject = "pet" }')
+    if not isinstance(raw, dict):
+        problems.append(f"{where}: write it like {example}.")
+        return {}
+    problems.extend(_unknown_keys(where, raw, CHART_KEYS))
+    before = len(problems)
+    if raw.get("kind") not in CHART_KINDS:
+        problems.append(f"{where}: 'kind' must be \"dots\", not {raw.get('kind')!r}.")
+    x, y, per = (table.columns.get(raw.get(k)) if isinstance(raw.get(k), str) else None for k in ("x", "y", "per"))
+    if x is None or x.type != "date" or not x.required:
+        problems.append(f"{where}: 'x' must name a required date column of this table.")
+    if y is None or y.type not in ("integer", "decimal", "measure") or not y.required or y.sensitive:
+        problems.append(f"{where}: 'y' must name a required number column of this table that is not private.")
+    if per is None or per.type != "link" or not per.required:
+        problems.append(f"{where}: 'per' must name a required link column, so each chart shows one subject.")
+    for key in ("what", "entry"):
+        words = raw.get(key)
+        if not (isinstance(words, list) and len(words) == 2 and all(isinstance(w, str) and w.strip() for w in words)):
+            problems.append(f"{where}: '{key}' must be two words, singular then plural, like {example}.")
+    if not (isinstance(raw.get("subject"), str) and raw["subject"].strip()):
+        problems.append(f"{where}: 'subject' must be the word for one subject, like \"pet\".")
+    if len(problems) > before:
+        return {}
+    return {"kind": raw["kind"], "x": raw["x"], "y": raw["y"], "per": raw["per"], "what": list(raw["what"]),
+            "entry": list(raw["entry"]), "subject": raw["subject"].strip()}
+
+
 def _check_record_name(file: str, table: Table, tables: dict[str, Table], template, problems: list[str]) -> str | None:
     """Check `record_name`: a pattern like "{quantity} {item.unit} of {item}" naming a record."""
     where = f"In {file}, table '{table.name}', record_name"
@@ -703,6 +743,8 @@ def _check_tables(module: str, data: dict, requires: list[str], problems: list[s
                                                                problems)
             if "pair" in raw:
                 tables[tname].pair = _check_pair(file, tables[tname], raw["pair"], problems)
+            if "chart" in raw:
+                tables[tname].chart = _check_chart(file, tables[tname], raw["chart"], problems)
     for table in tables.values():
         for column in table.columns.values():
             if column.type in ("link", "links") and column.to:
@@ -953,6 +995,21 @@ def _check_form_action(where: str, table: Table, tables: dict[str, Table], actio
         problems.append(f"{where}, adds, values: '{clash[0]}' is asked or linked already, so it can't also be fixed.")
     else:
         _check_set(f"{where}, adds", fixed, other.columns, other_computed, problems, part="values")
+    copy = adds.get("copy", {})
+    if not isinstance(copy, dict):
+        problems.append(f"{where}, adds: 'copy' fills fields from this record, like copy = {{ scheduled_on = "
+                        f"\"next_due\" }}.")
+        copy = {}
+    for into, source in copy.items():
+        target, origin = other.columns.get(into), table.columns.get(source) if isinstance(source, str) else None
+        if target is None or into in ask or into in fixed or into == link.name or target.sensitive or \
+                into in other_computed:
+            problems.append(f"{where}, adds, copy: '{into}' must be a public column of '{other.name}' that is not "
+                            f"asked, fixed or the link.")
+        elif origin is None or origin.sensitive or origin.type != target.type or origin.type not in \
+                ("date", "text", "integer", "choice", "boolean"):
+            problems.append(f"{where}, adds, copy: '{source}' must be a public column of '{table.name}' of the "
+                            f"same kind as '{into}'.")
     for column in other.columns.values():
         if column.required and column.default is None and column.name not in ask and column.name not in fixed \
                 and column.name != link.name:
@@ -969,7 +1026,7 @@ def _check_form_action(where: str, table: Table, tables: dict[str, Table], actio
         if latest.get("date") not in ask or _date_column(other, latest.get("date"), other_computed) is not None:
             problems.append(f"{where}, latest: 'date' must be one of the asked fields and a date, like "
                             f"date = \"done_on\".")
-        if (why := _date_column(table, latest.get("into"), computed)) is not None:
+        if "into" in latest and (why := _date_column(table, latest.get("into"), computed)) is not None:
             problems.append(f"{where}, latest: 'into' must be a date column of '{table.name}': {why}.")
         elif latest.get("into") in values:
             problems.append(f"{where}, latest: '{latest['into']}' is in set as well; choose one.")
@@ -985,7 +1042,7 @@ def _check_form_action(where: str, table: Table, tables: dict[str, Table], actio
         if (why := _date_column(table, next_date.get("into"), computed)) is not None:
             problems.append(f"{where}, next_date: 'into' must be a date column of '{table.name}': {why}.")
         elif next_date.get("into") in values or \
-                (isinstance(latest, dict) and next_date.get("into") == latest.get("into")):
+                (isinstance(latest, dict) and latest.get("into") and next_date.get("into") == latest.get("into")):
             problems.append(f"{where}, next_date: '{next_date['into']}' is filled in elsewhere in this action.")
         if not _words(next_date.get("question")):
             problems.append(f"{where}, next_date: 'question' is the heading above the choices, like "
@@ -1003,6 +1060,11 @@ def _check_form_action(where: str, table: Table, tables: dict[str, Table], actio
                     not {c.key for c in unit_col.choices} <= set(REPEAT_UNITS):
                 problems.append(f"{where}, next_date, repeat: 'unit' must name a choice column of '{table.name}' "
                                 f"whose choices are among {', '.join(REPEAT_UNITS)}.")
+            for part in ("from", "anchor"):
+                if isinstance(repeat, dict) and part in repeat and \
+                        (why := _date_column(table, repeat.get(part), computed)) is not None:
+                    problems.append(f"{where}, next_date, repeat: '{part}' must be a date column of "
+                                    f"'{table.name}': {why}.")
     helps = action.get("help", {})
     if not isinstance(helps, dict) or any(n not in ask or not _words(t) for n, t in helps.items()):
         problems.append(f"{where}: 'help' gives words under asked fields, like help = {{ done_on = \"The day the "
@@ -1012,7 +1074,7 @@ def _check_form_action(where: str, table: Table, tables: dict[str, Table], actio
             problems.append(f"{where}: '{name}' must be a short sentence.")
     if _words(action.get("title")) and _placeholders(action["title"]) - {"record"}:
         problems.append(f"{where}: 'title' may name only {{record}}, like title = \"Mark {{record}} done\".")
-    unknown = _placeholders(action["done"]) - set(ask)
+    unknown = _placeholders(action["done"]) - set(ask) - set(copy)
     if unknown:
         problems.append(f"{where}: 'done' may name only asked fields, like {{{ask[0]}}}, not "
                         f"{{{sorted(unknown)[0]}}}.")
@@ -1025,10 +1087,14 @@ def _check_form_action(where: str, table: Table, tables: dict[str, Table], actio
         problems.append(f"{where}, messages: each message must be a short sentence.")
     elif _placeholders(messages.get("same_day", "")) - {"date"}:
         problems.append(f"{where}, messages: 'same_day' may name only {{date}}.")
+    counts_as = action.get("counts_as", "done")
+    if counts_as not in COUNTS_AS:
+        problems.append(f"{where}: 'counts_as' is \"done\" or \"skipped\", for Things to do.")
     if len(problems) > count:
         return None
     return {"adds": {"table": other.name, "link": link.name, "ask": list(ask), "values": dict(fixed),
-                     "add_button": (adds.get("add_button") or "").strip() or None},
+                     "add_button": (adds.get("add_button") or "").strip() or None, "copy": dict(copy)},
+            "counts_as": counts_as,
             "latest": dict(latest) if latest else None,
             "next_date": {"into": next_date["into"], "question": next_date["question"].strip(),
                           "repeat": dict(next_date["repeat"]) if next_date.get("repeat") else None}

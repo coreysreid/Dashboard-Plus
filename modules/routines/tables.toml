@@ -1,0 +1,69 @@
+# A routine is a plain task the household chose, with one next date at a time (decision 0107). A repeat is
+# only ever chosen by the household: it offers the next date when a routine is marked done or skipped, and
+# never performs the task, fills in missed dates or marks a past date done. Each time is one Done or skipped
+# record, keeping the planned date beside the day it was done. Other modules' jobs (Home care, Garden) stay
+# in those modules; this module never ticks them. There is no field for alarm codes or how to get in.
+
+[tables.routines]
+title = "Routines"
+description = "Repeating tasks you choose yourself, each with its next date and, if you want one, a repeat."
+columns.name = { type = "text", required = true }
+columns.place = { type = "link", to = "stock.places", on_delete = "clear" }
+columns.who = { type = "link", to = "people.people", on_delete = "clear" }
+columns.repeat_count = { type = "integer", min = 1, max = 99 }
+columns.repeat_unit = { type = "choice", choices = ["days", "weeks", "months", "years"] }
+columns.first_due = { type = "date" }
+columns.next_due = { type = "date" }
+columns.last_done = { type = "date" }
+columns.paused = { type = "boolean", default = false }
+columns.notes = { type = "longtext" }
+
+# Mark this occurrence done: one save adds a Done or skipped record (keeping the planned date), sets Last done
+# and the next date the person chooses; Undo puts the open date back while nothing has changed since.
+[[tables.routines.actions]]
+key = "done"
+label = "Mark this occurrence done"
+title = "Mark “{record}” done"
+intro = "Record that it was done and choose the next date. Nothing changes until you save."
+done = "Marked done on {done_on}."
+undo = "Undo this tick"
+show_when = { paused = false }
+adds = { table = "times", link = "routine", ask = ["done_on", "done_by", "notes"], values = { outcome = "done" }, copy = { planned_for = "next_due" }, add_button = "Add an earlier time by hand (does not change the dates)" }
+latest = { date = "done_on", into = "last_done" }
+next_date = { into = "next_due", question = "Next planned date", repeat = { count = "repeat_count", unit = "repeat_unit", from = "next_due", anchor = "first_due" } }
+help = { done_on = "The day it was done.", done_by = "Choose one of your People if you want to.", notes = "Optional. Do not include alarm or access codes." }
+messages = { stale = "This task changed while you were looking at it. Check the current date and try again. Nothing was saved.", same_day = "This routine is already marked done on {date}.", undo_refused = "This routine has changed since that tick. Nothing was undone. Check its dates and its Done or skipped list before changing them." }
+
+# Skip this time: a decision, not a completion. It keeps the planned date and asks for the next one.
+[[tables.routines.actions]]
+key = "skip"
+label = "Skip this time"
+title = "Skip “{record}” this time"
+intro = "Skipping records that it was not done this time. No work is recorded as done."
+done = "Skipped the {planned_for} occurrence. No work was recorded as done."
+undo = "Undo this skip"
+counts_as = "skipped"
+show_when = { paused = false }
+adds = { table = "times", link = "routine", ask = ["done_on", "notes"], values = { outcome = "skipped" }, copy = { planned_for = "next_due" } }
+latest = { date = "done_on" }
+next_date = { into = "next_due", question = "Next planned date", repeat = { count = "repeat_count", unit = "repeat_unit", from = "next_due", anchor = "first_due" } }
+help = { done_on = "The day you decided to skip it.", notes = "Optional, such as away that week." }
+messages = { stale = "This task changed while you were looking at it. Check the current date and try again. Nothing was saved.", undo_refused = "This routine has changed since it was skipped. Nothing was undone. Check its dates before changing them." }
+
+[tables.routines.watch]
+# Only routines that are not paused remind; a paused routine keeps its dates and history.
+expiring = { date = "next_due", warn_days = 7, wording = "due", what = "routine", where = { paused = false } }
+
+[tables.times]
+title = "Done or skipped"
+description = "Each time a routine was done or skipped: the day it was planned for and the day it happened."
+record_name = "{routine}, {done_on}"
+columns.routine = { type = "link", to = "routines", required = true, on_delete = "cascade" }
+columns.outcome = { type = "choice", required = true, default = "done", choices = [
+  { key = "done", label = "Done" },
+  { key = "skipped", label = "Skipped this time" },
+] }
+columns.planned_for = { type = "date" }
+columns.done_on = { type = "date", required = true, default = "today" }
+columns.done_by = { type = "link", to = "people.people", on_delete = "clear" }
+columns.notes = { type = "longtext" }

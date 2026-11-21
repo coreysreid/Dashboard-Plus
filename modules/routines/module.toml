@@ -1,0 +1,8 @@
+name = "routines"
+title = "Routines"
+version = "1.0.0"
+description = "Your own repeating tasks, such as watering the pot plants or putting the bins out: the repeat you choose, one next date at a time, and each time it was done or skipped."
+core_api = "1"
+kind = "declarative"
+requires = ["people", "stock"]
+outbound_hosts = []

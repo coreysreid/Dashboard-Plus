@@ -106,7 +106,7 @@ class SetupTests(TempDirTestCase):
         self.post("/setup", {"name_1": "Person A", "modules": ["demo", "people"]})
         self.post("/t/demo__things/new", {"name": "Kept thing", "then": "done"})
         self.post("/settings", {"modules": ["people"], "second_copy": "yes"})
-        self.assertNotIn("Things", self.get("/").get_data(as_text=True))
+        self.assertNotIn("/t/demo__things", self.get("/").get_data(as_text=True))
         self.assertEqual(self.get("/t/demo__things").status_code, 404)
         self.assertEqual(self.query("SELECT name FROM demo__things"), [("Kept thing",)])
         self.post("/settings", {"modules": ["people", "demo"], "second_copy": "yes"})
