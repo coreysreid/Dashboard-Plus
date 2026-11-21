@@ -51,3 +51,4 @@ expected, actual, severity (blocker, important, minor), suggested change.
 | 2026-11-20-wine-final-check.md | Shipped Wine against all 15 old checks, including the Garcia example correction. | reviewing Wine promotion |
 | 2026-11-21-receipt-group-review.md | Live connector receipt rerun with source lines and dependent new-item Review decisions. | refining grouped receipt Review |
 | 2026-11-21-mac-preview-readthrough.md | Exact household wording changes and physical-Mac checks for the unsigned preview. | improving Mac preview guidance |
+| 2026-11-21-drills-ux.md | Three complete 320px drills, exact missing words, local numbers and private-answer checks. | accepting the shipped Think it through screens |
