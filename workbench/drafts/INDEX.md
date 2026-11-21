@@ -29,3 +29,4 @@ and made-up example rows. Add a row here for each draft folder you create.
 | sync/ | Optional main/member household sync, conflicts, privacy and offline bundles | deciding sync |
 | macos/ | Researched app-bundle build, data location and release checks | preparing a Mac release |
 | phone/ | Android and iOS member app options, first screens and acceptance checks | designing mobile sync |
+| think_it_through/ | Eight sourced scenario drills tied to household records | building readiness practice |
