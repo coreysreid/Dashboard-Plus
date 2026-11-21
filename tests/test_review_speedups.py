@@ -158,7 +158,8 @@ class AcceptAllTests(SpeedTestCase):
         result = self.receipt()
         self.spoil(self.ids(result)[1], {"item": {"ref": 0}, "reason": "bought", "amount": "lots"})
         page = self.follow(f"/review/batch/{result['batch_id']}/accept-all")
-        self.assertIn("Added 3 records. 2 could not be added and are still waiting: see the reasons below.", page)
+        self.assertIn("Added 2 to Stock in and out and 1 to Stock items. 2 could not be added and are still waiting: see "
+                      "the reasons below.", page)
         self.assertIn("Nothing in this group was added.", page)
         self.assertIn("Added together", page)
 
@@ -208,7 +209,7 @@ class TickedTests(SpeedTestCase):
         result = self.receipt()
         ids = self.ids(result)
         page = self.follow("/review/ticked/accept", {"ids": [str(ids[0]), str(ids[2])]})
-        self.assertIn("Added 3 records.", page)
+        self.assertIn("Added 1 to Stock items and 2 to Stock in and out.", page)
         page = self.follow("/review/ticked/reject", {"ids": [str(ids[4])]})
         self.assertIn("Rejected 2 rows. Nothing was added.", page)
         self.assertEqual(self.statuses(), ["accepted", "accepted", "accepted", "rejected", "rejected"])
@@ -285,7 +286,7 @@ class LayoutTests(SpeedTestCase):
         self.receipt()
         page = self.page()
         self.assertEqual(page.count("<strong>Added together</strong>"), 2)
-        self.assertIn("Ticking one ticks them all.", page)
+        self.assertIn("Ticking one ticks both, and Accept all or Accept ticked adds both or neither.", page)
         self.assertRegex(page, r"\.review-group \{[^}]*border-left: 6px solid var\(--accent\)")
         self.assertRegex(page, r"\.review-row \{[^}]*grid-template-columns: 2rem minmax\(0, 1fr\) var\(--decide\)")
         self.assertRegex(page, r"@media \(max-width: 40rem\) \{[^@]*--decide: 6rem")  # phone width: still a column

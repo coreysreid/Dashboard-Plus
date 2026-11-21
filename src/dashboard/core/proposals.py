@@ -10,9 +10,10 @@ import json
 import re
 import secrets
 import sqlite3
-from datetime import datetime, time, timezone
+from datetime import date, datetime, time, timezone
+from decimal import Decimal, InvalidOperation
 
-from dashboard.core import db, helpers
+from dashboard.core import db, helpers, receipts
 from dashboard.core.records import Records, ValidationError
 from dashboard.core.schema import target_table
 from dashboard.errors import PlainError
@@ -25,6 +26,11 @@ MAX_WHY = 300
 MAX_KEY = 100
 MAX_SOURCE_LINE = 200  # a receipt line, as the helper read it (decision 0097)
 MAX_SOURCE_PRICE = 20
+MAX_QUANTITY_HINT = 20  # an unmatched receipt line's amount, as text (decision 0105)
+MAX_UNIT_HINT = 30
+MAX_SHOP_LABEL = 80
+UNMATCHED_LINE = receipts.UNMATCHED_LINE
+LINE_KEYS = {"kind", "source", "receipt_date", "quantity_hint", "unit_hint"}
 REQUEST_KEY = re.compile(r"^[A-Za-z0-9._:-]+$")
 # Something shaped like a helper key (decision 0066). Keys belong only in the Authorization header.
 KEY_LIKE = re.compile(re.escape(helpers.KEY_PREFIX) + r"[A-Za-z0-9_-]{8,}")
@@ -155,6 +161,10 @@ def _screen(body) -> None:
         raise ProposalError(400, "hidden_characters",
                             "This request contains hidden control characters, such as marks that turn text "
                             "around on screen. Remove them and send it again. Line breaks are fine.")
+    if any(receipts.looks_like_a_card(t) for t in texts):
+        raise ProposalError(400, "payment_detail",
+                            "This request contains a long number shaped like a payment card number. Leave card, "
+                            "loyalty and account numbers out of receipt lines and send it again.")
 
 
 def _read_source(source) -> dict:
@@ -175,10 +185,78 @@ def _read_source(source) -> dict:
     return cleaned
 
 
-def _read_body(body) -> tuple[str, str, list[tuple[str, dict]], list[dict | None]]:
-    """Check the shape of a request and return (request_key, why, [(table, values)], [source or None])."""
+def _real_date(value) -> bool:
+    """True for a real date written 2026-11-20."""
+    if not isinstance(value, str) or len(value) != 10:
+        return False
+    try:
+        date.fromisoformat(value)
+    except ValueError:
+        return False
+    return True
+
+
+def _read_line(position: int, entry: dict) -> tuple[dict, dict]:
+    """A receipt line the helper read but could not match to a record (decision 0105): (hints, source).
+
+    It carries the line itself and, optionally, the date on the paper and the amount and unit as printed. These
+    are hints shown on Review for the person to confirm, never values saved in the records."""
+    if set(entry) - LINE_KEYS or entry.get("kind") != UNMATCHED_LINE:
+        raise _bad(f'Entry {position}: a receipt line the helper could not match must look like {{"kind": '
+                   f'"{UNMATCHED_LINE}", "source": {{"line": "TOM SPECIAL 400G 1 @ 1.50"}}}}, optionally with '
+                   f'receipt_date, quantity_hint and unit_hint, and no table or values.')
+    source = _read_source(entry.get("source"))
+    if "line" not in source:
+        raise _bad(f"Entry {position}: a receipt line the helper could not match needs the line itself, as "
+                   f"source.line.")
+    if receipts.not_a_good(source["line"]):
+        raise _bad(f"Entry {position} looks like a total, tax, payment, coupon or refund line, not something "
+                   f"bought. Leave it out, and tell the person about it in your conversation instead.")
+    hints = {}
+    if "receipt_date" in entry:
+        if not _real_date(entry["receipt_date"]):
+            raise _bad(f"Entry {position}: receipt_date must be a real date written 2026-11-20.")
+        hints["receipt_date"] = entry["receipt_date"]
+    if "quantity_hint" in entry:
+        value = entry["quantity_hint"]
+        try:
+            number = Decimal(value.strip()) if isinstance(value, str) and len(value) <= MAX_QUANTITY_HINT else None
+        except InvalidOperation:
+            number = None
+        if number is None or not number.is_finite() or number <= 0:
+            raise _bad(f'Entry {position}: quantity_hint must be a number above 0, written as text, like "2" or '
+                       f'"0.82" ({MAX_QUANTITY_HINT} characters at most).')
+        hints["quantity_hint"] = value.strip()
+    if "unit_hint" in entry:
+        value = entry["unit_hint"]
+        if not isinstance(value, str) or not 1 <= len(value.strip()) <= MAX_UNIT_HINT:
+            raise _bad(f'Entry {position}: unit_hint must be text of 1 to {MAX_UNIT_HINT} characters, like "tin".')
+        hints["unit_hint"] = value.strip()
+    return hints, source
+
+
+def _read_context(value) -> dict:
+    """A request's optional `receipt_context`: the purchase date on the paper and the shop's name (decision 0105)."""
+    if not isinstance(value, dict) or set(value) - {"purchase_date", "shop_label"} or "purchase_date" not in value:
+        raise _bad('A receipt_context must look like {"purchase_date": "2026-11-20", "shop_label": "Example Market"}; '
+                   'the shop is optional.')
+    if not _real_date(value["purchase_date"]):
+        raise _bad("receipt_context.purchase_date must be a real date written 2026-11-20.")
+    context = {"purchase_date": value["purchase_date"]}
+    if "shop_label" in value:
+        shop = value["shop_label"]
+        if not isinstance(shop, str) or not 1 <= len(shop.strip()) <= MAX_SHOP_LABEL:
+            raise _bad(f"receipt_context.shop_label must be text of 1 to {MAX_SHOP_LABEL} characters.")
+        context["shop_label"] = shop.strip()
+    return context
+
+
+def _read_body(body) -> tuple[str, str, list[tuple[str | None, dict]], list[dict | None], dict | None]:
+    """Check the shape of a request and return (request_key, why, [(table, values)], [source or None], context).
+
+    A receipt line the helper could not match (decision 0105) is (None, its hints) in the list of entries."""
     _screen(body)
-    if not isinstance(body, dict) or set(body) - {"request_key", "why", "entries"}:
+    if not isinstance(body, dict) or set(body) - {"request_key", "why", "entries", "receipt_context"}:
         raise _bad()
     key = body.get("request_key")
     if not isinstance(key, str) or not 1 <= len(key) <= MAX_KEY or not REQUEST_KEY.match(key):
@@ -191,22 +269,37 @@ def _read_body(body) -> tuple[str, str, list[tuple[str, dict]], list[dict | None
         raise _bad()
     if len(entries) > MAX_ENTRIES:
         raise _bad(f"Send {MAX_ENTRIES} suggestions or fewer at a time.")
+    context = _read_context(body["receipt_context"]) if "receipt_context" in body else None
     found, sources = [], []
-    for entry in entries:
+    for position, entry in enumerate(entries):
+        if isinstance(entry, dict) and "kind" in entry:
+            hints, source = _read_line(position, entry)
+            found.append((None, hints))
+            sources.append(source)
+            continue
         if not isinstance(entry, dict) or not {"table", "values"} <= set(entry) <= {"table", "values", "source"} \
                 or not isinstance(entry["table"], str) or not isinstance(entry["values"], dict):
             raise _bad()
         found.append((entry["table"], entry["values"]))
         sources.append(_read_source(entry["source"]) if "source" in entry else None)
-    return key, why.strip(), found, sources
+    return key, why.strip(), found, sources, context
 
 
-def _body_hash(why: str, entries: list[tuple[str, dict]], sources: list[dict | None] | None = None) -> str:
-    """A fingerprint of a request. An entry without a source hashes exactly as it did before decision 0097."""
+def _body_hash(why: str, entries: list[tuple[str | None, dict]], sources: list[dict | None] | None = None,
+               context: dict | None = None) -> str:
+    """A fingerprint of a request. An entry without a source hashes exactly as it did before decision 0097, and a
+    request with no receipt lines and no receipt context exactly as before decision 0105."""
     sources = sources or [None] * len(entries)
-    text = json.dumps({"why": why, "entries": [[t, v] if s is None else [t, v, s]
-                                               for (t, v), s in zip(entries, sources)]}, sort_keys=True)
-    return hashlib.sha256(text.encode("utf-8")).hexdigest()
+    shown = []
+    for (t, v), s in zip(entries, sources):
+        if t is None:
+            shown.append([UNMATCHED_LINE, v, s])
+        else:
+            shown.append([t, v] if s is None else [t, v, s])
+    body = {"why": why, "entries": shown}
+    if context is not None:
+        body["receipt_context"] = context
+    return hashlib.sha256(json.dumps(body, sort_keys=True).encode("utf-8")).hexdigest()
 
 
 # ----- one entry pointing at an earlier one: {"ref": 0} (decision 0097) -------------------------------
@@ -236,6 +329,9 @@ def _ref_problem(registry: dict, entries: list[tuple[str, dict]], position: int,
             return "points at an earlier entry, but this is the first entry in the request."
         return f"points at entry {ref}, but it can only point at an earlier entry in this request (0 to {position - 1})."
     wanted, given = target_table(info.module.name, column), entries[ref][0]
+    if given is None:
+        return (f"points at entry {ref}, which is a receipt line the helper could not match, not a new record. "
+                f"Only a new record can be pointed at.")
     if given != wanted:
         return (f"points at entry {ref}, which would add to {_title(registry[given])}, "
                 f"but this field links to {_title(registry[wanted]) if wanted in registry else wanted}.")
@@ -250,6 +346,12 @@ def _resolve_refs(values: dict, made: dict[int, int]) -> dict:
     if missing:
         raise ValidationError(missing)
     return dict(values, **{field: made[ref] for field, ref in found.items()})
+
+
+def _renumbered(message: str, kept: list[int]) -> str:
+    """A dry-run message names entries as the request numbers them, receipt lines included."""
+    return re.sub(r"entry (\d+)", lambda m: f"entry {kept[int(m.group(1))]}" if int(m.group(1)) < len(kept)
+                  else m.group(0), message)
 
 
 def _check_tables(helper: helpers.Helper, registry: dict, entries: list[tuple[str, dict]]) -> None:
@@ -276,6 +378,8 @@ def _shape_problems(helper: helpers.Helper, registry: dict, entries: list[tuple[
     """Problems found by looking at field names and kinds of value alone, before anything is tried."""
     problems = []
     for position, (name, values) in enumerate(entries):
+        if name is None:  # a receipt line the helper could not match: its shape was checked when read
+            continue
         info = registry[name]
         needs_private = [c.name for c in info.table.columns.values() if c.sensitive and c.required]
         if needs_private:
@@ -337,23 +441,35 @@ def submit(conn: sqlite3.Connection, registry: dict, helper: helpers.Helper, bod
     if not helper.may_suggest:
         raise ProposalError(403, "look_only", "This helper may look but not suggest changes. "
                                               "Ask the household to change its access in Settings.")
-    key, why, entries, sources = _read_body(body)
-    digest = _body_hash(why, entries, sources)
+    key, why, entries, sources, context = _read_body(body)
+    digest = _body_hash(why, entries, sources, context)
     stored = conn.execute("SELECT id, body_hash FROM core__helper_batches WHERE helper_id = ? AND request_key = ?",
                           (helper.id, key)).fetchone()
     if stored:
         return _same_or_refuse(conn, stored, digest), False
     _check_limits(conn, helper, len(entries), queue_limit)
-    _check_tables(helper, registry, entries)
+    line_table = None
+    if any(name is None for name, _values in entries):  # receipt lines wait for a Stock in the person chooses
+        line_table = receipts.line_table({n: i for n, i in registry.items() if i.module.name in helper.modules})
+        if line_table is None:
+            raise ProposalError(404, "not_found", "This helper has no list a receipt line could be added to. "
+                                                  "GET /api/v1/tables lists what this helper may use.")
+    _check_tables(helper, registry, [(n, v) for n, v in entries if n is not None])
     problems = _shape_problems(helper, registry, entries)
     if not problems:
         # A new item may carry its starting amount, use-by date and place, as the person's own add form does:
-        # accepting it adds the item and its first batch together (decision 0102).
-        wrong = Records(conn, registry).check_create(entries, helper.actor, starting_amounts=True,
-                                                     resolve=_resolve_refs)
-        problems = [{"entry": position, "table": entries[position][0], "field": field[:60],
-                     "message": _with_link_hint(registry, entries[position][0], field, message)}
-                    for position, fields in sorted(wrong.items()) for field, message in fields.items()]
+        # accepting it adds the item and its first batch together (decision 0102). Receipt lines are left out
+        # of the dry run, and refs are counted among the records only.
+        kept = [position for position, (name, _values) in enumerate(entries) if name is not None]
+        index = {position: number for number, position in enumerate(kept)}
+        dry = [(entries[p][0], {f: ({"ref": index[ref_of(v)]} if ref_of(v) in index else v)
+                                for f, v in entries[p][1].items()}) for p in kept]
+        wrong = Records(conn, registry).check_create(dry, helper.actor, starting_amounts=True,
+                                                     resolve=_resolve_refs) if dry else {}
+        problems = [{"entry": kept[number], "table": entries[kept[number]][0], "field": field[:60],
+                     "message": _with_link_hint(registry, entries[kept[number]][0], field,
+                                                _renumbered(message, kept))}
+                    for number, fields in sorted(wrong.items()) for field, message in fields.items()]
     if problems:
         raise _invalid(registry, problems)
     now = _now()
@@ -366,13 +482,17 @@ def submit(conn: sqlite3.Connection, registry: dict, helper: helpers.Helper, bod
             # Checked again inside the write lock, so two requests at the same moment cannot both pass (0088).
             _check_limits(conn, helper, len(entries), queue_limit)
             batch_id = conn.execute(
-                "INSERT INTO core__helper_batches (helper_id, request_key, body_hash, why, created_at) "
-                "VALUES (?, ?, ?, ?, ?)", (helper.id, key, digest, why, now)).lastrowid
+                "INSERT INTO core__helper_batches (helper_id, request_key, body_hash, why, created_at, receipt_json) "
+                "VALUES (?, ?, ?, ?, ?, ?)", (helper.id, key, digest, why, now,
+                                              json.dumps(context, sort_keys=True) if context else None)).lastrowid
             for position, ((name, values), source) in enumerate(zip(entries, sources)):
+                kind = "record" if name is not None else "receipt_line"
+                name = name or line_table
                 proposal_id = conn.execute(
-                    "INSERT INTO core__proposals (batch_id, position, table_name, values_json, created_at, source_json) "
-                    "VALUES (?, ?, ?, ?, ?, ?)", (batch_id, position, name, json.dumps(values, sort_keys=True), now,
-                                                  json.dumps(source, sort_keys=True) if source else None)).lastrowid
+                    "INSERT INTO core__proposals (batch_id, position, table_name, values_json, created_at, source_json, "
+                    "entry_kind) VALUES (?, ?, ?, ?, ?, ?, ?)",
+                    (batch_id, position, name, json.dumps(values, sort_keys=True), now,
+                     json.dumps(source, sort_keys=True) if source else None, kind)).lastrowid
                 conn.execute("INSERT INTO core__audit (at, actor, action, table_name, record_id, before, after, batch_id) "
                              "VALUES (?, ?, 'propose', 'core__proposals', ?, NULL, ?, ?)",
                              (now, helper.actor, proposal_id, json.dumps({"table": name, "batch": batch_id}), batch_id))
@@ -422,6 +542,8 @@ def batch_result(conn: sqlite3.Connection, batch_id: int, detail: bool = False) 
     proposals = []
     for r in rows:
         item = {"id": r["id"], "position": r["position"], "table": r["table_name"], "status": r["status"]}
+        if r["entry_kind"] == "receipt_line":  # decision 0105: accepted means a person added a Stock in for it
+            item["kind"] = UNMATCHED_LINE
         depends = sorted(set(refs_in(json.loads(r["values_json"])).values()))
         if depends:
             item["depends_on"] = depends
@@ -429,7 +551,12 @@ def batch_result(conn: sqlite3.Connection, batch_id: int, detail: bool = False) 
             item.update(record_id=r["record_id"], reason=r["reason"], decided_at=r["decided_at"])
         proposals.append(item)
     waiting = sum(1 for r in rows if r["status"] == "pending")
-    if waiting:
+    lines = sum(1 for r in rows if r["status"] == "pending" and r["entry_kind"] == "receipt_line")
+    if lines:
+        ready = waiting - lines
+        message = (f"{ready} suggestion{' is' if ready == 1 else 's are'} ready to check and {lines} receipt "
+                   f"line{' needs' if lines == 1 else 's need'} the household's choice. Nothing has changed yet.")
+    elif waiting:
         message = (f"{waiting} suggestion{' is' if waiting == 1 else 's are'} waiting for the household to review. "
                    f"Nothing changes until they accept {'it' if waiting == 1 else 'them'}.")
     else:
@@ -477,11 +604,13 @@ def import_actor(source_name: str) -> str:
     return f"import:{slug or 'spreadsheet'}"
 
 
-def stage_import(conn: sqlite3.Connection, source_name: str, rows: list[tuple[int, str, dict]]) -> int:
+def stage_import(conn: sqlite3.Connection, source_name: str, rows: list[tuple[int, str, dict]],
+                 receipt: dict | None = None) -> int:
     """Keep imported rows waiting for Review as one batch, and return its id. Nothing in the records changes.
 
     `rows` holds (spreadsheet row number, table, values), already checked by the caller with the same dry run
-    helpers' suggestions get (Records.check_create). They are checked again, for real, on Accept."""
+    helpers' suggestions get (Records.check_create). They are checked again, for real, on Accept. `receipt`
+    ({"purchase_date": ...}) says the person ticked "These rows are from one receipt" (decision 0105)."""
     if not rows:
         raise PlainError("There are no rows ready to send.")
     source_name = source_label(source_name)
@@ -490,9 +619,10 @@ def stage_import(conn: sqlite3.Connection, source_name: str, rows: list[tuple[in
     now = _now()
     with db.transaction(conn):
         batch_id = conn.execute(
-            "INSERT INTO core__helper_batches (kind, helper_id, source_name, request_key, body_hash, why, created_at) "
-            "VALUES ('import', NULL, ?, ?, ?, ?, ?)",
-            (source_name, f"import-{secrets.token_hex(8)}", _body_hash(why, entries), why, now)).lastrowid
+            "INSERT INTO core__helper_batches (kind, helper_id, source_name, request_key, body_hash, why, created_at, "
+            "receipt_json) VALUES ('import', NULL, ?, ?, ?, ?, ?, ?)",
+            (source_name, f"import-{secrets.token_hex(8)}", _body_hash(why, entries), why, now,
+             json.dumps(_read_context(receipt), sort_keys=True) if receipt else None)).lastrowid
         for position, (row_number, table, values) in enumerate(rows):
             proposal_id = conn.execute(
                 "INSERT INTO core__proposals (batch_id, position, table_name, values_json, created_at, source_row) "
@@ -517,22 +647,31 @@ def pending(conn: sqlite3.Connection) -> list[dict]:
     `helper` names the author: the helper's name, or "Import 'pantry.csv'" for a person's import. Each row has
     its `source` (the line a helper read it from, or None) and `refs` ({field: earlier position}). `groups`
     holds the waiting rows again, gathered so that rows pointing at each other sit together (decision 0097),
-    and `made` maps the position of each row already accepted to its new record's id."""
+    and `made` maps the position of each row already accepted to its new record's id.
+
+    `lines` holds the batch's receipt lines the helper could not match (decision 0105), waiting or decided: a
+    batch with any stays here until the person presses "Finish receipt review", so a skip can be undone."""
     batches = conn.execute(
         "SELECT b.*, h.name AS helper_name, h.revoked_at AS helper_revoked_at FROM core__helper_batches b "
         "LEFT JOIN core__helpers h ON h.id = b.helper_id WHERE EXISTS "
-        "(SELECT 1 FROM core__proposals p WHERE p.batch_id = b.id AND p.status = 'pending') "
+        "(SELECT 1 FROM core__proposals p WHERE p.batch_id = b.id AND (p.status = 'pending' "
+        "OR (p.entry_kind = 'receipt_line' AND b.finished_at IS NULL))) "
         "ORDER BY b.id DESC").fetchall()
     found = []
     for b in batches:
         every = conn.execute("SELECT * FROM core__proposals WHERE batch_id = ? ORDER BY position", (b["id"],)).fetchall()
-        rows = [_row_dict(r) for r in every if r["status"] == "pending"]
+        rows = [_row_dict(r) for r in every if r["status"] == "pending" and r["entry_kind"] == "record"]
         imported = b["kind"] == "import"
         found.append({"id": b["id"], "kind": b["kind"], "source_name": b["source_name"],
                       "helper": f"Import '{b['source_name']}'" if imported else b["helper_name"],
                       "helper_off": not imported and b["helper_revoked_at"] is not None,
                       "why": b["why"], "created_at": b["created_at"], "total": len(every),
                       "proposals": rows, "groups": _groups(rows),
+                      "lines": [_row_dict(r) for r in every if r["entry_kind"] == "receipt_line"],
+                      "receipt": json.loads(b["receipt_json"]) if b["receipt_json"] else None,
+                      "decided": {"accepted": sum(1 for r in every if r["status"] == "accepted"),
+                                  "rejected": sum(1 for r in every if r["status"] == "rejected"
+                                                  and r["entry_kind"] == "record")},
                       "made": {r["position"]: r["record_id"] for r in every if r["status"] == "accepted"}})
     return found
 
@@ -579,6 +718,8 @@ def _load(conn, proposal_id: int):
         raise PlainError("That suggestion could not be found.")
     if row["status"] != "pending":
         raise PlainError("That suggestion has already been decided.")
+    if row["entry_kind"] != "record":
+        raise PlainError("That is a receipt line the helper could not match: choose an item for it or skip it.")
     return row
 
 
@@ -672,8 +813,10 @@ def accept_counted(conn: sqlite3.Connection, registry: dict, proposal_id: int) -
             raise
     store = Records(conn, registry)
     failing, failing_info = row, None
+    receipts.guard(conn, registry, row["batch_id"])  # a possible repeat receipt waits for the person (0105)
     try:
         with db.transaction(conn):
+            receipts.guard(conn, registry, row["batch_id"])  # again under the write lock
             for needed, info, values, actor in plan:
                 failing, failing_info = needed, info
                 _claim(conn, needed["id"], "accepted")  # first, so a second click or window cannot add it again
@@ -745,12 +888,15 @@ def reject_counted(conn: sqlite3.Connection, proposal_id: int) -> tuple[str, int
 
 
 def _waiting_ids(conn, batch_id: int) -> list[int]:
+    """The batch's waiting suggested records. Receipt lines are never rejected with them: each is skipped by hand."""
     return [r["id"] for r in conn.execute(
-        "SELECT id FROM core__proposals WHERE batch_id = ? AND status = 'pending' ORDER BY position", (batch_id,))]
+        "SELECT id FROM core__proposals WHERE batch_id = ? AND status = 'pending' AND entry_kind = 'record' "
+        "ORDER BY position", (batch_id,))]
 
 
 def _still_waiting(conn, proposal_id: int):
-    return conn.execute("SELECT * FROM core__proposals WHERE id = ? AND status = 'pending'", (proposal_id,)).fetchone()
+    return conn.execute("SELECT * FROM core__proposals WHERE id = ? AND status = 'pending' AND entry_kind = 'record'",
+                        (proposal_id,)).fetchone()
 
 
 IN_GROUP_FAILED = ("This is added together with the rows in its group, and one of them cannot be added yet: see "
@@ -766,17 +912,23 @@ def _hold(conn, ids_reasons: list[tuple[int, str]]) -> None:
                          (reason, proposal_id))
 
 
-def accept_group(conn: sqlite3.Connection, registry: dict, positions: set[int], batch_id: int) -> tuple[int, list[str]]:
+def accept_group(conn: sqlite3.Connection, registry: dict, positions: set[int], batch_id: int,
+                 tally: dict | None = None) -> tuple[int, list[str]]:
     """Accept the waiting rows of one group (decision 0101): all of them in one transaction, or none.
 
     Rows are added earliest first, so a new item is made before its Stock in. If any row cannot be added, nothing
     in the group is: the reason is kept on that row, and the others say why they wait. Returns (added, [one
-    reason for each row still waiting])."""
+    reason for each row still waiting]). `tally`, if given, counts what was added by table (decision 0105)."""
     rows = _batch_rows(conn, batch_id)
     made = {p: r["record_id"] for p, r in rows.items() if r["status"] == "accepted"}
-    waiting = [rows[p] for p in sorted(positions) if p in rows and rows[p]["status"] == "pending"]
+    waiting = [rows[p] for p in sorted(positions) if p in rows and rows[p]["status"] == "pending"
+               and rows[p]["entry_kind"] == "record"]
     if not waiting:
         return 0, []
+    try:
+        receipts.guard(conn, registry, batch_id)  # a possible repeat receipt waits for the person (0105)
+    except receipts.RepeatHeld as held:
+        return 0, [str(held)] * len(waiting)
     mine = {r["position"] for r in waiting}
 
     def needs(row, failing: int) -> bool:
@@ -813,6 +965,7 @@ def accept_group(conn: sqlite3.Connection, registry: dict, positions: set[int], 
     failing, failing_info = waiting[0], None
     try:
         with db.transaction(conn):
+            receipts.guard(conn, registry, batch_id)  # again under the write lock
             for row, info, values, actor in plan:
                 failing, failing_info = row, info
                 _claim(conn, row["id"], "accepted")  # first, so a second click or window cannot add it again
@@ -826,28 +979,35 @@ def accept_group(conn: sqlite3.Connection, registry: dict, positions: set[int], 
                 made[row["position"]] = record_id
     except ValidationError as error:
         return fail(failing, _why_not(store, failing_info, error))
+    except receipts.RepeatHeld as held:  # it became a possible repeat meanwhile: nothing here changed
+        return 0, [str(held)] * len(waiting)
     except PlainError as error:
         if "already been decided" in str(error):  # decided meanwhile in another window: nothing here changed
             return 0, []
         return fail(failing, str(error))
+    if tally is not None:
+        for row, info, _values, _actor in plan:
+            tally[info.name] = tally.get(info.name, 0) + 1
     return len(plan), []
 
 
 def groups_of(conn: sqlite3.Connection, batch_id: int) -> list[set[int]]:
     """The positions of each group of waiting rows in a batch, as Review shows them (decision 0097)."""
-    every = conn.execute("SELECT * FROM core__proposals WHERE batch_id = ? AND status = 'pending' ORDER BY position",
-                         (batch_id,)).fetchall()
+    every = conn.execute("SELECT * FROM core__proposals WHERE batch_id = ? AND status = 'pending' "
+                         "AND entry_kind = 'record' ORDER BY position", (batch_id,)).fetchall()
     return [{r["position"] for r in group} for group in _groups([_row_dict(r) for r in every])]
 
 
-def accept_batch(conn: sqlite3.Connection, registry: dict, batch_id: int) -> tuple[int, list[str]]:
+def accept_batch(conn: sqlite3.Connection, registry: dict, batch_id: int,
+                 tally: dict | None = None) -> tuple[int, list[str]]:
     """Accept every waiting row of a batch, group by group, earliest first. Returns (added, [reasons for the rest]).
 
     Each group (a row and the rows it points at or that point at it) is one transaction: if any row of it cannot
-    be added, none of the group is, and the reason stays on it. Other groups still go through (decision 0101)."""
+    be added, none of the group is, and the reason stays on it. Other groups still go through (decision 0101).
+    Receipt lines the helper could not match are never part of it: they wait for the person's choice (0105)."""
     added, failed = 0, []
     for group in groups_of(conn, batch_id):
-        done, reasons = accept_group(conn, registry, group, batch_id)
+        done, reasons = accept_group(conn, registry, group, batch_id, tally)
         added, failed = added + done, failed + reasons
     return added, failed
 
@@ -865,11 +1025,12 @@ def _ticked_groups(conn, proposal_ids) -> list[tuple[int, set[int]]]:
     return found
 
 
-def accept_ticked(conn: sqlite3.Connection, registry: dict, proposal_ids) -> tuple[int, list[str]]:
+def accept_ticked(conn: sqlite3.Connection, registry: dict, proposal_ids,
+                  tally: dict | None = None) -> tuple[int, list[str]]:
     """Accept the ticked rows, each with the whole group it belongs to; each group is all or nothing."""
     added, failed = 0, []
     for batch_id, group in _ticked_groups(conn, proposal_ids):
-        done, reasons = accept_group(conn, registry, group, batch_id)
+        done, reasons = accept_group(conn, registry, group, batch_id, tally)
         added, failed = added + done, failed + reasons
     return added, failed
 

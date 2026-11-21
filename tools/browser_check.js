@@ -247,6 +247,32 @@ function expect(condition, message) { if (!condition) throw new Failed(message);
     ok(`Mark done: "${job.name}" saved once with Do again by ${job.next} (double click), then undone back to ${before}`);
   }
 
+  async function checkReceiptLine(r) {  // a receipt line the helper could not match (decision 0105)
+    expect((await text('[data-line=waiting]')).includes(r.line), 'The unmatched receipt line should still wait after Accept all.');
+    await page.setViewportSize({ width: 320, height: 800 });
+    const wide = async (what) => {
+      const sideways = await page.evaluate(() => document.documentElement.scrollWidth - window.innerWidth);
+      expect(sideways <= 0, `At 320px wide, ${what} scrolls sideways by ${sideways}px.`);
+    };
+    await wide('Review with a receipt line');
+    await Promise.all([page.waitForNavigation(), page.click('[data-line=waiting] a:has-text("Choose item")')]);
+    await wide('Choose item');
+    const choice = await page.locator('#line-item option').evaluateAll(
+      (els, name) => (els.find((e) => e.textContent.startsWith(name)) || {}).value, r.existing);
+    expect(choice, `Choose item should offer ${r.existing}.`);
+    await page.selectOption('#line-item', choice);
+    await Promise.all([page.waitForNavigation(), page.click('button:has-text("Next")')]);
+    expect(await page.inputValue('#line-amount') === r.hint, 'A hint in the item\'s own unit should fill the amount for the person to check.');
+    await wide('the amount form');
+    await submit('button:has-text("Save this Stock in")');
+    const said = await text('[role=status]');
+    expect(said.includes(`Added 1 tin of ${r.existing}`) && said.includes('from this line'), `Saving should say what the line added; Review says "${said}".`);
+    await submit('button:has-text("Finish receipt review")');
+    expect((await text('[role=status]')).includes('Finished this receipt'), 'Finish receipt review should close the receipt.');
+    await page.setViewportSize({ width: 1280, height: 900 });
+    ok(`Review: an unmatched receipt line waits after Accept all, Choose item adds 1 tin of ${r.existing} at 320px, and Finish receipt review closes it`);
+  }
+
   async function checkImport() {  // Import from a spreadsheet: read in the page, checked, sent to Review, accepted (decision 0080)
     const c = plan.csv;
     await goto('/settings/import?table=stock__items');
@@ -316,11 +342,13 @@ function expect(condition, message) { if (!condition) throw new Failed(message);
     await Promise.all([page.waitForNavigation(), page.keyboard.press('a')]);
     expect((await text('[role=status]')).includes('Added to Stock in and out.'), `A should accept the highlighted row; Review says "${await text('[role=status]')}".`);
     expect(await rows() === r.rows - 1, 'After A, the accepted row should be gone from Review.');
-    await page.click(`summary:has-text("Accept all ${r.rows - 1}")`);
+    expect((await text('.review-group .group-label')).includes('Accepting only the Stock item leaves the Stock in waiting'), 'The group should say what accepting only the new item does.');
+    await page.click(`summary:has-text("Accept ${r.rows - 1} ready rows; 1 line still needs your choice")`);
     expect((await text('details.confirm-all[open]')).includes('1 to Stock items and 1 to Stock in and out'), 'Accept all should say which lists get records.');
-    await submit(`button:has-text("Yes, accept all ${r.rows - 1}")`);
-    expect((await text('[role=status]')).includes(`Added ${r.rows - 1} records.`), `Accept all should add the group; Review says "${await text('[role=status]')}".`);
+    await submit(`button:has-text("Yes, accept these ${r.rows - 1}")`);
+    expect((await text('[role=status]')).includes('Added 1 to Stock items and 1 to Stock in and out.'), `Accept all should add the group and name what it added; Review says "${await text('[role=status]')}".`);
     ok(`Review: Accept and Reject stay in one column at 1280px and 375px; J, K and arrows move, Space ticks a whole group, A accepts, keys in a field do nothing; Accept all asks first, then adds "${r.item}" with its Stock in`);
+    await checkReceiptLine(r);
   }
 
   async function checkPrivateDetail() {

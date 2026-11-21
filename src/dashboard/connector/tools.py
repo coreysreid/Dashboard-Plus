@@ -22,6 +22,25 @@ SOURCE = {"type": "object", "additionalProperties": False,
                          "saved in the records (decision 0097).",
           "properties": {"line": {"type": "string", "minLength": 1, "maxLength": 200},
                          "price": {"type": "string", "minLength": 1, "maxLength": 20}}}
+RECORD_ENTRY = {"type": "object", "properties": {"table": TABLE, "values": {"type": "object"}, "source": SOURCE},
+                "required": ["table", "values"], "additionalProperties": False}
+# A receipt line the helper read but could not match to a Stock item (decision 0105): it waits on Review for the
+# person to choose the item and confirm the amount, or skip it. Hints only; nothing in it is saved in the records.
+UNMATCHED_LINE = {"type": "object", "additionalProperties": False, "required": ["kind", "source"], "properties": {
+    "kind": {"type": "string", "enum": ["unmatched_product_line"]},
+    "source": dict(SOURCE, required=["line"]),
+    "receipt_date": {"type": "string", "minLength": 10, "maxLength": 10, "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}$",
+                     "description": "The date printed on the receipt, if you can read it, like 2026-11-20."},
+    "quantity_hint": {"type": "string", "minLength": 1, "maxLength": 20,
+                      "description": "The amount as printed, like \"1\" or \"0.82\". Leave it out if unsure."},
+    "unit_hint": {"type": "string", "minLength": 1, "maxLength": 30,
+                  "description": "The unit as printed, like \"tin\" or \"kg\". Leave it out if unsure."}}}
+RECEIPT_CONTEXT = {"type": "object", "additionalProperties": False, "required": ["purchase_date"],
+                   "description": "Optional, when every entry comes from one receipt: its date and shop. Review then "
+                                  "warns the household if the same purchase was sent before.",
+                   "properties": {"purchase_date": {"type": "string", "minLength": 10, "maxLength": 10,
+                                                    "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}$"},
+                                  "shop_label": {"type": "string", "minLength": 1, "maxLength": 80}}}
 
 
 @dataclass(frozen=True)
@@ -96,13 +115,18 @@ TOOLS = [
          "Place and a Stock item kept there), put the new record first and set the link to {\"ref\": N}, N being "
          "that earlier entry's position from 0; the household sees them as one group. An entry may carry a "
          "`source`, the line it was read from and its price, like {\"line\": \"KIDNEY BEANS 400G x2\", "
-         "\"price\": \"3.80\"}: it is shown on Review for checking and never saved in the records.",
+         "\"price\": \"3.80\"}: it is shown on Review for checking and never saved in the records. When reading one "
+         "receipt, add `receipt_context` with its purchase_date (and shop_label), so the household is warned if the "
+         "same receipt is sent twice. A bought product line you cannot match to a Stock item may be sent as "
+         "{\"kind\": \"unmatched_product_line\", \"source\": {\"line\": ...}} with optional receipt_date, "
+         "quantity_hint and unit_hint: the person chooses the item and amount on Review. Never send totals, tax, "
+         "discounts, payments or card numbers; say so in your conversation instead.",
          {"type": "object", "properties": {
              "request_key": {"type": "string", "minLength": 1, "maxLength": 100, "pattern": "^[A-Za-z0-9._:-]+$"},
              "why": {"type": "string", "minLength": 1, "maxLength": 300},
-             "entries": {"type": "array", "minItems": 1, "maxItems": 50, "items": {
-                 "type": "object", "properties": {"table": TABLE, "values": {"type": "object"}, "source": SOURCE},
-                 "required": ["table", "values"], "additionalProperties": False}}},
+             "entries": {"type": "array", "minItems": 1, "maxItems": 50,
+                         "items": {"anyOf": [RECORD_ENTRY, UNMATCHED_LINE]}},
+             "receipt_context": RECEIPT_CONTEXT},
           "required": ["request_key", "why", "entries"], "additionalProperties": False},
          "POST", lambda a: "/proposals", send_body=True),
     Tool("dashboard_list_suggestion_batches", "List my suggestions",
@@ -128,6 +152,9 @@ _TYPES = {"object": dict, "array": list, "string": str}
 
 def problems(schema: dict, value, where: str = "arguments") -> list[str]:
     """Check `value` against the small part of JSON Schema these tools use. Returns plain problems, or []."""
+    if "anyOf" in schema:  # fits if it fits one; otherwise the problems of the closest form
+        found = [problems(option, value, where) for option in schema["anyOf"]]
+        return [] if any(not f for f in found) else min(found, key=len)
     kind = schema.get("type")
     if kind == "integer":
         if isinstance(value, bool) or not isinstance(value, int):
@@ -147,6 +174,8 @@ def problems(schema: dict, value, where: str = "arguments") -> list[str]:
             found.append(f"{where} must be at most {schema['maxLength']} characters.")
         if "pattern" in schema and not re.search(schema["pattern"], value):
             found.append(f"{where} has characters that are not allowed.")
+        if "enum" in schema and value not in schema["enum"]:
+            found.append(f"{where} must be one of: {', '.join(schema['enum'])}.")
     if kind == "array":
         if len(value) < schema.get("minItems", 0):
             found.append(f"{where} needs at least {schema['minItems']} item.")

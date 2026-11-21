@@ -161,8 +161,8 @@ class ReviewScreenTests(TempDirTestCase):
         self.assertIn("Receipt helper says why:", page)
         self.assertIn("<bdi>Copied from Saturday&#39;s receipt</bdi>", page)
         self.assertRegex(page, r"Receipt helper suggests adding to <strong>Stock in and out</strong>: "
-                               r"<span class=\"helper-text\">Item: <bdi>Kidney beans.*</bdi> · Reason: <bdi>Bought or added")
-        self.assertIn("Amount to add or use: <bdi>4</bdi>", page)
+                               r"<span class=\"helper-text\"><bdi>Add 4 tins of Kidney beans</bdi></span>")
+        self.assertNotIn("Amount to add or use", page)  # said once, with the item's unit (Lane B, batch 19 item 82)
         self.assertIn("Accept", page)
         self.assertIn("Reject", page)
 
@@ -206,7 +206,7 @@ class ReviewScreenTests(TempDirTestCase):
         self.store.create("stock__movements", {"item": self.beans, "reason": "used", "amount": 3})  # now only 2 left
         response = self.post(f"/review/batch/{result['batch_id']}/accept-all")
         page = self.text(response.headers["Location"])
-        self.assertIn("Added 2 records. 1 could not be added and is still waiting", page)
+        self.assertIn("Added 2 to Places. 1 could not be added and is still waiting", page)
         self.assertIn("This can&#39;t be added as it is:", page)
         self.assertIn("Reject it, or add the record yourself.", page)
         self.assertIn("more than there is", page)

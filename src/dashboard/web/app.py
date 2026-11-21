@@ -237,6 +237,7 @@ def create_app(shutdown_token: str, on_shutdown: Callable[[], None], report=None
     from dashboard.web.home_setup import home_setup
     from dashboard.web.pages import pages
     from dashboard.web.restore import restore_pages
+    from dashboard.web.receipt_line import line_pages
     from dashboard.web.review import review_pages
     from dashboard.web.setup import setup_pages
     from dashboard.web.sheets import sheet_pages
@@ -248,6 +249,7 @@ def create_app(shutdown_token: str, on_shutdown: Callable[[], None], report=None
     app.register_blueprint(export_pages)
     app.register_blueprint(imports)
     app.register_blueprint(review_pages)
+    app.register_blueprint(line_pages)
     app.register_blueprint(restore_pages)
     app.register_blueprint(helper_api)
 

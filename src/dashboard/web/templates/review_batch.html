@@ -1,0 +1,13 @@
+{% extends "base.html" %}
+{% block title %}Earlier receipt · Review · Dashboard Plus{% endblock %}
+{% block body %}
+<p class="muted"><a href="/review">Review</a></p>
+<h1>Earlier receipt</h1>
+<p class="lead">Put on Review on {{ when }} by <bdi>{{ who }}</bdi>, for a purchase on {{ bought }}. This page only shows what became of each row; it changes nothing.</p>
+<ul class="card" style="list-style:none;padding:.4rem .9rem">
+  {% for r in rows %}
+  <li style="padding:.4rem 0;border-top:1px solid var(--line)"><span class="helper-text"><bdi>{{ r.what }}</bdi></span><br><span class="muted"><bdi>{{ r.state }}</bdi></span></li>
+  {% endfor %}
+</ul>
+<p><a href="/review">Back to Review</a></p>
+{% endblock %}
