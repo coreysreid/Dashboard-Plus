@@ -198,7 +198,11 @@ def table_spec(info: records.TableInfo, store: records.Records, may_suggest: boo
     needs_private = any(c.sensitive and c.required for c in info.table.columns.values())
     needs_file = any(c.type == "file" and c.required for c in info.table.columns.values())
     needs_hidden = any(c.required for c in info.table.columns.values() if c.name in hidden)
-    if may_suggest and (needs_private or needs_file or needs_hidden):
+    if may_suggest and not info.table.suggestions:
+        spec["can_suggest"] = False
+        spec["reason"] = ("A person fills this table in on its own screens, so helpers can look but cannot "
+                          "suggest records for it.")
+    elif may_suggest and (needs_private or needs_file or needs_hidden):
         spec["can_suggest"] = False
         spec["reason"] = ("This table needs a private detail, so helpers cannot add to it." if needs_private
                           else "This table needs a file, so helpers cannot add to it." if needs_file

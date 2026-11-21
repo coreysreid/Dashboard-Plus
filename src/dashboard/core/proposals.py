@@ -218,6 +218,11 @@ def _shape_problems(helper: helpers.Helper, registry: dict, entries: list[tuple[
     problems = []
     for position, (name, values) in enumerate(entries):
         info = registry[name]
+        if not info.table.suggestions:
+            problems.append({"entry": position, "table": name, "field": "",
+                             "message": "A person fills this table in on its own screens, so helpers cannot "
+                                        "suggest records for it."})
+            continue
         needs_private = [c.name for c in info.table.columns.values() if c.sensitive and c.required]
         if needs_private:
             problems.append({"entry": position, "table": name, "field": "",

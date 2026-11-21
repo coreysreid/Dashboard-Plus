@@ -1,0 +1,540 @@
+# "Have you thought about…?" questions (decision 0104), from Lane B's draft (workbench/drafts/readiness,
+# now in git history). Each asks a household to think; none says the household is safe or gives emergency
+# instructions. Every question links the official page it was written from and the date that page was
+# checked. `review_every` is an editorial reminder in months, not an authority's deadline.
+#
+# fits: only the household's own Settings answers, never a guess from an address or a country.
+#   storeys_min = 2       the home has at least this many storeys (still asked when storeys are not given)
+#   hazards = ["flood"]   the household ticked it under "Things that can happen where you live"
+#   pets = true           the household has pets; mobility_needs = true: someone has mobility or care needs
+# answered_by: the field that may help, or "none". It is only offered as "You already recorded this. Does it
+# answer the question?" when `match` holds exactly, and a person always chooses the answer.
+schema = 1
+answers = "answers"
+
+[[group]]
+key = "fire"
+title = "Fire"
+
+[[group]]
+key = "flood"
+title = "Flood"
+
+[[group]]
+key = "storm"
+title = "Storm"
+
+[[group]]
+key = "heat"
+title = "Heat"
+
+[[group]]
+key = "power"
+title = "Power cuts"
+
+[[group]]
+key = "medical"
+title = "Medical needs"
+
+[[group]]
+key = "leaving"
+title = "Leaving home quickly"
+
+[[prompt]]
+id = "fire-two-ways"
+group = "fire"
+question = "Have you thought about two ways out of the rooms people sleep in?"
+why = "A planned alternative can matter when one route is blocked."
+fits = {}
+answered_by = "none"
+review_every = 12
+source = { title = "US Fire Administration, Home Fire Escape Plans", url = "https://www.usfa.fema.gov/prevention/home-fires/prepare-for-fire/home-fire-escape-plans/", checked = "2026-11-16" }
+
+[[prompt]]
+id = "fire-upper-floor"
+group = "fire"
+question = "If the stairs were blocked, have you thought about how everyone upstairs would leave?"
+why = "Upper floors need a route that accounts for a blocked stairway."
+fits = {storeys_min = 2}
+answered_by = "none"
+write_in = { table = "home_layout.exits", label = "Write down a way out" }
+review_every = 12
+source = { title = "US Fire Administration, Home Fire Escape Plans", url = "https://www.usfa.fema.gov/prevention/home-fires/prepare-for-fire/home-fire-escape-plans/", checked = "2026-11-16" }
+
+[[prompt]]
+id = "fire-practice-exit"
+group = "fire"
+question = "Have you thought about walking through your home's exit plan together?"
+why = "A route on paper may feel different when people try it."
+fits = {}
+answered_by = "none"
+review_every = 12
+source = { title = "US Fire Administration, Home Fire Escape Plans", url = "https://www.usfa.fema.gov/prevention/home-fires/prepare-for-fire/home-fire-escape-plans/", checked = "2026-11-16" }
+
+[[prompt]]
+id = "fire-meeting-place"
+group = "fire"
+question = "Have you thought about where everyone would meet after leaving the home?"
+why = "A shared meeting place can help people account for one another."
+fits = {}
+answered_by = "none"
+review_every = 12
+source = { title = "US Fire Administration, Home Fire Escape Plans", url = "https://www.usfa.fema.gov/prevention/home-fires/prepare-for-fire/home-fire-escape-plans/", checked = "2026-11-16" }
+
+[[prompt]]
+id = "fire-night-exit"
+group = "fire"
+question = "Have you thought about whether the exit route is clear at night?"
+why = "A route may be harder to follow in darkness."
+fits = {}
+answered_by = "none"
+review_every = 12
+source = { title = "US Fire Administration, Home Fire Escape Plans", url = "https://www.usfa.fema.gov/prevention/home-fires/prepare-for-fire/home-fire-escape-plans/", checked = "2026-11-16" }
+
+[[prompt]]
+id = "fire-alarm-location"
+group = "fire"
+question = "Have you thought about where the smoke alarms are and when they were last checked?"
+why = "Knowing where alarms are helps a household keep its record current."
+fits = {}
+answered_by = "home_layout.equipment.last_tested"
+match = { table = "home_layout.equipment", where = { kind = "smoke_alarm" }, filled = ["place", "last_tested"] }
+review_every = 12
+source = { title = "US Fire Administration, Home Fire Escape Plans", url = "https://www.usfa.fema.gov/prevention/home-fires/prepare-for-fire/home-fire-escape-plans/", checked = "2026-11-16" }
+
+[[prompt]]
+id = "fire-help-leaving"
+group = "fire"
+question = "Have you thought about who might need help leaving the home?"
+why = "The same route may not work for every person."
+fits = {mobility_needs = true}
+answered_by = "none"
+review_every = 12
+source = { title = "US Fire Administration, Home Fire Escape Plans", url = "https://www.usfa.fema.gov/prevention/home-fires/prepare-for-fire/home-fire-escape-plans/", checked = "2026-11-16" }
+
+[[prompt]]
+id = "flood-higher-ground"
+group = "flood"
+question = "If flooding affects your area, have you thought about a route to higher ground?"
+why = "An evacuation route should match the local flood situation."
+fits = {hazards = ["flood"]}
+answered_by = "none"
+review_every = 12
+source = { title = "NZ Civil Defence Get Ready, Floods", url = "https://getready.govt.nz/emergency/floods", checked = "2026-11-16" }
+
+[[prompt]]
+id = "flood-flood-alerts"
+group = "flood"
+question = "Have you thought about where you would get local flood alerts?"
+why = "Local warnings can change faster than a saved plan."
+fits = {hazards = ["flood"]}
+answered_by = "none"
+review_every = 12
+source = { title = "NZ Civil Defence Get Ready, Floods", url = "https://getready.govt.nz/emergency/floods", checked = "2026-11-16" }
+
+[[prompt]]
+id = "flood-flood-documents"
+group = "flood"
+question = "Have you thought about which important papers you would take if you had to leave before a flood?"
+why = "Documents may be hard to recover after water damage."
+fits = {hazards = ["flood"]}
+answered_by = "none"
+review_every = 12
+source = { title = "NZ Civil Defence Get Ready, Floods", url = "https://getready.govt.nz/emergency/floods", checked = "2026-11-16" }
+
+[[prompt]]
+id = "flood-flood-pets"
+group = "flood"
+question = "If you had to leave during a flood, have you thought about how your pets would travel?"
+why = "Pets need a plan that works with the household's route."
+fits = {hazards = ["flood"], pets = true}
+answered_by = "none"
+review_every = 12
+source = { title = "NZ Civil Defence Get Ready, Floods", url = "https://getready.govt.nz/emergency/floods", checked = "2026-11-16" }
+
+[[prompt]]
+id = "flood-flood-utilities"
+group = "flood"
+question = "Have you thought about where the household's utility shut-offs are if flood advice tells you to use them?"
+why = "A shut-off is easier to find before conditions change."
+fits = {hazards = ["flood"]}
+answered_by = "home_layout.shutoffs.place"
+match = { table = "home_layout.shutoffs", where = { kind = ["water", "power", "gas"] }, filled = ["place"] }
+review_every = 12
+source = { title = "NZ Civil Defence Get Ready, Floods", url = "https://getready.govt.nz/emergency/floods", checked = "2026-11-16" }
+
+[[prompt]]
+id = "flood-flood-return"
+group = "flood"
+question = "Have you thought about who would confirm it is safe to return after a flood?"
+why = "A household may need local advice before returning."
+fits = {hazards = ["flood"]}
+answered_by = "none"
+review_every = 12
+source = { title = "NZ Civil Defence Get Ready, Floods", url = "https://getready.govt.nz/emergency/floods", checked = "2026-11-16" }
+
+[[prompt]]
+id = "flood-flood-neighbours"
+group = "flood"
+question = "Have you thought about how to check on people nearby if flooding isolates the street?"
+why = "A contact plan helps when normal routes are disrupted."
+fits = {hazards = ["flood"]}
+answered_by = "none"
+review_every = 12
+source = { title = "NZ Civil Defence Get Ready, Floods", url = "https://getready.govt.nz/emergency/floods", checked = "2026-11-16" }
+
+[[prompt]]
+id = "storm-storm-alerts"
+group = "storm"
+question = "Have you thought about where you would get local storm warnings?"
+why = "A household needs a source of current local information."
+fits = {hazards = ["storm"]}
+answered_by = "none"
+review_every = 12
+source = { title = "NZ Civil Defence Get Ready, Storms", url = "https://getready.govt.nz/emergency/storms", checked = "2026-11-16" }
+
+[[prompt]]
+id = "storm-storm-shelter"
+group = "storm"
+question = "Have you thought about which part of your home you would use during strong winds?"
+why = "Some rooms may be more exposed than others."
+fits = {hazards = ["storm"]}
+answered_by = "none"
+review_every = 12
+source = { title = "NZ Civil Defence Get Ready, Storms", url = "https://getready.govt.nz/emergency/storms", checked = "2026-11-16" }
+
+[[prompt]]
+id = "storm-outside-objects"
+group = "storm"
+question = "Have you thought about what outside could move or break in a storm?"
+why = "Outdoor objects can change the situation around a home."
+fits = {hazards = ["storm"]}
+answered_by = "none"
+review_every = 12
+source = { title = "NZ Civil Defence Get Ready, Storms", url = "https://getready.govt.nz/emergency/storms", checked = "2026-11-16" }
+
+[[prompt]]
+id = "storm-storm-windows"
+group = "storm"
+question = "Have you thought about which windows or doors need attention before a forecast storm?"
+why = "A household can review its own building before weather arrives."
+fits = {hazards = ["storm"]}
+answered_by = "none"
+review_every = 12
+source = { title = "NZ Civil Defence Get Ready, Storms", url = "https://getready.govt.nz/emergency/storms", checked = "2026-11-16" }
+
+[[prompt]]
+id = "storm-storm-contacts"
+group = "storm"
+question = "Have you thought about how to contact everyone if a storm changes their route home?"
+why = "Weather can separate household members unexpectedly."
+fits = {hazards = ["storm"]}
+answered_by = "none"
+review_every = 12
+source = { title = "NZ Civil Defence Get Ready, Storms", url = "https://getready.govt.nz/emergency/storms", checked = "2026-11-16" }
+
+[[prompt]]
+id = "storm-storm-pets"
+group = "storm"
+question = "Have you thought about where pets would stay during severe weather?"
+why = "Pets may need a place and supplies indoors."
+fits = {hazards = ["storm"], pets = true}
+answered_by = "none"
+review_every = 12
+source = { title = "NZ Civil Defence Get Ready, Storms", url = "https://getready.govt.nz/emergency/storms", checked = "2026-11-16" }
+
+[[prompt]]
+id = "storm-storm-after"
+group = "storm"
+question = "Have you thought about how you would check the home after a storm and whom you would call for damage?"
+why = "A calm contact list helps when repairs are needed."
+fits = {hazards = ["storm"]}
+answered_by = "none"
+review_every = 12
+source = { title = "NZ Civil Defence Get Ready, Storms", url = "https://getready.govt.nz/emergency/storms", checked = "2026-11-16" }
+
+[[prompt]]
+id = "heat-cooler-place"
+group = "heat"
+question = "Have you thought about somewhere cooler to go if your home gets too hot?"
+why = "A backup place can matter when cooling at home is unavailable."
+fits = {hazards = ["heat"]}
+answered_by = "none"
+review_every = 12
+source = { title = "US CDC, About Heat and Your Health", url = "https://www.cdc.gov/extreme-heat/prevention/", checked = "2026-11-16" }
+
+[[prompt]]
+id = "heat-heat-check-in"
+group = "heat"
+question = "Have you thought about who would check in with people at higher risk during a heat event?"
+why = "Some people may need support before they ask for it."
+fits = {hazards = ["heat"]}
+answered_by = "none"
+review_every = 12
+source = { title = "US CDC, About Heat and Your Health", url = "https://www.cdc.gov/extreme-heat/prevention/", checked = "2026-11-16" }
+
+[[prompt]]
+id = "heat-heat-power"
+group = "heat"
+question = "If cooling lost power, have you thought about what your household would do?"
+why = "A power loss can change a heat plan quickly."
+fits = {hazards = ["heat"]}
+answered_by = "none"
+review_every = 12
+source = { title = "US CDC, About Heat and Your Health", url = "https://www.cdc.gov/extreme-heat/prevention/", checked = "2026-11-16" }
+
+[[prompt]]
+id = "heat-heat-water"
+group = "heat"
+question = "Have you thought about where your household's drinking water would come from during very hot weather?"
+why = "Water plans should include the conditions your home may face."
+fits = {hazards = ["heat"]}
+answered_by = "stock.lots.place"
+match = { table = "stock.lots", where = { "item.category" = "water", "item.drinking" = true, "item.unit" = ["litres", "litre", "liters", "liter", "l"] }, positive = ["quantity"], filled = ["place"] }
+review_every = 12
+source = { title = "US CDC, About Heat and Your Health", url = "https://www.cdc.gov/extreme-heat/prevention/", checked = "2026-11-16" }
+
+[[prompt]]
+id = "heat-heat-pets"
+group = "heat"
+question = "Have you thought about where pets could stay cool?"
+why = "A pet's needs belong in the household's heat plan."
+fits = {hazards = ["heat"], pets = true}
+answered_by = "none"
+review_every = 12
+source = { title = "US CDC, About Heat and Your Health", url = "https://www.cdc.gov/extreme-heat/prevention/", checked = "2026-11-16" }
+
+[[prompt]]
+id = "heat-heat-alerts"
+group = "heat"
+question = "Have you thought about how you would see local heat warnings?"
+why = "Local conditions and advice can change during a heat event."
+fits = {hazards = ["heat"]}
+answered_by = "none"
+review_every = 12
+source = { title = "US CDC, About Heat and Your Health", url = "https://www.cdc.gov/extreme-heat/prevention/", checked = "2026-11-16" }
+
+[[prompt]]
+id = "heat-heat-neighbour"
+group = "heat"
+question = "Have you thought about who nearby might appreciate a check-in during heat?"
+why = "Some neighbours may be affected without being in your household."
+fits = {hazards = ["heat"]}
+answered_by = "none"
+review_every = 12
+source = { title = "US CDC, About Heat and Your Health", url = "https://www.cdc.gov/extreme-heat/prevention/", checked = "2026-11-16" }
+
+[[prompt]]
+id = "power-light"
+group = "power"
+question = "Have you thought about where your torches or other lights are kept?"
+why = "Finding a light can be harder after power goes out."
+fits = {}
+answered_by = "none"
+review_every = 12
+source = { title = "US CDC, What to Do to Protect Yourself During a Power Outage", url = "https://www.cdc.gov/natural-disasters/response/what-to-do-protect-yourself-during-a-power-outage.html", checked = "2026-11-16" }
+
+[[prompt]]
+id = "power-power-bank"
+group = "power"
+question = "Have you thought about how you would charge a phone if the power was off?"
+why = "A charged device can help with communication."
+fits = {}
+answered_by = "none"
+review_every = 12
+source = { title = "US CDC, What to Do to Protect Yourself During a Power Outage", url = "https://www.cdc.gov/natural-disasters/response/what-to-do-protect-yourself-during-a-power-outage.html", checked = "2026-11-16" }
+
+[[prompt]]
+id = "power-medical-power"
+group = "power"
+question = "Does anyone here rely on powered medical equipment, and have you thought about its backup?"
+why = "Some equipment needs a specific outage plan."
+fits = {mobility_needs = true}
+answered_by = "none"
+review_every = 12
+source = { title = "US CDC, What to Do to Protect Yourself During a Power Outage", url = "https://www.cdc.gov/natural-disasters/response/what-to-do-protect-yourself-during-a-power-outage.html", checked = "2026-11-16" }
+
+[[prompt]]
+id = "power-food-outage"
+group = "power"
+question = "Have you thought about which food needs attention if the fridge loses power?"
+why = "Food storage changes during an outage."
+fits = {}
+answered_by = "none"
+review_every = 12
+source = { title = "US CDC, What to Do to Protect Yourself During a Power Outage", url = "https://www.cdc.gov/natural-disasters/response/what-to-do-protect-yourself-during-a-power-outage.html", checked = "2026-11-16" }
+
+[[prompt]]
+id = "power-water-outage"
+group = "power"
+question = "Have you thought about whether a power cut affects your water supply?"
+why = "Some homes depend on powered pumps or treatment."
+fits = {}
+answered_by = "none"
+review_every = 12
+source = { title = "US CDC, What to Do to Protect Yourself During a Power Outage", url = "https://www.cdc.gov/natural-disasters/response/what-to-do-protect-yourself-during-a-power-outage.html", checked = "2026-11-16" }
+
+[[prompt]]
+id = "power-power-updates"
+group = "power"
+question = "Have you thought about where you would get outage updates if the internet was down?"
+why = "An alternative information source may help."
+fits = {}
+answered_by = "none"
+review_every = 12
+source = { title = "US CDC, What to Do to Protect Yourself During a Power Outage", url = "https://www.cdc.gov/natural-disasters/response/what-to-do-protect-yourself-during-a-power-outage.html", checked = "2026-11-16" }
+
+[[prompt]]
+id = "power-safe-heating"
+group = "power"
+question = "Have you thought about how the household would stay at a suitable temperature during a long outage?"
+why = "Heating and cooling plans may depend on power."
+fits = {}
+answered_by = "none"
+review_every = 12
+source = { title = "US CDC, What to Do to Protect Yourself During a Power Outage", url = "https://www.cdc.gov/natural-disasters/response/what-to-do-protect-yourself-during-a-power-outage.html", checked = "2026-11-16" }
+
+[[prompt]]
+id = "medical-kit-location"
+group = "medical"
+question = "Have you thought about where a first aid kit is kept?"
+why = "A kit is more useful when people can find it."
+fits = {}
+answered_by = "medical.kits.place"
+match = { table = "medical.kits", filled = ["place"] }
+review_every = 12
+source = { title = "US CDC, Personal Needs", url = "https://www.cdc.gov/prepare-your-health/take-action/personal-needs.html", checked = "2026-11-16" }
+
+[[prompt]]
+id = "medical-prescriptions"
+group = "medical"
+question = "Have you thought about where current prescription details are recorded?"
+why = "Medication information can be needed when normal records are unavailable."
+fits = {}
+answered_by = "people.important_info.detail"
+match = { table = "people.important_info", where = { kind = "medication", "person.lives_here" = true }, filled = ["detail"] }
+review_every = 12
+source = { title = "US CDC, Personal Needs", url = "https://www.cdc.gov/prepare-your-health/take-action/personal-needs.html", checked = "2026-11-16" }
+
+[[prompt]]
+id = "medical-care-contact"
+group = "medical"
+question = "Have you thought about whom to call for ongoing care needs?"
+why = "A contact can help coordinate care if routines change."
+fits = {mobility_needs = true}
+answered_by = "people.roles.person"
+match = { table = "people.roles", where = { role = ["doctor", "pharmacist"] }, filled = ["person.phone"] }
+review_every = 12
+source = { title = "US CDC, Personal Needs", url = "https://www.cdc.gov/prepare-your-health/take-action/personal-needs.html", checked = "2026-11-16" }
+
+[[prompt]]
+id = "medical-special-food"
+group = "medical"
+question = "Have you thought about any food or feeding needs that differ from the household's usual supplies?"
+why = "Some people rely on specific foods or feeding supplies."
+fits = {}
+answered_by = "people.important_info.detail"
+match = { table = "people.important_info", where = { kind = "dietary", "person.lives_here" = true }, filled = ["detail"] }
+review_every = 12
+source = { title = "US CDC, Personal Needs", url = "https://www.cdc.gov/prepare-your-health/take-action/personal-needs.html", checked = "2026-11-16" }
+
+[[prompt]]
+id = "medical-training"
+group = "medical"
+question = "Have you thought about whether anyone wants first aid or CPR training?"
+why = "Training is a choice to consider, not a measure of safety."
+fits = {}
+answered_by = "none"
+review_every = 12
+source = { title = "US CDC, Personal Needs", url = "https://www.cdc.gov/prepare-your-health/take-action/personal-needs.html", checked = "2026-11-16" }
+
+[[prompt]]
+id = "medical-medication-power"
+group = "medical"
+question = "Have you thought about whether any medicines or supplies depend on refrigeration or power?"
+why = "An outage can affect how some items are stored."
+fits = {}
+answered_by = "none"
+review_every = 12
+source = { title = "US CDC, Personal Needs", url = "https://www.cdc.gov/prepare-your-health/take-action/personal-needs.html", checked = "2026-11-16" }
+
+[[prompt]]
+id = "medical-medical-sheet"
+group = "medical"
+question = "Have you thought about which private health details a carer would need if you could not explain them?"
+why = "A current private record may help a carer understand a need."
+fits = {}
+answered_by = "none"
+review_every = 12
+source = { title = "US CDC, Personal Needs", url = "https://www.cdc.gov/prepare-your-health/take-action/personal-needs.html", checked = "2026-11-16" }
+
+[[prompt]]
+id = "leaving-go-bags"
+group = "leaving"
+question = "Have you thought about what each person would take if you had to leave quickly?"
+why = "A departure can leave little time to gather things."
+fits = {}
+answered_by = "none"
+review_every = 12
+source = { title = "NZ Civil Defence Get Ready, Make a Plan", url = "https://getready.govt.nz/prepared/household/make-a-plan", checked = "2026-11-16" }
+
+[[prompt]]
+id = "leaving-contact-away"
+group = "leaving"
+question = "Have you thought about who everyone would contact after leaving home?"
+why = "A shared contact helps reconnect household members."
+fits = {}
+answered_by = "people.roles.person"
+match = { table = "people.roles", where = { role = "emergency_contact" }, filled = ["person.phone"] }
+review_every = 12
+source = { title = "NZ Civil Defence Get Ready, Make a Plan", url = "https://getready.govt.nz/prepared/household/make-a-plan", checked = "2026-11-16" }
+
+[[prompt]]
+id = "leaving-meeting-away"
+group = "leaving"
+question = "Have you thought about where people would meet if they could not return home?"
+why = "A meeting place can help when usual routes change."
+fits = {}
+answered_by = "none"
+review_every = 12
+source = { title = "NZ Civil Defence Get Ready, Make a Plan", url = "https://getready.govt.nz/prepared/household/make-a-plan", checked = "2026-11-16" }
+
+[[prompt]]
+id = "leaving-documents-away"
+group = "leaving"
+question = "Have you thought about which documents you would need away from home?"
+why = "Some records are difficult to replace quickly."
+fits = {}
+answered_by = "none"
+review_every = 12
+source = { title = "NZ Civil Defence Get Ready, Make a Plan", url = "https://getready.govt.nz/prepared/household/make-a-plan", checked = "2026-11-16" }
+
+[[prompt]]
+id = "leaving-pets-away"
+group = "leaving"
+question = "Have you thought about what your pets would need if you left home quickly?"
+why = "Pet supplies and records need to travel with the household."
+fits = {pets = true}
+answered_by = "none"
+review_every = 12
+source = { title = "NZ Civil Defence Get Ready, Make a Plan", url = "https://getready.govt.nz/prepared/household/make-a-plan", checked = "2026-11-16" }
+
+[[prompt]]
+id = "leaving-access-away"
+group = "leaving"
+question = "Have you thought about how everyone would leave, including anyone who needs mobility support?"
+why = "A departure plan should work for everyone in the home."
+fits = {mobility_needs = true}
+answered_by = "none"
+review_every = 12
+source = { title = "NZ Civil Defence Get Ready, Make a Plan", url = "https://getready.govt.nz/prepared/household/make-a-plan", checked = "2026-11-16" }
+
+[[prompt]]
+id = "leaving-local-plan"
+group = "leaving"
+question = "Have you thought about checking your local authority's current advice for your address?"
+why = "Hazards and instructions vary by place."
+fits = {}
+answered_by = "none"
+review_every = 12
+source = { title = "NZ Civil Defence Get Ready, Make a Plan", url = "https://getready.govt.nz/prepared/household/make-a-plan", checked = "2026-11-16" }

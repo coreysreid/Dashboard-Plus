@@ -1,0 +1,8 @@
+name = "readiness"
+title = "Readiness"
+version = "1.0.0"
+description = "Have you thought about…? Calm questions about fire, flood, storms, heat, power cuts, medical needs and leaving home quickly, each with its official source."
+core_api = "1"
+kind = "declarative"
+requires = []
+outbound_hosts = []

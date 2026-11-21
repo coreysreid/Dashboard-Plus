@@ -1,0 +1,11 @@
+[tables.answers]
+home = "more"
+form = ["prompt", "answer", "answered_on", "review_on", "note"]
+list = ["prompt", "answer", "answered_on", "review_on"]
+columns.prompt = { label = "Question", help = "The question's short name. It is easier to answer from the Questions page." }
+columns.answer = { label = "Answer" }
+columns.answered_on = { label = "Answered on" }
+columns.review_on = { label = "Look again on", help = "A reminder you choose, not an official deadline." }
+columns.note = { label = "Note", help = "Optional. Leave out medical details; keep those in People." }
+columns.record = { label = "Record used" }
+columns.record_check = { label = "Record check" }

@@ -1,0 +1,66 @@
+{% extends "base.html" %}
+{% block title %}{{ q.prompt.question }} · Dashboard Plus{% endblock %}
+{% block body %}
+<p class="muted"><a href="/">Home</a> · <a href="/questions/{{ module }}">All questions</a> · {{ group }}</p>
+<h1>{{ q.prompt.question }}</h1>
+<p class="lead">{{ q.prompt.why }}</p>
+<p class="muted">Source: <a href="{{ q.prompt.source.url }}" rel="noopener noreferrer">{{ q.prompt.source.title }}</a>, checked {{ show_date(q.prompt.source.checked) }}.</p>
+
+{% if saved %}<p class="notice" role="status">Saved your answer. You can change it later.</p>{% endif %}
+{% if errors %}<p class="problem" role="alert">{% for field, message in errors.items() %}{{ message }} {% endfor %}Nothing was saved yet.</p>{% endif %}
+{% if q.state == "review" %}<p class="notice" role="status">{{ review_words[q.review_reason] }}</p>{% endif %}
+{% if q.answer %}
+<p>Your answer: <strong>{{ answer_words[q.answer.answer] }}</strong>, on {{ show_date(q.answer.answered_on) }}.{% if q.due_on %} Look again on {{ show_date(q.due_on) }}.{% endif %}{% if q.answer.record %} You used one of your records for this answer.{% endif %}</p>
+{% endif %}
+{% if not q.fits %}
+<p class="muted">This question does not fit the settings you gave: {{ q.not_fit_reasons | join(" ") }} You can still answer it.</p>
+{% endif %}
+
+<form class="record" method="post">
+  <input type="hidden" name="_csrf" value="{{ csrf_token }}">
+  {% if candidates %}
+  <fieldset class="card" style="margin-top:0">
+    <legend style="font-weight:600">You already recorded this. Does it answer the question?</legend>
+    <p class="help" style="margin-top:0">Choose the record if it does, then press Yes. Nothing is answered until you choose.</p>
+    {% for c in candidates %}
+    <label style="font-weight:400;display:block;margin:.4rem 0"><input type="radio" name="record" value="{{ c.key }}" {% if values.record == c.key %}checked{% endif %}>
+      {% if c.private %}You have a private record that may relate to this question.{% else %}{{ c.text }}{% endif %}
+      <a href="{{ c.link }}">Open it</a></label>
+    {% endfor %}
+    <label style="font-weight:400;display:block;margin:.4rem 0"><input type="radio" name="record" value="" {% if not values.record %}checked{% endif %}> None of these</label>
+  </fieldset>
+  {% endif %}
+  {% if write_in %}<p><a href="{{ write_in.href }}">{{ write_in.label }}</a> <span class="muted">(a place to write your plan; it does not answer this question)</span></p>{% endif %}
+
+  <div><label for="note">Note (optional)</label>
+    <textarea id="note" name="note" rows="2">{{ values.note if values.note is defined and values.note else (q.answer.note if q.answer and q.answer.note else "") }}</textarea>
+    <p class="help">For Not relevant, you can say why. Keep medical details in People, not here.</p></div>
+  <div class="{% if errors.review_on %}has-error{% endif %}"><label for="review_on">Look at this again on</label>
+    <input type="text" id="review_on" name="review_on" value="{{ review_value }}" inputmode="numeric">
+    <p class="help">{{ date_hint }}. Suggested: in {{ interval }} months. For Not yet, choose when to bring it back. This is a reminder you choose, not an official deadline.</p>
+    {% if errors.review_on %}<p class="error">{{ errors.review_on }}</p>{% endif %}</div>
+
+  <div class="answers">
+    <div><button type="submit" name="answer" value="yes">Yes</button> <span class="help">We have thought about this.</span></div>
+    <div><button type="submit" name="answer" value="not_relevant" class="quiet">Not relevant</button> <span class="help">This does not fit our household.</span></div>
+    <div><button type="submit" name="answer" value="not_yet" class="quiet">Not yet</button> <span class="help">Remind us later.</span></div>
+  </div>
+</form>
+
+<details class="card">
+  <summary><strong>Tell me more</strong></summary>
+  <p>{{ q.prompt.why }}</p>
+  <p>{{ q.prompt.how_to_check or "Advice depends on where you live. Your local council or emergency service can tell you what applies to your address." }}</p>
+  <p>Source: <a href="{{ q.prompt.source.url }}" rel="noopener noreferrer">{{ q.prompt.source.title }}</a>, checked {{ show_date(q.prompt.source.checked) }}. The link opens the official page only when you choose it.</p>
+  <p class="muted">Telling you more saves no answer.</p>
+</details>
+
+{% if history %}
+<h2>Earlier answers</h2>
+<ul>{% for h in history %}<li>{{ h.at }}: {{ h.who }} answered {{ h.answer }}{% if h.record %}, using one of your records{% endif %}.</li>{% endfor %}</ul>
+{% endif %}
+<style>
+  .answers { display: grid; gap: .6rem; margin-top: 1rem; }
+  .answers button { min-width: 9rem; }
+</style>
+{% endblock %}
