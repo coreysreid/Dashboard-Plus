@@ -1,0 +1,20 @@
+[tables.readings]
+title = "Odometer readings"
+description = "The distance shown on a vehicle's odometer at a date and time."
+columns.vehicle = { type = "link", to = "vehicles.vehicles", required = true, on_delete = "restrict" }
+columns.read_at = { type = "datetime", required = true }
+columns.distance = { type = "integer", required = true, min = 0 }
+columns.unit = { type = "choice", required = true, choices = ["km", "mi"] }
+columns.notes = { type = "text" }
+
+[tables.estimates]
+title = "Service estimates"
+description = "A quoted estimate for a service already recorded under Vehicles."
+columns.service = { type = "link", to = "vehicles.services", required = true, on_delete = "restrict" }
+columns.kind = { type = "choice", required = true, choices = ["dealer", "independent", "other"] }
+columns.provider = { type = "link", to = "people.people", on_delete = "clear" }
+columns.quoted_on = { type = "date", required = true }
+columns.amount = { type = "money", min = 0, sensitive = true, travels = "never" }
+columns.good_until = { type = "date", not_before = "quoted_on" }
+columns.scope = { type = "longtext", sensitive = true, travels = "never" }
+columns.notes = { type = "longtext", sensitive = true, travels = "never" }
