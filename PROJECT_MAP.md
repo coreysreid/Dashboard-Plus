@@ -55,7 +55,7 @@ One record per decision, from `TEMPLATE.md`. Never deleted; reversed ones are ma
 | [0001](0001-write-down-every-technical-decision.md) | Write down every technical decision | Accepted |
 | [0002](0002-python-with-server-built-pages-for-the-web-side.md) | Python with server-built pages for the web side | Accepted |
 | [0003](0003-bundle-python-using-the-official-embeddable-package.md) | Bundle Python using the official embeddable package | Accepted |
-| [0004](0004-apache-echarts-for-charts.md) | Apache ECharts for charts | Accepted |
+| [0004](0004-apache-echarts-for-charts.md) | Apache ECharts for charts | Superseded by 0109 (for now) |
 | [0005](0005-statistics-with-the-standard-library-only-v1.md) | Statistics with the standard library only (v1) | Accepted |
 | [0006](0006-second-automatic-backup-on-the-computer-itself.md) | Second automatic backup on the computer itself | Accepted |
 | [0007](0007-two-trust-levels-for-modules-with-an-honest-warning.md) | Two trust levels for modules, with an honest warning | Accepted |
@@ -159,6 +159,7 @@ One record per decision, from `TEMPLATE.md`. Never deleted; reversed ones are ma
 | [0105](0105-receipt-review-unmatched-and-repeat.md) | Receipts on Review: each Stock in in one line with its unit, group words true under group-by-group Accept, the result names what was added; a receipt line a helper could not match waits for Choose item or Skip line (undoable until Finish receipt review); a receipt that looks sent before (same dated items, amounts and units, never its text) waits for Reject this copy or Keep this as another purchase, rechecked under the write lock; card-shaped numbers refused | Accepted |
 | [0106](0106-mac-wording-meter-paths-sync-checks.md) | Mac preview wording follows the 21 November read-through (no absolute "nothing is sent", no "only once", two ZIPs, chip check); a link column may say `with_place` so Utilities shows the meter's full place path; Utilities still requires Home layout; sync check also names a pair pointing at nothing, with six more stage 1 tests | Accepted |
 | [0107](0107-routine-checklists.md) | Things to do: Today, This week, This month, This year and No date yet over every table whose reminder says `wording = "due"`, read fresh with no stored ticks; each row finished by its record's own Mark done form, a one-step button that ends the reminder, or Open record to update; a late task shows once as Due since; Routines module (repeat in days to years, Mark this occurrence done, Skip this time, Undo); `adds.copy`, `latest` without `into`, `repeat.from`/`anchor` and `counts_as`; household week start in Settings | Accepted |
+| [0109](0109-first-charts.md) | The first two charts, drawn on the server as SVG with an equal table: today's drinking water by item from the same `watch.supplies` result as Home (left-out items with their reason), and one pet's recorded weigh-ins as dots (a `chart` line in tables.toml); exact empty words, nothing private, no library | Accepted |
 | [TEMPLATE](TEMPLATE.md) | Blank record to copy for a new decision | recording a decision |
 
 ## docs/plans/  (summary: build plans for larger pieces of work, written before building)
@@ -582,6 +583,7 @@ Add a new file with the next number instead of changing an old one.
 | helper_guide.py | The starting message for a helper's assistant: what it may use, how to send, and its limits, from list and field names only. | changing the starting message or GET /api/v1/guide |
 | helper_settings.py | Settings, Helpers: give an assistant a key, choose what it may do, give it a new key, and turn its access off. | changing the Helpers settings page |
 | export_page.py | Settings, Export my records: a page and a button that downloads a zip of spreadsheet files. | changing the Export page |
+| chart*.py | Charts drawn on the server as SVG, labelled bars and dated dots (charts), and the pages showing today's drinking water and one pet's recorded weights (chart_pages, decision 0109) | changing a chart or its empty words |
 | restore.py | Settings, Backups: the list of backups, a preview of one, putting it back, and Undo restore. | changing the restore pages |
 | openapi-v1.json | The published OpenAPI 3.1 description of the helper API, served at GET /api/v1/openapi.json. | changing a helper route, reply or error code (edit it too) |
 
@@ -589,6 +591,7 @@ Add a new file with the next number instead of changing an old one.
 | Entry | What it is | Open it when |
 |---|---|---|
 | base.html | Shared layout, colours (light and dark), header and footer | changing the overall look |
+| *chart.html | Charts with their equal tables: today's drinking water by item (supply_chart), one pet's recorded weights with a pet and date picker (dot_chart) and the piece shared with the pet's page (_dot_chart) | changing a chart page's wording |
 | home.html | Home page: days of cover, needs attention, tables with counts, backup and data file status | changing the home screen |
 | attention.html | Running low, expiring soon, days of cover with the working shown, and gaps worth filling in | changing the attention page |
 | count.html | Count this batch: the count, its review and what was saved | changing the stocktake wording |
@@ -637,6 +640,7 @@ How to run them is in AGENTS.md.
 | test_project_map.py | Tests for the project map generator. | changing the map |
 | test_server.py | Tests for starting, protecting and safely closing the local web server. | changing startup or closing |
 | test_watch.py | Tests for running low, expiring soon and days of cover, and for checking `watch` sections. | changing watch rules |
+| test_charts.py | Tests for the first charts (decision 0109): the drinking-water breakdown, one pet's weigh-ins and the SVG drawing. | changing a chart |
 | test_gaps.py | Tests for gaps: details worth filling in, declared in a table's `watch.gaps` and asked as questions. | changing gaps |
 | test_examples.py | Tests for the example households: each loads cleanly and shows exactly what it was written to show. | changing an example household |
 | test_suggest.py | Tests for suggestions while typing: matching, the household's own records first, and module catalogues. | changing picking from a list |

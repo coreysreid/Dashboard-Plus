@@ -1,6 +1,6 @@
 # 0004. Apache ECharts for charts
 
-- **Status:** Accepted
+- **Status:** Superseded by 0109 (for now: the first charts are drawn as SVG on the server; revisit for annotated time series)
 - **Date:** 2026-11-06
 - **Decided by:** Claude (technical decision delegated by Corey)
 

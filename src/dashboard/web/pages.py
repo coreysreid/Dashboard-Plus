@@ -167,8 +167,15 @@ def _render_form(info, store, values, errors, from_form, record=None, status=200
                           a["adds"]["table"] == other.table.name and a["adds"]["link"] == column.name), None)
             related.append({"href": f"/t/{other.name}/new?{column.name}={record['id']}",
                             "label": display.table_title(other), "words": words})
+    charts = []  # a pet's recorded weights, drawn on its own page (decision 0109)
+    if record and not record.get("deleted_at"):
+        from dashboard.web.chart_pages import chart_tables, dots_view
+        for other in chart_tables(store.registry, info):
+            charts.append({"title": f"Recorded {other.table.chart['what'][1]}",
+                           "view": dots_view(store, other, record["id"]),
+                           "href": f"/charts/{other.name}?subject={record['id']}"})
     return render_template("form.html", info=info, title=display.table_title(info), fields=fields, record=record,
-                           record_name=record_name, errors=errors, history=history, saved=saved,
+                           record_name=record_name, errors=errors, history=history, saved=saved, charts=charts,
                            related=related, back=back, batches=batches, count_href=count_href,
                            actions=display.actions_for(info, record), done=done, notice=notice), status
 

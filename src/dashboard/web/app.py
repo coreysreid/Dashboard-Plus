@@ -264,6 +264,8 @@ def create_app(shutdown_token: str, on_shutdown: Callable[[], None], report=None
     app.register_blueprint(helper_api)
     app.register_blueprint(question_pages)
     app.register_blueprint(checklist_pages)
+    from dashboard.web.chart_pages import chart_pages
+    app.register_blueprint(chart_pages)
 
     def for_helpers() -> bool:
         return request.path.startswith("/api/v1/")

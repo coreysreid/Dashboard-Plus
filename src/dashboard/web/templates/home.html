@@ -70,7 +70,7 @@
     {% else %}
     <p>{{ s.working }}</p>
     {% endif %}
-    <a href="/attention">See how this is worked out</a>
+    <a href="/attention">See how this is worked out</a>{% if s.rows %} · <a href="/supplies/{{ s.table }}">What is counted</a>{% endif %}
   </div>
   {% endfor %}
   <div class="card">

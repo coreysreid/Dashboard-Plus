@@ -1,0 +1,53 @@
+{% extends "base.html" %}
+{% block title %}{{ title }} · Dashboard Plus{% endblock %}
+{% block body %}
+<div class="chart-page">
+<p class="muted"><a href="/">Home</a> · <a href="/attention">Needs attention</a> · <a href="/t/{{ supply.table }}">{{ supply.title }}</a></p>
+<h1>{{ title }}</h1>
+<p class="lead">What makes up the days of {{ supply.label }} shown on Home right now. This is today's count, not a history, and not a promise that the water is safe.</p>
+
+{% if empty %}
+<p class="chart-empty" role="status"><strong>{{ empty }}</strong></p>
+{% endif %}
+{% if not empty %}
+<p class="chart-headline"><strong>{{ headline }}</strong></p>
+{% endif %}
+<p class="muted">{{ caveat }}</p>
+{% if latest %}<p class="muted">As recorded at {{ latest }} (the last change to one of these items, this computer's time).</p>{% endif %}
+
+{% if chart %}
+<figure class="chart">
+  {{ chart }}
+  <figcaption class="muted">{% if counted_count > bar_count %}The chart shows the {{ bar_count }} largest of {{ counted_count }} counted items. {% endif %}Every item, counted or left out, is in the table below. Choose a bar to go to its row.</figcaption>
+</figure>
+{% endif %}
+
+{% if rows %}
+<h2 id="{{ chart_id }}-table">How the current {{ supply.label }} estimate is worked out</h2>
+<table class="grid chart-table">
+  <thead><tr><th scope="col">Item</th>{% if place_label %}<th scope="col">{{ place_label }}</th>{% endif %}<th scope="col">Current amount</th><th scope="col">Saved unit</th>{% if answer_label %}<th scope="col">{{ answer_label }}</th>{% endif %}<th scope="col">Counted {{ unit }} or why it is left out</th></tr></thead>
+  <tbody>
+  {% for r in rows %}
+  <tr id="{{ chart_id }}-row-{{ r.id }}"{% if not r.is_counted %} class="left-out"{% endif %}>
+    <td data-label="Item"><a href="{{ r.href }}">{{ r.name }}</a></td>
+    {% if place_label %}<td data-label="{{ place_label }}">{{ r.place or "Not recorded" }}</td>{% endif %}
+    <td data-label="Current amount">{{ r.amount }}</td>
+    <td data-label="Saved unit">{{ r.unit or "None saved" }}</td>
+    {% if answer_label %}<td data-label="{{ answer_label }}">{{ r.answer }}</td>{% endif %}
+    <td data-label="Counted {{ unit }} or why it is left out">{{ r.counted }}</td>
+  </tr>
+  {% endfor %}
+  </tbody>
+</table>
+<dl class="chart-footer">
+  <dt>Counted total</dt><dd>{{ total }} {{ unit }}</dd>
+  <dt>Household</dt><dd>{{ people }}</dd>
+  <dt>Daily basis</dt><dd>{{ supply.basis }}{% if supply.daily_need %} ({{ "%g" | format(supply.daily_need) }} {{ unit }} a day){% endif %}</dd>
+  <dt>Calculated days</dt><dd>{{ days or "Not worked out yet" }}</dd>
+  <dt>Chosen target</dt><dd>{{ "%g" | format(supply.target_days) }} days</dd>
+  {% if latest %}<dt>Last record time</dt><dd>{{ latest }}</dd>{% endif %}
+</dl>
+{% endif %}
+<p><a href="/t/{{ supply.table }}/new">Add to {{ supply.title | lower }}</a></p>
+</div>
+{% endblock %}

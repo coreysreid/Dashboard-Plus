@@ -850,10 +850,18 @@ number and the core can load both for a transition period.
   ordinary fields: a helper granted Wine reads them and the spreadsheet export
   includes them, and the forms say so. No drinking, storage, buying, health or
   value advice is stored or worked out.
-- **Graphing** (module). Charts over any table or measure or daily-fact view,
-  using one well-trodden JavaScript charting library (see section 15). Chart
-  configurations are saved as records. Annotations and events are drawn on
-  charts.
+- **Graphing** (module). Charts over any table or measure or daily-fact view.
+  Chart configurations are saved as records. Annotations and events are drawn on
+  charts. **Started (decision 0109):** the first two charts are drawn as SVG on
+  the server, each with an equal table and exact empty words, no script or
+  library. *Drinking water counted today* (`/supplies/<table>`) shows each item
+  behind Home's days of water from the same `watch.supplies` result, and each
+  item left out with its reason. A table can declare
+  `chart = { kind = "dots", x = "day", y = "weight", per = "pet", what = ["weight", "weights"], entry = ["weigh-in", "weigh-ins"], subject = "pet" }`;
+  Pets' Weigh-ins does, so a pet's page shows its recorded weights as dots
+  (never joined, from zero, one pet at a time) and `/charts/<table>` chooses
+  the pet and dates. Time series, annotations and saved chart settings are
+  still to come; a charting library (0004) may return for those.
 - **Analysis** (module, section 10.3).
 - **API connector** (module, section 6.1).
 
@@ -1644,7 +1652,7 @@ choice; its "costs" and "revisit if" sections must be honest.
 |---|---|---|
 | Web side | Python, server-built pages, light browser scripting | 0002 |
 | Bundling | Official embeddable Python in a plain folder | 0003 |
-| Charts | Apache ECharts, bundled locally | 0004 |
+| Charts | SVG drawn on the server for the first charts; Apache ECharts (0004) only if annotated time series need it | 0109 |
 | Statistics | Standard library only for v1 | 0005 |
 | Backups | A second copy on the computer itself | 0006 |
 | Modules from others | Two trust levels, honest warning, no fake sandbox | 0007 |

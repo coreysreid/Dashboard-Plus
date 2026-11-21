@@ -38,6 +38,7 @@ AU = {"household": "smith", "locale": "en-AU", "timezone": "Australia/Sydney",
               "text": "\ufeffName,Keep at least,Use by,Notes\r\nBrowser import rice,2,20/05/27,\"Top shelf, left\r\n"
                       "behind the flour\"\r\nBrowser import oats,1,,\r\nBrowser import salt,1,31/02/27,\r\n"},
       "questions": {"id": "medical-kit-location", "table": "medical__kits"},
+      "charts": {"pet": "Rex", "dots": 3},  # the first charts (decision 0109): Rex has three weigh-ins
       # A made-up helper's receipt on Review: a new item with its Stock in (one group), a Stock in on its own,
       # and a line the helper could not match, which the person turns into a Stock in (decision 0105).
       "review": {"helper": "Browser check helper", "item": "Browser check lentils", "existing": "Kidney beans",
@@ -159,7 +160,8 @@ def run_au(work: Path, executable: str | None) -> list[str]:
         finally:
             conn.close()
         done += drive(dict(plan, dates=AU["dates"], stock=AU["stock"], private=AU["private"], loan=AU["loan"],
-                           job=AU["job"], routine=AU["routine"], csv=AU["csv"], review=AU["review"], questions=AU["questions"]), work,
+                           job=AU["job"], routine=AU["routine"], csv=AU["csv"], review=AU["review"], questions=AU["questions"],
+                           charts=AU["charts"]), work,
                            "main")
         closed = True
     finally:

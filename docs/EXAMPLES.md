@@ -136,7 +136,7 @@ Every pet, its vet and when vaccinations are due.
 
 ### One pet's page
 
-Its details, treatments and medicine, weigh-ins and vet visits.
+Its details, its recorded weights as dots with the same values in a table, and buttons to add treatments, weigh-ins and vet visits.
 
 ![One pet's page](screenshots/smith/17-pet.png)
 
@@ -290,6 +290,18 @@ Days of water with the working shown, running low, use-by and due dates, and det
 
 ![Needs attention](screenshots/smith/19-needs-attention.png)
 
+### Drinking water counted today
+
+Each water item behind Home's days of water, as a bar with its litres, then a table of every water item, counted or left out with the reason.
+
+![Drinking water counted today](screenshots/smith/19b-drinking-water.png)
+
+### Drinking water, on a phone
+
+The same page at 320 pixels wide: the bars stay readable and each table row becomes a card.
+
+![Drinking water, on a phone](screenshots/smith/19c-drinking-water-phone.png)
+
 ### Emergency supplies sheet
 
 As it prints: water, first aid, power and food, and where each is kept.
@@ -442,7 +454,7 @@ Every pet, its vet and when vaccinations are due.
 
 ### One pet's page
 
-Its details, treatments and medicine, weigh-ins and vet visits.
+Its details, its recorded weights as dots with the same values in a table, and buttons to add treatments, weigh-ins and vet visits.
 
 ![One pet's page](screenshots/garcia/17-pet.png)
 
@@ -583,6 +595,18 @@ The household's own repeating tasks: the repeat it chose, the next date and when
 Days of water with the working shown, running low, use-by and due dates, and details worth filling in.
 
 ![Needs attention](screenshots/garcia/19-needs-attention.png)
+
+### Drinking water counted today
+
+Each water item behind Home's days of water, as a bar with its litres, then a table of every water item, counted or left out with the reason.
+
+![Drinking water counted today](screenshots/garcia/19b-drinking-water.png)
+
+### Drinking water, on a phone
+
+The same page at 320 pixels wide: the bars stay readable and each table row becomes a card.
+
+![Drinking water, on a phone](screenshots/garcia/19c-drinking-water-phone.png)
 
 ### Emergency supplies sheet
 
@@ -871,6 +895,18 @@ The household's own repeating tasks: the repeat it chose, the next date and when
 Days of water with the working shown, running low, use-by and due dates, and details worth filling in.
 
 ![Needs attention](screenshots/taylor/19-needs-attention.png)
+
+### Drinking water counted today
+
+Each water item behind Home's days of water, as a bar with its litres, then a table of every water item, counted or left out with the reason.
+
+![Drinking water counted today](screenshots/taylor/19b-drinking-water.png)
+
+### Drinking water, on a phone
+
+The same page at 320 pixels wide: the bars stay readable and each table row becomes a card.
+
+![Drinking water, on a phone](screenshots/taylor/19c-drinking-water-phone.png)
 
 ### Emergency supplies sheet
 

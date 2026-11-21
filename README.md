@@ -48,6 +48,13 @@ is new: keep a copy of anything important somewhere else too. See
   to update). Something late shows once, as "Due since", never as a pile of
   missed days or a streak; a repeat only ever offers the next date, and Undo
   puts a tick back straight after. Weeks start on the day you choose in Settings.
+- **The first charts:** *What is counted* on Home's water card shows each
+  water item behind the days of drinking water, as a bar with its litres, and
+  every item left out with the reason (not safe to drink, or not in litres).
+  A pet's page shows its recorded weights as dots by date, and you can choose
+  the pet and the dates. Each chart has a table with the same values, prints,
+  and works with a keyboard or screen reader. They show what was written down,
+  never a health or safety verdict.
 - **Have you thought about…?** (Readiness) 49 calm questions about fire,
   flood, storms, heat, power cuts, medical needs and leaving home quickly, each
   with the official page it came from and the date that page was checked. Only
