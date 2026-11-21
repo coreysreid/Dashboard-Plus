@@ -153,6 +153,7 @@ One record per decision, from `TEMPLATE.md`. Never deleted; reversed ones are ma
 | [0099](0099-utilities-promoted.md) | Utilities and accounts is switched on from Lane B's draft: services link to People (provider, fault contact) and to an exact Home layout meter; the sheet prints the People fault phone; the account reference and notes stay private and off lists, sheets, exports and helpers; deleting a contact or meter clears the link; examples in all three households | Accepted |
 | [0100](0100-sync-stage-1-stable-ids-and-change-log.md) | Sync stage 1, nothing sent: every record gets a random permanent ID and a revision (added by the core after each module's migrations, under that module's own confinement), every change writes a filtered change-log line beside history, `travels`/`travels_when` in tables.toml keep access instructions, Home layout access details and vehicle registration on the computer where they were typed, and a restore starts a new epoch | Accepted |
 | [0101](0101-review-speed-ups-and-allow-more.md) | Faster Review: Accept all asks first, then accepts group by group (each group all or nothing); tick boxes with Accept or Reject ticked (a group ticks whole); keys (Up/Down or J/K, A, R, Space) as a small script; Accept and Reject in one fixed column; "Allow 200 more today" per helper from a page with a one-use token (core 0008, history), the day being the household's own; 429 tells the helper to stop and ask | Accepted |
+| [0102](0102-helper-starting-prompt-and-stock-with-amount.md) | A starting message for the helper's assistant in Settings, Helpers (copy box) and as `GET /api/v1/guide` and the `dashboard_how_to_help` tool: its lists, fields, private fields by name, links to look up first, the stock model and today's limits, never records or the key; a new Stock item may carry its amount, use-by date and place as one suggestion, added with its first batch on Accept | Accepted |
 | [TEMPLATE](TEMPLATE.md) | Blank record to copy for a new decision | recording a decision |
 
 ## docs/plans/  (summary: build plans for larger pieces of work, written before building)
@@ -468,7 +469,7 @@ Generate the next one with: python tools/make_migration.py wine --name <what_cha
 | __init__.py | The connector for AI assistants: a small local program that lets an assistant use the helper API through MCP. | finding your way in |
 | __main__.py | Start the connector: `python -m dashboard.connector [--config FILE]`, launched by an AI assistant's app. | changing how it is started |
 | mcp_server.py | The MCP server over stdio: JSON-RPC 2.0, one message per line, turning tool calls into helper API requests. | changing the protocol, errors or what results say |
-| tools.py | The eight tools an assistant may use, one per helper API route, with their inputs checked before any request. | adding or changing a tool |
+| tools.py | The nine tools an assistant may use, one per helper API route, with their inputs checked before any request. | adding or changing a tool |
 | client.py | Call the helper API on this computer: check it is the real Dashboard first, then send the key down that connection only. | changing how requests are sent or answers read |
 | config.py | Where the connector finds Dashboard Plus and its key: environment values or a small file, checked before use. | changing where the address or key come from |
 
@@ -530,6 +531,7 @@ Add a new file with the next number instead of changing an old one.
 | api.py | The helper API (/api/v1): programs the household gave a key to can look at records and suggest new ones. | changing what helpers can read or send |
 | review.py | The Review screen: helpers' suggested new records and imported rows, waiting for a person to accept or reject each one. | changing the Review page |
 | csv_import.py | Settings, Import from a spreadsheet: choose a table, upload a CSV, match its columns, check the rows, send to Review. | changing the import screens |
+| helper_guide.py | The starting message for a helper's assistant: what it may use, how to send, and its limits, from list and field names only. | changing the starting message or GET /api/v1/guide |
 | helper_settings.py | Settings, Helpers: give an assistant a key, choose what it may do, give it a new key, and turn its access off. | changing the Helpers settings page |
 | export_page.py | Settings, Export my records: a page and a button that downloads a zip of spreadsheet files. | changing the Export page |
 | restore.py | Settings, Backups: the list of backups, a preview of one, putting it back, and Undo restore. | changing the restore pages |
@@ -561,6 +563,7 @@ Add a new file with the next number instead of changing an old one.
 | helpers.html | Settings, Helpers: the helper list with Make a new key and Turn off access, and the form that makes a key | changing the Helpers settings page |
 | helper*_key.html | The one page that shows a key: helper_key for a new helper, helper_new_key for a new key for one already made; each with Copy and a warning | changing the key pages |
 | helper_connect.html | "Connect an AI assistant": settings to paste into an assistant's app (pointing at the address file), with a placeholder for the key, and Connection details | changing the assistant set-up words |
+| helper_start_message.html | "Starting message for your assistant": the guide for one helper to paste into its chat, with a Copy button | changing the starting message box |
 | review.html | Review suggestions: each helper's waiting suggestions with Accept and Reject | changing the Review page |
 | export.html | Settings, Export my records: what is in the export and the download button | changing the Export page |
 | restore_*.html | Settings, Backups: the list of backups, the check-and-compare page, the result, and the shared Undo restore box | changing the restore pages |
@@ -618,6 +621,7 @@ How to run them is in AGENTS.md.
 | test_export.py | Tests for Export my records: every table of an example household, private details, formula safety and the download. | changing the export |
 | test_restore.py | Tests for restoring a backup: checks that change nothing, the safe swap, Undo after a restart, and refusals. | changing restore or Undo |
 | test_api_contract.py | Tests that the published API description (openapi-v1.json) matches the real /api/v1 routes, errors and replies. | changing a helper route, reply or error code |
+| test_helper_starting_amounts.py | Tests for decision 0102: a new Stock item with its starting amount as one suggestion, and the helper's starting message. | changing starting amounts on suggestions or the starting message |
 | test_grouped_suggestions.py | Tests for receipt lines on suggestions and for suggestions that point at an earlier one in the same batch (decision 0097). | changing source lines, refs or grouped Review rows |
 | test_review_speedups.py | Tests for faster Review (decision 0101): Accept all by group, ticked rows, keys, fixed buttons and Allow 200 more today. | changing Accept all, ticked rows, Review keys or the daily limit |
 

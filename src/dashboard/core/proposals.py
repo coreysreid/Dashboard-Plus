@@ -306,6 +306,21 @@ def _shape_problems(helper: helpers.Helper, registry: dict, entries: list[tuple[
     return problems
 
 
+LINK_PROBLEMS = ("must point at a record.", "points at a record that does not exist or has been deleted.")
+
+
+def _with_link_hint(registry: dict, name: str, field: str, message: str) -> str:
+    """A link that points nowhere, with the plain next step: look the record up first, or suggest it (0102)."""
+    column = registry[name].table.columns.get(field) if name in registry else None
+    if column is None or column.type not in ("link", "links") or message not in LINK_PROBLEMS:
+        return message
+    target = target_table(registry[name].module.name, column)
+    title = _title(registry[target]) if target in registry else "the linked list"
+    return (f"{message} Look up {title} first (GET /api/v1/tables/{target}/records, or the dashboard_list_records "
+            f"tool) and send the id of the one that matches. If it is not there, suggest it earlier in this request "
+            f'and point at it with {{"ref": N}}.')
+
+
 def _invalid(registry: dict, problems: list[dict]) -> ProposalError:
     tables = {p["table"] for p in problems}
     lead = f"{_title(registry[next(iter(tables))])}: some" if len(tables) == 1 else "Some"
@@ -332,8 +347,12 @@ def submit(conn: sqlite3.Connection, registry: dict, helper: helpers.Helper, bod
     _check_tables(helper, registry, entries)
     problems = _shape_problems(helper, registry, entries)
     if not problems:
-        wrong = Records(conn, registry).check_create(entries, helper.actor, resolve=_resolve_refs)
-        problems = [{"entry": position, "table": entries[position][0], "field": field[:60], "message": message}
+        # A new item may carry its starting amount, use-by date and place, as the person's own add form does:
+        # accepting it adds the item and its first batch together (decision 0102).
+        wrong = Records(conn, registry).check_create(entries, helper.actor, starting_amounts=True,
+                                                     resolve=_resolve_refs)
+        problems = [{"entry": position, "table": entries[position][0], "field": field[:60],
+                     "message": _with_link_hint(registry, entries[position][0], field, message)}
                     for position, fields in sorted(wrong.items()) for field, message in fields.items()]
     if problems:
         raise _invalid(registry, problems)

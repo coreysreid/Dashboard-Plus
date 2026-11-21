@@ -41,7 +41,15 @@ is new: keep a copy of anything important somewhere else too. See
   details are never shared with helpers. A helper reading a receipt can show
   the line and price each row came from (for checking only, never saved), and
   can send a new Stock item with its first Stock in as one group: accepting
-  the Stock in adds the item too, rejecting the item rejects both.
+  the Stock in adds the item too, rejecting the item rejects both. A new Stock
+  item can also arrive as one suggestion with its amount on hand, unit, use-by
+  date and place, just like your own Add form: accepting it adds the item and
+  its first batch together.
+- **Starting message for your assistant:** each helper in Settings, Helpers
+  has a message to copy into the assistant's chat. It lists the lists that
+  helper may use, their fields, what is private, how stock amounts work and
+  today's limits. It holds no records, private details or key. The assistant
+  can read the same guide itself (the `dashboard_how_to_help` tool).
 - **Connect an AI assistant:** assistant apps that support MCP can use a
   helper through the connector that comes with Dashboard Plus
   (`python -m dashboard.connector`). Settings, Helpers shows the settings to

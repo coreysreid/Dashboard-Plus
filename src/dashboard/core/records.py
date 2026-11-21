@@ -429,7 +429,8 @@ class Records:
         an empty result means every entry would be saved.
 
         Amounts worked out from batches are refused, except that `starting_amounts` lets a new record start its
-        first batch the way the add form does (a spreadsheet import, decision 0080); helpers never get this.
+        first batch the way the add form does (a spreadsheet import, decision 0080, and a helper's suggested new
+        item, decision 0102). Afterwards the amount changes only through its batches.
 
         `resolve(values, made)` may swap a value that points at an earlier entry for that entry's new record id;
         `made` maps each earlier position that was added to its id, and it raises ValidationError if it cannot."""
