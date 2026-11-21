@@ -16,7 +16,7 @@ home_type = "house"
 storeys = 2
 mobility_needs = false
 hazards = ["bushfire", "heat", "storm"]
-modules = ["documents", "garden", "home_care", "home_layout", "lent_out", "medical", "people", "pets", "readiness", "routines", "stock", "utilities", "vehicles", "wine"]
+modules = ["documents", "garden", "home_care", "home_layout", "lent_out", "medical", "people", "pets", "readiness", "routines", "stock", "utilities", "vehicle_running", "vehicles", "wine"]
 
 # ---- People -----------------------------------------------------------------
 
@@ -752,6 +752,36 @@ vehicle = "Family car"
 name = "Routine service"
 last_done = "today-170"
 next_due = "today+12"
+
+# ---- Vehicle running log ----------------------------------------------------------
+# Odometer readings the family wrote down, and two invented quotes for the Routine service above. A quote is
+# an estimate, not a bill; the amount and scope are private and stay on this computer (decision 0111).
+
+[[vehicle_running.readings]]
+vehicle = "Family car"
+read_at = "today-61 08:15"
+distance = 46900
+unit = "km"
+
+[[vehicle_running.readings]]
+vehicle = "Family car"
+read_at = "today-1 09:00"
+distance = 48500
+unit = "km"
+
+[[vehicle_running.estimates]]
+service = "Routine service"
+kind = "dealer"
+quoted_on = "today-3"
+amount = 410
+scope = "Example routine service scope; check the original quote"
+
+[[vehicle_running.estimates]]
+service = "Routine service"
+kind = "independent"
+quoted_on = "today-2"
+amount = 330
+scope = "Example routine service scope; may differ from dealer quote"
 
 # ---- Important documents --------------------------------------------------------
 # Where the papers are and the dates the family chose. No document numbers are written down.

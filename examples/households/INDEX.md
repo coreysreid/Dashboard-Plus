@@ -1,7 +1,7 @@
 # examples/households/  (summary: three made-up households for demos, screenshots and tests)
 Every name, number and address is invented; phones use ranges set aside for fiction, emails use example.com.
 Each file: `title`, `summary`, `[setup]` (the first-run answers), then records as `[[module.table]]` rows.
-Links name the record they point at (person = "Mary Smith"). Dates may be "today", "today+12" or "today-3".
+Links name the record they point at (person = "Mary Smith"). Dates may be "today", "today+12" or "today-3"; a date and time "today-1 09:00".
 Stock amounts are what is on hand today, after the `[[stock.movements]]` rows, which are oldest first.
 Load one with: `python tools/load_example.py smith --data <an empty folder>`.
 | Entry | What it is | Open it when |

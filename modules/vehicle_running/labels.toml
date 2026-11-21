@@ -1,0 +1,33 @@
+[tables.readings]
+empty = "Add an odometer reading from a vehicle you have recorded."
+add_button = "Add a reading"
+form = ["vehicle", "read_at", "distance", "unit", "notes"]
+list = ["vehicle", "read_at", "distance", "unit"]
+columns.vehicle = { label = "Vehicle" }
+columns.read_at = { label = "Read on", help = "When you saw the odometer. This is an observation, not a service due date." }
+columns.distance = { label = "Odometer showed", help = "Copy the whole number shown; do not subtract the last reading." }
+columns.unit = { label = "Unit on the odometer", help = "Keep the same unit for this vehicle. Dashboard does not convert miles and kilometres. The usual unit is set in Settings." }
+columns.notes = { help = "Optional; leave registration numbers and key details out." }
+
+[tables.estimates]
+empty = "Add a dealer or independent estimate to an existing service or check."
+add_button = "Add estimate"
+form = ["service", "kind", "provider", "quoted_on", "amount", "good_until", "scope", "notes"]
+list = ["service", "kind", "provider", "quoted_on", "good_until"]
+columns.service = { label = "Service or check", help = "Choose a Vehicles service. This estimate does not change its due date." }
+columns.kind = { label = "Who quoted it", help = "Dealer, independent workshop or other. This is a description, not a recommendation." }
+columns.provider = { label = "Provider (optional)", help = "Choose a People contact if you have one." }
+columns.quoted_on = { label = "Quoted on" }
+columns.amount = { label = "Estimated cost", help = "Optional and private: only on this computer. Copy the quoted amount in your household currency. This is an estimate, not a final bill or a cost paid." }
+columns.good_until = { label = "Quote good until", help = "Only enter a date stated on the quote. No expiry date is worked out." }
+columns.scope = { label = "What the quote includes", help = "Optional and private: only on this computer. Check the original quote; estimates may cover different work." }
+columns.notes = { label = "Private notes", help = "Only on this computer. Leave payment details, passwords and registration numbers out." }
+
+# Shown on the Vehicles service's own page (decision 0111): that service's quotes, private cells behind Show.
+[tables.estimates.under]
+link = "service"
+title = "Cost estimates"
+intro = "Check what each quote includes. These are estimates, not a final price."
+columns = ["kind", "provider", "quoted_on", "good_until", "amount", "scope"]
+order = "quoted_on"
+reveal = "Show estimated cost and scope"

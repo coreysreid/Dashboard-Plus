@@ -17,6 +17,9 @@ def _labels(info: TableInfo) -> dict:
     return info.module.labels.get("tables", {}).get(info.table.name, {})
 
 
+labels_for = _labels  # a table's labels.toml section, for pages that read its `under` or `add_button`
+
+
 def table_title(info: TableInfo) -> str:
     """The friendly name of a table, from labels.toml if it gives one."""
     return _labels(info).get("title") or info.table.title
@@ -177,7 +180,8 @@ class Formatter:
         if kind == "date":
             return dates.show(value, self.date_style)
         if kind == "datetime":
-            return str(value).replace("T", " ")[:16]
+            text = str(value)  # "20/11/26 09:00", the date the household's way (decision 0111)
+            return f"{dates.show(text[:10], self.date_style)} {text[11:16]}".strip()
         if kind == "link":
             if column.with_place:
                 return self.link_with_place(info, column, value)

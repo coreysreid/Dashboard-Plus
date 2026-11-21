@@ -1,0 +1,48 @@
+# Built beside Vehicles from Lane B's draft (decision 0111). It links the shipped vehicle and service records and
+# never changes them: `vehicles.services.next_due` stays the only service reminder. Nothing here works out a
+# mileage, a distance due point, a service interval or which quote is better. Readings are observations;
+# estimates are quotes, never a bill or proof that the work was done.
+
+[tables.readings]
+title = "Odometer readings"
+description = "The distance shown on a vehicle's odometer at a date and time."
+record_name = "{vehicle}, {distance} {unit}"
+columns.vehicle = { type = "link", to = "vehicles.vehicles", required = true, on_delete = "restrict" }
+columns.read_at = { type = "datetime", required = true }
+columns.distance = { type = "integer", required = true, min = 0 }
+columns.unit = { type = "choice", required = true, choices = [{ key = "km", label = "km" }, { key = "mi", label = "mi" }], default_from = "distance_unit" }
+columns.notes = { type = "text" }
+# One vehicle's readings as dots on its page, never joined or converted; only readings in the latest unit are drawn.
+chart = { kind = "dots", x = "read_at", y = "distance", per = "vehicle", unit = "unit", what = ["reading", "readings"], entry = ["reading", "readings"], subject = "vehicle", latest = "Last recorded", caveat = "These are the readings written down, not a verified current odometer. Nothing here works out a distance travelled or a service due." }
+
+# A gentle check before saving, never a block: Go back, or Save as entered for a rollover or a corrected record.
+[[tables.readings.confirm]]
+key = "lower"
+when = "lower"
+column = "distance"
+per = "vehicle"
+order = "read_at"
+among = "unit"
+message = "This is lower than the last reading. Check the vehicle and unit before saving."
+later = "This is higher than a later reading. Check the date, vehicle and unit before saving."
+
+[[tables.readings.confirm]]
+key = "unit"
+when = "different"
+column = "unit"
+per = "vehicle"
+order = "read_at"
+message = "The reading before this one for this vehicle is in {before}. Dashboard does not convert miles and kilometres. Check the unit on the odometer before saving."
+
+[tables.estimates]
+title = "Service estimates"
+description = "A quoted estimate for a service already recorded under Vehicles. An estimate, not a bill."
+record_name = "{service}, {kind} estimate"
+columns.service = { type = "link", to = "vehicles.services", required = true, on_delete = "restrict" }
+columns.kind = { type = "choice", required = true, choices = ["dealer", "independent", "other"] }
+columns.provider = { type = "link", to = "people.people", on_delete = "clear" }
+columns.quoted_on = { type = "date", required = true }
+columns.amount = { type = "money", min = 0, sensitive = true, travels = "never" }
+columns.good_until = { type = "date", not_before = "quoted_on" }
+columns.scope = { type = "longtext", sensitive = true, travels = "never" }
+columns.notes = { type = "longtext", sensitive = true, travels = "never" }

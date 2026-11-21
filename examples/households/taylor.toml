@@ -17,7 +17,7 @@ home_type = "apartment"
 storeys = 1
 mobility_needs = false
 hazards = ["flood", "snow", "storm"]
-modules = ["documents", "garden", "home_care", "home_layout", "lent_out", "medical", "people", "readiness", "routines", "stock", "utilities", "vehicles", "wine"]
+modules = ["documents", "garden", "home_care", "home_layout", "lent_out", "medical", "people", "readiness", "routines", "stock", "utilities", "vehicle_running", "vehicles", "wine"]
 
 # ---- People -----------------------------------------------------------------
 
@@ -292,6 +292,21 @@ vehicle = "Small car"
 name = "MOT test"
 last_done = "today-345"
 next_due = "today+20"
+
+# ---- Vehicle running log ----------------------------------------------------------
+# Sam's one reading in miles and one invented quote for the MOT test (decision 0111).
+
+[[vehicle_running.readings]]
+vehicle = "Small car"
+read_at = "today-1 17:00"
+distance = 70200
+unit = "mi"
+
+[[vehicle_running.estimates]]
+service = "MOT test"
+kind = "other"
+quoted_on = "today-4"
+amount = 55
 
 # ---- Important documents --------------------------------------------------------
 # Sam has started the list. The warranty has no place yet, so the dashboard asks where it is kept.

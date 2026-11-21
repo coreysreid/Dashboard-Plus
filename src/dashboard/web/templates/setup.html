@@ -102,6 +102,12 @@
     </select>
     {% if errors.week_starts %}<p class="error">{{ errors.week_starts }}</p>{% endif %}
     <p class="help">Used by Things to do for This week.</p></div>
+  <div id="distance-unit" class="{% if errors.distance_unit %}has-error{% endif %}"><label for="distance_unit">Odometers usually show</label>
+    <select id="distance_unit" name="distance_unit">
+      {% for key, label in distance_units %}<option value="{{ key }}" {% if values.distance_unit == key %}selected{% endif %}>{{ label }}</option>{% endfor %}
+    </select>
+    {% if errors.distance_unit %}<p class="error">{{ errors.distance_unit }}</p>{% endif %}
+    <p class="help">The unit a new odometer reading starts with. Each reading keeps the unit it was saved in; nothing is converted.</p></div>
   {% endif %}
 
   <h2>3. What to track</h2>

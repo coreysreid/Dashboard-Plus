@@ -434,6 +434,40 @@ function expect(condition, message) { if (!condition) throw new Failed(message);
     }
   }
 
+  async function checkRunning() {  // Vehicle running log (decision 0111): a lower reading asks first, quotes behind Show
+    const r = plan.running;
+    await goto('/t/vehicles__vehicles');
+    await Promise.all([page.waitForNavigation(), page.click(`a[aria-label="Open ${r.vehicle}"]`)]);
+    const carUrl = new URL(page.url()).pathname;
+    expect((await text('main')).includes(`Last recorded: ${r.last}`), `${r.vehicle}'s page should say "Last recorded: ${r.last}".`);
+    await Promise.all([page.waitForNavigation(), page.click('a:has-text("Add a reading")')]);
+    expect(await page.inputValue('#f-unit') === 'km', 'A new reading should start in the household\'s usual unit, km.');
+    await page.fill('#f-read_at', r.at);
+    await page.fill('#f-distance', r.lower);
+    await Promise.all([page.waitForNavigation(), page.click('form.record button[name=then][value=back]')]);
+    const asked = await text('#confirm-box');
+    expect(asked.includes('This is lower than the last reading.'), `A lower reading should ask first; the page says "${asked}".`);
+    await Promise.all([page.waitForNavigation(), page.click('#confirm-save')]);
+    expect(new URL(page.url()).pathname === carUrl, `Save as entered should go back to ${r.vehicle}'s page; it is at ${page.url()}.`);
+    expect((await text('main')).includes('3 readings recorded'), 'After Save as entered the vehicle should have 3 readings.');
+    await page.setViewportSize({ width: 320, height: 800 });
+    try {
+      const wide = await page.evaluate(() => document.documentElement.scrollWidth);
+      expect(wide <= 320, `At 320px ${r.vehicle}'s page is ${wide}px wide; it should not scroll sideways.`);
+      await goto('/t/vehicles__services');
+      await Promise.all([page.waitForNavigation(), page.click(`a[aria-label="Open ${r.service}"]`)]);
+      expect(!(await html()).includes(r.amount), 'The service page sent an estimated cost before Show was pressed.');
+      await page.click('button:has-text("Show estimated cost and scope")');
+      await page.locator('#under-vehicle_running__estimates span', { hasText: r.amount }).waitFor({ timeout: 5000 }).catch(() => {});
+      expect((await text('#under-vehicle_running__estimates')).includes(r.amount), 'Show estimated cost and scope did not show the quotes.');
+      const swide = await page.evaluate(() => document.documentElement.scrollWidth);
+      expect(swide <= 320, `At 320px the service page is ${swide}px wide; it should not scroll sideways.`);
+    } finally {
+      await page.setViewportSize({ width: 1280, height: 720 });
+    }
+    ok(`vehicle running log: a lower reading asked first, saved as entered; quotes shown only on Show; fits 320 pixels`);
+  }
+
   async function checkDrills() {  // Think it through (decision 0108): a step, Continue later, own words behind Show
     const d = plan.drills;
     await goto('/drills/readiness');
@@ -529,6 +563,7 @@ function expect(condition, message) { if (!condition) throw new Failed(message);
       if (plan.review) await checkReview();
       if (plan.questions) await checkQuestions();
       if (plan.charts) await checkCharts();
+      if (plan.running) await checkRunning();
       if (plan.drills) await checkDrills();
       if (plan.private) { await checkPrivateDetail(); await checkPrivateSheet(); }
       await checkClose();

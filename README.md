@@ -55,6 +55,14 @@ is new: keep a copy of anything important somewhere else too. See
   the pet and the dates. Each chart has a table with the same values, prints,
   and works with a keyboard or screen reader. They show what was written down,
   never a health or safety verdict.
+- **Vehicle running log:** what each vehicle's odometer showed and when, as
+  dots on the vehicle's page ("Last recorded: 48,500 km on 20/11/26"), in the
+  km or miles you choose in Settings and never converted. A reading lower than
+  the last one, or in another unit, asks **Go back** or **Save as entered**
+  first. A service's page lists its dealer, independent or other quotes with
+  their dates; the amounts and what each covers stay private behind **Show
+  estimated cost and scope**. They are estimates, not a bill or a
+  recommendation, and the service date you typed stays the only reminder.
 - **Have you thought about…?** (Readiness) 49 calm questions about fire,
   flood, storms, heat, power cuts, medical needs and leaving home quickly, each
   with the official page it came from and the date that page was checked. Only

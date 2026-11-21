@@ -29,6 +29,20 @@ def enabled_modules(conn: sqlite3.Connection) -> set[str]:
     return {r["name"] for r in conn.execute("SELECT name FROM core__modules WHERE enabled = 1")}
 
 
+# A household's usual choice that a module's choice column may take as its default (decision 0111): the unit an
+# odometer shows. Until Settings says, it follows the country: miles in the United States and the United Kingdom.
+HOUSEHOLD_CHOICES = {"distance_unit": {"km": "Kilometres (km)", "mi": "Miles (mi)"}}
+MILES_COUNTRIES = {"United States", "United Kingdom"}
+
+
+def household_choice(conn: sqlite3.Connection, name: str) -> str:
+    """The household's chosen value for one of HOUSEHOLD_CHOICES, or the country's usual one."""
+    chosen = get(conn, f"household.{name}")
+    if chosen in HOUSEHOLD_CHOICES[name]:
+        return chosen
+    return "mi" if get(conn, "household.country") in MILES_COUNTRIES else "km"
+
+
 def set_module_enabled(conn: sqlite3.Connection, name: str, enabled: bool) -> None:
     """Switch a module on or off. Switching off hides it; its records are kept."""
     now = datetime.now(timezone.utc).isoformat(timespec="seconds")

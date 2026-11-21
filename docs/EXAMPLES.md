@@ -254,6 +254,18 @@ As it prints: service, provider, fault contact and their phone from People, and 
 
 ![Utility contacts sheet](screenshots/smith/18s-utilities-sheet.png)
 
+### A vehicle's odometer readings
+
+Last recorded, then each reading as a dot and a row in the unit it was saved in; nothing is converted or worked out.
+
+![A vehicle's odometer readings](screenshots/smith/18sa-vehicle-readings.png)
+
+### A service's cost estimates
+
+Each quote with who gave it and its dates; the amount and what it covers stay hidden until Show. Estimates, not a bill.
+
+![A service's cost estimates](screenshots/smith/18sb-service-estimates.png)
+
 ### Have you thought about…?
 
 Readiness: the questions that fit the household, by group, with how many have been looked at, never a safety score.
@@ -572,6 +584,18 @@ As it prints: service, provider, fault contact and their phone from People, and 
 
 ![Utility contacts sheet](screenshots/garcia/18s-utilities-sheet.png)
 
+### A vehicle's odometer readings
+
+Last recorded, then each reading as a dot and a row in the unit it was saved in; nothing is converted or worked out.
+
+![A vehicle's odometer readings](screenshots/garcia/18sa-vehicle-readings.png)
+
+### A service's cost estimates
+
+Each quote with who gave it and its dates; the amount and what it covers stay hidden until Show. Estimates, not a bill.
+
+![A service's cost estimates](screenshots/garcia/18sb-service-estimates.png)
+
 ### Have you thought about…?
 
 Readiness: the questions that fit the household, by group, with how many have been looked at, never a safety score.
@@ -883,6 +907,18 @@ Each service, its provider, who to contact about a fault and its meter; the acco
 As it prints: service, provider, fault contact and their phone from People, and the meter, with no account numbers or notes.
 
 ![Utility contacts sheet](screenshots/taylor/18s-utilities-sheet.png)
+
+### A vehicle's odometer readings
+
+Last recorded, then each reading as a dot and a row in the unit it was saved in; nothing is converted or worked out.
+
+![A vehicle's odometer readings](screenshots/taylor/18sa-vehicle-readings.png)
+
+### A service's cost estimates
+
+Each quote with who gave it and its dates; the amount and what it covers stay hidden until Show. Estimates, not a bill.
+
+![A service's cost estimates](screenshots/taylor/18sb-service-estimates.png)
 
 ### Have you thought about…?
 

@@ -11,6 +11,7 @@ from datetime import date
 from pathlib import Path
 
 from dashboard.core import prompts as prompt_files
+from dashboard.core.settings import HOUSEHOLD_CHOICES
 from dashboard.core.migrations import Migration, load_track, MigrationError
 from dashboard.errors import PlainError
 
@@ -33,9 +34,14 @@ TRAVELS = ("always", "never")
 MODULE_KEYS = ("name", "title", "version", "description", "core_api", "kind", "requires", "outbound_hosts")
 MODULE_REQUIRED = ("name", "title", "version", "description", "core_api", "kind")
 TABLE_KEYS = ("title", "description", "columns", "watch", "adjusts", "parent", "total", "record_name", "actions",
-              "pair", "suggestions", "chart")
-# A chart of one subject's dated readings, such as one pet's weigh-ins as dots (decision 0109).
-CHART_KEYS = ("kind", "x", "y", "per", "what", "entry", "subject")
+              "pair", "suggestions", "chart", "confirm")
+# A chart of one subject's dated readings, such as one pet's weigh-ins as dots (decision 0109); `unit`, `latest`
+# and `caveat` let readings carry their own unit, as an odometer's km or mi, and say what they are (decision 0111).
+CHART_KEYS = ("kind", "x", "y", "per", "what", "entry", "subject", "unit", "latest", "caveat")
+# A gentle check before a form saves, such as an odometer reading lower than the last one: Go back, or Save as
+# entered. Never a block, and nothing is worked out from it (decision 0111).
+CONFIRM_KEYS = ("key", "when", "column", "per", "order", "among", "message", "later")
+CONFIRM_WHEN = ("lower", "different")
 CHART_KINDS = ("dots",)
 # A record that joins two records of one table, like two rooms with a door between them (decision 0103).
 PAIR_KEYS = ("columns", "blank_when")
@@ -66,8 +72,10 @@ TOTAL_KEYS = ("link", "amount", "into", "earliest", "starts_from")
 WATCH_KEYS = ("running_low", "expiring", "supply", "gaps")
 GAP_KEYS = ("missing", "none", "where", "message")
 COLUMN_KEYS = ("type", "required", "required_when", "default", "min", "max", "unit", "choices", "help", "sensitive",
-               "to", "on_delete", "not_before", "travels", "travels_when", "with_place")
-LABEL_TABLE_KEYS = ("title", "columns", "form", "list", "empty", "home", "actions")
+               "to", "on_delete", "not_before", "travels", "travels_when", "with_place", "default_from")
+LABEL_TABLE_KEYS = ("title", "columns", "form", "list", "empty", "home", "actions", "add_button", "under")
+# A table's records listed on the page of the record they link to, like a service's quotes (decision 0111).
+UNDER_KEYS = ("link", "title", "intro", "columns", "order", "reveal")
 LABEL_ACTION_KEYS = ("label", "done", "title", "intro", "undo")  # new words for an action's button, form, notice
 HOME_PLACES = ("main", "more")  # where a table sits on the home page: shown large, or in the line of links
 LABEL_COLUMN_KEYS = ("label", "help", "show_when", "suggest_from", "fills", "answers", "blank")
@@ -110,6 +118,7 @@ class Column:
     travels: str = "always"
     travels_when: dict = field(default_factory=dict)
     travels_reviewed: bool = True  # False for a private column that does not say; it is then kept local
+    default_from: str | None = None  # a household choice (HOUSEHOLD_CHOICES) that fills an empty form (0111)
 
 
 @dataclass
@@ -129,6 +138,7 @@ class Table:
     suggestions: bool = True
     pair: dict = field(default_factory=dict)  # checked `pair`: joins two different records, each pair once (5.6)
     chart: dict = field(default_factory=dict)  # checked `chart`: one subject's dated readings drawn as dots (0109)
+    confirm: list = field(default_factory=list)  # checked gentle checks before a form saves (decision 0111)
 
 
 @dataclass
@@ -299,7 +309,8 @@ def _parse_column(file: str, table: str, name: str, raw, problems: list[str]) ->
                     unit=raw.get("unit"), help=raw.get("help"), sensitive=bool(raw.get("sensitive", False)),
                     to=raw.get("to"), on_delete=raw.get("on_delete", "restrict"),
                     required_when=raw.get("required_when") if isinstance(raw.get("required_when"), dict) else {},
-                    not_before=raw.get("not_before"), with_place=raw.get("with_place"))
+                    not_before=raw.get("not_before"), with_place=raw.get("with_place"),
+                    default_from=raw.get("default_from"))
     if "required_when" in raw and (not isinstance(raw["required_when"], dict) or len(raw["required_when"]) != 1):
         problems.append(f"{where}: required_when names one choice column and a value, like {{ category = \"water\" }}.")
     _parse_travels(where, raw, column, problems)
@@ -319,6 +330,13 @@ def _parse_column(file: str, table: str, name: str, raw, problems: list[str]) ->
             problems.append(f"{where}: the default '{column.default}' is not one of the choices.")
     elif "choices" in raw:
         problems.append(f"{where}: 'choices' only applies to columns of type 'choice'.")
+    if "default_from" in raw:
+        wanted = HOUSEHOLD_CHOICES.get(raw["default_from"]) if isinstance(raw["default_from"], str) else None
+        if kind != "choice" or wanted is None or not set(wanted) <= {c.key for c in column.choices} \
+                or "default" in raw:
+            problems.append(f"{where}: 'default_from' names a household choice ({', '.join(HOUSEHOLD_CHOICES)}) "
+                            f"for a choice column that offers all of its choices, instead of 'default'.")
+            column.default_from = None
     if kind in ("link", "links"):
         if not column.to:
             problems.append(f"{where}: a {kind} column needs 'to', naming the table it points at.")
@@ -631,8 +649,8 @@ def _check_chart(file: str, table: Table, raw, problems: list[str]) -> dict:
     if raw.get("kind") not in CHART_KINDS:
         problems.append(f"{where}: 'kind' must be \"dots\", not {raw.get('kind')!r}.")
     x, y, per = (table.columns.get(raw.get(k)) if isinstance(raw.get(k), str) else None for k in ("x", "y", "per"))
-    if x is None or x.type != "date" or not x.required:
-        problems.append(f"{where}: 'x' must name a required date column of this table.")
+    if x is None or x.type not in ("date", "datetime") or not x.required:
+        problems.append(f"{where}: 'x' must name a required date or date-and-time column of this table.")
     if y is None or y.type not in ("integer", "decimal", "measure") or not y.required or y.sensitive:
         problems.append(f"{where}: 'y' must name a required number column of this table that is not private.")
     if per is None or per.type != "link" or not per.required:
@@ -643,10 +661,66 @@ def _check_chart(file: str, table: Table, raw, problems: list[str]) -> dict:
             problems.append(f"{where}: '{key}' must be two words, singular then plural, like {example}.")
     if not (isinstance(raw.get("subject"), str) and raw["subject"].strip()):
         problems.append(f"{where}: 'subject' must be the word for one subject, like \"pet\".")
+    unit = table.columns.get(raw["unit"]) if isinstance(raw.get("unit"), str) else None
+    if "unit" in raw and (unit is None or unit.type != "choice" or not unit.required or y is None or y.unit):
+        problems.append(f"{where}: 'unit' names a required choice column holding each reading's unit, for a "
+                        f"number column with no 'unit' of its own.")
+    for key in ("latest", "caveat"):
+        if key in raw and not (isinstance(raw[key], str) and raw[key].strip()):
+            problems.append(f"{where}: '{key}' must be a few words, like \"Last recorded\".")
     if len(problems) > before:
         return {}
     return {"kind": raw["kind"], "x": raw["x"], "y": raw["y"], "per": raw["per"], "what": list(raw["what"]),
-            "entry": list(raw["entry"]), "subject": raw["subject"].strip()}
+            "entry": list(raw["entry"]), "subject": raw["subject"].strip(), "unit": raw.get("unit"),
+            "latest": raw.get("latest"), "caveat": raw.get("caveat")}
+
+
+def _check_confirm(file: str, table: Table, raw, problems: list[str]) -> list[dict]:
+    """Check `confirm`: gentle checks before a form saves, like an odometer reading lower than the last one for
+    the same vehicle (decision 0111). Each compares one column with the nearest record before it in `order`."""
+    where = f"In {file}, table '{table.name}', confirm"
+    example = ('[[tables.readings.confirm]] with key = "lower", when = "lower", column = "distance", '
+               'per = "vehicle", order = "read_at", message = "This is lower than the last reading."')
+    if not isinstance(raw, list) or not raw:
+        problems.append(f"{where}: write each check as {example}.")
+        return []
+    checks, keys = [], set()
+    for rule in raw:
+        if not isinstance(rule, dict):
+            problems.append(f"{where}: write each check as {example}.")
+            continue
+        problems.extend(_unknown_keys(where, rule, CONFIRM_KEYS))
+        before = len(problems)
+        key, when = rule.get("key"), rule.get("when")
+        if not isinstance(key, str) or not CHOICE_KEY.match(key) or key in keys:
+            problems.append(f"{where}: each check needs its own 'key', lower-case letters and underscores.")
+        if when not in CONFIRM_WHEN:
+            problems.append(f"{where}: 'when' must be \"lower\" or \"different\", not {when!r}.")
+        column, per, order = (table.columns.get(rule.get(k)) if isinstance(rule.get(k), str) else None
+                              for k in ("column", "per", "order"))
+        if column is None or column.sensitive or (when == "lower" and column.type not in NUMERIC_TYPES):
+            problems.append(f"{where}: 'column' must name a column of this table that is not private "
+                            f"(a number column for \"lower\").")
+        if per is None or per.type != "link" or not per.required:
+            problems.append(f"{where}: 'per' must name a required link column, so records are compared for one "
+                            f"subject only.")
+        if order is None or order.type not in ("date", "datetime") or not order.required:
+            problems.append(f"{where}: 'order' must name a required date or date-and-time column.")
+        among = rule.get("among")
+        if among is not None and (not isinstance(among, str) or among not in table.columns
+                                  or among == rule.get("column") or table.columns[among].sensitive):
+            problems.append(f"{where}: 'among' names another column of this table that is not private; only "
+                            f"records with the same value there are compared.")
+        for words in ("message",) + (("later",) if when == "lower" else ()):
+            if not (isinstance(rule.get(words), str) and rule[words].strip()):
+                problems.append(f"{where}: '{words}' must be the sentence shown before saving.")
+        if when != "lower" and "later" in rule:
+            problems.append(f"{where}: 'later' only applies to a \"lower\" check.")
+        if len(problems) > before:
+            continue
+        keys.add(key)
+        checks.append({k: rule.get(k) for k in CONFIRM_KEYS})
+    return checks
 
 
 def _check_record_name(file: str, table: Table, tables: dict[str, Table], template, problems: list[str]) -> str | None:
@@ -745,6 +819,8 @@ def _check_tables(module: str, data: dict, requires: list[str], problems: list[s
                 tables[tname].pair = _check_pair(file, tables[tname], raw["pair"], problems)
             if "chart" in raw:
                 tables[tname].chart = _check_chart(file, tables[tname], raw["chart"], problems)
+            if "confirm" in raw:
+                tables[tname].confirm = _check_confirm(file, tables[tname], raw["confirm"], problems)
     for table in tables.values():
         for column in table.columns.values():
             if column.type in ("link", "links") and column.to:
@@ -1267,12 +1343,42 @@ def _check_labels(data: dict, tables: dict[str, Table], problems: list[str]) -> 
                         if col is None or col.type != "choice" or value not in [c.key for c in col.choices]:
                             problems.append(f"{where}, column '{cname}': show_when must name a choice column of "
                                             f"this table and one of its choices.")
+        if "add_button" in raw and (not isinstance(raw["add_button"], str) or not raw["add_button"].strip()):
+            problems.append(f"{where}: 'add_button' must be a few words, like \"Add a reading\".")
+        if "under" in raw:
+            _check_under(where, raw["under"], tables[tname], problems)
         for listing in ("form", "list"):
             for cname in raw.get(listing, []):
                 if cname not in known:
                     problems.append(f"{where}: '{listing}' names a column '{cname}' that does not exist."
                                     f"{_suggest(cname, list(known))}")
     return data
+
+
+def _check_under(where: str, raw, table: Table, problems: list[str]) -> None:
+    """Check `under`: this table's records listed on the page of the record one link points at (decision 0111)."""
+    where = f"{where}, under"
+    if not isinstance(raw, dict):
+        problems.append(f"{where}: write it like {{ link = \"service\", title = \"Cost estimates\", "
+                        f"columns = [\"kind\", \"quoted_on\"] }}.")
+        return
+    problems.extend(_unknown_keys(where, raw, UNDER_KEYS))
+    link = table.columns.get(raw.get("link")) if isinstance(raw.get("link"), str) else None
+    if link is None or link.type != "link":
+        problems.append(f"{where}: 'link' must name a link column of this table.")
+    for key in ("title", "intro", "reveal"):
+        if (key in raw or key == "title") and not (isinstance(raw.get(key), str) and raw[key].strip()):
+            problems.append(f"{where}: '{key}' must be a short heading or sentence.")
+    columns = raw.get("columns")
+    if not isinstance(columns, list) or not columns or any(c not in table.columns or c == raw.get("link")
+                                                           or table.columns[c].type == "links" for c in columns):
+        problems.append(f"{where}: 'columns' lists other columns of this table to show.")
+        columns = []
+    order = table.columns.get(raw.get("order")) if isinstance(raw.get("order"), str) else None
+    if "order" in raw and (order is None or order.sensitive or order.type in ("links", "longtext")):
+        problems.append(f"{where}: 'order' names a column of this table that is not private.")
+    if "reveal" in raw and not any(table.columns[c].sensitive for c in columns):
+        problems.append(f"{where}: 'reveal' is the words for showing private columns, and none are listed.")
 
 
 SHEET_KEYS = ("name", "title", "intro", "section")
