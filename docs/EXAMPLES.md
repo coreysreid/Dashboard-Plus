@@ -230,6 +230,18 @@ As it prints: wine, count, place and bought on, with no price or tasting notes.
 
 ![Wine collection sheet](screenshots/smith/18q-wine-sheet.png)
 
+### Utilities and household accounts
+
+Each service, its provider, who to contact about a fault and its meter; the account reference stays hidden until Show.
+
+![Utilities and household accounts](screenshots/smith/18r-utilities.png)
+
+### Utility contacts sheet
+
+As it prints: service, provider, fault contact and their phone from People, and the meter, with no account numbers or notes.
+
+![Utility contacts sheet](screenshots/smith/18s-utilities-sheet.png)
+
 ### Needs attention
 
 Days of water with the working shown, running low, use-by and due dates, and details worth filling in.
@@ -470,6 +482,18 @@ As it prints: beds and where they are, plantings and the jobs not yet done, with
 
 ![Garden plan sheet](screenshots/garcia/18o-garden-sheet.png)
 
+### Utilities and household accounts
+
+Each service, its provider, who to contact about a fault and its meter; the account reference stays hidden until Show.
+
+![Utilities and household accounts](screenshots/garcia/18r-utilities.png)
+
+### Utility contacts sheet
+
+As it prints: service, provider, fault contact and their phone from People, and the meter, with no account numbers or notes.
+
+![Utility contacts sheet](screenshots/garcia/18s-utilities-sheet.png)
+
 ### Needs attention
 
 Days of water with the working shown, running low, use-by and due dates, and details worth filling in.
@@ -703,6 +727,18 @@ Each wine, how many bottles the household says it has and where they are kept; t
 As it prints: wine, count, place and bought on, with no price or tasting notes.
 
 ![Wine collection sheet](screenshots/taylor/18q-wine-sheet.png)
+
+### Utilities and household accounts
+
+Each service, its provider, who to contact about a fault and its meter; the account reference stays hidden until Show.
+
+![Utilities and household accounts](screenshots/taylor/18r-utilities.png)
+
+### Utility contacts sheet
+
+As it prints: service, provider, fault contact and their phone from People, and the meter, with no account numbers or notes.
+
+![Utility contacts sheet](screenshots/taylor/18s-utilities-sheet.png)
 
 ### Needs attention
 

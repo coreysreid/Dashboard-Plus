@@ -16,7 +16,7 @@ home_type = "apartment"
 storeys = 1
 mobility_needs = true
 hazards = ["earthquake", "heat", "power"]
-modules = ["documents", "garden", "home_care", "home_layout", "lent_out", "medical", "people", "pets", "stock", "vehicles"]
+modules = ["documents", "garden", "home_care", "home_layout", "lent_out", "medical", "people", "pets", "stock", "utilities", "vehicles"]
 
 # ---- People -----------------------------------------------------------------
 
@@ -752,3 +752,28 @@ title = "Check pot"
 bed = "Balcony pot"
 due_on = "today+5"
 done = false
+
+# ---- Utilities ----------------------------------------------------------------
+# Invented provider and fault line; the number lives in People, and the account reference is made up.
+
+[[people.people]]
+name = "Example Power US"
+phone = "(415) 555-0111"
+
+[[people.people]]
+name = "Example Power Faults US"
+phone = "(415) 555-0112"
+
+[[home_layout.meters]]
+name = "Apartment electricity meter"
+kind = "electricity"
+place = "Hall closet"
+how_to_find = "Inside the hall closet."
+
+[[utilities.services]]
+name = "Apartment electricity"
+kind = "electricity"
+provider = "Example Power US"
+fault_contact = "Example Power Faults US"
+account_number = "DEMO-US-ACCOUNT-01"
+meter = "Apartment electricity meter"
