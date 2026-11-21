@@ -1,14 +1,69 @@
 {% extends "base.html" %}
 {% block title %}Review · Dashboard Plus{% endblock %}
 {% block body %}
+<style>
+  /* Every row is the same three columns: a tick box, what it adds, and Accept and Reject in a fixed column at
+     the right. A group is shown by a coloured band and a label, never by moving the buttons (decision 0101). */
+  .review-list, .review-list ul { list-style: none; margin: 0; padding: 0; }
+  .review-list { margin: 1rem 0; }
+  .review-row { display: grid; grid-template-columns: 2rem minmax(0, 1fr) var(--decide); gap: .6rem; align-items: start;
+                padding: .6rem .4rem .6rem .2rem; border-top: 1px solid var(--line); border-radius: 6px; }
+  .review-row:focus { outline: none; }
+  .review-row.current { outline: 3px solid var(--accent); outline-offset: -3px; background: var(--good-bg); }
+  .review-row .tick { padding-top: .45rem; }
+  .review-row .tick input { width: 1.2rem; height: 1.2rem; margin: 0; }
+  .review-row p { margin: 0; }
+  .review-row .more { margin-top: .3rem; }
+  .decide { --gap: .4rem; display: flex; gap: var(--gap); justify-content: flex-end; }
+  .decide form { margin: 0; }
+  .decide button { width: calc((var(--decide) - var(--gap)) / 2); padding-left: .4rem; padding-right: .4rem; }
+  .review-group { border-top: 1px solid var(--line); border-left: 6px solid var(--accent); background: var(--bg);
+                  border-radius: 6px; margin: .2rem 0; padding: .4rem 0 0 .5rem; }
+  .review-group > .group-label { margin: 0 .4rem .3rem 0; font-size: .95rem; }
+  .review-group .review-row:first-child { border-top: 0; }
+  .review-list { --decide: 12rem; }
+  .ticked-bar { position: sticky; bottom: 0; z-index: 2; background: var(--card); border: 1px solid var(--line);
+                border-radius: 10px; padding: .5rem .8rem; margin: 1rem 0; box-shadow: 0 -2px 10px rgba(0,0,0,.06); }
+  .ticked-bar .actions { margin: 0; }
+  details.confirm-all > summary { list-style: none; }
+  details.confirm-all > summary::-webkit-details-marker { display: none; }
+  details.confirm-all[open] > summary { outline: 2px solid var(--accent); outline-offset: 2px; }
+  .confirm-box { border: 2px solid var(--accent); border-radius: 10px; padding: .6rem .9rem; margin-top: .6rem; }
+  .keys kbd { font: inherit; font-size: .9rem; border: 1px solid var(--line); border-bottom-width: 2px; border-radius: 4px;
+              padding: 0 .3rem; background: var(--card); }
+  @media (max-width: 40rem) {
+    .review-list { --decide: 6rem; }
+    .decide { flex-direction: column; align-items: stretch; }
+    .decide button { width: 100%; }
+    .card.review-batch { padding: 1rem .7rem; }
+    .ticked-bar { padding: .4rem .5rem; }
+    .ticked-bar .actions { flex-wrap: nowrap; gap: .4rem; }
+    .ticked-bar #ticked-count { display: none; }
+    .ticked-bar button { padding: .45rem .7rem; }
+  }
+</style>
 <h1>Review</h1>
 <p class="lead">Helpers can suggest new records, and you can <a href="/settings/import">import rows from a spreadsheet</a>. Nothing is added to your records until you accept it.</p>
 {% if message %}<p class="{{ message[0] }}" role="status">{{ message[1] }}</p>{% endif %}
+{% for h in limits %}
+<section class="card" aria-label="Today's limit for {{ h.name }}">
+  <p style="margin:0">{{ h.name }} has used {{ h.used }} of its {{ h.limit }} suggestions for today{% if h.left %}, so it has {{ h.left }} left{% else %} and cannot send more today{% endif %}. If you expect more from it today, for example while moving your records in, you can allow more. Tomorrow its limit is back to {{ day_limit }}.</p>
+  <form method="post" action="/settings/helpers/{{ h.id }}/allow-more" class="actions" style="margin:.6rem 0 0">
+    <input type="hidden" name="_csrf" value="{{ csrf_token }}">
+    <input type="hidden" name="allow_token" value="{{ h.allow_token }}">
+    <input type="hidden" name="back" value="review">
+    <button type="submit" aria-label="Allow {{ allow_more }} more suggestions today for {{ h.name }}">Allow {{ allow_more }} more today</button>
+  </form>
+</section>
+{% endfor %}
 {% if not batches %}
 <p class="card">Nothing is waiting on Review.</p>
+{% else %}
+<p class="muted keys" id="review-keys" hidden>Keys: <kbd>↑</kbd> <kbd>↓</kbd> (or <kbd>J</kbd> <kbd>K</kbd>) move between rows · <kbd>A</kbd> accept · <kbd>R</kbd> reject · <kbd>Space</kbd> tick.</p>
+<form id="ticked" method="post" action="/review/ticked/accept"><input type="hidden" name="_csrf" value="{{ csrf_token }}"></form>
 {% endif %}
 {% for b in batches %}
-<section class="card" aria-labelledby="batch-{{ b.id }}">
+<section class="card review-batch" aria-labelledby="batch-{{ b.id }}">
   {% if b.kind == "import" %}
   <h2 id="batch-{{ b.id }}" style="margin-top:0">{{ b.helper }} · {{ b.proposals | length }} row{{ "" if b.proposals | length == 1 else "s" }} waiting</h2>
   <p class="muted" style="margin:.2rem 0">You imported these rows from the spreadsheet <bdi>{{ b.source_name }}</bdi> on {{ b.when }}. Check them before you accept: each is added as a new record.</p>
@@ -21,40 +76,118 @@
   </figure>
   {% endif %}
   {% if b.helper_off %}<p class="muted">This helper's access is off. Its earlier suggestions still need your decision.</p>{% endif %}
-  <ul style="list-style:none;padding:0;margin:1rem 0">
+  {% if b.proposals | length > 1 %}
+  <div class="actions">
+    <details class="confirm-all">
+      <summary class="button" role="button">Accept all {{ b.proposals | length }}</summary>
+      <div class="confirm-box" role="group" aria-label="Accept all {{ b.proposals | length }}: check first">
+        <p style="margin:0">This adds {{ b.proposals | length }} new records: {{ b.adds }}. Rows marked "Added together" go in together. If one of them cannot be added, its whole group stays waiting with the reason shown, and the others still go in.</p>
+        <form method="post" action="/review/batch/{{ b.id }}/accept-all" class="actions" style="margin:.6rem 0 0"><input type="hidden" name="_csrf" value="{{ csrf_token }}"><button type="submit">Yes, accept all {{ b.proposals | length }}</button></form>
+      </div>
+    </details>
+    <form method="post" action="/review/batch/{{ b.id }}/reject-all"><input type="hidden" name="_csrf" value="{{ csrf_token }}"><button type="submit" class="quiet">Reject all {{ b.proposals | length }}</button></form>
+  </div>
+  {% endif %}
+  <ul class="review-list">
   {% for group in b.groups %}
   {% set together = group | length > 1 %}
-  {% if together %}<li style="padding:.6rem 0;border-top:1px solid var(--line)"><p class="muted" style="margin:0">These {{ group | length }} rows go together: accepting a row also adds the new record it needs, and rejecting a new record also rejects the rows that need it.</p>
-    <ul style="list-style:none;padding:0 0 0 .8rem;margin:.4rem 0 0;border-left:3px solid var(--line)">{% endif %}
+  {% if together %}<li class="review-group" data-group="g{{ b.id }}-{{ loop.index }}"><p class="group-label"><strong>Added together</strong> · These {{ group | length }} rows go together: accepting a row also adds the new record it needs, and rejecting a new record also rejects the rows that need it. Ticking one ticks them all.</p>
+    <ul>{% endif %}
   {% for p in group %}
-    <li style="padding:.6rem 0;{% if not (together and loop.first) %}border-top:1px solid var(--line){% endif %}">
+    <li class="review-row" data-row id="row-{{ p.id }}" tabindex="-1">
+      <div class="tick"><input type="checkbox" name="ids" value="{{ p.id }}" form="ticked" id="tick-{{ p.id }}" aria-label="Tick row {{ p.number }}"></div>
+      <div class="what">
       {% if p.text.off %}
-      <p style="margin:0">This is for {{ p.text.module }}, which is switched off.</p>
+      <p>This is for {{ p.text.module }}, which is switched off.</p>
       {% else %}
-      <p style="margin:0">{% if b.kind == "import" %}Row {{ p.source_row }} would add to{% else %}{{ b.helper }} suggests adding to{% endif %} <strong>{{ p.text.table }}</strong>: <span class="helper-text">{% for label, text in p.text.parts %}{{ label }}: <bdi>{{ text }}</bdi>{% if not loop.last %} · {% endif %}{% endfor %}</span></p>
+      <p>{% if b.kind == "import" %}Row {{ p.source_row }} would add to{% else %}{{ b.helper }} suggests adding to{% endif %} <strong>{{ p.text.table }}</strong>: <span class="helper-text">{% for label, text in p.text.parts %}{{ label }}: <bdi>{{ text }}</bdi>{% if not loop.last %} · {% endif %}{% endfor %}</span></p>
       {% endif %}
-      {% if p.source %}<p class="muted helper-text" style="margin:.3rem 0 0">From the receipt or paper, as {{ b.helper }} read it:{% if p.source.line %} <q><bdi>{{ p.source.line }}</bdi></q>{% endif %}{% if p.source.price %} · Price: <bdi>{{ p.source.price }}</bdi>{% endif %}. Shown for checking only; it is not saved in your records.</p>{% endif %}
-      {% if p.needs %}<p class="muted" style="margin:.3rem 0 0">Accepting this also adds the new record{{ "" if p.needs | length == 1 else "s" }} above that it needs.</p>{% endif %}
-      {% if p.needed_by %}<p class="muted" style="margin:.3rem 0 0">Rejecting this also rejects the {{ p.needed_by }} row{{ "" if p.needed_by == 1 else "s" }} below that need{{ "s" if p.needed_by == 1 else "" }} it.</p>{% endif %}
+      {% if p.source %}<p class="muted helper-text more">From the receipt or paper, as {{ b.helper }} read it:{% if p.source.line %} <q><bdi>{{ p.source.line }}</bdi></q>{% endif %}{% if p.source.price %} · Price: <bdi>{{ p.source.price }}</bdi>{% endif %}. Shown for checking only; it is not saved in your records.</p>{% endif %}
+      {% if p.needs %}<p class="muted more">Accepting this also adds the new record{{ "" if p.needs | length == 1 else "s" }} above that it needs.</p>{% endif %}
+      {% if p.needed_by %}<p class="muted more">Rejecting this also rejects the {{ p.needed_by }} row{{ "" if p.needed_by == 1 else "s" }} below that need{{ "s" if p.needed_by == 1 else "" }} it.</p>{% endif %}
       {% if p.exists %}<p class="problem" role="status" style="margin:.4rem 0"><bdi>{{ p.exists }}</bdi></p>{% endif %}
       {% if p.reason %}<p class="problem" role="alert" style="margin:.4rem 0">{{ p.reason }}</p>{% endif %}
-      <div class="actions" style="margin:.4rem 0 0">
-        {% if not p.text.off %}
-        <form method="post" action="/review/{{ p.id }}/accept"><input type="hidden" name="_csrf" value="{{ csrf_token }}"><button type="submit">Accept</button></form>
+      </div>
+      <div class="decide">
+        {% if p.text.off %}
+        <button type="button" disabled title="Its part is switched off, so it can only be rejected.">Accept</button>
+        {% else %}
+        <form method="post" action="/review/{{ p.id }}/accept"><input type="hidden" name="_csrf" value="{{ csrf_token }}"><button type="submit" data-accept>Accept</button></form>
         {% endif %}
-        <form method="post" action="/review/{{ p.id }}/reject"><input type="hidden" name="_csrf" value="{{ csrf_token }}"><button type="submit" class="quiet">Reject</button></form>
+        <form method="post" action="/review/{{ p.id }}/reject"><input type="hidden" name="_csrf" value="{{ csrf_token }}"><button type="submit" class="quiet" data-reject>Reject</button></form>
       </div>
     </li>
   {% endfor %}
   {% if together %}</ul></li>{% endif %}
   {% endfor %}
   </ul>
-  {% if b.proposals | length > 1 %}
-  <div class="actions">
-    <form method="post" action="/review/batch/{{ b.id }}/accept-all"><input type="hidden" name="_csrf" value="{{ csrf_token }}"><button type="submit">Accept all {{ b.proposals | length }}</button></form>
-    <form method="post" action="/review/batch/{{ b.id }}/reject-all"><input type="hidden" name="_csrf" value="{{ csrf_token }}"><button type="submit" class="quiet">Reject all {{ b.proposals | length }}</button></form>
-  </div>
-  {% endif %}
 </section>
 {% endfor %}
+{% if batches %}
+<div class="ticked-bar">
+  <div class="actions">
+    <span class="muted" id="ticked-count">Tick rows, then:</span>
+    <button type="submit" form="ticked" formaction="/review/ticked/accept">Accept ticked</button>
+    <button type="submit" form="ticked" formaction="/review/ticked/reject" class="quiet">Reject ticked</button>
+  </div>
+</div>
+<script>
+  // Review keys (decision 0101). Only a convenience: every button works without this script.
+  (function () {
+    var rows = Array.prototype.slice.call(document.querySelectorAll("[data-row]"));
+    if (!rows.length) return;
+    document.getElementById("review-keys").hidden = false;
+    var current = -1, count = document.getElementById("ticked-count");
+    function remember(index) { try { sessionStorage.setItem("review-row", String(index)); } catch (e) {} }
+    function show(index, focus) {
+      if (current >= 0 && rows[current]) rows[current].classList.remove("current");
+      current = Math.max(0, Math.min(rows.length - 1, index));
+      var row = rows[current];
+      row.classList.add("current");
+      if (focus) { row.focus({ preventScroll: true }); row.scrollIntoView({ block: "nearest" }); }
+    }
+    function ticked() {
+      var n = document.querySelectorAll("[data-row] input[type=checkbox]:checked").length;
+      count.textContent = n ? n + " ticked:" : "Tick rows, then:";
+    }
+    function groupOf(box) {
+      var group = box.closest("[data-group]");
+      return group ? group.querySelectorAll("input[type=checkbox]") : [box];
+    }
+    document.addEventListener("change", function (event) {
+      var box = event.target;
+      if (!box.matches || !box.matches("[data-row] input[type=checkbox]")) return;
+      Array.prototype.forEach.call(groupOf(box), function (other) { other.checked = box.checked; });
+      ticked();
+    });
+    rows.forEach(function (row, index) {
+      row.addEventListener("click", function () { show(index, false); });
+    });
+    document.addEventListener("submit", function () { if (current >= 0) remember(current); });
+    var start = 0;
+    try { start = parseInt(sessionStorage.getItem("review-row") || "0", 10) || 0; sessionStorage.removeItem("review-row"); } catch (e) {}
+    show(start, false);
+    ticked();
+    document.addEventListener("keydown", function (event) {
+      if (event.ctrlKey || event.metaKey || event.altKey) return;
+      var target = event.target;
+      if (target.closest && target.closest("input, textarea, select, [contenteditable]")) return;
+      var key = event.key, row = rows[current];
+      if (key === "ArrowDown" || key === "j" || key === "J") { event.preventDefault(); show(current + 1, true); return; }
+      if (key === "ArrowUp" || key === "k" || key === "K") { event.preventDefault(); show(current - 1, true); return; }
+      if (!row) return;
+      if (key === " " && !(target.closest && target.closest("button, a, summary"))) {
+        event.preventDefault();
+        var box = row.querySelector("input[type=checkbox]");
+        box.checked = !box.checked;
+        box.dispatchEvent(new Event("change", { bubbles: true }));
+        return;
+      }
+      var button = key === "a" || key === "A" ? row.querySelector("[data-accept]")
+                 : key === "r" || key === "R" ? row.querySelector("[data-reject]") : null;
+      if (button) { event.preventDefault(); remember(current); button.click(); }
+    });
+  })();
+</script>
+{% endif %}
 {% endblock %}

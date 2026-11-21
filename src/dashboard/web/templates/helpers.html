@@ -9,6 +9,8 @@
 {% if turned_off %}<p class="notice" role="status">{{ turned_off.name }} can no longer connect. Its suggestions and history are kept.</p>{% endif %}
 {% if changed %}<p class="notice" role="status">{{ changed.name }}'s key was changed on {{ changed_on }}. Its access and history are unchanged.</p>{% endif %}
 {% if key_error %}<p class="problem" role="alert">{{ key_error }}</p>{% endif %}
+{% if allowed %}<p class="notice" role="status">{{ allowed.name }} may now send {{ allow_more }} more suggestions today: {{ allowed_limit }} in all for today. Tomorrow its limit is back to 200.</p>{% endif %}
+{% if allow_error %}<p class="problem" role="alert">{{ allow_error }}</p>{% endif %}
 
 {% include "helper_connect.html" %}
 
@@ -20,6 +22,7 @@
   {% if h.active %}
   <p style="margin:.1rem 0">{{ h.access }} · Parts: {{ h.parts }}</p>
   <p class="muted" style="margin:.1rem 0">Private details: never shared · Made {{ h.made }}{% if h.key_changed %} · Key changed {{ h.key_changed }}{% endif %} · Last used {{ h.last_used }}{% if h.connected %} · Connected from this computer{% endif %}</p>
+  {% if h.today %}<p class="muted" style="margin:.1rem 0">Today: {{ h.today.used }} of {{ h.today.limit }} suggestions used.{% if h.today.used >= h.today.limit %} It has used all of today's.{% elif h.today.near %} It is near today's limit.{% endif %}</p>{% endif %}
   {% if h.unfinished %}<p class="problem" role="status" style="margin:.25rem 0">{{ not_finished }}</p>{% endif %}
   <div class="actions">
     <form method="post" action="/settings/helpers/{{ h.id }}/new-key" style="display:inline">
@@ -27,6 +30,13 @@
       <input type="hidden" name="new_key_token" value="{{ h.new_key_token }}">
       <button type="submit" aria-label="Make a new key for {{ h.name }}" aria-describedby="new-key-help-{{ h.id }}">Make a new key</button>
     </form>
+    {% if h.today and h.today.near %}
+    <form method="post" action="/settings/helpers/{{ h.id }}/allow-more" style="display:inline">
+      <input type="hidden" name="_csrf" value="{{ csrf_token }}">
+      <input type="hidden" name="allow_token" value="{{ h.today.allow_token }}">
+      <button type="submit" class="quiet" aria-label="Allow {{ allow_more }} more suggestions today for {{ h.name }}">Allow {{ allow_more }} more today</button>
+    </form>
+    {% endif %}
     <form method="post" action="/settings/helpers/{{ h.id }}/turn-off" style="display:inline">
       <input type="hidden" name="_csrf" value="{{ csrf_token }}">
       <button type="submit" class="danger" aria-label="Turn off access for {{ h.name }}">Turn off access</button>

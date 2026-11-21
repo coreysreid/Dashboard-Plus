@@ -173,7 +173,9 @@ class ProposalTests(TempDirTestCase):
             self.send([self.bought(1)] * 50, key=f"day-{n}")
         self.assertEqual(proposals.used_today(self.conn, self.helper), 200)
         error = self.refused([self.bought(1)], 429, "daily_limit", key="one-too-many")
-        self.assertEqual(str(error), "This helper has reached 200 suggestions today. Try again tomorrow.")
+        self.assertEqual(str(error), "This helper has used all 200 of its suggestions for today, so nothing was saved. "
+                                     "Stop sending now and ask the household: they can allow more on the Review page "
+                                     "in Dashboard Plus (\"Allow 200 more today\"). Otherwise, try again tomorrow.")
         self.assertEqual(self.count("core__proposals"), 200)
         self.assertEqual(self.count("core__helper_batches"), 4)
         self.send([self.bought(1)], key="other-helper-fine", helper=self.other)

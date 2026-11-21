@@ -12,7 +12,7 @@ from flask import Blueprint, current_app, redirect, render_template, request, ur
 
 import dashboard
 from dashboard.connector.config import ADDRESS_FILE_VARIABLE, KEY_VARIABLE, URL_VARIABLE
-from dashboard.core import helper_address, helpers, settings
+from dashboard.core import helper_address, helpers, proposals, settings
 from dashboard.errors import PlainError
 
 helper_settings = Blueprint("helper_settings", __name__)
@@ -95,6 +95,53 @@ def _spend_new_key_token(token: str, helper_id: int) -> str | None:
         return ALREADY_CHANGED if token and forms["used"].get(token) == helper_id else NEW_KEY_OUT_OF_DATE
 
 
+ALLOW_FORMS_KEPT = 200  # open "Allow 200 more today" buttons remembered at once
+ALLOW_USED = ("That button was already pressed, so nothing more was allowed this time. If the helper needs still "
+              "more, press Allow 200 more today again.")
+ALLOW_OUT_OF_DATE = "This page was out of date, so nothing more was allowed. Press Allow 200 more today again."
+
+
+def _allow_forms() -> dict:
+    """One-use tokens for "Allow 200 more today" buttons, each bound to one helper (decision 0101, like 0093).
+
+    A button pressed twice (a double click, a resent form) allows 200 more once. A helper can never press it:
+    the API has no such route, and a page's form needs the browser's own cookie, page token and this token."""
+    return current_app.config.setdefault("HELPER_ALLOW_FORMS", {"open": {}, "used": {}})
+
+
+def allow_token(helper_id: int) -> str:
+    token = secrets.token_urlsafe(16)
+    with _forms_lock:
+        forms = _allow_forms()
+        forms["open"][token] = helper_id
+        while len(forms["open"]) > ALLOW_FORMS_KEPT:
+            forms["open"].pop(next(iter(forms["open"])))
+    return token
+
+
+def _spend_allow_token(token: str, helper_id: int) -> str | None:
+    """None if this button may allow more for this helper now (and it is spent); otherwise the reason."""
+    with _forms_lock:
+        forms = _allow_forms()
+        if token and forms["open"].get(token) == helper_id:
+            del forms["open"][token]
+            forms["used"][token] = helper_id
+            while len(forms["used"]) > ALLOW_FORMS_KEPT:
+                forms["used"].pop(next(iter(forms["used"])))
+            return None
+        return ALLOW_USED if token and forms["used"].get(token) == helper_id else ALLOW_OUT_OF_DATE
+
+
+def near_limits(conn) -> list[dict]:
+    """Helpers that have used (or nearly used) today's suggestions, each with a fresh Allow 200 more button."""
+    found = []
+    for helper in helpers.all_helpers(conn):
+        near = proposals.near_limit(conn, helper)
+        if near:
+            found.append(dict(near, id=helper.id, name=helper.name, allow_token=allow_token(helper.id)))
+    return found
+
+
 def _address() -> str:
     return f"http://127.0.0.1:{current_app.config['PORT']}/api/v1"
 
@@ -156,6 +203,15 @@ def _recent(text: str | None) -> bool:
         return False
 
 
+def _today(conn, helper: helpers.Helper) -> dict | None:
+    """What a helper that may suggest has used of today's limit, and an Allow 200 more button when it is near."""
+    if not helper.active or not helper.may_suggest:
+        return None
+    used, limit = proposals.used_today(conn, helper), proposals.limit_today(conn, helper)
+    near = limit - used < proposals.MAX_ENTRIES
+    return {"used": used, "limit": limit, "near": near, "allow_token": allow_token(helper.id) if near else None}
+
+
 def _render(values: dict | None = None, error: str | None = None, status: int = 200,
             key_error: str | None = None):
     conn = current_app.config["CONNECT"]()
@@ -166,13 +222,18 @@ def _render(values: dict | None = None, error: str | None = None, status: int = 
              "last_used": _when(h.last_used_at) or "not yet", "off_at": _when(h.revoked_at),
              "key_changed": _when(h.rotated_at), "unfinished": h.key_unfinished,
              "connected": h.active and not h.key_unfinished and _recent(h.last_used_at),
-             "new_key_token": _new_key_token(h.id) if h.active else None}
+             "new_key_token": _new_key_token(h.id) if h.active else None,
+             "today": _today(conn, h)}
             for h in helpers.all_helpers(conn)]
     turned_off = helpers.get(conn, request.args.get("off", 0, type=int)) if request.args.get("off") else None
     changed = helpers.get(conn, request.args.get("changed", 0, type=int)) if request.args.get("changed") else None
     if changed is not None and (changed.rotated_at is None or changed.key_unfinished):
         changed = None
+    allowed = helpers.get(conn, request.args.get("allowed", 0, type=int)) if request.args.get("allowed") else None
+    allow_error = ALLOW_MESSAGES.get(request.args.get("allow", ""))
     return render_template("helpers.html", rows=rows, parts=parts, values=values or {}, error=error,
+                           allowed=allowed, allowed_limit=proposals.limit_today(conn, allowed) if allowed else None,
+                           allow_error=allow_error, allow_more=proposals.ALLOW_MORE,
                            key_error=key_error, turned_off=turned_off, form_token=_new_form_token(),
                            changed=changed, changed_on=_when(changed.rotated_at) if changed else None,
                            not_finished=NOT_FINISHED, key_shown=False, **_connection()), status
@@ -233,3 +294,20 @@ def turn_off(helper_id):
     except PlainError:
         return redirect(url_for("helper_settings.helpers_page"))
     return redirect(url_for("helper_settings.helpers_page", off=helper_id))
+
+
+ALLOW_MESSAGES = {"used": ALLOW_USED, "stale": ALLOW_OUT_OF_DATE}  # fixed codes, never text from the address
+
+
+@helper_settings.post("/settings/helpers/<int:helper_id>/allow-more")
+def allow_more(helper_id):
+    """Allow a helper 200 more suggestions today, once per button (decision 0101). Pressing again adds 200 more."""
+    back = "review.review" if request.form.get("back") == "review" else "helper_settings.helpers_page"
+    refusal = _spend_allow_token(request.form.get("allow_token", ""), helper_id)
+    if refusal:
+        return redirect(url_for(back, allow="used" if refusal == ALLOW_USED else "stale"))
+    try:
+        proposals.allow_more(current_app.config["CONNECT"](), helper_id)
+    except PlainError:
+        return redirect(url_for(back, allow="stale"))
+    return redirect(url_for(back, allowed=helper_id))
