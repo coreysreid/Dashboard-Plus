@@ -150,6 +150,7 @@ One record per decision, from `TEMPLATE.md`. Never deleted; reversed ones are ma
 | [0096](0096-macos-build.md) | An unsigned Mac app preview: `tools/build_macos.py` bundles python-build-standalone 3.12.10 (pinned checksums) into `Dashboard Plus.app` for the Mac's processor; inside an app the data folder defaults to `~/Library/Application Support/Dashboard Plus/` (0700), never inside the app; CI builds and starts it on Apple silicon; signing, notarisation and a real-Mac test still to come | Accepted |
 | [0097](0097-receipt-lines-and-grouped-suggestions.md) | A suggestion may carry the receipt line and price it was read from (screened, shown on Review as the helper's words, never saved in records); an entry may point at an earlier one with `{"ref": N}`, so a new Stock item and its Stock in are one group: accepting the Stock in adds the item first in one transaction, rejecting the item rejects what needs it | Accepted |
 | [0098](0098-empty-pickers-offer-to-add-and-import-waits-for-dates.md) | An empty picker offers to add one in a new tab; Import's Send waits for date choices; Documents Notes help points to the copies field | Accepted |
+| [0100](0100-sync-stage-1-stable-ids-and-change-log.md) | Sync stage 1, nothing sent: every record gets a random permanent ID and a revision (added by the core after each module's migrations, under that module's own confinement), every change writes a filtered change-log line beside history, `travels`/`travels_when` in tables.toml keep access instructions, Home layout access details and vehicle registration on the computer where they were typed, and a restore starts a new epoch | Accepted |
 | [TEMPLATE](TEMPLATE.md) | Blank record to copy for a new decision | recording a decision |
 
 ## docs/plans/  (summary: build plans for larger pieces of work, written before building)
@@ -471,12 +472,13 @@ Generate the next one with: python tools/make_migration.py wine --name <what_cha
 | schema.py | Turn a module's declared tables into SQL, and work out its next migration. | changing how tables are built |
 | suggest.py | Suggestions while typing: a household's own records first, then a module's list of common things. | changing how picking from a list matches |
 | watch.py | Work out what is running low, what expires soon, how many days of supplies are on hand, and what is worth filling in. | changing running low, expiring, days of cover or gaps |
-| startup.py | Prepare the database at start-up: load modules, back up if needed, and migrate. | changing what happens at start-up |
+| startup.py | Prepare the database at start-up: load modules, back up if needed, migrate, and give permanent record IDs. | changing what happens at start-up |
 | helper_address.py | The small address file a connector reads to find Dashboard after a restart: only the address and a run ID (0092). | changing how a connector finds Dashboard |
 | helpers.py | Helpers the household has given a key to: making a key, checking it, replacing it, and turning it off. | changing how helper keys work |
 | hello.py | Proof that an address is the real Dashboard Plus, worked out from a key without ever sending it (decision 0086). | changing the check the connector makes before sending a key |
 | proposals.py | Suggestions from helpers and rows imported from a spreadsheet: checked, kept waiting, added only when a person accepts. | changing suggestions, limits or accepting |
 | export.py | Export my records: one zip with a spreadsheet file for every table, a manifest and a plain-words README. | changing what the export contains |
+| sync.py | Permanent record IDs, revisions and the filtered change log (sync stage 1): nothing leaves this computer. | changing record IDs, the change log or what may travel to another computer |
 | csv_import.py | Read a spreadsheet saved as CSV, match its columns to a table's fields, and check every row before it goes to Review. | changing how spreadsheets are read or matched |
 
 ## src/dashboard/core/migrations/  (summary: the core's numbered database changes; never edit a released one)
@@ -490,6 +492,7 @@ Add a new file with the next number instead of changing an old one.
 | 0004_import_batches.sql | Batches can come from a spreadsheet import by a person, not only a helper; rows keep their spreadsheet row | checking how imported rows wait for Review |
 | 0005_helper_key_rotation.sql | A helper can get a new key and keep its history: when the key was changed, a change still in progress, and a count of keys | checking how a key change is stored |
 | 0006_proposal_source_lines.sql | A helper's suggestion can keep the line it was read from (a receipt line and price), shown on Review only | checking how source lines are stored |
+| 0007_sync_identity.sql | Sync stage 1: the household ID and epochs, the change log, and values held after a kind change (decision 0100) | checking how permanent IDs and the change log are stored |
 
 ## src/dashboard/web/  (summary: the screens: pages, forms and their protections)
 | Entry | What it is | Open it when |
@@ -570,6 +573,7 @@ How to run them is in AGENTS.md.
 | test_data_safety.py | Tests for the data-safety fixes from the November 2026 review: restore, stock counts, decimals and backups. | changing delete, restore, stock counts or backups |
 | test_robustness.py | Tests for the robustness fixes from the November 2026 review: modules, switching off, long lists, privacy. | changing module loading, settings or long lists |
 | test_adjusts.py | Tests for records that change a linked quantity (stock in and out), and the checks on `adjusts`. | changing stock in and out |
+| test_sync_stage1.py | Tests for sync stage 1: permanent record IDs, revisions, the filtered change log and the travel rule (decision 0100). | changing record IDs, the change log or what may travel |
 | test_backups.py | Tests for automatic backups: daily, on close, in two places, and keeping only recent ones. | changing backups |
 | test_setup.py | Tests for the first-run wizard and the settings page. | changing setup or settings |
 | test_sheets.py | Tests for printable sheets: checking sheets.toml and printing the emergency sheet. | changing sheets |
