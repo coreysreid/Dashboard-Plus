@@ -1,0 +1,12 @@
+[tables.servings]
+empty = "Record the next time you give a pet food."
+form = ["pet", "given_at", "kind", "bowl", "food", "amount", "unit", "notes"]
+list = ["given_at", "pet", "kind", "bowl", "food", "amount", "unit"]
+columns.pet = { label = "Pet", help = "Choose one of the pets you have already added." }
+columns.given_at = { label = "When", help = "Use the time you gave the food, in your household's local time." }
+columns.kind = { label = "What happened", help = "Bowl, refill or treat. A refill counts as new food put in, not the food still in the bowl." }
+columns.bowl = { label = "Which bowl (optional)", help = "For example Kitchen bowl. Use the same name each time if you want to find its entries." }
+columns.food = { label = "Food", help = "Use a name you recognise, such as Dry food. This is a log, not a feeding recommendation." }
+columns.amount = { label = "Amount put out", help = "Optional. Leave blank if you did not measure it. This does not say how much your pet ate." }
+columns.unit = { label = "Unit", help = "Choose one if you entered an amount. Totals only add matching units; a scoop is not converted to grams." }
+columns.notes = { help = "Optional. Do not use this to replace your vet's feeding or medicine instructions." }
