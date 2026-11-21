@@ -5,9 +5,9 @@ columns.name = { type = "text", required = true }
 columns.kind = { type = "choice", required = true, choices = ["electricity", "gas", "water", "internet", "phone", "other"] }
 columns.provider = { type = "link", to = "people.people", on_delete = "clear" }
 columns.fault_contact = { type = "link", to = "people.people", on_delete = "clear" }
-columns.account_number = { type = "text", sensitive = true }
+columns.account_number = { type = "text", sensitive = true, travels = "never" }
 columns.meter = { type = "link", to = "home_layout.meters", on_delete = "clear" }
-columns.notes = { type = "longtext", sensitive = true }
+columns.notes = { type = "longtext", sensitive = true, travels = "never" }
 
 [tables.services.watch]
 [[tables.services.watch.gaps]]

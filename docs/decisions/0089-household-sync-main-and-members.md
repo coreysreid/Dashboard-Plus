@@ -95,7 +95,9 @@ households depend on sync.
 
 ## Stages
 0. Security review of the remote boundary and this decision.
-1. Stable IDs, revisions and a change log (no network).
+1. Stable IDs, revisions and a change log (no network). **Built** (decision 0100,
+   21 November 2026): permanent IDs, revisions, the filtered change log, the
+   per-column travel rule and restore epochs, all on this computer only.
 2. Member keys, pairing, and pull over the private network.
 3. Push as a request on Review.
 4. Conflicts side by side.

@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import os
+import secrets
 import sqlite3
 import threading
 from contextlib import contextmanager
@@ -64,16 +65,38 @@ def connect(path: Path) -> sqlite3.Connection:
     return conn
 
 
+# The operation each open transaction belongs to, by connection: every record change made inside one
+# transaction shares one operation ID in the change log (decision 0100). Removed when the transaction ends.
+_operations: dict[int, str] = {}
+
+
 @contextmanager
 def transaction(conn: sqlite3.Connection) -> Iterator[sqlite3.Connection]:
-    """Run a block of changes all together or not at all."""
+    """Run a block of changes all together or not at all, as one operation."""
     conn.execute("BEGIN IMMEDIATE")
+    with operation(conn):
+        try:
+            yield conn
+        except BaseException:
+            conn.execute("ROLLBACK")
+            raise
+        conn.execute("COMMIT")
+
+
+@contextmanager
+def operation(conn: sqlite3.Connection) -> Iterator[str]:
+    """Mark the transaction already begun on `conn` as one operation with a fresh random ID."""
+    key = id(conn)
+    _operations[key] = secrets.token_hex(16)
     try:
-        yield conn
-    except BaseException:
-        conn.execute("ROLLBACK")
-        raise
-    conn.execute("COMMIT")
+        yield _operations[key]
+    finally:
+        _operations.pop(key, None)
+
+
+def current_operation(conn: sqlite3.Connection) -> str | None:
+    """The ID of the operation the open transaction on `conn` belongs to, or None outside one."""
+    return _operations.get(id(conn)) if conn.in_transaction else None
 
 
 def split_statements(sql: str) -> list[str]:

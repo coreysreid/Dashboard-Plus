@@ -46,7 +46,9 @@ columns.kind = { type = "choice", required = true, choices = [
   { key = "access", label = "Access instructions" },
   "other",
 ] }
-columns.detail = { type = "text", required = true, sensitive = true }
+# Medical kinds travel to the household's other computers later (decision 0089); access instructions and
+# "other" stay on the computer where they were typed (decision 0100).
+columns.detail = { type = "text", required = true, sensitive = true, travels_when = { kind = ["allergy", "condition", "medication", "care_need", "dietary"] } }
 
 # Gaps: details worth filling in, shown under "Worth filling in" on the
 # Needs attention page. Each is asked as a question (docs/DESIGN.md 5.4).

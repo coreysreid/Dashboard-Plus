@@ -6,7 +6,7 @@
 title = "Vehicles"
 description = "Each car, motorbike, trailer or other vehicle, when its registration is due and who to call if it breaks down."
 columns.name = { type = "text", required = true }
-columns.registration = { type = "text", sensitive = true }
+columns.registration = { type = "text", sensitive = true, travels = "never" }
 columns.registration_due = { type = "date" }
 columns.roadside_contact = { type = "link", to = "people.people", on_delete = "clear" }
 columns.parked_at = { type = "link", to = "stock.places", on_delete = "restrict" }

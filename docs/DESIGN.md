@@ -73,6 +73,14 @@ audit and undo work for every module without module code:
 | `batch_id` | The batch that created it, if any (for undo) |
 | `edited_by_person` | 1 once a person has edited it (locks out agents) |
 | `deleted_at` | Soft delete; undo and history rely on this |
+| `global_id` | A random permanent ID (UUID version 4), made with the record and never changed; the same on every computer of the household once sync exists (decision 0100) |
+| `row_revision` | Goes up by one for each operation that changes the record; 0 for records from before decision 0100 |
+
+The last two are added by the core itself, after each module's migrations at
+start-up, under that module's own confinement rule (decision 0055), so they
+work for every module, including ones added later, with no module edits. Links
+between records stay local integer `id`s; the change log below translates them
+to permanent IDs.
 
 ### Field types
 
@@ -86,6 +94,16 @@ Each column may declare: `required`, `default`, `min`, `max`, `unit`,
 `choices` (the dropdown values, each with a stable key and a friendly label),
 `sensitive` (hidden by default, kept from helpers unless granted; see
 section 12) and `help` text.
+
+**What may travel to another computer** (decision 0100): `travels = "never"`
+keeps a column's value on the computer where it was typed; `travels =
+"always"` is the default for ordinary columns; `travels_when = { kind =
+["allergy", "medication"] }` lets it travel only while another choice column
+of the same table (which always travels) holds one of those choices. A
+`sensitive` column that says none of these stays local and is reported as not
+yet reviewed. People's Important details travel for the medical kinds and stay
+local for access instructions and "other"; Home layout access details and
+vehicle registration never travel; a pet's microchip does (decision 0089).
 
 Dropdown values are stored by stable key (`dry_food`), shown by label
 ("Dry food"). Renaming a label never changes stored data.
@@ -841,6 +859,11 @@ One generic connector that can be aimed at any API.
 - **Switching a module off** hides it and keeps its data. **Removing its data**
   is a separate, confirmed, backed-up action.
 - Storage changes are made only through migrations, never by ad-hoc code.
+  The one exception is the core's own permanent-ID step (decision 0100): right
+  after each module's migrations it adds `global_id` and `row_revision` to that
+  module's declared tables, fills in IDs and adds a unique index, in one
+  transaction, under that module's confinement rule. A hand-written table
+  rebuild must copy these two columns across.
 
 ## 8. Review and inbox
 
@@ -1311,6 +1334,16 @@ only to choose which pack applies; nothing is looked up online.
   after, batch_id)`. The actor is `person`, `agent:<name>`, `import:<file>`,
   `module:<name>` or `system`. Every write goes through core services, so every write is audited.
   A history panel on each record shows what changed.
+- **Change log** (decision 0100, sync stage 1). Beside each history entry for a
+  record change, in the same transaction, `core__sync_changes` gets one line
+  per record per operation: a sequence number (save order, never the clock),
+  the epoch, the operation ID, the action, the table, the record's permanent
+  ID, its revision before and after, the changed field names, only the values
+  that may travel (links as permanent IDs; many-to-many links as pairs) and the
+  names of fields kept local, never their values. `core__audit` stays local
+  and is never this format. A restore or an undone restore starts a new epoch
+  above every earlier one. Nothing reads the log on a schedule and nothing is
+  sent: sharing with another computer is stage 2 of decision 0089.
 - **Undo.** Undo reverses a person's last change, or an agent's batch,
   using the audit before/after. Undo is itself audited.
 - **Backups.** A consistent copy using SQLite's online backup, daily and before

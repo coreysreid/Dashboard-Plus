@@ -12,7 +12,7 @@ from dataclasses import dataclass
 from datetime import datetime, timezone
 from pathlib import Path
 
-from dashboard.core import backups, db, helpers, migrations, startup
+from dashboard.core import backups, db, helpers, migrations, startup, sync
 from dashboard.errors import PlainError
 
 log = logging.getLogger("dashboard.restore")
@@ -301,8 +301,8 @@ def _put_back_alone(data_dir: Path, source: Copy, loaded, seen: str | None, kind
         raise RestoreError(f"{fresh.reason} {NOTHING_CHANGED}")
     staged = data_dir / f"restore-staging-{secrets.token_hex(6)}.db"
     try:
-        _check_current(current, tracks)
-        _stage(fresh.path, staged, data_dir, loaded, tracks)
+        previous = _check_current(current, tracks)
+        _stage(fresh.path, staged, data_dir, loaded, tracks, previous, undo=kind == "before-undo")
         with db.gate(current).alone(WAIT_SECONDS):
             before = _backup_current(current, data_dir / "backups", kind)
             _swap(staged, current)
@@ -325,20 +325,26 @@ def _put_back_alone(data_dir: Path, source: Copy, loaded, seen: str | None, kind
             "brought_up_to_date": fresh.pending, "before_restore" if kind == "before-restore" else "before_undo": before.name}
 
 
-def _check_current(current: Path, tracks: dict) -> None:
-    """Refuse when the records in use have a part this program does not know: they could not be put back."""
+def _check_current(current: Path, tracks: dict) -> dict | None:
+    """Refuse when the records in use have a part this program does not know: they could not be put back.
+    Returns their household ID and epoch (decision 0100), so the restored copy's epoch can go above it."""
     conn = open_read_only(current)
     try:
         unknown = sorted(t for t, steps in _applied(conn).items() if t not in tracks and steps)
+        previous = sync.read_state(conn)
     finally:
         conn.close()
     if unknown:
         raise RestoreError(f"Your records in use include a part this copy of Dashboard Plus does not have "
                            f"({', '.join(unknown)}), so a restore could not be undone. {NOTHING_CHANGED}")
+    return previous
 
 
-def _stage(source: Path, staged: Path, data_dir: Path, loaded, tracks: dict) -> None:
-    """Copy the backup into a new file and make that copy ready to use. The backup itself is only read."""
+def _stage(source: Path, staged: Path, data_dir: Path, loaded, tracks: dict, previous: dict | None = None,
+           undo: bool = False) -> None:
+    """Copy the backup into a new file and make that copy ready to use. The backup itself is only read.
+    Its records keep their permanent IDs (a copy from before them gets new ones) and it starts a new epoch
+    above the records in use (`previous`), so revisions from before the restore are never taken as now."""
     reader = open_read_only(source)
     try:
         writer = sqlite3.connect(staged)
@@ -357,6 +363,7 @@ def _stage(source: Path, staged: Path, data_dir: Path, loaded, tracks: dict) -> 
         if migrations.plan(conn, tracks):
             raise RestoreError("This copy could not be brought up to date.")
         startup.record_modules(conn, loaded)
+        sync.after_restore(conn, loaded, previous, undo)
         _turn_off_lost_helpers(conn, data_dir)
         if not db.integrity_ok(conn):
             raise RestoreError("The prepared copy failed its check.")
