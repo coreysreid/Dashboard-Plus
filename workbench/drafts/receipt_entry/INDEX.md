@@ -7,4 +7,5 @@
 | HELPER_FLOW.md | Shipped helper path, exact Review words and unknown-line handling | using a helper for receipt entry |
 | EXAMPLE_RECEIPT.jpg | Invented photo-like receipt used in the connector walkthrough | checking image-to-Review handoff |
 | CONNECTOR_RUN.md | Exact two-line receipt tool calls, Review words and observed Stock changes | reproducing the end-to-end run |
+| DUPLICATE_RECEIPT.md | Cross-helper/import possible-repeat warning, household choices and 14 checks | designing repeated receipt handling |
 | NOTES.md | Evidence, limits and core work required | implementing receipt parsing safely |
