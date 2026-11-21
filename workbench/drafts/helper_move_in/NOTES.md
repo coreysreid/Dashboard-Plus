@@ -1,0 +1,5 @@
+# Sources and remaining core work
+
+Checked **21 November 2026**: one generated `GET /api/v1/guide` response from the repository's invented Stock/Vehicles helper fixture, `src/dashboard/web/helper_guide.py`, the shipped OpenAPI description, decisions 0101 (Review and daily allowance), 0102 (starting message and one-entry Stock amount), 0103 (Set up my home), and `docs/BACKLOG.md`'s paraphrase of the first helper move. No real household data or key was read or copied. The fixture guide was 9,951 characters; that length is specific to its grant.
+
+The current starter covers the basic API, private labels, Stock amounts, links, receipt lines, limits and Review. It does not by itself stop a counted new item plus a dependent Stock in from being accepted twice, confirm ambiguous full-path matches, prevent private facts being put in ordinary text, or turn a disconnected list of Places into a checked home layout. `REVIEW.md` gives exact additions and the highest-priority core gates. A helper remains add-only; corrections to existing records are a household action. The checklist is a human workflow draft, not a new connector command or permission grant.
