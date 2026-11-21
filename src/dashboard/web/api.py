@@ -16,7 +16,7 @@ from flask import Blueprint, Response, current_app, g, request
 
 from dashboard import __version__
 from dashboard.core import hello, helpers, proposals, records, schema, watch
-from dashboard.core.proposals import MAX_ENTRIES, MAX_PER_DAY, MAX_WAITING, ProposalError
+from dashboard.core.proposals import MAX_ENTRIES, MAX_WAITING, ProposalError
 from dashboard.web import display
 
 log = logging.getLogger("dashboard.helpers")
@@ -214,12 +214,13 @@ def me():
     helper, conn = g.helper, current_app.config["CONNECT"]()
     titles = {i.module.name: i.module.title for i in _allowed().values()}
     words = ", ".join(titles[n] for n in sorted(titles, key=titles.get)) or "nothing yet"
+    limit = proposals.limit_today(conn, helper)  # 200, plus any "Allow 200 more today" (decision 0101)
     return reply({"name": helper.name, "access": helper.access,
                   "modules": [{"name": n, "title": titles[n]} for n in sorted(titles)],
                   "message": f"{helper.name} may use: {words}. Ask the household to change its access in Settings.",
                   "private_details": False,
-                  "limits": {"entries_per_call": MAX_ENTRIES, "suggestions_per_day": MAX_PER_DAY,
-                             "suggestions_left_today": max(0, MAX_PER_DAY - proposals.used_today(conn, helper)),
+                  "limits": {"entries_per_call": MAX_ENTRIES, "suggestions_per_day": limit,
+                             "suggestions_left_today": max(0, limit - proposals.used_today(conn, helper)),
                              "review_queue_limit": _queue_limit(),
                              "suggestions_waiting": proposals.waiting_for(conn, helper),
                              "max_body_bytes": MAX_BODY,

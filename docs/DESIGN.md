@@ -1005,7 +1005,7 @@ a Stock in leaves its new item waiting. Imports never carry either.
 
 - Suggestions are **new records only**. `request_key` is required; the same key
   and body returns the original batch, a different body is refused (409).
-- At most **50 entries per call** and **200 suggested rows per helper per day**;
+- At most **50 entries per call** and **200 suggested rows per helper per day** (the household can press "Allow 200 more today", decision 0101);
   body at most 64 KB; JSON only.
 - Every suggestion is tried by a full dry run before it is stored; any problem
   refuses the whole call and names entry, table and field.

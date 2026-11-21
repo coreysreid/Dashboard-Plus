@@ -152,6 +152,7 @@ One record per decision, from `TEMPLATE.md`. Never deleted; reversed ones are ma
 | [0098](0098-empty-pickers-offer-to-add-and-import-waits-for-dates.md) | An empty picker offers to add one in a new tab; Import's Send waits for date choices; Documents Notes help points to the copies field | Accepted |
 | [0099](0099-utilities-promoted.md) | Utilities and accounts is switched on from Lane B's draft: services link to People (provider, fault contact) and to an exact Home layout meter; the sheet prints the People fault phone; the account reference and notes stay private and off lists, sheets, exports and helpers; deleting a contact or meter clears the link; examples in all three households | Accepted |
 | [0100](0100-sync-stage-1-stable-ids-and-change-log.md) | Sync stage 1, nothing sent: every record gets a random permanent ID and a revision (added by the core after each module's migrations, under that module's own confinement), every change writes a filtered change-log line beside history, `travels`/`travels_when` in tables.toml keep access instructions, Home layout access details and vehicle registration on the computer where they were typed, and a restore starts a new epoch | Accepted |
+| [0101](0101-review-speed-ups-and-allow-more.md) | Faster Review: Accept all asks first, then accepts group by group (each group all or nothing); tick boxes with Accept or Reject ticked (a group ticks whole); keys (Up/Down or J/K, A, R, Space) as a small script; Accept and Reject in one fixed column; "Allow 200 more today" per helper from a page with a one-use token (core 0008, history), the day being the household's own; 429 tells the helper to stop and ask | Accepted |
 | [TEMPLATE](TEMPLATE.md) | Blank record to copy for a new decision | recording a decision |
 
 ## docs/plans/  (summary: build plans for larger pieces of work, written before building)
@@ -511,6 +512,7 @@ Add a new file with the next number instead of changing an old one.
 | 0005_helper_key_rotation.sql | A helper can get a new key and keep its history: when the key was changed, a change still in progress, and a count of keys | checking how a key change is stored |
 | 0006_proposal_source_lines.sql | A helper's suggestion can keep the line it was read from (a receipt line and price), shown on Review only | checking how source lines are stored |
 | 0007_sync_identity.sql | Sync stage 1: the household ID and epochs, the change log, and values held after a kind change (decision 0100) | checking how permanent IDs and the change log are stored |
+| 0008_helper_daily_allowance.sql | "Allow 200 more today": each press adds to one helper's daily limit for that day only, with who and when (decision 0101) | checking how a raised daily limit is stored |
 
 ## src/dashboard/web/  (summary: the screens: pages, forms and their protections)
 | Entry | What it is | Open it when |
@@ -617,6 +619,7 @@ How to run them is in AGENTS.md.
 | test_restore.py | Tests for restoring a backup: checks that change nothing, the safe swap, Undo after a restart, and refusals. | changing restore or Undo |
 | test_api_contract.py | Tests that the published API description (openapi-v1.json) matches the real /api/v1 routes, errors and replies. | changing a helper route, reply or error code |
 | test_grouped_suggestions.py | Tests for receipt lines on suggestions and for suggestions that point at an earlier one in the same batch (decision 0097). | changing source lines, refs or grouped Review rows |
+| test_review_speedups.py | Tests for faster Review (decision 0101): Accept all by group, ticked rows, keys, fixed buttons and Allow 200 more today. | changing Accept all, ticked rows, Review keys or the daily limit |
 
 ## tools/  (summary: scripts that check, lock and build the project; run by CI)
 | Entry | What it is | Open it when |
@@ -635,6 +638,6 @@ How to run them is in AGENTS.md.
 | load_example.py | Load a made-up example household into an empty data folder, for demos, screenshots and testing. | demonstrating or testing with realistic data |
 | make_screenshots.py | Make the example screenshots: run each example household through every stage of using the dashboard. | the screens changed and the gallery needs remaking |
 | screenshots.js | Browser steps for make_screenshots.py (Node and Playwright) | changing how screenshots are taken |
-| browser_check.py | Click through the real dashboard in Chromium (setup, dates, stock in, stocktake, Mark returned, Mark done, spreadsheet import, private details, closing) and fail loudly. | a screen or its browser code changed |
+| browser_check.py | Click through the real dashboard in Chromium (setup, dates, stock in, stocktake, Mark returned, Mark done, spreadsheet import, Review keys and buttons, private details, closing) and fail loudly. | a screen or its browser code changed |
 | browser_check.js | Browser steps for browser_check.py (Node and Playwright): what is clicked and checked | changing what the browser check clicks |
 | make_project_map.py | Build PROJECT_MAP.md from every INDEX.md in the repository. | changing the map format |

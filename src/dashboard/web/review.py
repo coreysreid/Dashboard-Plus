@@ -3,11 +3,11 @@ from __future__ import annotations
 
 from flask import Blueprint, current_app, redirect, render_template, request, url_for
 
-from dashboard.core import csv_import, dates, proposals, records
+from dashboard.core import csv_import, dates, helpers, proposals, records
 from dashboard.core.proposals import HIDDEN_CHARACTERS
 from dashboard.errors import PlainError
 from dashboard.core.schema import target_table
-from dashboard.web import display
+from dashboard.web import display, helper_settings
 
 review_pages = Blueprint("review", __name__)
 
@@ -77,7 +77,8 @@ def _new_above(store: records.Records, info, field: str, row: dict | None) -> st
 
 
 MESSAGES = {"stale": "This row was already accepted or rejected.",
-            "nothing": "Nothing is waiting on Review."}
+            "nothing": "Nothing is waiting on Review.",
+            "none_ticked": "Nothing was ticked. Tick the rows you want first, then press Accept ticked or Reject ticked."}
 
 
 def _message(args) -> tuple[str, str] | None:
@@ -108,6 +109,15 @@ def _message(args) -> tuple[str, str] | None:
         n = count("count")
         return "notice", (f"Sent {n} row{'' if n == 1 else 's'} from your spreadsheet to Review. Nothing is added to "
                           f"{title} until you accept {'it' if n == 1 else 'them'}.")
+    if args.get("allowed"):
+        conn = current_app.config["CONNECT"]()
+        helper = helpers.get(conn, args.get("allowed", 0, type=int))
+        if helper is not None:
+            return "notice", (f"{helper.name} may now send {proposals.ALLOW_MORE} more suggestions today: "
+                              f"{proposals.limit_today(conn, helper)} in all for today. Tomorrow its limit is back "
+                              f"to {proposals.MAX_PER_DAY}.")
+    if args.get("allow") in helper_settings.ALLOW_MESSAGES:
+        return "problem", helper_settings.ALLOW_MESSAGES[args["allow"]]
     if done == "cannot":
         return "problem", "That suggestion could not be added. The reason is shown on it below."
     return ("notice", MESSAGES[done]) if done in MESSAGES else None
@@ -139,12 +149,22 @@ def _needing(waiting: list[dict], position: int) -> int:
     return len(hit) - 1
 
 
+def _adds(items: list[dict]) -> str:
+    """What Accept all would add, in plain words: "2 to Stock items and 1 to Stock in and out"."""
+    counts: dict[str, int] = {}
+    for item in items:
+        counts[item["text"]["table"]] = counts.get(item["text"]["table"], 0) + 1
+    parts = [f"{n} to {table}" for table, n in counts.items()]
+    return parts[0] if len(parts) == 1 else ", ".join(parts[:-1]) + " and " + parts[-1]
+
+
 @review_pages.get("/review")
 def review():
     conn, store = current_app.config["CONNECT"](), _store()
     batches = proposals.pending(conn)
     style = dates.household_style(conn)
     same = {}  # one look at each table's names, for imported rows that repeat one
+    number = 0  # each row's place on the page, for the keys (Up, Down, A, R, Space)
     for batch in batches:
         batch["when"] = dates.show(batch["created_at"][:10], style)
         batch["why"] = visible(batch["why"])
@@ -155,8 +175,15 @@ def review():
             item["source"] = {k: visible(v) for k, v in item["source"].items()} if item["source"] else None
             item["needs"] = sorted({ref for ref in item["refs"].values() if ref in waiting})
             item["needed_by"] = _needing(batch["proposals"], item["position"])
+        batch["adds"] = _adds(batch["proposals"])
+        for group in batch["groups"]:
+            for item in group:
+                number += 1
+                item["number"] = number
     return render_template("review.html", batches=batches, message=_message(request.args),
-                           waiting=sum(len(b["proposals"]) for b in batches))
+                           waiting=sum(len(b["proposals"]) for b in batches),
+                           limits=helper_settings.near_limits(conn), allow_more=proposals.ALLOW_MORE,
+                           day_limit=proposals.MAX_PER_DAY)
 
 
 def _back(**args):
@@ -197,3 +224,30 @@ def accept_all(batch_id):
 def reject_all(batch_id):
     count = proposals.reject_batch(current_app.config["CONNECT"](), batch_id)
     return _back(done="rejected_many", count=count) if count else _back(done="nothing")
+
+
+def _ticked() -> list[int]:
+    return [int(v) for v in request.form.getlist("ids") if v.isdigit()][:proposals.MAX_WAITING * 4]
+
+
+@review_pages.post("/review/ticked/accept")
+def accept_ticked():
+    """Accept the ticked rows; ticking one row of a group accepts its whole group, all or nothing (decision 0101)."""
+    ids = _ticked()
+    if not ids:
+        return _back(done="none_ticked")
+    conn, registry = current_app.config["CONNECT"](), current_app.config["REGISTRY_FOR_REQUEST"]()
+    added, failed = proposals.accept_ticked(conn, registry, ids)
+    if not added and not failed:
+        return _back(done="stale")
+    return _back(done="added_many", added=added, left=len(failed))
+
+
+@review_pages.post("/review/ticked/reject")
+def reject_ticked():
+    """Reject the ticked rows; ticking one row of a group rejects its whole group."""
+    ids = _ticked()
+    if not ids:
+        return _back(done="none_ticked")
+    count = proposals.reject_ticked(current_app.config["CONNECT"](), ids)
+    return _back(done="rejected_many", count=count) if count else _back(done="stale")
