@@ -323,6 +323,32 @@ function expect(condition, message) { if (!condition) throw new Failed(message);
     ok(`Review: Accept and Reject stay in one column at 1280px and 375px; J, K and arrows move, Space ticks a whole group, A accepts, keys in a field do nothing; Accept all asks first, then adds "${r.item}" with its Stock in`);
   }
 
+  async function checkQuestions() {  // Have you thought about…? (decision 0104): a record offered, a person answers
+    const q = plan.questions;
+    await goto('/questions/readiness');
+    const before = await text('.card strong');
+    const looked = Number((before.match(/^(\d+) of/) || [])[1]);
+    expect(!Number.isNaN(looked), `The Questions page should start with "N of M ... looked at"; it says "${before}".`);
+    expect((await html()).includes('It does not say whether your household is safe or ready.'), 'The Questions page lost its "not a safety score" caption.');
+    await Promise.all([page.waitForNavigation(), page.click(`a[href="/questions/readiness/${q.id}"]`)]);
+    await page.setViewportSize({ width: 320, height: 800 });
+    const wide = await page.evaluate(() => document.documentElement.scrollWidth);
+    expect(wide <= 321, `The question page is ${wide} pixels wide on a 320-pixel screen.`);
+    await page.setViewportSize({ width: 1280, height: 800 });
+    expect(await page.isVisible('text=You already recorded this. Does it answer the question?'), `"${q.id}" should offer the household's own record.`);
+    expect(!(await page.isChecked(`input[name=record][value^="${q.table}:"]`)), 'The record must not be chosen before the person chooses it.');
+    await page.check(`input[name=record][value^="${q.table}:"]`);
+    await page.click('summary:has-text("Tell me more")');
+    expect(await page.isVisible('details[open] >> text=checked'), 'Tell me more should show the source and the date it was checked.');
+    await submit('button[name=answer][value=yes]');
+    expect((await text('[role=status]')).includes('Saved your answer. You can change it later.'), 'Answering Yes should say "Saved your answer. You can change it later."');
+    expect((await text('main')).includes('You used one of your records for this answer.'), 'The answer should say a record was used.');
+    await goto('/questions/readiness');
+    const after = await text('.card strong');
+    expect(after.startsWith(`${looked + 1} of`), `After one Yes the count should read ${looked + 1}; it says "${after}".`);
+    ok(`questions: "${q.id}" offered the household's record, Yes saved with it, count ${looked} -> ${looked + 1}, fits 320 pixels`);
+  }
+
   async function checkPrivateDetail() {
     const p = plan.private;
     await goto('/t/people__important_info');
@@ -384,6 +410,7 @@ function expect(condition, message) { if (!condition) throw new Failed(message);
       if (plan.job) await checkMarkDone();
       if (plan.csv) await checkImport();
       if (plan.review) await checkReview();
+      if (plan.questions) await checkQuestions();
       if (plan.private) { await checkPrivateDetail(); await checkPrivateSheet(); }
       await checkClose();
     }

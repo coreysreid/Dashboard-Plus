@@ -10,6 +10,7 @@ from dataclasses import dataclass, field
 from datetime import date
 from pathlib import Path
 
+from dashboard.core import prompts as prompt_files
 from dashboard.core.migrations import Migration, load_track, MigrationError
 from dashboard.errors import PlainError
 
@@ -32,7 +33,7 @@ TRAVELS = ("always", "never")
 MODULE_KEYS = ("name", "title", "version", "description", "core_api", "kind", "requires", "outbound_hosts")
 MODULE_REQUIRED = ("name", "title", "version", "description", "core_api", "kind")
 TABLE_KEYS = ("title", "description", "columns", "watch", "adjusts", "parent", "total", "record_name", "actions",
-              "pair")
+              "pair", "suggestions")
 # A record that joins two records of one table, like two rooms with a door between them (decision 0103).
 PAIR_KEYS = ("columns", "blank_when")
 # A one-step button on a record's page, such as "Mark returned" (decision 0075).
@@ -116,6 +117,9 @@ class Table:
     total: dict = field(default_factory=dict)  # checked `total` section: batches add up into a record (5.7)
     record_name: str | None = None  # how to name a record with no name of its own, like "{quantity} {item.unit} of {item}"
     actions: list = field(default_factory=list)  # checked one-step buttons, like "Mark returned" (decision 0075)
+    # False: records are made only on this program's own screens, never suggested by a helper or imported
+    # from a spreadsheet; helpers may still look, as their grant allows (decision 0104).
+    suggestions: bool = True
     pair: dict = field(default_factory=dict)  # checked `pair`: joins two different records, each pair once (5.6)
 
 
@@ -135,6 +139,7 @@ class Module:
     sheets: list = field(default_factory=list)  # checked printable sheets (DESIGN.md 5.2)
     # Lists of common things to pick from while typing, by (table, column) (DESIGN.md 5.5).
     catalogues: dict = field(default_factory=dict)
+    prompts: object = None  # checked prompts.toml, a prompts.PromptSet, or None (decision 0104)
 
 
 def _suggest(word: str, options) -> str:
@@ -664,6 +669,11 @@ def _check_tables(module: str, data: dict, requires: list[str], problems: list[s
         watch = _check_watch(file, tname, raw.get("watch", {}), columns, problems)
         tables[tname] = Table(tname, str(raw.get("title", tname)), raw.get("description"), columns, watch,
                               raw.get("adjusts", {}))
+        if "suggestions" in raw:
+            if isinstance(raw["suggestions"], bool):
+                tables[tname].suggestions = raw["suggestions"]
+            else:
+                problems.append(f"{where}: 'suggestions' must be true or false.")
     for table in tables.values():
         _check_travels_when(file, table, problems)
         for column in table.columns.values():
@@ -1364,6 +1374,7 @@ def load_module(folder: Path) -> Module:
     labels = _check_labels(_read_toml(folder / "labels.toml", problems, required=False), tables, problems)
     sheets = _check_sheets(_read_toml(folder / "sheets.toml", problems, required=False), tables, problems)
     catalogues = _load_catalogues(folder, labels, tables, problems)
+    prompt_set = prompt_files.load(folder, folder.name, tables, _read_toml, problems)
     try:
         migrations = load_track(folder.name, folder / "migrations")
     except MigrationError as error:
@@ -1374,7 +1385,8 @@ def load_module(folder: Path) -> Module:
     return Module(name=meta["name"], title=meta["title"], version=meta["version"],
                   description=meta["description"], kind=meta["kind"], requires=list(requires),
                   outbound_hosts=list(meta.get("outbound_hosts", [])), folder=folder,
-                  tables=tables, labels=labels, migrations=migrations, sheets=sheets, catalogues=catalogues)
+                  tables=tables, labels=labels, migrations=migrations, sheets=sheets, catalogues=catalogues,
+                  prompts=prompt_set)
 
 
 def discover(modules_dir: Path) -> tuple[list[Module], dict[str, list[str]]]:
@@ -1467,6 +1479,8 @@ def dependency_order(modules: list[Module], failures: dict[str, list[str]]) -> l
                 state[module.name] = "failed"
                 return False
         problems = _cross_module_gap_problems(module, by_name) + _cross_module_sheet_problems(module, by_name)
+        if module.prompts is not None:
+            problems += prompt_files.cross_module_problems(module.prompts, by_name)
         if problems:
             failures.setdefault(module.name, []).extend(problems)
             state[module.name] = "failed"

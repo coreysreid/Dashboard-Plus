@@ -10,7 +10,6 @@ and made-up example rows. Add a row here for each draft folder you create.
 | agent_api/ | Agent API misuse, contracts and helper flows | reviewing M2 helpers |
 | home_care_mark_done/ | Atomic completion, repeat-date offer and Undo design for shipped Home care | building Mark done |
 | stock_lots/ | Item lots (layered use-by dates), screen flows and core needs | planning layered stock dates |
-| readiness/ | 49 source-linked "Have you thought about…?" questions | reviewing readiness prompts |
 | country-packs/ | Sourced AU, US, UK and NZ content | reviewing country packs |
 | grab_list/ | Household leave-in-a-hurry list and one-page print design | building M3 grab lists |
 | seasonal_checklists/ | Source-linked bushfire, cyclone, winter, heat and hurricane questions | building M3 seasonal reviews |

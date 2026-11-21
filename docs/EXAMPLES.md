@@ -254,6 +254,18 @@ As it prints: service, provider, fault contact and their phone from People, and 
 
 ![Utility contacts sheet](screenshots/smith/18s-utilities-sheet.png)
 
+### Have you thought about…?
+
+Readiness: the questions that fit the household, by group, with how many have been looked at, never a safety score.
+
+![Have you thought about…?](screenshots/smith/18t-questions.png)
+
+### One question
+
+Why it may matter, its official source and the date checked, a record that may already answer it for the household to confirm, and Yes, Not relevant, Not yet or Tell me more.
+
+![One question](screenshots/smith/18u-question.png)
+
 ### Needs attention
 
 Days of water with the working shown, running low, use-by and due dates, and details worth filling in.
@@ -518,6 +530,18 @@ As it prints: service, provider, fault contact and their phone from People, and 
 
 ![Utility contacts sheet](screenshots/garcia/18s-utilities-sheet.png)
 
+### Have you thought about…?
+
+Readiness: the questions that fit the household, by group, with how many have been looked at, never a safety score.
+
+![Have you thought about…?](screenshots/garcia/18t-questions.png)
+
+### One question
+
+Why it may matter, its official source and the date checked, a record that may already answer it for the household to confirm, and Yes, Not relevant, Not yet or Tell me more.
+
+![One question](screenshots/garcia/18u-question.png)
+
 ### Needs attention
 
 Days of water with the working shown, running low, use-by and due dates, and details worth filling in.
@@ -775,6 +799,18 @@ Each service, its provider, who to contact about a fault and its meter; the acco
 As it prints: service, provider, fault contact and their phone from People, and the meter, with no account numbers or notes.
 
 ![Utility contacts sheet](screenshots/taylor/18s-utilities-sheet.png)
+
+### Have you thought about…?
+
+Readiness: the questions that fit the household, by group, with how many have been looked at, never a safety score.
+
+![Have you thought about…?](screenshots/taylor/18t-questions.png)
+
+### One question
+
+Why it may matter, its official source and the date checked, a record that may already answer it for the household to confirm, and Yes, Not relevant, Not yet or Tell me more.
+
+![One question](screenshots/taylor/18u-question.png)
 
 ### Needs attention
 

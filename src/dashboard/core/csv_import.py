@@ -122,6 +122,8 @@ def table_title(info: TableInfo) -> str:
 
 def why_not_table(info: TableInfo) -> str | None:
     """Why a whole table cannot be imported into in this version, or None."""
+    if not info.table.suggestions:
+        return f"{table_title(info)} is filled in on its own screens only, so it can't be imported."
     if any(c.required and c.sensitive for c in info.table.columns.values()):
         return f"{table_title(info)} needs a private detail, and private details can't be imported in this version."
     if any(c.required and c.type == "file" for c in info.table.columns.values()):

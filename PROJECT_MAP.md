@@ -155,6 +155,7 @@ One record per decision, from `TEMPLATE.md`. Never deleted; reversed ones are ma
 | [0101](0101-review-speed-ups-and-allow-more.md) | Faster Review: Accept all asks first, then accepts group by group (each group all or nothing); tick boxes with Accept or Reject ticked (a group ticks whole); keys (Up/Down or J/K, A, R, Space) as a small script; Accept and Reject in one fixed column; "Allow 200 more today" per helper from a page with a one-use token (core 0008, history), the day being the household's own; 429 tells the helper to stop and ask | Accepted |
 | [0102](0102-helper-starting-prompt-and-stock-with-amount.md) | A starting message for the helper's assistant in Settings, Helpers (copy box) and as `GET /api/v1/guide` and the `dashboard_how_to_help` tool: its lists, fields, private fields by name, links to look up first, the stock model and today's limits, never records or the key; a new Stock item may carry its amount, use-by date and place as one suggestion, added with its first batch on Accept | Accepted |
 | [0103](0103-set-up-my-home.md) | Set up my home: one page for rooms and areas (Places), storage spots inside them and which rooms connect (new `stock__connections`, migration 0006 in Household stock); offered after the welcome and always on Home and Settings; `pair` in tables.toml refuses self-links and repeats either way round; doors to outside marked by kind; a deleted room takes its connections; nothing private | Accepted |
+| [0104](0104-readiness-questions.md) | Readiness switched on from Lane B's draft: 49 sourced "Have you thought about…?" questions in a module `prompts.toml` (schema 1), fitted only from Settings; exact record matches offered, never assumed; answers Yes / Not relevant / Not yet as ordinary records with the record's permanent ID and a revision fingerprint; back for review on the chosen date, after 12 months or when that record changes; at most two on Home; "looked at", never "safe"; helpers look but never answer (`suggestions = false`); answers travel; drills later reuse the same answers | Accepted |
 | [0106](0106-mac-wording-meter-paths-sync-checks.md) | Mac preview wording follows the 21 November read-through (no absolute "nothing is sent", no "only once", two ZIPs, chip check); a link column may say `with_place` so Utilities shows the meter's full place path; Utilities still requires Home layout; sync check also names a pair pointing at nothing, with six more stage 1 tests | Accepted |
 | [TEMPLATE](TEMPLATE.md) | Blank record to copy for a new decision | recording a decision |
 
@@ -241,6 +242,7 @@ numbered migrations. See docs/DESIGN.md section 6 for the module contract.
 | medical/ | First aid kits and where they are, kit checks, first aid training renewals; a first aid sheet | changing first aid records |
 | people/ | Who lives here, who to call, important details, emergency sheets | changing people, contacts or the emergency sheet |
 | pets/ | Pets, their vet, treatments and medicine with due dates, weigh-ins, vet visits; a pet details sheet | changing pets |
+| readiness/ | "Have you thought about…?": 49 questions in seven groups with official sources, the household's answers, and what may already be recorded | changing readiness questions or answers |
 | stock/ | Pantry, water, first aid, tools and hardware, with places (and which rooms connect), minimums and use-by dates | changing stock, running low or days of water |
 | utilities/ | Utilities and accounts: each service, its provider, fault contact (from People) and meter (from Home layout), a private account reference; a Utility contacts sheet | changing utility records |
 | vehicles/ | Each vehicle, who to call if it breaks down, registration, insurance and service dates; a Vehicles sheet | changing vehicle records |
@@ -378,6 +380,22 @@ Generate the next one with: python tools/make_migration.py pets --name <what_cha
 |---|---|---|
 | 0001_first_tables.sql | The module's first tables, generated from tables.toml | checking how the tables are stored |
 
+## modules/readiness/  (summary: the Readiness module, files only: 49 "Have you thought about…?" questions and the household's answers)
+| Entry | What it is | Open it when |
+|---|---|---|
+| module.toml | Name, version, description; needs no other module (record matches into other modules find nothing while those are off) | changing the module's details |
+| tables.toml | Your answers: one record per question, answer, dates, note and the record used to confirm it; helpers may look, never suggest | changing how answers are kept |
+| labels.toml | Friendly labels and help for Your answers, form and list order | changing wording or order |
+| prompts.toml | The questions in seven groups, each with why, what it fits, the exact record match, review interval and official source | changing a question, a source or a record match |
+| migrations/ | Numbered database changes | after changing tables.toml |
+
+## modules/readiness/migrations/  (summary: this module's numbered database changes; never edit a released one)
+Generate the next one with: python tools/make_migration.py readiness --name <what_changed>
+
+| Entry | What it is | Open it when |
+|---|---|---|
+| 0001_first_tables.sql | The answers table, generated from tables.toml | checking how answers are stored |
+
 ## modules/stock/  (summary: the Household stock module, files only)
 | Entry | What it is | Open it when |
 |---|---|---|
@@ -491,6 +509,8 @@ Generate the next one with: python tools/make_migration.py wine --name <what_cha
 | modules.py | Find module folders, check their files, and explain any mistakes in plain words. | changing what module files may say |
 | actions.py | Actions that add a linked record through a small form, like Mark done: one saved operation, a one-use number and Undo. | changing Mark done, its checks or Undo |
 | records.py | Create, change, delete and read records, checking every value and keeping a history. | changing how records are saved or checked |
+| prompts.py | Read and check a module's prompts.toml: "Have you thought about…?" questions, their groups and exact record matches. | changing what prompts.toml may say |
+| questions.py | Which "Have you thought about…?" questions fit the household, what may already be recorded, and how many were looked at. | changing how questions fit, match records, come back or are counted |
 | settings.py | Read and write household settings kept in the database (core__settings). | storing a new setting |
 | schema.py | Turn a module's declared tables into SQL, and work out its next migration. | changing how tables are built |
 | suggest.py | Suggestions while typing: a household's own records first, then a module's list of common things. | changing how picking from a list matches |
@@ -529,6 +549,7 @@ Add a new file with the next number instead of changing an old one.
 | action_form.py | An action's small form, such as Mark done: open it, save it once as one operation, and Undo it (decision 0091). | changing Mark done or Undo screens |
 | count.py | Count this batch: a stocktake of one batch, reviewed and then saved as one stocktake correction. | changing the stocktake screens |
 | home.py | Group the home page by area: each module's main lists shown large, its other lists as one line of links. | changing how the home page is grouped or ordered |
+| questions.py | The "Have you thought about…?" screens: the questions by group, one question with its four answers, and Not now. | changing the question screens |
 | sheets.py | One-page printable sheets declared by modules, such as the emergency sheet. | changing printable sheets |
 | display.py | Turn declared tables and stored values into friendly labels, form fields and text. | changing how values look |
 | templates/ | The HTML pages | changing what a page looks like |
@@ -554,6 +575,7 @@ Add a new file with the next number instead of changing an old one.
 | form.html | Add and edit forms, delete and restore, and history | changing the form |
 | action_form.html | An action's small form, such as Mark done: what it asks, the next-date choice, Save once | changing the Mark done wording |
 | _*.html | Pieces shared by both forms: one field (_field), and the forms' styles and browser code (_form_script) | changing every form at once |
+| question*.html | "Have you thought about…?": the questions by group with what was looked at (questions), and one question with Yes, Not relevant, Not yet and Tell me more (question) | changing the question wording |
 | home_setup.html | Set up my home: add rooms and storage spots, rename, move or delete them, and connect rooms; no scripts needed | changing the Set up my home wording |
 | setup.html | First-run wizard and Settings (one form, two modes) | changing setup questions |
 | *sheet.html | A printable sheet styled to fit one page (sheet), and the step before one with private details (private_sheet) | changing how sheets print |
@@ -561,10 +583,6 @@ Add a new file with the next number instead of changing an old one.
 | report.html | Shown after saving a report | changing that message |
 | close*.html | The "Save and exit" page, and the page shown after a safe close | changing how closing works |
 | error.html | Plain-language error page with "Save a report" | changing error wording |
-| helpers.html | Settings, Helpers: the helper list, the address, and the form that makes a key | changing the Helpers settings page |
-| helper_key.html | The one page that shows a new helper key, with a Copy button and a warning to keep it private | changing the new-key page |
-| helper_connect.html | "Connect an AI assistant": settings to paste into an assistant's app, with a placeholder for the key | changing the assistant set-up words |
-| review.html | Review: each helper's waiting suggestions with Accept and Reject | changing the Review page |
 | helpers.html | Settings, Helpers: the helper list with Make a new key and Turn off access, and the form that makes a key | changing the Helpers settings page |
 | helper*_key.html | The one page that shows a key: helper_key for a new helper, helper_new_key for a new key for one already made; each with Copy and a warning | changing the key pages |
 | helper_connect.html | "Connect an AI assistant": settings to paste into an assistant's app (pointing at the address file), with a placeholder for the key, and Connection details | changing the assistant set-up words |
@@ -649,6 +667,6 @@ How to run them is in AGENTS.md.
 | load_example.py | Load a made-up example household into an empty data folder, for demos, screenshots and testing. | demonstrating or testing with realistic data |
 | make_screenshots.py | Make the example screenshots: run each example household through every stage of using the dashboard. | the screens changed and the gallery needs remaking |
 | screenshots.js | Browser steps for make_screenshots.py (Node and Playwright) | changing how screenshots are taken |
-| browser_check.py | Click through the real dashboard in Chromium (setup, Set up my home, dates, stock in, stocktake, Mark returned, Mark done, spreadsheet import, Review keys and buttons, private details, closing) and fail loudly. | a screen or its browser code changed |
+| browser_check.py | Click through the real dashboard in Chromium (setup, Set up my home, dates, stock in, stocktake, Mark returned, Mark done, spreadsheet import, Review keys and buttons, readiness questions, private details, closing) and fail loudly. | a screen or its browser code changed |
 | browser_check.js | Browser steps for browser_check.py (Node and Playwright): what is clicked and checked | changing what the browser check clicks |
 | make_project_map.py | Build PROJECT_MAP.md from every INDEX.md in the repository. | changing the map format |

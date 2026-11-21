@@ -39,6 +39,17 @@ is new: keep a copy of anything important somewhere else too. See
 - **Needs attention:** what is running low, what expires soon, about how many
   days of water you have for the people (and pets) in the house, and details
   worth filling in, such as an emergency contact with no phone number.
+- **Have you thought about…?** (Readiness) 49 calm questions about fire,
+  flood, storms, heat, power cuts, medical needs and leaving home quickly, each
+  with the official page it came from and the date that page was checked. Only
+  the questions that fit what you told Settings are asked (storeys, the things
+  that can happen where you live, pets, mobility needs). Answer Yes, Not
+  relevant or Not yet, or open Tell me more. When one of your records may
+  already answer a question (a first aid kit with its place, an emergency
+  contact with a phone number) it is offered for you to confirm, never
+  answered for you; if that record changes, the question comes back. Home
+  shows at most two at a time, and the count says how many you have looked
+  at, never whether you are "safe".
 - **Helpers (early):** give an assistant, such as an AI program, a key in
   Settings so it can look at the parts of your records you choose and suggest
   new ones. Nothing is added until you accept it on the Review page. Private

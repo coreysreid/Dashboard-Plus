@@ -112,6 +112,11 @@ STAGES = [
     ("18s-utilities-sheet", "Utility contacts sheet", "As it prints: service, provider, fault contact and their "
      "phone from People, and the meter, with no account numbers or notes.",
      {"goto": "/sheet/utilities/utility_contacts", "media": "print", "module": "utilities"}),
+    ("18t-questions", "Have you thought about…?", "Readiness: the questions that fit the household, by group, with "
+     "how many have been looked at, never a safety score.", {"goto": "/questions/readiness", "module": "readiness"}),
+    ("18u-question", "One question", "Why it may matter, its official source and the date checked, a record that may "
+     "already answer it for the household to confirm, and Yes, Not relevant, Not yet or Tell me more.",
+     {"goto": "/questions/readiness/medical-kit-location", "module": "readiness"}),
     ("19-needs-attention", "Needs attention", "Days of water with the working shown, running low, use-by "
      "and due dates, and details worth filling in.", {"goto": "/attention"}),
     ("20-supplies-sheet", "Emergency supplies sheet", "As it prints: water, first aid, power and food, and "
