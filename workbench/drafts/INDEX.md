@@ -30,3 +30,4 @@ and made-up example rows. Add a row here for each draft folder you create.
 | macos/ | Researched app-bundle build, data location and release checks | preparing a Mac release |
 | phone/ | Android and iOS member app options, first screens and acceptance checks | designing mobile sync |
 | bills_insurance/ | Draft bills and policy reminders beside Utilities | reviewing financial reminders |
+| pet_feeding/ | Event-based pet food records, daily totals and phone/helper flow | designing pet feeding |
