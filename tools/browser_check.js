@@ -377,6 +377,35 @@ function expect(condition, message) { if (!condition) throw new Failed(message);
     ok(`questions: "${q.id}" offered the household's record, Yes saved with it, count ${looked} -> ${looked + 1}, fits 320 pixels`);
   }
 
+  async function checkCharts() {  // the first charts (decision 0109): drawn on the server, readable at 320px, keyboard reachable
+    const c = plan.charts;
+    await page.setViewportSize({ width: 320, height: 800 });
+    try {
+      await goto('/');
+      await Promise.all([page.waitForNavigation(), page.click('a:has-text("What is counted")')]);
+      const wide = await page.evaluate(() => document.documentElement.scrollWidth);
+      expect(wide <= 320, `At 320px the drinking-water page is ${wide}px wide; it should not scroll sideways.`);
+      const bars = await page.locator('svg.chart-svg a').count();
+      const counted = await page.locator('table.chart-table tbody tr:not(.left-out)').count();
+      expect(bars > 0 && bars <= counted, `The water chart should draw a bar for each counted item (${counted}); it drew ${bars}.`);
+      const size = await page.$eval('svg.chart-svg text', (t) => t.getBoundingClientRect().height);
+      expect(size >= 10, `Chart labels at 320px should stay readable; they are ${size.toFixed(1)}px tall.`);
+      await page.focus('svg.chart-svg a');
+      await page.keyboard.press('Enter');
+      expect(/-row-\d+$/.test(page.url()), `Choosing a bar with the keyboard should go to its table row; the page is at ${page.url()}.`);
+      await goto('/t/pets__pets');
+      await Promise.all([page.waitForNavigation(), page.click(`a[aria-label="Open ${c.pet}"]`)]);
+      const dots = await page.locator('svg.chart-svg a').count();
+      const rows = await page.locator('table.chart-table tbody tr').count();
+      expect(dots === c.dots && rows === c.dots, `${c.pet}'s page should show ${c.dots} weigh-in dots and ${c.dots} table rows; it shows ${dots} and ${rows}.`);
+      const pwide = await page.evaluate(() => document.documentElement.scrollWidth);
+      expect(pwide <= 320, `At 320px ${c.pet}'s page is ${pwide}px wide; it should not scroll sideways.`);
+      ok(`charts at 320px: ${bars} water bars for ${counted} counted items, keyboard reaches a row; ${c.pet}: ${dots} dots, ${rows} rows`);
+    } finally {
+      await page.setViewportSize({ width: 1280, height: 720 });
+    }
+  }
+
   async function checkPrivateDetail() {
     const p = plan.private;
     await goto('/t/people__important_info');
@@ -439,6 +468,7 @@ function expect(condition, message) { if (!condition) throw new Failed(message);
       if (plan.csv) await checkImport();
       if (plan.review) await checkReview();
       if (plan.questions) await checkQuestions();
+      if (plan.charts) await checkCharts();
       if (plan.private) { await checkPrivateDetail(); await checkPrivateSheet(); }
       await checkClose();
     }

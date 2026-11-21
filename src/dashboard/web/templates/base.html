@@ -63,6 +63,37 @@
     .main-lists .button { padding: .35rem .9rem; }
     .more-lists { display: flex; flex-wrap: wrap; gap: 0 1.1rem; border-top: 1px solid var(--line); margin-top: .5rem !important; padding-top: .4rem !important; font-size: .95rem; }
     .more-lists a { display: inline-block; padding: .25rem 0; }
+    /* Charts drawn on the server as SVG (decision 0109): labels as well as colour, focus shown, nothing animated. */
+    .chart { margin: 1rem 0; }
+    .chart-svg { display: block; width: 100%; max-width: 30rem; height: auto; }
+    .chart-svg text { fill: var(--fg); }
+    .chart-svg .chart-bar, .chart-svg .chart-dot { fill: var(--accent); stroke: var(--fg); stroke-width: .75; }
+    .chart-svg .chart-axis { stroke: var(--fg); }
+    .chart-svg .chart-grid { stroke: var(--line); }
+    .chart-svg a:focus { outline: none; }
+    .chart-svg a:focus .chart-bar, .chart-svg a:focus .chart-dot, .chart-svg a:hover .chart-dot { stroke-width: 3; }
+    .chart-svg a:focus text { text-decoration: underline; }
+    .chart-table tr:target { outline: 3px solid var(--accent); outline-offset: -3px; }
+    .chart-table tr.left-out td:last-child { font-style: italic; }
+    .chart-footer { display: grid; grid-template-columns: max-content 1fr; gap: .2rem 1rem; }
+    .chart-footer dt { font-weight: 600; } .chart-footer dd { margin: 0; }
+    .chart-choose { display: flex; flex-wrap: wrap; gap: .8rem; align-items: end; }
+    .chart-choose label { font-weight: 600; display: block; }
+    @media (max-width: 40rem) {  /* on a phone each row of a chart's table is a card, in the same order */
+      .chart-table thead { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); }
+      .chart-table, .chart-table tbody, .chart-table tr, .chart-table td { display: block; width: 100%; }
+      .chart-table td::before { content: attr(data-label) ": "; font-weight: 600; }
+      .chart-footer { grid-template-columns: 1fr; } .chart-footer dd { margin-bottom: .4rem; }
+    }
+    @media (forced-colors: active) {
+      .chart-svg text { fill: CanvasText; } .chart-svg .chart-axis { stroke: CanvasText; }
+      .chart-svg .chart-bar, .chart-svg .chart-dot { fill: CanvasText; stroke: Canvas; }
+    }
+    @media print {
+      .chart-svg { max-width: 15cm; } .chart-svg text { fill: #000; } .chart-svg .chart-axis { stroke: #000; }
+      .chart-svg .chart-bar, .chart-svg .chart-dot { fill: #555; stroke: #000; }
+      .chart-table tr { break-inside: avoid; } .chart-choose { display: none; }
+    }
     footer { color: var(--muted); font-size: .85rem; max-width: var(--wide); margin: 0 auto; padding: 0 1rem 2rem; }
   </style>
 </head>

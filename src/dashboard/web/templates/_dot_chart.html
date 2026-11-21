@@ -1,0 +1,27 @@
+{# One subject's recorded readings (decision 0109): the plain sentence, the dots and the equal table. Needs `view`. #}
+<section class="chart-page" aria-labelledby="{{ view.chart_id }}-heading">
+{% if view.empty %}
+<p class="chart-empty" role="status" id="{{ view.chart_id }}-heading"><strong>{{ view.empty }}</strong></p>
+{% else %}
+<p class="chart-headline" id="{{ view.chart_id }}-heading"><strong>{{ view.summary }}</strong></p>
+{% if view.note %}<p class="muted">{{ view.note }}</p>{% endif %}
+<p class="muted">These are the values written down, not a health check. Nothing here says why a value changed.</p>
+<figure class="chart">
+  {{ view.chart }}
+  <figcaption class="muted">The dots are not joined: nothing was measured between them. Choose a dot to go to its row.</figcaption>
+</figure>
+<h3>{{ view.heading }}</h3>
+<table class="grid chart-table">
+  <thead><tr><th scope="col">{{ view.x_label }}</th><th scope="col">{{ view.y_label }}</th><th scope="col">Record</th></tr></thead>
+  <tbody>
+  {% for r in view.rows %}
+  <tr id="{{ view.chart_id }}-row-{{ r.id }}">
+    <td data-label="{{ view.x_label }}">{{ r.day }}{% if r.same %} <span class="muted">({{ r.same }})</span>{% endif %}</td>
+    <td data-label="{{ view.y_label }}">{{ r.value }}</td>
+    <td data-label="Record"><a href="{{ r.href }}">Open this {{ view.entry_one }}</a>{% if r.mark %} <span class="muted">· {{ r.mark }}</span>{% endif %}</td>
+  </tr>
+  {% endfor %}
+  </tbody>
+</table>
+{% endif %}
+</section>

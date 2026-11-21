@@ -39,6 +39,13 @@ is new: keep a copy of anything important somewhere else too. See
 - **Needs attention:** what is running low, what expires soon, about how many
   days of water you have for the people (and pets) in the house, and details
   worth filling in, such as an emergency contact with no phone number.
+- **The first charts:** *What is counted* on Home's water card shows each
+  water item behind the days of drinking water, as a bar with its litres, and
+  every item left out with the reason (not safe to drink, or not in litres).
+  A pet's page shows its recorded weights as dots by date, and you can choose
+  the pet and the dates. Each chart has a table with the same values, prints,
+  and works with a keyboard or screen reader. They show what was written down,
+  never a health or safety verdict.
 - **Have you thought about…?** (Readiness) 49 calm questions about fire,
   flood, storms, heat, power cuts, medical needs and leaving home quickly, each
   with the official page it came from and the date that page was checked. Only

@@ -33,7 +33,10 @@ TRAVELS = ("always", "never")
 MODULE_KEYS = ("name", "title", "version", "description", "core_api", "kind", "requires", "outbound_hosts")
 MODULE_REQUIRED = ("name", "title", "version", "description", "core_api", "kind")
 TABLE_KEYS = ("title", "description", "columns", "watch", "adjusts", "parent", "total", "record_name", "actions",
-              "pair", "suggestions")
+              "pair", "suggestions", "chart")
+# A chart of one subject's dated readings, such as one pet's weigh-ins as dots (decision 0109).
+CHART_KEYS = ("kind", "x", "y", "per", "what", "entry", "subject")
+CHART_KINDS = ("dots",)
 # A record that joins two records of one table, like two rooms with a door between them (decision 0103).
 PAIR_KEYS = ("columns", "blank_when")
 # A one-step button on a record's page, such as "Mark returned" (decision 0075).
@@ -121,6 +124,7 @@ class Table:
     # from a spreadsheet; helpers may still look, as their grant allows (decision 0104).
     suggestions: bool = True
     pair: dict = field(default_factory=dict)  # checked `pair`: joins two different records, each pair once (5.6)
+    chart: dict = field(default_factory=dict)  # checked `chart`: one subject's dated readings drawn as dots (0109)
 
 
 @dataclass
@@ -609,6 +613,38 @@ def _check_pair(file: str, table: Table, raw, problems: list[str]) -> dict:
     return rule
 
 
+def _check_chart(file: str, table: Table, raw, problems: list[str]) -> dict:
+    """Check `chart`: one subject's dated readings drawn as dots, like one pet's weigh-ins (decision 0109).
+    `what` and `entry` are the words for one reading and for one record, singular then plural."""
+    where = f"In {file}, table '{table.name}', chart"
+    example = ('chart = { kind = "dots", x = "day", y = "weight", per = "pet", what = ["weight", "weights"], '
+               'entry = ["weigh-in", "weigh-ins"], subject = "pet" }')
+    if not isinstance(raw, dict):
+        problems.append(f"{where}: write it like {example}.")
+        return {}
+    problems.extend(_unknown_keys(where, raw, CHART_KEYS))
+    before = len(problems)
+    if raw.get("kind") not in CHART_KINDS:
+        problems.append(f"{where}: 'kind' must be \"dots\", not {raw.get('kind')!r}.")
+    x, y, per = (table.columns.get(raw.get(k)) if isinstance(raw.get(k), str) else None for k in ("x", "y", "per"))
+    if x is None or x.type != "date" or not x.required:
+        problems.append(f"{where}: 'x' must name a required date column of this table.")
+    if y is None or y.type not in ("integer", "decimal", "measure") or not y.required or y.sensitive:
+        problems.append(f"{where}: 'y' must name a required number column of this table that is not private.")
+    if per is None or per.type != "link" or not per.required:
+        problems.append(f"{where}: 'per' must name a required link column, so each chart shows one subject.")
+    for key in ("what", "entry"):
+        words = raw.get(key)
+        if not (isinstance(words, list) and len(words) == 2 and all(isinstance(w, str) and w.strip() for w in words)):
+            problems.append(f"{where}: '{key}' must be two words, singular then plural, like {example}.")
+    if not (isinstance(raw.get("subject"), str) and raw["subject"].strip()):
+        problems.append(f"{where}: 'subject' must be the word for one subject, like \"pet\".")
+    if len(problems) > before:
+        return {}
+    return {"kind": raw["kind"], "x": raw["x"], "y": raw["y"], "per": raw["per"], "what": list(raw["what"]),
+            "entry": list(raw["entry"]), "subject": raw["subject"].strip()}
+
+
 def _check_record_name(file: str, table: Table, tables: dict[str, Table], template, problems: list[str]) -> str | None:
     """Check `record_name`: a pattern like "{quantity} {item.unit} of {item}" naming a record."""
     where = f"In {file}, table '{table.name}', record_name"
@@ -703,6 +739,8 @@ def _check_tables(module: str, data: dict, requires: list[str], problems: list[s
                                                                problems)
             if "pair" in raw:
                 tables[tname].pair = _check_pair(file, tables[tname], raw["pair"], problems)
+            if "chart" in raw:
+                tables[tname].chart = _check_chart(file, tables[tname], raw["chart"], problems)
     for table in tables.values():
         for column in table.columns.values():
             if column.type in ("link", "links") and column.to:

@@ -1,0 +1,24 @@
+{% extends "base.html" %}
+{% block title %}{{ title }} · Dashboard Plus{% endblock %}
+{% block body %}
+<p class="muted"><a href="/">Home</a> · <a href="/t/{{ table }}">List of all readings</a></p>
+<h1>{{ title }}</h1>
+{% if no_subject %}
+<p class="chart-empty" role="status"><strong>{{ no_subject }}</strong></p>
+<p><a class="button" href="{{ add_subject }}">Add one</a></p>
+{% else %}
+<form method="get" action="/charts/{{ table }}" class="chart-choose">
+  <div><label for="c-subject">Which {{ subject_word }}</label>
+    <select id="c-subject" name="subject">{% for s in subjects %}<option value="{{ s.id }}"{% if s.id == chosen.id %} selected{% endif %}>{{ s.name }}</option>{% endfor %}</select></div>
+  <div><label for="c-from">From <span class="muted">({{ hint }}, optional)</span></label>
+    <input type="text" id="c-from" name="from" value="{{ typed.from }}" inputmode="numeric" autocomplete="off"></div>
+  <div><label for="c-to">To <span class="muted">({{ hint }}, optional)</span></label>
+    <input type="text" id="c-to" name="to" value="{{ typed.to }}" inputmode="numeric" autocomplete="off"></div>
+  <div><button type="submit">Show</button></div>
+</form>
+{% if problems %}<div class="problem" role="alert">{% for p in problems %}<p style="margin:0">{{ p }}</p>{% endfor %}<p style="margin:0">Showing all dates instead.</p></div>{% endif %}
+<h2>{{ chosen.name }}</h2>
+{% include "_dot_chart.html" %}
+<p><a href="{{ view.add }}">Add a reading for {{ chosen.name }}</a></p>
+{% endif %}
+{% endblock %}
