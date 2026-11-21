@@ -18,6 +18,7 @@ import make_migration
 
 MODULES_DIR = ROOT / "modules"
 SYNC_TABLES = ("core__sync_state", "core__sync_epochs", "core__sync_tables", "core__sync_changes", "core__sync_held")
+LATER_CORE_TABLES = ("core__helper_allowances",)  # core 0008 (decision 0101), released after stage 1
 MEDICAL = ("allergy", "condition", "medication", "care_need", "dietary")
 
 
@@ -26,7 +27,7 @@ def make_old(path):
     revisions, no sync tables, core at step 6. Used to test the upgrade of an existing household."""
     conn = sqlite3.connect(path)
     try:
-        for name in SYNC_TABLES:
+        for name in SYNC_TABLES + LATER_CORE_TABLES:
             conn.execute(f"DROP TABLE IF EXISTS {name}")
         for (name,) in conn.execute("SELECT name FROM sqlite_master WHERE type = 'table'").fetchall():
             columns = {r[1] for r in conn.execute(f"PRAGMA table_info({name})")}
@@ -34,7 +35,7 @@ def make_old(path):
                 conn.execute(f"DROP INDEX IF EXISTS {name}__{sync.ID}__idx")
                 conn.execute(f"ALTER TABLE {name} DROP COLUMN {sync.ID}")
                 conn.execute(f"ALTER TABLE {name} DROP COLUMN {sync.REVISION}")
-        conn.execute("DELETE FROM core__migrations WHERE track = 'core' AND number = 7")
+        conn.execute("DELETE FROM core__migrations WHERE track = 'core' AND number >= 7")
         conn.execute("PRAGMA user_version = 6")
         conn.commit()
     finally:

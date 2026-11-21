@@ -1,7 +1,7 @@
 """The first-run wizard and the settings page: who lives here, the home, modules and backups."""
 from __future__ import annotations
 
-from flask import Blueprint, current_app, redirect, render_template, request, url_for
+from flask import Blueprint, current_app, g, redirect, render_template, request, url_for
 
 from dashboard.core import records, settings
 from datetime import datetime
@@ -85,6 +85,13 @@ def _pet_count(conn) -> int:
     return conn.execute(f"SELECT COUNT(*) FROM {PETS_TABLE} WHERE deleted_at IS NULL").fetchone()[0]
 
 
+def _home_setup_on() -> bool:
+    """True when Set up my home can be used: Household stock, with its places and connections, is switched on."""
+    from dashboard.web.home_setup import CONNECTIONS, PLACES
+    registry = current_app.config["REGISTRY_FOR_REQUEST"]()
+    return PLACES in registry and CONNECTIONS in registry
+
+
 def _people_table_ready() -> bool:
     """True when the People module is switched on and has the columns the wizard fills in."""
     info = current_app.config["REGISTRY_FOR_REQUEST"]().get(PEOPLE_TABLE)
@@ -147,7 +154,7 @@ def _render(mode: str, values: dict, errors: dict, status: int = 200, saved: boo
     pet_kinds = [(c.key, c.label) for c in pets_info.table.columns["species"].choices] if pets_info else []
     return render_template("setup.html", mode=mode, values=values, errors=errors, saved=saved,
                            pets_table=bool(pets_info), pet_count=_pet_count(conn) if pets_info else 0,
-                           pet_slots=PET_SLOTS, pet_kinds=pet_kinds,
+                           pet_slots=PET_SLOTS, pet_kinds=pet_kinds, home_setup=_home_setup_on(),
                            modules=modules, people_table=_people_table_ready(), people_count=people_count,
                            name_slots=NAME_SLOTS, home_types=HOME_TYPES, hazards=HAZARDS, countries=COUNTRIES,
                            regions=REGIONS, timezone_guess=TIMEZONE_GUESS,
@@ -265,6 +272,9 @@ def setup_save():
     errors = _save(request.form, "setup")
     if errors:
         return _render("setup", _form_values(request.form), errors, status=422)
+    g.pop("registry", None)  # the modules just chosen decide whether Set up my home is offered next
+    if _home_setup_on():
+        return redirect(url_for("home_setup.page", welcome="1"))  # the next step, offered and skippable
     return redirect(url_for("home"))
 
 

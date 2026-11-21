@@ -26,9 +26,15 @@ Who lives here, the home, what to track and backups.
 
 ![Setup, answered](screenshots/smith/02-setup-answered.png)
 
+### Set up my home, offered next
+
+Straight after setup: add rooms, storage spots and which rooms connect, or skip it for now.
+
+![Set up my home, offered next](screenshots/smith/02b-set-up-my-home.png)
+
 ### The first home page
 
-Straight after setup: the household is in People, and the dashboard says what to do first.
+After setup: the household is in People, and the dashboard says what to do first.
 
 ![The first home page](screenshots/smith/03-first-home.png)
 
@@ -85,6 +91,12 @@ As it prints, for responders and carers.
 Where things are kept.
 
 ![Places](screenshots/smith/11-places.png)
+
+### Set up my home
+
+One card per room or area: the storage spots inside it, what it connects to, and doors to outside.
+
+![Set up my home](screenshots/smith/11b-set-up-my-home.png)
 
 ### Stock items
 
@@ -290,9 +302,15 @@ Who lives here, the home, what to track and backups.
 
 ![Setup, answered](screenshots/garcia/02-setup-answered.png)
 
+### Set up my home, offered next
+
+Straight after setup: add rooms, storage spots and which rooms connect, or skip it for now.
+
+![Set up my home, offered next](screenshots/garcia/02b-set-up-my-home.png)
+
 ### The first home page
 
-Straight after setup: the household is in People, and the dashboard says what to do first.
+After setup: the household is in People, and the dashboard says what to do first.
 
 ![The first home page](screenshots/garcia/03-first-home.png)
 
@@ -349,6 +367,12 @@ As it prints, for responders and carers.
 Where things are kept.
 
 ![Places](screenshots/garcia/11-places.png)
+
+### Set up my home
+
+One card per room or area: the storage spots inside it, what it connects to, and doors to outside.
+
+![Set up my home](screenshots/garcia/11b-set-up-my-home.png)
 
 ### Stock items
 
@@ -542,9 +566,15 @@ Who lives here, the home, what to track and backups.
 
 ![Setup, answered](screenshots/taylor/02-setup-answered.png)
 
+### Set up my home, offered next
+
+Straight after setup: add rooms, storage spots and which rooms connect, or skip it for now.
+
+![Set up my home, offered next](screenshots/taylor/02b-set-up-my-home.png)
+
 ### The first home page
 
-Straight after setup: the household is in People, and the dashboard says what to do first.
+After setup: the household is in People, and the dashboard says what to do first.
 
 ![The first home page](screenshots/taylor/03-first-home.png)
 
@@ -601,6 +631,12 @@ As it prints, for responders and carers.
 Where things are kept.
 
 ![Places](screenshots/taylor/11-places.png)
+
+### Set up my home
+
+One card per room or area: the storage spots inside it, what it connects to, and doors to outside.
+
+![Set up my home](screenshots/taylor/11b-set-up-my-home.png)
 
 ### Stock items
 

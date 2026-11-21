@@ -10,7 +10,7 @@ import json
 import re
 import secrets
 import sqlite3
-from datetime import datetime, timezone
+from datetime import datetime, time, timezone
 
 from dashboard.core import db, helpers
 from dashboard.core.records import Records, ValidationError
@@ -19,6 +19,7 @@ from dashboard.errors import PlainError
 
 MAX_ENTRIES = 50
 MAX_PER_DAY = 200
+ALLOW_MORE = 200  # added to one helper's limit for today by each "Allow 200 more today" (decision 0101)
 MAX_WAITING = 500  # suggestions one helper may have waiting on Review at once (decision 0085)
 MAX_WHY = 300
 MAX_KEY = 100
@@ -55,12 +56,70 @@ def _bad(message: str = "This request could not be read. Check the fields and tr
     return ProposalError(400, "bad_request", message)
 
 
-def used_today(conn: sqlite3.Connection, helper: helpers.Helper) -> int:
-    """How many suggested rows this helper has sent since midnight (UTC)."""
-    midnight = datetime.now(timezone.utc).strftime("%Y-%m-%dT00:00:00")
+def today(now: datetime | None = None) -> tuple[str, str]:
+    """The household's day: (its date, the moment it began in UTC as stored text). Decision 0101.
+
+    The household's day is this computer's own calendar day, since Dashboard Plus runs on the household's
+    computer. The daily limit and any "Allow 200 more today" both use this one boundary."""
+    local = (now or datetime.now(timezone.utc)).astimezone()
+    began = datetime.combine(local.date(), time()).astimezone()
+    return local.date().isoformat(), began.astimezone(timezone.utc).strftime("%Y-%m-%dT%H:%M:%S")
+
+
+def used_today(conn: sqlite3.Connection, helper: helpers.Helper, now: datetime | None = None) -> int:
+    """How many suggested rows this helper has sent since the household's day began."""
+    began = today(now)[1]
     return conn.execute(
         "SELECT COUNT(*) FROM core__proposals p JOIN core__helper_batches b ON b.id = p.batch_id "
-        "WHERE b.helper_id = ? AND p.created_at >= ?", (helper.id, midnight)).fetchone()[0]
+        "WHERE b.helper_id = ? AND p.created_at >= ?", (helper.id, began)).fetchone()[0]
+
+
+def limit_today(conn: sqlite3.Connection, helper: helpers.Helper, now: datetime | None = None) -> int:
+    """This helper's daily limit for today: 200, plus every "Allow 200 more today" pressed for today."""
+    extra = conn.execute("SELECT COALESCE(SUM(extra), 0) FROM core__helper_allowances WHERE helper_id = ? "
+                         "AND day = ?", (helper.id, today(now)[0])).fetchone()[0]
+    return MAX_PER_DAY + int(extra)
+
+
+def near_limit(conn: sqlite3.Connection, helper: helpers.Helper) -> dict | None:
+    """For a helper that may suggest and has fewer than one full request (50) left today: what it has used.
+
+    {"used": n, "limit": n, "left": n}, or None when it is not near its limit."""
+    if not helper.active or not helper.may_suggest:
+        return None
+    used, limit = used_today(conn, helper), limit_today(conn, helper)
+    if limit - used >= MAX_ENTRIES:
+        return None
+    return {"used": used, "limit": limit, "left": max(0, limit - used)}
+
+
+class AllowanceRefused(PlainError):
+    """More suggestions today could not be allowed for this helper (it is off, or may only look)."""
+
+
+def allow_more(conn: sqlite3.Connection, helper_id: int, now: datetime | None = None) -> int:
+    """A person pressed "Allow 200 more today" for a helper. Returns its new limit for today.
+
+    Only for today (the household's day): tomorrow the limit is 200 again. Each press is a row of its own and a
+    line in the history. Called only from a page's form with a one-use token, never from the helper API."""
+    helper = helpers.get(conn, helper_id)
+    if helper is None:
+        raise AllowanceRefused("That helper could not be found.")
+    if not helper.active:
+        raise AllowanceRefused(f"{helper.name}'s access is off, so it cannot send suggestions.")
+    if not helper.may_suggest:
+        raise AllowanceRefused(f"{helper.name} may only look, so it has no suggestions to allow.")
+    day = today(now)[0]
+    at = (now or datetime.now(timezone.utc)).astimezone(timezone.utc).isoformat(timespec="seconds")
+    with db.transaction(conn):
+        allowance_id = conn.execute(
+            "INSERT INTO core__helper_allowances (helper_id, day, extra, granted_at, granted_by) "
+            "VALUES (?, ?, ?, ?, 'person')", (helper_id, day, ALLOW_MORE, at)).lastrowid
+        conn.execute("INSERT INTO core__audit (at, actor, action, table_name, record_id, before, after) "
+                     "VALUES (?, 'person', 'helper_allow_more', 'core__helpers', ?, NULL, ?)",
+                     (at, helper_id, json.dumps({"day": day, "extra": ALLOW_MORE, "allowance": allowance_id},
+                                                sort_keys=True)))
+    return limit_today(conn, helper, now)
 
 
 def waiting_for(conn: sqlite3.Connection, helper: helpers.Helper) -> int:
@@ -252,6 +311,21 @@ def _shape_problems(helper: helpers.Helper, registry: dict, entries: list[tuple[
     return problems
 
 
+LINK_PROBLEMS = ("must point at a record.", "points at a record that does not exist or has been deleted.")
+
+
+def _with_link_hint(registry: dict, name: str, field: str, message: str) -> str:
+    """A link that points nowhere, with the plain next step: look the record up first, or suggest it (0102)."""
+    column = registry[name].table.columns.get(field) if name in registry else None
+    if column is None or column.type not in ("link", "links") or message not in LINK_PROBLEMS:
+        return message
+    target = target_table(registry[name].module.name, column)
+    title = _title(registry[target]) if target in registry else "the linked list"
+    return (f"{message} Look up {title} first (GET /api/v1/tables/{target}/records, or the dashboard_list_records "
+            f"tool) and send the id of the one that matches. If it is not there, suggest it earlier in this request "
+            f'and point at it with {{"ref": N}}.')
+
+
 def _invalid(registry: dict, problems: list[dict]) -> ProposalError:
     tables = {p["table"] for p in problems}
     lead = f"{_title(registry[next(iter(tables))])}: some" if len(tables) == 1 else "Some"
@@ -278,8 +352,12 @@ def submit(conn: sqlite3.Connection, registry: dict, helper: helpers.Helper, bod
     _check_tables(helper, registry, entries)
     problems = _shape_problems(helper, registry, entries)
     if not problems:
-        wrong = Records(conn, registry).check_create(entries, helper.actor, resolve=_resolve_refs)
-        problems = [{"entry": position, "table": entries[position][0], "field": field[:60], "message": message}
+        # A new item may carry its starting amount, use-by date and place, as the person's own add form does:
+        # accepting it adds the item and its first batch together (decision 0102).
+        wrong = Records(conn, registry).check_create(entries, helper.actor, starting_amounts=True,
+                                                     resolve=_resolve_refs)
+        problems = [{"entry": position, "table": entries[position][0], "field": field[:60],
+                     "message": _with_link_hint(registry, entries[position][0], field, message)}
                     for position, fields in sorted(wrong.items()) for field, message in fields.items()]
     if problems:
         raise _invalid(registry, problems)
@@ -314,14 +392,25 @@ def submit(conn: sqlite3.Connection, registry: dict, helper: helpers.Helper, bod
 
 def _check_limits(conn: sqlite3.Connection, helper: helpers.Helper, adding: int, queue_limit: int) -> None:
     """The daily limit and the Review queue cap (decision 0085), refused whole if either would be passed."""
-    if used_today(conn, helper) + adding > MAX_PER_DAY:
-        raise ProposalError(429, "daily_limit", f"This helper has reached {MAX_PER_DAY} suggestions today. "
-                                                f"Try again tomorrow.")
+    limit, used = limit_today(conn, helper), used_today(conn, helper)
+    if used + adding > limit:
+        raise ProposalError(429, "daily_limit", daily_limit_message(limit, limit - used))
     waiting = waiting_for(conn, helper)
     if waiting + adding > queue_limit:
         raise ProposalError(429, "review_queue_full",
                             f"{waiting} suggestion{' from this helper is' if waiting == 1 else 's from this helper are'} "
                             f"already waiting on Review. Ask the household to look at them first.")
+
+
+def daily_limit_message(limit: int, left: int = 0) -> str:
+    """The plain refusal a helper gets when a request would pass its limit for today (decision 0101)."""
+    if left > 0:
+        lead = (f"This helper has {left} of its {limit} suggestions left for today, fewer than this request holds, "
+                f"so nothing was saved.")
+    else:
+        lead = f"This helper has used all {limit} of its suggestions for today, so nothing was saved."
+    return (f"{lead} Stop sending now and ask the household: they can allow more on the Review page in Dashboard "
+            f"Plus (\"Allow {ALLOW_MORE} more today\"). Otherwise, try again tomorrow.")
 
 
 def _same_or_refuse(conn, stored, digest: str) -> dict:
@@ -669,30 +758,136 @@ def _still_waiting(conn, proposal_id: int):
     return conn.execute("SELECT * FROM core__proposals WHERE id = ? AND status = 'pending'", (proposal_id,)).fetchone()
 
 
-def accept_batch(conn: sqlite3.Connection, registry: dict, batch_id: int) -> tuple[int, list[str]]:
-    """Accept every waiting row of a batch, earliest first. Returns (added, [reasons for the rest]).
+IN_GROUP_FAILED = ("This is added together with the rows in its group, and one of them cannot be added yet: see "
+                   "the reason on it. Nothing in this group was added.")
+NEEDS_FAILED = "This needs a suggestion above that cannot be added yet: see the reason on it."
 
-    Each row is its own transaction, together with any row it needs. A row that needs one that could not be
-    added is not tried; it stays waiting with that reason on it."""
-    added, failed, blocked = 0, [], set()
-    for proposal_id in _waiting_ids(conn, batch_id):
-        row = _still_waiting(conn, proposal_id)
-        if row is None:  # already added, because a row before it needed it
-            continue
-        if set(refs_in(json.loads(row["values_json"])).values()) & blocked:
-            blocked.add(row["position"])
-            reason = "This needs a suggestion above that cannot be added yet: see the reason on it."
-            with db.transaction(conn):
-                conn.execute("UPDATE core__proposals SET reason = ? WHERE id = ?", (reason, proposal_id))
-            failed.append(reason)
-            continue
+
+def _hold(conn, ids_reasons: list[tuple[int, str]]) -> None:
+    """Write a reason on each row that stays waiting."""
+    with db.transaction(conn):
+        for proposal_id, reason in ids_reasons:
+            conn.execute("UPDATE core__proposals SET reason = ? WHERE id = ? AND status = 'pending'",
+                         (reason, proposal_id))
+
+
+def accept_group(conn: sqlite3.Connection, registry: dict, positions: set[int], batch_id: int) -> tuple[int, list[str]]:
+    """Accept the waiting rows of one group (decision 0101): all of them in one transaction, or none.
+
+    Rows are added earliest first, so a new item is made before its Stock in. If any row cannot be added, nothing
+    in the group is: the reason is kept on that row, and the others say why they wait. Returns (added, [one
+    reason for each row still waiting])."""
+    rows = _batch_rows(conn, batch_id)
+    made = {p: r["record_id"] for p, r in rows.items() if r["status"] == "accepted"}
+    waiting = [rows[p] for p in sorted(positions) if p in rows and rows[p]["status"] == "pending"]
+    if not waiting:
+        return 0, []
+    mine = {r["position"] for r in waiting}
+
+    def needs(row, failing: int) -> bool:
+        """True if `row` points at `failing`, directly or through another row of the group."""
+        seen, todo = set(), list(refs_in(json.loads(row["values_json"])).values())
+        while todo:
+            ref = todo.pop()
+            if ref == failing:
+                return True
+            if ref in mine and ref not in seen:
+                seen.add(ref)
+                todo.extend(refs_in(json.loads(rows[ref]["values_json"])).values())
+        return False
+
+    def fail(failing, reason: str) -> tuple[int, list[str]]:
+        others = [(r["id"], NEEDS_FAILED if needs(r, failing["position"]) else IN_GROUP_FAILED)
+                  for r in waiting if r["id"] != failing["id"]]
+        _hold(conn, [(failing["id"], reason)] + others)
+        return 0, [reason] + [why for _id, why in others]
+
+    plan = []
+    for row in waiting:
+        for ref in refs_in(json.loads(row["values_json"])).values():
+            if ref not in made and ref not in mine:  # the row it needs was rejected (or never existed)
+                needed = rows.get(ref)
+                title = _table_title(registry, needed["table_name"]) if needed else "record"
+                return fail(row, f"This needs a new record in {title} suggested with it, which was rejected. "
+                                 f"Reject this too, or add the record yourself.")
         try:
-            _table, _record, also = accept_counted(conn, registry, proposal_id)
-            added += 1 + also
+            plan.append(_ready(conn, registry, row))
         except PlainError as error:
-            blocked.add(row["position"])
-            failed.append(str(error))
+            return fail(row, str(error))
+    store = Records(conn, registry)
+    failing, failing_info = waiting[0], None
+    try:
+        with db.transaction(conn):
+            for row, info, values, actor in plan:
+                failing, failing_info = row, info
+                _claim(conn, row["id"], "accepted")  # first, so a second click or window cannot add it again
+                values = dict(values, **{field: made[ref] for field, ref in refs_in(values).items()})
+                record_id = store.create_in(row["table_name"], values, actor=actor,
+                                            review_status="confirmed", batch_id=row["batch_id"])
+                conn.execute(f"UPDATE {info.name} SET edited_by_person = 1 WHERE id = ?", (record_id,))
+                conn.execute("UPDATE core__proposals SET record_id = ?, reason = NULL WHERE id = ?",
+                             (record_id, row["id"]))
+                _audit(conn, "accept", row["id"], {"table": info.name, "record_id": record_id}, row["batch_id"])
+                made[row["position"]] = record_id
+    except ValidationError as error:
+        return fail(failing, _why_not(store, failing_info, error))
+    except PlainError as error:
+        if "already been decided" in str(error):  # decided meanwhile in another window: nothing here changed
+            return 0, []
+        return fail(failing, str(error))
+    return len(plan), []
+
+
+def groups_of(conn: sqlite3.Connection, batch_id: int) -> list[set[int]]:
+    """The positions of each group of waiting rows in a batch, as Review shows them (decision 0097)."""
+    every = conn.execute("SELECT * FROM core__proposals WHERE batch_id = ? AND status = 'pending' ORDER BY position",
+                         (batch_id,)).fetchall()
+    return [{r["position"] for r in group} for group in _groups([_row_dict(r) for r in every])]
+
+
+def accept_batch(conn: sqlite3.Connection, registry: dict, batch_id: int) -> tuple[int, list[str]]:
+    """Accept every waiting row of a batch, group by group, earliest first. Returns (added, [reasons for the rest]).
+
+    Each group (a row and the rows it points at or that point at it) is one transaction: if any row of it cannot
+    be added, none of the group is, and the reason stays on it. Other groups still go through (decision 0101)."""
+    added, failed = 0, []
+    for group in groups_of(conn, batch_id):
+        done, reasons = accept_group(conn, registry, group, batch_id)
+        added, failed = added + done, failed + reasons
     return added, failed
+
+
+def _ticked_groups(conn, proposal_ids) -> list[tuple[int, set[int]]]:
+    """(batch, positions) for every group that holds a ticked waiting row: ticking one row ticks its group."""
+    wanted: dict[int, set[int]] = {}
+    for proposal_id in proposal_ids:
+        row = _still_waiting(conn, proposal_id)
+        if row is not None:
+            wanted.setdefault(row["batch_id"], set()).add(row["position"])
+    found = []
+    for batch_id in sorted(wanted, reverse=True):  # newest batch first, as Review lists them
+        found += [(batch_id, group) for group in groups_of(conn, batch_id) if group & wanted[batch_id]]
+    return found
+
+
+def accept_ticked(conn: sqlite3.Connection, registry: dict, proposal_ids) -> tuple[int, list[str]]:
+    """Accept the ticked rows, each with the whole group it belongs to; each group is all or nothing."""
+    added, failed = 0, []
+    for batch_id, group in _ticked_groups(conn, proposal_ids):
+        done, reasons = accept_group(conn, registry, group, batch_id)
+        added, failed = added + done, failed + reasons
+    return added, failed
+
+
+def reject_ticked(conn: sqlite3.Connection, proposal_ids) -> int:
+    """Reject the ticked rows, each with the whole group it belongs to. Returns how many were rejected."""
+    count = 0
+    for batch_id, group in _ticked_groups(conn, proposal_ids):
+        rows = _batch_rows(conn, batch_id)
+        for position in sorted(group):
+            if _still_waiting(conn, rows[position]["id"]) is not None:  # not already rejected with one it needed
+                count += 1 + reject_counted(conn, rows[position]["id"])[1]
+    return count
 
 
 def reject_batch(conn: sqlite3.Connection, batch_id: int) -> int:

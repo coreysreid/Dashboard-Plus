@@ -28,6 +28,7 @@ How to run them is in AGENTS.md.
 | test_adjusts.py | Tests for records that change a linked quantity (stock in and out), and the checks on `adjusts`. | changing stock in and out |
 | test_sync_stage1.py | Tests for sync stage 1: permanent record IDs, revisions, the filtered change log and the travel rule (decision 0100). | changing record IDs, the change log or what may travel |
 | test_backups.py | Tests for automatic backups: daily, on close, in two places, and keeping only recent ones. | changing backups |
+| test_home_setup.py | Tests for Set up my home: rooms, storage spots inside them and the connections between rooms (decision 0103). | changing Set up my home or connections between places |
 | test_setup.py | Tests for the first-run wizard and the settings page. | changing setup or settings |
 | test_sheets.py | Tests for printable sheets: checking sheets.toml and printing the emergency sheet. | changing sheets |
 | test_module_confinement.py | A module's database changes may touch only its own tables (security review, decision 0055). | changing how module migrations run |
@@ -51,4 +52,6 @@ How to run them is in AGENTS.md.
 | test_export.py | Tests for Export my records: every table of an example household, private details, formula safety and the download. | changing the export |
 | test_restore.py | Tests for restoring a backup: checks that change nothing, the safe swap, Undo after a restart, and refusals. | changing restore or Undo |
 | test_api_contract.py | Tests that the published API description (openapi-v1.json) matches the real /api/v1 routes, errors and replies. | changing a helper route, reply or error code |
+| test_helper_starting_amounts.py | Tests for decision 0102: a new Stock item with its starting amount as one suggestion, and the helper's starting message. | changing starting amounts on suggestions or the starting message |
 | test_grouped_suggestions.py | Tests for receipt lines on suggestions and for suggestions that point at an earlier one in the same batch (decision 0097). | changing source lines, refs or grouped Review rows |
+| test_review_speedups.py | Tests for faster Review (decision 0101): Accept all by group, ticked rows, keys, fixed buttons and Allow 200 more today. | changing Accept all, ticked rows, Review keys or the daily limit |

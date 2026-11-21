@@ -98,3 +98,21 @@ oldest_first = "expires"
 # stocktake correction: counted_more adds it, counted_less takes it away. Never the count on top of
 # the amount, never a purchase or waste. It needs a chosen batch (decision 0070).
 counts = { more = "counted_more", less = "counted_less", note = "notes" }
+
+[tables.connections]
+title = "Connections between places"
+description = "Which rooms and areas lead into which, and how: Hallway to Kitchen through a door, Hallway to outside through the front door."
+record_name = "{place}[ to {connects_to}]: {kind}"
+columns.place = { type = "link", to = "places", required = true, on_delete = "cascade" }
+columns.connects_to = { type = "link", to = "places", on_delete = "cascade" }
+columns.kind = { type = "choice", required = true, default = "door", choices = [
+  "door",
+  { key = "opening", label = "Open doorway or archway" },
+  "stairs",
+  { key = "outside_door", label = "Door to outside" },
+  "other",
+] }
+columns.notes = { type = "text" }
+# A place is never joined to itself, and two places are joined once, either way round (decision 0103).
+# "Connects to" may be left blank only for a door straight outside.
+pair = { columns = ["place", "connects_to"], blank_when = { kind = "outside_door" } }

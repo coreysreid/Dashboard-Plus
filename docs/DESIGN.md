@@ -366,6 +366,25 @@ columns.inside = { type = "link", to = "places", on_delete = "restrict" }
 - With `on_delete = "restrict"`, a room cannot be deleted while places are
   still inside it.
 
+A table can also **join two records** of one table, such as two rooms with a
+door between them (decision 0103), by naming its two link columns as a `pair`:
+
+```toml
+[tables.connections]
+columns.place = { type = "link", to = "places", required = true, on_delete = "cascade" }
+columns.connects_to = { type = "link", to = "places", on_delete = "cascade" }
+pair = { columns = ["place", "connects_to"], blank_when = { kind = "outside_door" } }
+```
+
+- Saving refuses a record that joins a record to itself, and a pair that is
+  already joined, either way round (Hallway to Kitchen is Kitchen to Hallway).
+- The second column may be blank only while the `blank_when` choice holds
+  (a door straight outside); without `blank_when` it may always be blank.
+- Restoring a joining record whose pair was joined again meanwhile is refused.
+- **Set up my home** (`/set-up-home`) uses Household stock's Places and
+  connections: rooms and areas, storage spots inside them, and which rooms
+  connect, on one page that works without scripts.
+
 ### 5.7 Batches: layered use-by dates
 
 An item's stock can be split into batches, each with its own amount, use-by
@@ -1005,7 +1024,7 @@ a Stock in leaves its new item waiting. Imports never carry either.
 
 - Suggestions are **new records only**. `request_key` is required; the same key
   and body returns the original batch, a different body is refused (409).
-- At most **50 entries per call** and **200 suggested rows per helper per day**;
+- At most **50 entries per call** and **200 suggested rows per helper per day** (the household can press "Allow 200 more today", decision 0101);
   body at most 64 KB; JSON only.
 - Every suggestion is tried by a full dry run before it is stored; any problem
   refuses the whole call and names entry, table and field.
@@ -1032,7 +1051,12 @@ a Stock in leaves its new item waiting. Imports never carry either.
   `Retry-After`). Accept and Reject decide a suggestion once, even if two clicks
   arrive together.
 - Money is read and sent in whole units (stored in cents). Columns worked out
-  from batches (a stock item's amount) cannot be suggested; suggest a Stock in.
+  from batches (a stock item's amount and use-by date) can be sent only on a
+  new record, with its place, to start its first batch as the add form does
+  (0102); after that, suggest a Stock in.
+- `GET /api/v1/guide` returns the helper's starting message: its lists, fields,
+  private fields by name, links to look up first, the stock model and today's
+  limits, from names only, never records or the key (0102).
 - A helper can never accept, change or delete records, see history, see other
   helpers, or reach settings, backups, files or keys: there are no such routes.
 - The API is described by one file, `src/dashboard/web/openapi-v1.json`, served
@@ -1049,8 +1073,8 @@ a Stock in leaves its new item waiting. Imports never carry either.
 `python -m dashboard.connector` is a small local program an assistant's app
 starts (decision 0083). It speaks MCP over stdio (JSON-RPC 2.0, one message
 per line, protocol `2025-06-18`), opens no port, and uses no library beyond
-Python's own. Its eight tools map one to one to the routes above:
-`dashboard_me`, `dashboard_tables`, `dashboard_list_records`,
+Python's own. Its nine tools map one to one to the routes above:
+`dashboard_how_to_help`, `dashboard_me`, `dashboard_tables`, `dashboard_list_records`,
 `dashboard_get_record`, `dashboard_attention`,
 `dashboard_suggest_new_records`, `dashboard_list_suggestion_batches`,
 `dashboard_get_suggestion_batch`. It can do nothing the key does not allow.

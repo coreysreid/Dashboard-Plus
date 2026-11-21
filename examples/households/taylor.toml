@@ -123,6 +123,17 @@ inside = "Outside"
 name = "Windowsill"
 inside = "Kitchen"
 
+# Which rooms lead into which (Set up my home, decision 0103).
+[[stock.connections]]
+place = "Hall"
+connects_to = "Kitchen"
+
+[[stock.connections]]
+place = "Hall"
+connects_to = "Outside"
+kind = "outside_door"
+notes = "Front door."
+
 # Amounts are what is on hand today, after the stock in and out below.
 [[stock.items]]
 name = "Bottled water (6 x 2 L)"

@@ -6,3 +6,4 @@
 | NOTES.md | Core gaps, staged build and sources | turning the draft into a decision |
 | SECURITY_REVIEW.md | Independent remote-boundary review brief and release gate | commissioning stage 0 before network sync ships |
 | STAGE1.md | Table-by-table IDs, revision/log migration and travel-policy checks | building stage 1 before pairing |
+| STAGE1_ACCEPTANCE.md | Sixteen exact offline stage 1 test cases against decision 0100 | extending shipped stage 1 coverage |

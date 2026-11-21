@@ -8,6 +8,11 @@
   {% endif %}
   <pre id="assistant-settings" tabindex="0" style="overflow-x:auto;max-width:100%;white-space:pre;background:var(--bg);border:1px solid var(--line);padding:.75rem;border-radius:6px">{{ assistant }}</pre>
   <div class="actions"><button type="button" class="copy-block" data-copy="assistant-settings" data-say="settings-copied">Copy connection settings</button><span id="settings-copied" class="muted" role="status"></span></div>
+  {% if starting_message %}
+  {% with message=starting_message, box_id="starting-message" %}{% include "helper_start_message.html" %}{% endwith %}
+  {% else %}
+  <p>Each helper under <strong>Your helpers</strong> has its own <strong>Starting message for your assistant</strong> to paste into the chat.</p>
+  {% endif %}
   <p>If the assistant is an online service, that service will see what the helper reads. Anything it suggests still waits for you on the <a href="/review">Review</a> page.</p>
   <p class="muted">To disconnect, turn the helper's access off here and remove the "dashboard-plus" lines from the assistant's settings.</p>
   <details>
@@ -24,12 +29,13 @@
   </details>
 </section>
 <script>
-  document.querySelectorAll(".copy-block").forEach(function (button) {
-    button.addEventListener("click", function () {
-      var text = document.getElementById(button.dataset.copy).textContent;
-      var say = function (words) { document.getElementById(button.dataset.say).textContent = words; };
-      if (navigator.clipboard) { navigator.clipboard.writeText(text).then(function () { say("Copied."); }, function () { say("Select the settings and copy them."); }); }
-      else { say("Select the settings and copy them."); }
-    });
+  // One listener for every Copy button on the page, including the starting messages further down.
+  document.addEventListener("click", function (event) {
+    var button = event.target.closest ? event.target.closest(".copy-block") : null;
+    if (!button) { return; }
+    var text = document.getElementById(button.dataset.copy).textContent;
+    var say = function (words) { document.getElementById(button.dataset.say).textContent = words; };
+    if (navigator.clipboard) { navigator.clipboard.writeText(text).then(function () { say("Copied."); }, function () { say("Select the text and copy it."); }); }
+    else { say("Select the text and copy it."); }
   });
 </script>

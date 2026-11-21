@@ -29,6 +29,10 @@ is new: keep a copy of anything important somewhere else too. See
   until you choose to show them.
 - **A one-page emergency sheet** to print and put on the fridge. It needs no
   internet. A second version also lists the medical details.
+- **Set up my home:** one page, offered after the welcome questions and always
+  on Home and in Settings, to add your rooms and areas, the storage spots inside
+  them (Kitchen › Pantry › Shelf 3), and which rooms connect, through a door,
+  an open doorway, stairs or a door to outside.
 - **Household stock:** what you have, where it is kept, how many to keep at
   least, and when it expires. Record what comes in and goes out (bought, used,
   expired, thrown away, given away) and the count updates itself.
@@ -41,7 +45,15 @@ is new: keep a copy of anything important somewhere else too. See
   details are never shared with helpers. A helper reading a receipt can show
   the line and price each row came from (for checking only, never saved), and
   can send a new Stock item with its first Stock in as one group: accepting
-  the Stock in adds the item too, rejecting the item rejects both.
+  the Stock in adds the item too, rejecting the item rejects both. A new Stock
+  item can also arrive as one suggestion with its amount on hand, unit, use-by
+  date and place, just like your own Add form: accepting it adds the item and
+  its first batch together.
+- **Starting message for your assistant:** each helper in Settings, Helpers
+  has a message to copy into the assistant's chat. It lists the lists that
+  helper may use, their fields, what is private, how stock amounts work and
+  today's limits. It holds no records, private details or key. The assistant
+  can read the same guide itself (the `dashboard_how_to_help` tool).
 - **Connect an AI assistant:** assistant apps that support MCP can use a
   helper through the connector that comes with Dashboard Plus
   (`python -m dashboard.connector`). Settings, Helpers shows the settings to

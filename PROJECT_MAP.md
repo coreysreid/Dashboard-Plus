@@ -152,6 +152,9 @@ One record per decision, from `TEMPLATE.md`. Never deleted; reversed ones are ma
 | [0098](0098-empty-pickers-offer-to-add-and-import-waits-for-dates.md) | An empty picker offers to add one in a new tab; Import's Send waits for date choices; Documents Notes help points to the copies field | Accepted |
 | [0099](0099-utilities-promoted.md) | Utilities and accounts is switched on from Lane B's draft: services link to People (provider, fault contact) and to an exact Home layout meter; the sheet prints the People fault phone; the account reference and notes stay private and off lists, sheets, exports and helpers; deleting a contact or meter clears the link; examples in all three households | Accepted |
 | [0100](0100-sync-stage-1-stable-ids-and-change-log.md) | Sync stage 1, nothing sent: every record gets a random permanent ID and a revision (added by the core after each module's migrations, under that module's own confinement), every change writes a filtered change-log line beside history, `travels`/`travels_when` in tables.toml keep access instructions, Home layout access details and vehicle registration on the computer where they were typed, and a restore starts a new epoch | Accepted |
+| [0101](0101-review-speed-ups-and-allow-more.md) | Faster Review: Accept all asks first, then accepts group by group (each group all or nothing); tick boxes with Accept or Reject ticked (a group ticks whole); keys (Up/Down or J/K, A, R, Space) as a small script; Accept and Reject in one fixed column; "Allow 200 more today" per helper from a page with a one-use token (core 0008, history), the day being the household's own; 429 tells the helper to stop and ask | Accepted |
+| [0102](0102-helper-starting-prompt-and-stock-with-amount.md) | A starting message for the helper's assistant in Settings, Helpers (copy box) and as `GET /api/v1/guide` and the `dashboard_how_to_help` tool: its lists, fields, private fields by name, links to look up first, the stock model and today's limits, never records or the key; a new Stock item may carry its amount, use-by date and place as one suggestion, added with its first batch on Accept | Accepted |
+| [0103](0103-set-up-my-home.md) | Set up my home: one page for rooms and areas (Places), storage spots inside them and which rooms connect (new `stock__connections`, migration 0006 in Household stock); offered after the welcome and always on Home and Settings; `pair` in tables.toml refuses self-links and repeats either way round; doors to outside marked by kind; a deleted room takes its connections; nothing private | Accepted |
 | [TEMPLATE](TEMPLATE.md) | Blank record to copy for a new decision | recording a decision |
 
 ## docs/plans/  (summary: build plans for larger pieces of work, written before building)
@@ -237,7 +240,7 @@ numbered migrations. See docs/DESIGN.md section 6 for the module contract.
 | medical/ | First aid kits and where they are, kit checks, first aid training renewals; a first aid sheet | changing first aid records |
 | people/ | Who lives here, who to call, important details, emergency sheets | changing people, contacts or the emergency sheet |
 | pets/ | Pets, their vet, treatments and medicine with due dates, weigh-ins, vet visits; a pet details sheet | changing pets |
-| stock/ | Pantry, water, first aid, tools and hardware, with places, minimums and use-by dates | changing stock, running low or days of water |
+| stock/ | Pantry, water, first aid, tools and hardware, with places (and which rooms connect), minimums and use-by dates | changing stock, running low or days of water |
 | utilities/ | Utilities and accounts: each service, its provider, fault contact (from People) and meter (from Home layout), a private account reference; a Utility contacts sheet | changing utility records |
 | vehicles/ | Each vehicle, who to call if it breaks down, registration, insurance and service dates; a Vehicles sheet | changing vehicle records |
 | wine/ | Wine collection: wines, bottle counts you type, a free-text place, tasting notes; a Wine collection sheet | changing wine records |
@@ -378,7 +381,7 @@ Generate the next one with: python tools/make_migration.py pets --name <what_cha
 | Entry | What it is | Open it when |
 |---|---|---|
 | module.toml | Name, version, description | changing the module's details |
-| tables.toml | Places, stock items (running low, use-by, days of water) and stock in and out | adding a field, category or rule |
+| tables.toml | Places, connections between them (Set up my home), stock items (running low, use-by, days of water) and stock in and out | adding a field, category or rule |
 | labels.toml | Friendly labels, help text, form and list order | changing wording or order |
 | sheets.toml | Emergency supplies checklist | changing what prints |
 | catalogue.csv | 800 common goods to pick from while typing (from Lane B's catalogue) | adding or correcting a good |
@@ -394,6 +397,7 @@ Generate the next one with: python tools/make_migration.py stock --name <what_ch
 | 0002_stock_in_and_out.sql | The Stock in and out table | checking how movements are stored |
 | 0004_places_inside_places.sql | Places can sit inside other places ("Inside") | checking how nested places are stored |
 | 0003_drinking_water.sql | "Safe to drink" on items; existing water stays counted | checking how drinking water is stored |
+| 0006_connections_between_places.sql | Connections between places: which rooms lead into which, and doors to outside (decision 0103) | checking how connections are stored |
 | 0005_batches.sql | Batches: an item's stock split by use-by date and place; each existing item becomes one batch | checking how the tables are stored |
 
 ## modules/utilities/  (summary: the Utilities module, files only; built on Lane B's draft, linking to People and Home layout)
@@ -467,7 +471,7 @@ Generate the next one with: python tools/make_migration.py wine --name <what_cha
 | __init__.py | The connector for AI assistants: a small local program that lets an assistant use the helper API through MCP. | finding your way in |
 | __main__.py | Start the connector: `python -m dashboard.connector [--config FILE]`, launched by an AI assistant's app. | changing how it is started |
 | mcp_server.py | The MCP server over stdio: JSON-RPC 2.0, one message per line, turning tool calls into helper API requests. | changing the protocol, errors or what results say |
-| tools.py | The eight tools an assistant may use, one per helper API route, with their inputs checked before any request. | adding or changing a tool |
+| tools.py | The nine tools an assistant may use, one per helper API route, with their inputs checked before any request. | adding or changing a tool |
 | client.py | Call the helper API on this computer: check it is the real Dashboard first, then send the key down that connection only. | changing how requests are sent or answers read |
 | config.py | Where the connector finds Dashboard Plus and its key: environment values or a small file, checked before use. | changing where the address or key come from |
 
@@ -511,6 +515,7 @@ Add a new file with the next number instead of changing an old one.
 | 0005_helper_key_rotation.sql | A helper can get a new key and keep its history: when the key was changed, a change still in progress, and a count of keys | checking how a key change is stored |
 | 0006_proposal_source_lines.sql | A helper's suggestion can keep the line it was read from (a receipt line and price), shown on Review only | checking how source lines are stored |
 | 0007_sync_identity.sql | Sync stage 1: the household ID and epochs, the change log, and values held after a kind change (decision 0100) | checking how permanent IDs and the change log are stored |
+| 0008_helper_daily_allowance.sql | "Allow 200 more today": each press adds to one helper's daily limit for that day only, with who and when (decision 0101) | checking how a raised daily limit is stored |
 
 ## src/dashboard/web/  (summary: the screens: pages, forms and their protections)
 | Entry | What it is | Open it when |
@@ -519,6 +524,7 @@ Add a new file with the next number instead of changing an old one.
 | app.py | Build the Flask web application and its local-only protections. | changing sign-in, protections or reports |
 | pages.py | Pages built from module declarations: the record grid, add and edit forms, and history. | changing the grid or forms |
 | setup.py | The first-run wizard and the settings page: who lives here, the home, modules and backups. | changing setup questions or settings |
+| home_setup.py | Set up my home: rooms and areas, the storage spots inside them, and which rooms connect, on one page. | changing the Set up my home page |
 | action_form.py | An action's small form, such as Mark done: open it, save it once as one operation, and Undo it (decision 0091). | changing Mark done or Undo screens |
 | count.py | Count this batch: a stocktake of one batch, reviewed and then saved as one stocktake correction. | changing the stocktake screens |
 | home.py | Group the home page by area: each module's main lists shown large, its other lists as one line of links. | changing how the home page is grouped or ordered |
@@ -528,6 +534,7 @@ Add a new file with the next number instead of changing an old one.
 | api.py | The helper API (/api/v1): programs the household gave a key to can look at records and suggest new ones. | changing what helpers can read or send |
 | review.py | The Review screen: helpers' suggested new records and imported rows, waiting for a person to accept or reject each one. | changing the Review page |
 | csv_import.py | Settings, Import from a spreadsheet: choose a table, upload a CSV, match its columns, check the rows, send to Review. | changing the import screens |
+| helper_guide.py | The starting message for a helper's assistant: what it may use, how to send, and its limits, from list and field names only. | changing the starting message or GET /api/v1/guide |
 | helper_settings.py | Settings, Helpers: give an assistant a key, choose what it may do, give it a new key, and turn its access off. | changing the Helpers settings page |
 | export_page.py | Settings, Export my records: a page and a button that downloads a zip of spreadsheet files. | changing the Export page |
 | restore.py | Settings, Backups: the list of backups, a preview of one, putting it back, and Undo restore. | changing the restore pages |
@@ -546,6 +553,7 @@ Add a new file with the next number instead of changing an old one.
 | form.html | Add and edit forms, delete and restore, and history | changing the form |
 | action_form.html | An action's small form, such as Mark done: what it asks, the next-date choice, Save once | changing the Mark done wording |
 | _*.html | Pieces shared by both forms: one field (_field), and the forms' styles and browser code (_form_script) | changing every form at once |
+| home_setup.html | Set up my home: add rooms and storage spots, rename, move or delete them, and connect rooms; no scripts needed | changing the Set up my home wording |
 | setup.html | First-run wizard and Settings (one form, two modes) | changing setup questions |
 | *sheet.html | A printable sheet styled to fit one page (sheet), and the step before one with private details (private_sheet) | changing how sheets print |
 | start.html | Shown to a browser that was not opened by the shortcut | changing that message |
@@ -559,6 +567,7 @@ Add a new file with the next number instead of changing an old one.
 | helpers.html | Settings, Helpers: the helper list with Make a new key and Turn off access, and the form that makes a key | changing the Helpers settings page |
 | helper*_key.html | The one page that shows a key: helper_key for a new helper, helper_new_key for a new key for one already made; each with Copy and a warning | changing the key pages |
 | helper_connect.html | "Connect an AI assistant": settings to paste into an assistant's app (pointing at the address file), with a placeholder for the key, and Connection details | changing the assistant set-up words |
+| helper_start_message.html | "Starting message for your assistant": the guide for one helper to paste into its chat, with a Copy button | changing the starting message box |
 | review.html | Review suggestions: each helper's waiting suggestions with Accept and Reject | changing the Review page |
 | export.html | Settings, Export my records: what is in the export and the download button | changing the Export page |
 | restore_*.html | Settings, Backups: the list of backups, the check-and-compare page, the result, and the shared Undo restore box | changing the restore pages |
@@ -593,6 +602,7 @@ How to run them is in AGENTS.md.
 | test_adjusts.py | Tests for records that change a linked quantity (stock in and out), and the checks on `adjusts`. | changing stock in and out |
 | test_sync_stage1.py | Tests for sync stage 1: permanent record IDs, revisions, the filtered change log and the travel rule (decision 0100). | changing record IDs, the change log or what may travel |
 | test_backups.py | Tests for automatic backups: daily, on close, in two places, and keeping only recent ones. | changing backups |
+| test_home_setup.py | Tests for Set up my home: rooms, storage spots inside them and the connections between rooms (decision 0103). | changing Set up my home or connections between places |
 | test_setup.py | Tests for the first-run wizard and the settings page. | changing setup or settings |
 | test_sheets.py | Tests for printable sheets: checking sheets.toml and printing the emergency sheet. | changing sheets |
 | test_module_confinement.py | A module's database changes may touch only its own tables (security review, decision 0055). | changing how module migrations run |
@@ -616,7 +626,9 @@ How to run them is in AGENTS.md.
 | test_export.py | Tests for Export my records: every table of an example household, private details, formula safety and the download. | changing the export |
 | test_restore.py | Tests for restoring a backup: checks that change nothing, the safe swap, Undo after a restart, and refusals. | changing restore or Undo |
 | test_api_contract.py | Tests that the published API description (openapi-v1.json) matches the real /api/v1 routes, errors and replies. | changing a helper route, reply or error code |
+| test_helper_starting_amounts.py | Tests for decision 0102: a new Stock item with its starting amount as one suggestion, and the helper's starting message. | changing starting amounts on suggestions or the starting message |
 | test_grouped_suggestions.py | Tests for receipt lines on suggestions and for suggestions that point at an earlier one in the same batch (decision 0097). | changing source lines, refs or grouped Review rows |
+| test_review_speedups.py | Tests for faster Review (decision 0101): Accept all by group, ticked rows, keys, fixed buttons and Allow 200 more today. | changing Accept all, ticked rows, Review keys or the daily limit |
 
 ## tools/  (summary: scripts that check, lock and build the project; run by CI)
 | Entry | What it is | Open it when |
@@ -635,6 +647,6 @@ How to run them is in AGENTS.md.
 | load_example.py | Load a made-up example household into an empty data folder, for demos, screenshots and testing. | demonstrating or testing with realistic data |
 | make_screenshots.py | Make the example screenshots: run each example household through every stage of using the dashboard. | the screens changed and the gallery needs remaking |
 | screenshots.js | Browser steps for make_screenshots.py (Node and Playwright) | changing how screenshots are taken |
-| browser_check.py | Click through the real dashboard in Chromium (setup, dates, stock in, stocktake, Mark returned, Mark done, spreadsheet import, private details, closing) and fail loudly. | a screen or its browser code changed |
+| browser_check.py | Click through the real dashboard in Chromium (setup, Set up my home, dates, stock in, stocktake, Mark returned, Mark done, spreadsheet import, Review keys and buttons, private details, closing) and fail loudly. | a screen or its browser code changed |
 | browser_check.js | Browser steps for browser_check.py (Node and Playwright): what is clicked and checked | changing what the browser check clicks |
 | make_project_map.py | Build PROJECT_MAP.md from every INDEX.md in the repository. | changing the map format |

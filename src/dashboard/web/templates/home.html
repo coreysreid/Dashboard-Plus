@@ -38,6 +38,14 @@
   .asked-actions form { margin: 0; }
 </style>
 {% endif %}
+{% if my_home %}
+<div class="card" id="my-home">
+  <div class="muted">Your home</div>
+  <h2 style="margin-top:.2rem"><a href="/set-up-home">Set up my home</a></h2>
+  <p class="muted" style="margin:.2rem 0">Rooms and areas, the storage spots inside them, and which rooms connect.
+  {% if my_home.rooms %}So far: {{ my_home.rooms }} room{{ "" if my_home.rooms == 1 else "s" }} or area{{ "" if my_home.rooms == 1 else "s" }}, {{ my_home.spots }} storage spot{{ "" if my_home.spots == 1 else "s" }}, {{ my_home.connections }} connection{{ "" if my_home.connections == 1 else "s" }}.{% else %}Nothing added yet.{% endif %}</p>
+</div>
+{% endif %}
 {% if attention and (attention.low or attention.expiring or attention.supplies or attention.gaps) %}
 <div class="tables">
   {% for s in attention.supplies %}

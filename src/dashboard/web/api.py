@@ -16,7 +16,7 @@ from flask import Blueprint, Response, current_app, g, request
 
 from dashboard import __version__
 from dashboard.core import hello, helpers, proposals, records, schema, watch
-from dashboard.core.proposals import MAX_ENTRIES, MAX_PER_DAY, MAX_WAITING, ProposalError
+from dashboard.core.proposals import MAX_ENTRIES, MAX_WAITING, ProposalError
 from dashboard.web import display
 
 log = logging.getLogger("dashboard.helpers")
@@ -174,6 +174,7 @@ def table_spec(info: records.TableInfo, store: records.Records, may_suggest: boo
     """What a helper needs to know to read or suggest into one table. Private columns are left out, and so
     are links into parts it was not given (`hidden`), without saying where they lead."""
     worked_out = sorted(store._derived(info))
+    starts = starting_fields(store, info)
     columns, private = [], 0
     for column in info.table.columns.values():
         if column.sensitive:
@@ -184,13 +185,17 @@ def table_spec(info: records.TableInfo, store: records.Records, may_suggest: boo
         item = {"name": column.name, "label": display.column_label(info, column), "type": column.type,
                 "required": column.required, "help": display.column_help(info, column), "unit": column.unit,
                 "min": column.min, "max": column.max,
-                "can_suggest": column.type != "file" and column.name not in worked_out}
+                "can_suggest": column.type != "file" and (column.name not in worked_out or column.name in starts)}
         if column.type in ("link", "links"):
             item["to"] = schema.target_table(info.module.name, column)
         if column.type == "choice":
             item["choices"] = [{"key": c.key, "label": c.label} for c in column.choices]
         if column.type == "money":
             item["note"] = "Send and read in whole units, like 12.50. It is stored in cents."
+        if column.name in starts:
+            item["note"] = (f"Only when suggesting a new record: it starts the record's first entry in "
+                            f"{display.table_title(starts[column.name])}, as the household's own add form does. "
+                            f"After that it changes only through that list.")
         columns.append(item)
     spec = {"table": info.name, "module": info.module.name, "title": display.table_title(info),
             "can_suggest": may_suggest, "columns": columns, "worked_out": worked_out,
@@ -213,6 +218,22 @@ def table_spec(info: records.TableInfo, store: records.Records, may_suggest: boo
     return spec
 
 
+def starting_fields(store: records.Records, info) -> dict:
+    """{column: batch table} for the fields a new record may carry to start its first batch (decision 0102)."""
+    return {c: other for other in store._totals_into(info) for c in other.table.total["starts_from"]}
+
+
+def limits_for(conn, helper) -> dict:
+    """A helper's limits and how much of them is used now, as /me and the guide report them."""
+    limit = proposals.limit_today(conn, helper)  # 200, plus any "Allow 200 more today" (decision 0101)
+    return {"entries_per_call": MAX_ENTRIES, "suggestions_per_day": limit,
+            "suggestions_left_today": max(0, limit - proposals.used_today(conn, helper)),
+            "review_queue_limit": _queue_limit(),
+            "suggestions_waiting": proposals.waiting_for(conn, helper),
+            "max_body_bytes": MAX_BODY,
+            "requests_per_minute": current_app.config.get("HELPER_REQUESTS_PER_MINUTE", REQUESTS_PER_MINUTE)}
+
+
 @helper_api.get("/me")
 def me():
     helper, conn = g.helper, current_app.config["CONNECT"]()
@@ -221,15 +242,19 @@ def me():
     return reply({"name": helper.name, "access": helper.access,
                   "modules": [{"name": n, "title": titles[n]} for n in sorted(titles)],
                   "message": f"{helper.name} may use: {words}. Ask the household to change its access in Settings.",
-                  "private_details": False,
-                  "limits": {"entries_per_call": MAX_ENTRIES, "suggestions_per_day": MAX_PER_DAY,
-                             "suggestions_left_today": max(0, MAX_PER_DAY - proposals.used_today(conn, helper)),
-                             "review_queue_limit": _queue_limit(),
-                             "suggestions_waiting": proposals.waiting_for(conn, helper),
-                             "max_body_bytes": MAX_BODY,
-                             "requests_per_minute": current_app.config.get("HELPER_REQUESTS_PER_MINUTE",
-                                                                           REQUESTS_PER_MINUTE)},
+                  "private_details": False, "limits": limits_for(conn, helper),
                   "api_version": "1", "program_version": __version__})
+
+
+@helper_api.get("/guide")
+def guide():
+    """How to help this household well, written for the assistant (decision 0102): the same words as the
+    starting message on Settings, Helpers. Built from list and field names only; no records, no key."""
+    from dashboard.web import helper_guide  # it reads table_spec from this file
+    conn = current_app.config["CONNECT"]()
+    return reply({"text": helper_guide.guide_text(conn, _full(), g.helper),
+                  "limits": limits_for(conn, g.helper),
+                  "message": "Read this before you start. It holds no household records and never the key."})
 
 
 @helper_api.get("/tables")
