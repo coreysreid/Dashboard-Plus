@@ -686,6 +686,47 @@ Use made-up data only; never copy anything from Corey's real household.
     example drinking-water days over time and stock spend once 92 exists),
     with exact data, empty states and an accessible table version.
 
+### Batch 21: checking the 21 November builds, and what unblocks the next modules (M2, M3)
+
+Built on 21 November: Review speed-ups and Allow 200 more (0101), the
+assistant's starting message and Stock with its starting amount (0102), Set
+up my home (0103), Readiness questions (0104), receipt lines and possible
+repeats (0105), and Mac wording, meter paths and sync checks (0106). Lane A
+is now building routine checklists (0107), Think it through drills (0108) and
+the first two charts (0109) from your batch 20 drafts.
+
+98. **Routine checklists, checked.** Once 0107 is on `main`, walk Today,
+    This week, This month and This year in all three households at 320px
+    and desktop; Due since, Mark done, Undo. Worst first, exact words.
+99. **Drills, checked.** Once 0108 is on `main`, run three drills end to
+    end; check every missing-record sentence, the 000 line, private answers
+    staying off Home, sheets, export and helpers. Worst first.
+100. **Readiness: when should a question come back?** Corey worries that any
+    edit to a linked record (a kit's last-checked date, water used from a
+    batch) brings a question back. For each of the eight record-backed
+    questions, say which field changes should ask again and which should
+    not, with the household words.
+101. **Queensland pack, sourced.** Corey lives in South East Queensland.
+    Find the Queensland and Australian public sources (Queensland Fire
+    Department, SES, Bureau of Meteorology, Queensland Health water notices,
+    Energex outage guidance) that fit our readiness questions and drills;
+    cite and date each, and say what a country pack row would hold.
+102. **Optional links, designed for households.** Two modules are blocked by
+    an all-or-nothing `requires`: Utilities forces Home layout on for an
+    internet-only household; Bills and insurance forces Vehicles on. Design
+    what the household sees when a linked module is off (hidden field,
+    explanation, what happens when it is switched on later), and checks.
+103. **Exit sketch on paper.** From your exit map research (item 93), say in
+    words what a printed one-page sketch shows, its legend, the warnings,
+    and an accessible text version; never certify a route.
+104. **Helper starting message, fixes.** From your move-in traps (item 94),
+    give exact replacement sentences for the starting message (decision
+    0102) and the connector tool description, worst first.
+105. **Bills and insurance vs Vehicle insurance.** Propose one authoritative
+    renewal reminder: what moves, the household's choice on upgrade, and
+    the exact words, so a promoted Bills module never shows two reminders
+    for one policy.
+
 ## Brief for Lane B, batch 3 (done)
 
 > You are Lane B, the checker and drafter. You have full internet access for
