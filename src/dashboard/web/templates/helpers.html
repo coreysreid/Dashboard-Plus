@@ -33,6 +33,10 @@
     </form>
   </div>
   <p class="help" id="new-key-help-{{ h.id }}" style="margin:.25rem 0 0">Use this if the key was lost or may have been seen. Your helper keeps the same name, access and Review history. Its old key stops when the new one is made. You will need to replace the key in your assistant app.</p>
+  <details style="margin-top:.5rem">
+    <summary>Starting message for your assistant</summary>
+    {% with message=h.starting_message, box_id="starting-message-" ~ h.id, level=4 %}{% include "helper_start_message.html" %}{% endwith %}
+  </details>
   {% else %}
   <p class="muted" style="margin:.1rem 0">Access turned off on {{ h.off_at }}. Its history is kept.</p>
   {% endif %}

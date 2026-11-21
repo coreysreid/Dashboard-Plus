@@ -271,11 +271,11 @@ class ProposalTests(TempDirTestCase):
         self.assertEqual(self.quantity(), 5)
         self.assertEqual(self.count("stock__items"), 1)
 
-    def test_a_worked_out_column_must_not_be_suggested(self):
+    def test_a_new_item_may_carry_its_starting_amount_but_adds_nothing_yet(self):
         item = {"table": "stock__items", "values": {"name": "Rice", "quantity": 4}}
-        error = self.refused([item], 422, "invalid")
-        self.assertIn("worked out", error.problems[0]["message"])
-        self.assertEqual(self.count("stock__items"), 1)
+        result, _ = self.send([item])  # decision 0102; tests/test_helper_starting_amounts.py has the rest
+        self.assertEqual(result["state"], "waiting")
+        self.assertEqual((self.count("stock__items"), self.count("stock__lots")), (1, 1))
 
     def test_a_look_only_helper_cannot_suggest(self):
         reader, _ = helpers.issue(self.conn, self.data, "Reader", "read", ["stock"])

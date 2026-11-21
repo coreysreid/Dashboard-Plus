@@ -14,6 +14,7 @@ import dashboard
 from dashboard.connector.config import ADDRESS_FILE_VARIABLE, KEY_VARIABLE, URL_VARIABLE
 from dashboard.core import helper_address, helpers, settings
 from dashboard.errors import PlainError
+from dashboard.web import helper_guide
 
 helper_settings = Blueprint("helper_settings", __name__)
 ACCESS_WORDS = {"read": "May look", "suggest": "May look and suggest new records"}
@@ -135,6 +136,12 @@ def assistant_settings(address: str | None = None, address_file: str | None = No
     return json.dumps(block, indent=2)
 
 
+def _starting_message(helper: helpers.Helper) -> str:
+    """The starting message to paste into the assistant's chat (decision 0102): no records and never the key."""
+    return helper_guide.guide_text(current_app.config["CONNECT"](), current_app.config["REGISTRY_FOR_REQUEST"](),
+                                   helper)
+
+
 def _when(text: str | None) -> str | None:
     try:
         return datetime.fromisoformat(text).strftime("%d %b %Y").lstrip("0") if text else None
@@ -166,7 +173,8 @@ def _render(values: dict | None = None, error: str | None = None, status: int = 
              "last_used": _when(h.last_used_at) or "not yet", "off_at": _when(h.revoked_at),
              "key_changed": _when(h.rotated_at), "unfinished": h.key_unfinished,
              "connected": h.active and not h.key_unfinished and _recent(h.last_used_at),
-             "new_key_token": _new_key_token(h.id) if h.active else None}
+             "new_key_token": _new_key_token(h.id) if h.active else None,
+             "starting_message": _starting_message(h) if h.active else None}
             for h in helpers.all_helpers(conn)]
     turned_off = helpers.get(conn, request.args.get("off", 0, type=int)) if request.args.get("off") else None
     changed = helpers.get(conn, request.args.get("changed", 0, type=int)) if request.args.get("changed") else None
@@ -201,7 +209,7 @@ def make_key():
     # The key is shown in this one response, never in a redirect or an address, and never stored.
     return render_template("helper_key.html", helper=helper, key=key, can_suggest=helper.may_suggest,
                            parts=", ".join(titles.get(n, n) for n in helper.modules),
-                           key_shown=True, **_connection()), 201
+                           key_shown=True, starting_message=_starting_message(helper), **_connection()), 201
 
 
 @helper_settings.post("/settings/helpers/<int:helper_id>/new-key")
@@ -223,7 +231,8 @@ def new_key(helper_id):
     except helpers.KeyNotChanged as error:
         return _render(key_error=str(error), status=500)
     # Like a first key: shown in this one response only, never in a redirect, an address or a file.
-    return render_template("helper_new_key.html", helper=helper, key=key, key_shown=True, **_connection()), 201
+    return render_template("helper_new_key.html", helper=helper, key=key, key_shown=True,
+                           starting_message=_starting_message(helper), **_connection()), 201
 
 
 @helper_settings.post("/settings/helpers/<int:helper_id>/turn-off")
