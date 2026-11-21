@@ -66,6 +66,18 @@ is new: keep a copy of anything important somewhere else too. See
   answered for you; if that record changes, the question comes back. Home
   shows at most two at a time, and the count says how many you have looked
   at, never whether you are "safe".
+- **Think it through** (Readiness) eight calm practice runs, one question at
+  a time: water behind a bathroom wall, a bedroom fire at night, a kitchen
+  fire, a break-in at 2 am, the car stopping far from home, three days without
+  power, a regional tap-water warning and a cyclone forecast (where cyclones
+  are ticked in Settings). Each step shows the records that may help, such as
+  your water shut-off and its place, or says exactly what is not recorded yet
+  with a link to add it. Your own words stay private on this computer: never
+  exported, sent or shown to a helper. Stop part-way and continue later, or
+  save the practice with the date you choose to look again. Every drill first
+  says to phone the emergency service if anyone is in danger (000, 911 or 999
+  by country, otherwise your local number) and lists its sources with the date
+  each was checked; it never says your home is safe.
 - **Helpers (early):** give an assistant, such as an AI program, a key in
   Settings so it can look at the parts of your records you choose and suggest
   new ones. Nothing is added until you accept it on the Review page. Private

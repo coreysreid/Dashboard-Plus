@@ -18,3 +18,41 @@ columns.review_on = { type = "date", not_before = "answered_on" }
 columns.note = { type = "longtext" }
 columns.record = { type = "text" }
 columns.record_check = { type = "text" }
+
+# "Think it through" practice runs (decision 0108). A run is the household walking through one drill in
+# prompts.toml: when it started, the date it was practised (only once finished; Continue later leaves it
+# blank) and the look-again date the household chose. Earlier runs are kept, never overwritten. Which drill,
+# its version and the dates are ordinary planning and travel; a person's own words are in practice answers.
+[tables.drill_runs]
+title = "Practice runs"
+description = "Each time the household walked through a Think it through situation, and when to look again."
+suggestions = false
+columns.scenario = { type = "text", required = true }
+columns.scenario_version = { type = "integer", required = true, min = 1 }
+columns.started_on = { type = "date", required = true, default = "today" }
+columns.practised_on = { type = "date" }
+columns.review_on = { type = "date" }
+columns.status = { type = "choice", required = true, default = "in_progress", choices = [
+  { key = "in_progress", label = "Continue later" },
+  { key = "practised", label = "Practised" },
+] }
+
+# One step of a run: the choice the person made and, if they wrote any, their own words. Own words are
+# about who is home, how people would leave, security and health, so they are private (Show to see) and
+# never travel, export or reach a helper. The record chosen is kept as its permanent ID and a fingerprint
+# of its revision, never its words, so a later change asks for this step to be looked at again.
+[tables.drill_steps]
+title = "Practice answers"
+description = "What the household chose at each step of a practice run. Its own words stay on this computer."
+suggestions = false
+record_name = "{step}: {choice}"
+columns.run = { type = "link", to = "drill_runs", required = true, on_delete = "cascade" }
+columns.step = { type = "text", required = true }
+columns.choice = { type = "choice", required = true, choices = [
+  { key = "plan", label = "I have a plan" },
+  { key = "check", label = "I need to check" },
+  { key = "not_relevant", label = "Not relevant to my household" },
+] }
+columns.own_words = { type = "longtext", sensitive = true, travels = "never" }
+columns.record = { type = "text" }
+columns.record_check = { type = "text" }

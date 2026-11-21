@@ -1,0 +1,43 @@
+{% extends "base.html" %}
+{% block title %}{{ scenario.title }} · Think it through · Dashboard Plus{% endblock %}
+{% block body %}
+<p class="muted"><a href="/">Home</a> · <a href="/drills/{{ module }}">Think it through</a></p>
+<h1>{{ scenario.title }}</h1>
+{% if saved == "later" %}<p class="notice" role="status">Saved. You can continue later; it is not marked as practised yet.</p>{% endif %}
+{% include "drill_first.html" %}
+<p class="lead">{{ scenario.intro }}</p>
+{% if not drill.fits %}<p class="muted">This drill does not fit the settings you gave: {{ drill.reasons | join(" ") }} You can still practise it.</p>{% endif %}
+
+<h2>The questions</h2>
+<ol>{% for s in steps %}<li>{{ s.question }}</li>{% endfor %}</ol>
+<form method="post" action="/drills/{{ module }}/{{ scenario.id }}/start" class="drill-start">
+  <input type="hidden" name="_csrf" value="{{ csrf_token }}">
+  <button type="submit">{% if drill.in_progress %}Continue this practice{% else %}Start this practice{% endif %}</button>
+  <a href="/drills/{{ module }}">Not now</a> <span class="help">Not now saves nothing.</span>
+</form>
+
+<h2 id="sources">Sources and local limits</h2>
+{% if sources %}
+<ul>
+  {% for s in sources %}
+  <li>{% if s.url %}<a href="{{ s.url }}" rel="noopener noreferrer">{{ s.title }}</a>{% else %}{{ s.title }}{% endif %}{% if s.checked %}, checked {{ show_date(s.checked) }}{% endif %}.{% if s.needs_checking %} <strong>Source needs checking.</strong>{% endif %}</li>
+  {% endfor %}
+</ul>
+{% else %}
+<p>No source for your country has been checked for this drill yet.</p>
+{% endif %}
+<p class="muted">Links open the official page only when you choose them; nothing is fetched. Your local authority's current warning, or your building's own plan, comes first.</p>
+
+{% if runs %}
+<h2>Earlier practice</h2>
+<ul>
+  {% for r in runs %}
+  <li><a href="/drills/{{ module }}/{{ scenario.id }}/runs/{{ r.id }}">{% if r.status == "practised" %}Practised on {{ show_date(r.practised_on) }} · Look again on {{ show_date(r.review_on) }}{% else %}Started on {{ show_date(r.started_on) }}, saved to continue later{% endif %}</a>
+    <span class="muted">{{ r.answered }} step{{ "" if r.answered == 1 else "s" }} answered.</span>{% if r.changed %} <span class="muted">{{ changed_words }}</span>{% endif %}</li>
+  {% endfor %}
+</ul>
+{% endif %}
+<style>
+  .drill-start { display: flex; flex-wrap: wrap; gap: .8rem; align-items: center; margin: 1rem 0; }
+</style>
+{% endblock %}

@@ -284,6 +284,18 @@ The household's own repeating tasks: the repeat it chose, the next date and when
 
 ![Routines](screenshots/smith/18x-routines.png)
 
+### Think it through
+
+Eight calm practice runs, the emergency number for the household's country first, when each was practised and when to look again; drills that do not fit the settings listed apart.
+
+![Think it through](screenshots/smith/18y-drills.png)
+
+### One drill
+
+Its questions in order, Start or Not now, its sources with the date each was checked, and earlier practice.
+
+![One drill](screenshots/smith/18z-drill.png)
+
 ### Needs attention
 
 Days of water with the working shown, running low, use-by and due dates, and details worth filling in.
@@ -590,6 +602,18 @@ The household's own repeating tasks: the repeat it chose, the next date and when
 
 ![Routines](screenshots/garcia/18x-routines.png)
 
+### Think it through
+
+Eight calm practice runs, the emergency number for the household's country first, when each was practised and when to look again; drills that do not fit the settings listed apart.
+
+![Think it through](screenshots/garcia/18y-drills.png)
+
+### One drill
+
+Its questions in order, Start or Not now, its sources with the date each was checked, and earlier practice.
+
+![One drill](screenshots/garcia/18z-drill.png)
+
 ### Needs attention
 
 Days of water with the working shown, running low, use-by and due dates, and details worth filling in.
@@ -889,6 +913,18 @@ The calendar month by week, from the dates the household recorded; a task with n
 The household's own repeating tasks: the repeat it chose, the next date and when each was last done.
 
 ![Routines](screenshots/taylor/18x-routines.png)
+
+### Think it through
+
+Eight calm practice runs, the emergency number for the household's country first, when each was practised and when to look again; drills that do not fit the settings listed apart.
+
+![Think it through](screenshots/taylor/18y-drills.png)
+
+### One drill
+
+Its questions in order, Start or Not now, its sources with the date each was checked, and earlier practice.
+
+![One drill](screenshots/taylor/18z-drill.png)
 
 ### Needs attention
 

@@ -40,6 +40,13 @@ an idea valuable, please buy and read the original.
   floods, break-ins, power cuts, medical emergencies, getting out from an upper
   floor) are ordinary safety topics that public safety bodies publish guidance
   on. We write our own questions and cite those bodies.
+  - **Think it through** (decision 0108): calm, step-by-step practice runs for
+    eight everyday situations, walked through ahead of time. Only the general
+    idea of thinking a situation through before it happens is credited here.
+    The choice of situations came from Corey's own list; their order, questions
+    and wording are original to this project, and each drill cites the public
+    safety bodies it was checked against. The feature is not named after any
+    book or person.
 
 ## How we credit ideas (for contributors)
 

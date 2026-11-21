@@ -1,4 +1,4 @@
-"""Read and check a module's prompts.toml: "Have you thought about…?" questions, their groups and exact record matches."""
+"""Read and check a module's prompts.toml: "Have you thought about…?" questions, their groups, exact record matches and "Think it through" drills."""
 from __future__ import annotations
 
 import re
@@ -7,11 +7,21 @@ from datetime import date
 from pathlib import Path
 
 FILE = "prompts.toml"
-SCHEMA = 1  # the version of the prompts.toml format below (decision 0104)
+SCHEMA = 2  # the newest version of the prompts.toml format below (decisions 0104 and 0108)
+SCHEMAS = (1, 2)  # 1: questions only (0104); 2: also drills ([[scenario]], [[step]], [[emergency]], runs)
 TOP_KEYS = ("schema", "answers", "group", "prompt")
+DRILL_KEYS = ("runs", "run_steps", "scenario", "step", "emergency")  # schema 2 only
 GROUP_KEYS = ("key", "title")
 PROMPT_KEYS = ("id", "group", "question", "why", "how_to_check", "fits", "answered_by", "match", "review_every",
                "source", "write_in")
+# Schema 2: the exact words a drill step shows when nothing is recorded, a caution shown with any record it
+# offers, and a supply (module.table with a days-of-cover rule) whose working it shows. A [[prompt]] used as
+# a shared drill step may say them too.
+STEP_TEXT_KEYS = ("missing", "caution", "supply")
+STEP_KEYS = ("id", "question", "why", "fits", "answered_by", "match") + STEP_TEXT_KEYS
+SCENARIO_KEYS = ("id", "version", "title", "intro", "fits", "sources", "steps", "review_every")
+SCENARIO_FITS_KEYS = ("has_records",)  # the household has at least one record in this table ("module.table")
+EMERGENCY_KEYS = ("country", "number", "source")
 # What a prompt may be matched to: only answers the household gave in Settings, never a guess from an address.
 FITS_KEYS = ("storeys_min", "hazards", "pets", "mobility_needs", "country", "home_type")
 MATCH_KEYS = ("table", "where", "filled", "positive")
@@ -21,6 +31,13 @@ ANSWERS = ("yes", "not_relevant", "not_yet")
 # The columns a module's answers table must have, and the kinds each may be.
 ANSWER_COLUMNS = {"prompt": ("text",), "answer": ("choice",), "answered_on": ("date",), "review_on": ("date",),
                   "note": ("text", "longtext"), "record": ("text",), "record_check": ("text",)}
+# The columns of a module's practice-run tables (decision 0108). Own words are private and never travel.
+RUN_COLUMNS = {"scenario": ("text",), "scenario_version": ("integer",), "started_on": ("date",),
+               "practised_on": ("date",), "review_on": ("date",), "status": ("choice",)}
+RUN_STATUSES = ("in_progress", "practised")
+STEP_COLUMNS = {"run": ("link",), "step": ("text",), "choice": ("choice",), "own_words": ("text", "longtext"),
+                "record": ("text",), "record_check": ("text",)}
+STEP_CHOICES = ("plan", "check", "not_relevant")
 PROMPT_ID = re.compile(r"^[a-z0-9][a-z0-9-]{0,63}$")
 ISO_DATE = re.compile(r"^\d{4}-\d{2}-\d{2}$")
 
@@ -47,6 +64,22 @@ class Prompt:
     how_to_check: str | None = None
     match: Match | None = None
     write_in: dict | None = None    # {"table", "label"}: a list where a plan can be written, never an answer
+    missing: str | None = None      # schema 2: the exact words shown when no record matches
+    caution: str | None = None      # schema 2: shown with any record offered, e.g. a door is not a checked route
+    supply: str | None = None       # schema 2: "module.table" whose days-of-cover working the step shows
+
+
+@dataclass
+class Scenario:
+    """A "Think it through" drill: a calm, ordered run of questions about one invented situation (0108)."""
+    id: str
+    version: int                    # raise it when the steps or wording change; earlier runs keep theirs
+    title: str
+    intro: str
+    fits: dict                      # the settings a prompt fits, plus has_records
+    sources: list                   # [{"title", "url", "checked", "country": [...] or None, "needs_checking"}]
+    steps: list                     # prompt or step IDs, in order
+    review_every: int = 12          # months offered as the "look again on" date: an editorial suggestion
 
 
 @dataclass
@@ -55,6 +88,11 @@ class PromptSet:
     answers: str                    # the module's own table that keeps the household's answers
     groups: list = field(default_factory=list)    # [(key, title)] in the order shown
     prompts: list = field(default_factory=list)   # [Prompt] in the order written
+    runs: str | None = None         # schema 2: the module's table of practice runs
+    run_steps: str | None = None    # schema 2: the module's table of each run's step answers
+    scenarios: list = field(default_factory=list)  # [Scenario] in the order written
+    steps: list = field(default_factory=list)      # [Prompt]: drill-only steps, never listed as questions
+    emergency: dict = field(default_factory=dict)  # country -> {"number", "source"}
 
     def get(self, prompt_id: str) -> Prompt | None:
         return next((p for p in self.prompts if p.id == prompt_id), None)
@@ -62,41 +100,85 @@ class PromptSet:
     def group_title(self, key: str) -> str:
         return dict(self.groups).get(key, key)
 
+    def step(self, step_id: str) -> Prompt | None:
+        """A drill step: a drill-only step, or a shared question whose answer also counts on Questions."""
+        return next((p for p in self.steps if p.id == step_id), None) or self.get(step_id)
+
+    def is_shared(self, step_id: str) -> bool:
+        return self.get(step_id) is not None
+
+    def scenario(self, scenario_id: str) -> Scenario | None:
+        return next((s for s in self.scenarios if s.id == scenario_id), None)
+
 
 def _text(value) -> bool:
     return isinstance(value, str) and bool(value.strip())
 
 
-def _check_answers_table(where: str, name, tables: dict, problems: list[str]) -> bool:
+def _check_columns(where: str, name, tables: dict, wanted: dict, what: str, problems: list[str],
+                   private: tuple = ()) -> object | None:
+    """The table `name` of this module with every column in `wanted`; only `private` columns may be private."""
     table = tables.get(name) if isinstance(name, str) else None
     if table is None:
-        problems.append(f"{where}: 'answers' must name a table of this module that keeps the answers.")
-        return False
+        problems.append(f"{where}: '{what}' must name a table of this module.")
+        return None
     ok = True
-    for column, kinds in ANSWER_COLUMNS.items():
+    for column, kinds in wanted.items():
         found = table.columns.get(column)
-        if found is None or found.type not in kinds or found.sensitive:
-            problems.append(f"{where}: the answers table '{name}' needs an ordinary {' or '.join(kinds)} column "
+        if found is None or found.type not in kinds or (found.sensitive and column not in private):
+            problems.append(f"{where}: the table '{name}' needs an ordinary {' or '.join(kinds)} column "
                             f"'{column}'.")
             ok = False
-    answer = table.columns.get("answer")
-    if answer is not None and answer.type == "choice" and sorted(c.key for c in answer.choices) != sorted(ANSWERS):
-        problems.append(f"{where}: the answers table's 'answer' choices must be exactly {', '.join(ANSWERS)}.")
-        ok = False
     if table.suggestions:
-        problems.append(f"{where}: the answers table '{name}' must say suggestions = false, so only a person "
+        problems.append(f"{where}: the table '{name}' must say suggestions = false, so only a person "
                         f"answers a question.")
         ok = False
+    return table if ok else None
+
+
+def _check_choices(where: str, table, column: str, wanted: tuple, problems: list[str]) -> bool:
+    found = table.columns.get(column)
+    if found is not None and found.type == "choice" and sorted(c.key for c in found.choices) != sorted(wanted):
+        problems.append(f"{where}: the '{column}' choices of '{table.name}' must be exactly {', '.join(wanted)}.")
+        return False
+    return True
+
+
+def _check_answers_table(where: str, name, tables: dict, problems: list[str]) -> bool:
+    table = _check_columns(where, name, tables, ANSWER_COLUMNS, "answers", problems)
+    return table is not None and _check_choices(where, table, "answer", ANSWERS, problems)
+
+
+def _check_run_tables(where: str, data: dict, tables: dict, problems: list[str]) -> bool:
+    """The practice-run tables a module with drills keeps (decision 0108). Own words must be private and stay
+    on this computer: they are about who is home, security and health, so they never travel or export."""
+    runs = _check_columns(where, data.get("runs"), tables, RUN_COLUMNS, "runs", problems)
+    steps = _check_columns(where, data.get("run_steps"), tables, STEP_COLUMNS, "run_steps", problems,
+                           private=("own_words",))
+    ok = runs is not None and steps is not None
+    if runs is not None:
+        ok = _check_choices(where, runs, "status", RUN_STATUSES, problems) and ok
+    if steps is not None:
+        ok = _check_choices(where, steps, "choice", STEP_CHOICES, problems) and ok
+        words = steps.columns["own_words"]
+        if not words.sensitive or words.travels != "never" or not words.travels_reviewed:
+            problems.append(f"{where}: own_words in '{data.get('run_steps')}' must say sensitive = true and "
+                            f"travels = \"never\", so a household's own words stay on this computer.")
+            ok = False
+        if steps.columns["run"].to != data.get("runs"):
+            problems.append(f"{where}: 'run' in '{data.get('run_steps')}' must link to the runs table.")
+            ok = False
     return ok
 
 
-def _check_fits(where: str, fits, problems: list[str]) -> dict:
+def _check_fits(where: str, fits, problems: list[str], extra: tuple = ()) -> dict:
+    allowed = FITS_KEYS + extra
     if not isinstance(fits, dict):
         problems.append(f"{where}: 'fits' must be a table such as {{ hazards = [\"flood\"] }}, or {{}}.")
         return {}
     for key in fits:
-        if key not in FITS_KEYS:
-            problems.append(f"{where}: 'fits' has an unknown setting '{key}'. Allowed: {', '.join(FITS_KEYS)}.")
+        if key not in allowed:
+            problems.append(f"{where}: 'fits' has an unknown setting '{key}'. Allowed: {', '.join(allowed)}.")
     for key in ("hazards", "country", "home_type"):
         if key in fits and not (isinstance(fits[key], list) and fits[key] and all(_text(v) for v in fits[key])):
             problems.append(f"{where}: fits.{key} must be a list of words, like [\"flood\"].")
@@ -105,7 +187,21 @@ def _check_fits(where: str, fits, problems: list[str]) -> dict:
             problems.append(f"{where}: fits.{key} can only be true.")
     if "storeys_min" in fits and not (isinstance(fits["storeys_min"], int) and 2 <= fits["storeys_min"] <= 20):
         problems.append(f"{where}: fits.storeys_min must be a whole number from 2 to 20.")
-    return {k: v for k, v in fits.items() if k in FITS_KEYS}
+    if "has_records" in fits and not (isinstance(fits["has_records"], str) and fits["has_records"].count(".") == 1):
+        problems.append(f"{where}: fits.has_records must be a table, like \"vehicles.vehicles\".")
+    return {k: v for k, v in fits.items() if k in allowed}
+
+
+def _checked(source: dict) -> str | None:
+    checked = source.get("checked")
+    checked = checked.isoformat() if isinstance(checked, date) else checked
+    try:
+        if not (isinstance(checked, str) and ISO_DATE.match(checked)):
+            raise ValueError
+        date.fromisoformat(checked)
+    except ValueError:
+        return None
+    return checked
 
 
 def _check_source(where: str, source, problems: list[str]) -> dict:
@@ -119,16 +215,29 @@ def _check_source(where: str, source, problems: list[str]) -> dict:
         problems.append(f"{where}: source.title is missing (the public body and page, in plain words).")
     if not (isinstance(source.get("url"), str) and source["url"].startswith("https://")):
         problems.append(f"{where}: source.url must be an https:// link to the official page.")
-    checked = source.get("checked")
-    checked = checked.isoformat() if isinstance(checked, date) else checked
-    try:
-        if not (isinstance(checked, str) and ISO_DATE.match(checked)):
-            raise ValueError
-        date.fromisoformat(checked)
-    except ValueError:
+    checked = _checked(source)
+    if checked is None:
         problems.append(f"{where}: source.checked must be the date the source was checked, like \"2026-11-16\".")
-        checked = None
     return {"title": source.get("title"), "url": source.get("url"), "checked": checked}
+
+
+def _scenario_source(where: str, source, problems: list[str]) -> dict | None:
+    """A drill's source. A broken link or date is kept and shown as "Source needs checking" (Lane B's check
+    12), never dropped or swapped for unsourced advice; only a missing title stops the module loading."""
+    if not isinstance(source, dict) or not _text(source.get("title")):
+        problems.append(f"{where}: each source needs a title (the public body and page), url and checked date.")
+        return None
+    for key in source:
+        if key not in SOURCE_KEYS + ("country",):
+            problems.append(f"{where}: a source has an unknown setting '{key}'.")
+    country = source.get("country")
+    if country is not None and not (isinstance(country, list) and country and all(_text(c) for c in country)):
+        problems.append(f"{where}: a source's country must be a list of countries, like [\"Australia\"].")
+        country = None
+    url = source.get("url") if isinstance(source.get("url"), str) else ""
+    checked = _checked(source)
+    return {"title": source["title"], "url": url, "checked": checked, "country": country,
+            "broken": not url.startswith("https://") or checked is None}
 
 
 def _paths(where: str, name: str, raw, problems: list[str]) -> list[str]:
@@ -169,6 +278,114 @@ def _check_match(where: str, module: str, raw, answered_by, problems: list[str])
     return match
 
 
+def _parse_prompt(at: str, raw: dict, module: str, groups: list, drills: bool, step: bool,
+                  problems: list[str]) -> Prompt | None:
+    """One [[prompt]] (a question) or, with `step`, one [[step]] (a drill-only question)."""
+    allowed = STEP_KEYS if step else PROMPT_KEYS + (STEP_TEXT_KEYS if drills else ())
+    pid = raw.get("id")
+    for key in raw:
+        if key not in allowed:
+            problems.append(f"{at}: unknown setting '{key}'. Allowed: {', '.join(allowed)}.")
+    if not (isinstance(pid, str) and PROMPT_ID.match(pid)):
+        problems.append(f"{at}: 'id' must use only lower-case letters, digits and hyphens.")
+        return None
+    if not step and raw.get("group") not in dict(groups):
+        problems.append(f"{at}: 'group' must be one of the groups: {', '.join(k for k, _ in groups)}.")
+    for key in ("question",) if step else ("question", "why"):
+        if not _text(raw.get(key)):
+            problems.append(f"{at}: '{key}' is missing.")
+    for key in ("how_to_check", "why", "caution", "missing"):
+        if key in raw and not _text(raw[key]):
+            problems.append(f"{at}: '{key}' must be words when it is given.")
+    if step and not _text(raw.get("missing")):
+        problems.append(f"{at}: 'missing' must say, in the household's words, what is not recorded yet.")
+    if "supply" in raw and not (isinstance(raw["supply"], str) and raw["supply"].count(".") == 1):
+        problems.append(f"{at}: 'supply' must be a table with days of cover, like \"stock.items\".")
+    every = raw.get("review_every", 12 if step else None)
+    if not (isinstance(every, int) and not isinstance(every, bool) and 1 <= every <= 60):
+        problems.append(f"{at}: 'review_every' must be a number of months from 1 to 60.")
+    answered_by = raw.get("answered_by")
+    if not (answered_by == "none" or (isinstance(answered_by, str) and answered_by.count(".") == 2)):
+        problems.append(f"{at}: 'answered_by' must be \"none\" or a field written module.table.field.")
+    match = None
+    if "match" in raw:
+        if answered_by == "none":
+            problems.append(f"{at}: a prompt answered_by \"none\" cannot have a match.")
+        else:
+            match = _check_match(at, module, raw["match"], answered_by, problems)
+    elif isinstance(answered_by, str) and answered_by != "none":
+        problems.append(f"{at}: answered_by names a field, so 'match' must say exactly what that record "
+                        f"must hold before it is offered.")
+    write_in = raw.get("write_in")
+    if write_in is not None and not (isinstance(write_in, dict) and set(write_in) == set(WRITE_IN_KEYS)
+                                     and all(_text(v) for v in write_in.values())):
+        problems.append(f"{at}: 'write_in' needs a table (module.table) and a label.")
+        write_in = None
+    source = {} if step else _check_source(at, raw.get("source"), problems)
+    return Prompt(id=pid, group="" if step else str(raw.get("group")), question=str(raw.get("question", "")),
+                  why=str(raw.get("why", "")), fits=_check_fits(at, raw.get("fits", {}), problems),
+                  answered_by=str(answered_by), review_every=every if isinstance(every, int) else 12,
+                  source=source, how_to_check=raw.get("how_to_check"), match=match, write_in=write_in,
+                  missing=raw.get("missing"), caution=raw.get("caution"), supply=raw.get("supply"))
+
+
+def _parse_scenario(at: str, raw, known: set, problems: list[str]) -> Scenario | None:
+    if not isinstance(raw, dict):
+        problems.append(f"{at}: describe the scenario with id, version, title, intro, sources and steps.")
+        return None
+    for key in raw:
+        if key not in SCENARIO_KEYS:
+            problems.append(f"{at}: unknown setting '{key}'. Allowed: {', '.join(SCENARIO_KEYS)}.")
+    sid = raw.get("id")
+    if not (isinstance(sid, str) and PROMPT_ID.match(sid)):
+        problems.append(f"{at}: 'id' must use only lower-case letters, digits and hyphens.")
+        return None
+    version = raw.get("version")
+    if not (isinstance(version, int) and not isinstance(version, bool) and version >= 1):
+        problems.append(f"{at}: 'version' must be a whole number from 1; raise it when the steps change.")
+        version = 1
+    for key in ("title", "intro"):
+        if not _text(raw.get(key)):
+            problems.append(f"{at}: '{key}' is missing.")
+    sources = raw.get("sources")
+    if not isinstance(sources, list) or not sources:
+        problems.append(f"{at}: 'sources' must list at least one public source with the date it was checked.")
+        sources = []
+    sources = [s for s in (_scenario_source(at, s, problems) for s in sources) if s is not None]
+    steps = raw.get("steps")
+    if not isinstance(steps, list) or not steps or not all(isinstance(s, str) for s in steps):
+        problems.append(f"{at}: 'steps' must list the questions in order, by id.")
+        steps = []
+    for step_id in steps:
+        if step_id not in known:
+            problems.append(f"{at}: step '{step_id}' is not a [[prompt]] or [[step]] in this file.")
+    if len(set(steps)) != len(steps):
+        problems.append(f"{at}: a step is listed twice.")
+    every = raw.get("review_every", 12)
+    if not (isinstance(every, int) and not isinstance(every, bool) and 1 <= every <= 60):
+        problems.append(f"{at}: 'review_every' must be a number of months from 1 to 60.")
+        every = 12
+    return Scenario(id=sid, version=version, title=str(raw.get("title", "")), intro=str(raw.get("intro", "")),
+                    fits=_check_fits(at, raw.get("fits", {}), problems, SCENARIO_FITS_KEYS), sources=sources,
+                    steps=list(steps), review_every=every)
+
+
+def _parse_emergency(where: str, raw_list, problems: list[str]) -> dict:
+    """Emergency numbers, one per country, each from an official source. No number is presumed elsewhere."""
+    found = {}
+    for number, raw in enumerate(raw_list if isinstance(raw_list, list) else [], 1):
+        at = f"{where}, emergency {number}"
+        if not isinstance(raw, dict) or any(k not in EMERGENCY_KEYS for k in raw) or \
+                not _text(raw.get("country")) or not (isinstance(raw.get("number"), str)
+                                                      and re.fullmatch(r"\d{2,4}", raw["number"])):
+            problems.append(f"{at}: say country, number (digits, as a word in quotes) and source.")
+            continue
+        if raw["country"] in found:
+            problems.append(f"{at}: {raw['country']} already has an emergency number.")
+        found[raw["country"]] = {"number": raw["number"], "source": _check_source(at, raw.get("source"), problems)}
+    return found
+
+
 def load(folder: Path, module: str, tables: dict, read_toml, problems: list[str]) -> PromptSet | None:
     """Read `prompts.toml` if the module has one. Every mistake is added to `problems` in plain words."""
     path = Path(folder) / FILE
@@ -178,11 +395,16 @@ def load(folder: Path, module: str, tables: dict, read_toml, problems: list[str]
     if not data:
         return None
     where = f"In {FILE}"
+    schema = data.get("schema")
+    drills = schema == 2
+    allowed = TOP_KEYS + (DRILL_KEYS if drills else ())
     for key in data:
-        if key not in TOP_KEYS:
-            problems.append(f"{where}: unknown setting '{key}'. Allowed: {', '.join(TOP_KEYS)}.")
-    if data.get("schema") != SCHEMA:
-        problems.append(f"{where}: 'schema' must be {SCHEMA}, the prompts format this program reads.")
+        if key not in allowed:
+            extra = " Drills need schema = 2." if key in DRILL_KEYS else ""
+            problems.append(f"{where}: unknown setting '{key}'. Allowed: {', '.join(allowed)}.{extra}")
+    if schema not in SCHEMAS:
+        problems.append(f"{where}: 'schema' must be {' or '.join(str(s) for s in SCHEMAS)}, the prompts formats "
+                        f"this program reads.")
     answers_ok = _check_answers_table(where, data.get("answers"), tables, problems)
     groups = []
     for number, raw in enumerate(data.get("group", []) if isinstance(data.get("group", []), list) else [], 1):
@@ -197,57 +419,38 @@ def load(folder: Path, module: str, tables: dict, read_toml, problems: list[str]
     if not isinstance(raw_prompts, list) or not raw_prompts:
         problems.append(f"{where}: no prompts are declared. Add at least one [[prompt]].")
         raw_prompts = []
-    prompts, seen = [], set()
-    for number, raw in enumerate(raw_prompts, 1):
-        pid = raw.get("id") if isinstance(raw, dict) else None
-        at = f"{where}, prompt {pid or number}"
-        if not isinstance(raw, dict):
-            problems.append(f"{at}: describe the prompt with id, group, question, why and source.")
-            continue
-        for key in raw:
-            if key not in PROMPT_KEYS:
-                problems.append(f"{at}: unknown setting '{key}'. Allowed: {', '.join(PROMPT_KEYS)}.")
-        if not (isinstance(pid, str) and PROMPT_ID.match(pid)):
-            problems.append(f"{at}: 'id' must use only lower-case letters, digits and hyphens.")
-            continue
-        if pid in seen:
-            problems.append(f"{at}: another prompt already has this id.")
-        seen.add(pid)
-        if raw.get("group") not in dict(groups):
-            problems.append(f"{at}: 'group' must be one of the groups: {', '.join(k for k, _ in groups)}.")
-        for key in ("question", "why"):
-            if not _text(raw.get(key)):
-                problems.append(f"{at}: '{key}' is missing.")
-        if "how_to_check" in raw and not _text(raw["how_to_check"]):
-            problems.append(f"{at}: 'how_to_check' must be words when it is given.")
-        every = raw.get("review_every")
-        if not (isinstance(every, int) and not isinstance(every, bool) and 1 <= every <= 60):
-            problems.append(f"{at}: 'review_every' must be a number of months from 1 to 60.")
-        answered_by = raw.get("answered_by")
-        if not (answered_by == "none" or (isinstance(answered_by, str) and answered_by.count(".") == 2)):
-            problems.append(f"{at}: 'answered_by' must be \"none\" or a field written module.table.field.")
-        match = None
-        if "match" in raw:
-            if answered_by == "none":
-                problems.append(f"{at}: a prompt answered_by \"none\" cannot have a match.")
-            else:
-                match = _check_match(at, module, raw["match"], answered_by, problems)
-        elif isinstance(answered_by, str) and answered_by != "none":
-            problems.append(f"{at}: answered_by names a field, so 'match' must say exactly what that record "
-                            f"must hold before it is offered.")
-        write_in = raw.get("write_in")
-        if write_in is not None and not (isinstance(write_in, dict) and set(write_in) == set(WRITE_IN_KEYS)
-                                         and all(_text(v) for v in write_in.values())):
-            problems.append(f"{at}: 'write_in' needs a table (module.table) and a label.")
-            write_in = None
-        prompts.append(Prompt(id=pid, group=str(raw.get("group")), question=str(raw.get("question", "")),
-                              why=str(raw.get("why", "")), fits=_check_fits(at, raw.get("fits", {}), problems),
-                              answered_by=str(answered_by), review_every=every if isinstance(every, int) else 12,
-                              source=_check_source(at, raw.get("source"), problems),
-                              how_to_check=raw.get("how_to_check"), match=match, write_in=write_in))
-    if not answers_ok:
+    prompts, steps, seen = [], [], set()
+    for kind, raw_list, out in (("prompt", raw_prompts, prompts), ("step", data.get("step", []), steps)):
+        for number, raw in enumerate(raw_list if isinstance(raw_list, list) else [], 1):
+            pid = raw.get("id") if isinstance(raw, dict) else None
+            at = f"{where}, {kind} {pid or number}"
+            if not isinstance(raw, dict):
+                problems.append(f"{at}: describe the {kind} with id, question and what may answer it.")
+                continue
+            parsed = _parse_prompt(at, raw, module, groups, drills, kind == "step", problems)
+            if parsed is None:
+                continue
+            if parsed.id in seen:
+                problems.append(f"{at}: another prompt already has this id (prompts and steps share ids).")
+            seen.add(parsed.id)
+            out.append(parsed)
+    scenarios = []
+    for number, raw in enumerate(data.get("scenario", []) if isinstance(data.get("scenario", []), list) else [], 1):
+        sid = raw.get("id") if isinstance(raw, dict) else None
+        scenario = _parse_scenario(f"{where}, scenario {sid or number}", raw, seen, problems)
+        if scenario is not None:
+            if any(s.id == scenario.id for s in scenarios):
+                problems.append(f"{where}, scenario {scenario.id}: another scenario already has this id.")
+            scenarios.append(scenario)
+    runs_ok = True
+    if drills and (scenarios or "runs" in data or "run_steps" in data):
+        runs_ok = _check_run_tables(where, data, tables, problems)
+    if not answers_ok or not runs_ok:
         return None
-    return PromptSet(module=module, answers=data["answers"], groups=groups, prompts=prompts)
+    return PromptSet(module=module, answers=data["answers"], groups=groups, prompts=prompts,
+                     runs=data.get("runs") if scenarios else None,
+                     run_steps=data.get("run_steps") if scenarios else None, scenarios=scenarios, steps=steps,
+                     emergency=_parse_emergency(where, data.get("emergency", []), problems) if drills else {})
 
 
 def _column_at(path: str, table, tables_of) -> object | None:
@@ -263,14 +466,19 @@ def _column_at(path: str, table, tables_of) -> object | None:
 
 
 def cross_module_problems(prompt_set: PromptSet, by_name: dict) -> list[str]:
-    """Check each match against the tables it names, once those modules are loaded.
+    """Check each match, supply and has_records against the tables it names, once those modules are loaded.
 
     A match into a module that is not installed is fine: it simply finds nothing (decision 0104)."""
     problems = []
-    for prompt in prompt_set.prompts:
+    for prompt in prompt_set.prompts + prompt_set.steps:
+        where = f"In {FILE}, {'prompt' if prompt.group else 'step'} {prompt.id}"
+        if prompt.supply:
+            mod, _, tname = prompt.supply.partition(".")
+            table = by_name[mod].tables.get(tname) if mod in by_name else None
+            if mod in by_name and (table is None or not table.watch.get("supply")):
+                problems.append(f"{where}: supply '{prompt.supply}' is not a table with days of cover.")
         if prompt.match is None:
             continue
-        where = f"In {FILE}, prompt {prompt.id}"
         mod, _, tname = prompt.match.table.partition(".")
         if mod not in by_name:
             continue
@@ -301,4 +509,10 @@ def cross_module_problems(prompt_set: PromptSet, by_name: dict) -> list[str]:
             other, _, name = prompt.write_in["table"].partition(".")
             if other in by_name and name not in by_name[other].tables:
                 problems.append(f"{where}: write_in table '{prompt.write_in['table']}' does not exist.")
+    for scenario in prompt_set.scenarios:
+        wanted = scenario.fits.get("has_records")
+        if wanted:
+            mod, _, tname = wanted.partition(".")
+            if mod in by_name and tname not in by_name[mod].tables:
+                problems.append(f"In {FILE}, scenario {scenario.id}: has_records '{wanted}' is not a table.")
     return problems

@@ -1,0 +1,37 @@
+{% extends "base.html" %}
+{% block title %}Think it through · Dashboard Plus{% endblock %}
+{% block body %}
+<p class="muted"><a href="/">Home</a> · <a href="/questions/{{ module }}">Have you thought about…?</a></p>
+<h1>Think it through</h1>
+<p class="lead">These are short practice questions for a calm moment. They use records you chose to keep. They do not say your home is safe. If something is happening now, use local emergency instructions instead.</p>
+{% include "drill_first.html" %}
+
+<ul class="question-list drill-list">
+  {% for d in fitting %}
+  <li>
+    <a href="/drills/{{ module }}/{{ d.scenario.id }}"><strong>{{ d.scenario.title }}</strong></a>
+    <span class="muted">{{ d.scenario.steps | length }} questions</span>
+    {% if d.practised %}
+    <span>Practised on {{ show_date(d.practised.practised_on) }} · Look again on {{ show_date(d.practised.review_on) }}.</span>
+    {% if d.due(today) %}<span class="notice-inline">It is time to look at this again.</span>{% endif %}
+    {% if d.changed %}<span class="muted">{{ changed_words }}</span>{% endif %}
+    {% else %}<span class="muted">Not practised yet.</span>{% endif %}
+    {% if d.in_progress %}<span class="muted">A practice started on {{ show_date(d.in_progress.started_on) }} is saved to continue later.</span>{% endif %}
+  </li>
+  {% endfor %}
+</ul>
+
+{% if not_fitting %}
+<h2>Does not fit your settings</h2>
+<ul class="question-list">
+  {% for d in not_fitting %}
+  <li><a href="/drills/{{ module }}/{{ d.scenario.id }}">{{ d.scenario.title }}</a> <span class="muted">{{ d.reasons | join(" ") }}</span></li>
+  {% endfor %}
+</ul>
+<p class="muted"><a href="/settings">Change your settings</a> if your home or household has changed. Nothing is guessed from your address.</p>
+{% endif %}
+<style>
+  .drill-list li span { display: block; }
+  .notice-inline { font-weight: 600; }
+</style>
+{% endblock %}

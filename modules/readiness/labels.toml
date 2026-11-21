@@ -9,3 +9,25 @@ columns.review_on = { label = "Look again on", help = "A reminder you choose, no
 columns.note = { label = "Note", help = "Optional. Leave out medical details; keep those in People." }
 columns.record = { label = "Record used" }
 columns.record_check = { label = "Record check" }
+
+[tables.drill_runs]
+home = "more"
+form = ["scenario", "started_on", "practised_on", "review_on", "status"]
+list = ["scenario", "started_on", "practised_on", "review_on", "status"]
+columns.scenario = { label = "Situation", help = "The drill's short name. It is easier to practise from Think it through." }
+columns.scenario_version = { label = "Version" }
+columns.started_on = { label = "Started on" }
+columns.practised_on = { label = "Practised on" }
+columns.review_on = { label = "Look again on", help = "A reminder you choose, not an official deadline." }
+columns.status = { label = "Where it stands" }
+
+[tables.drill_steps]
+home = "more"
+form = ["run", "step", "choice", "own_words"]
+list = ["run", "step", "choice"]
+columns.run = { label = "Practice run" }
+columns.step = { label = "Step" }
+columns.choice = { label = "Your answer" }
+columns.own_words = { label = "Your own words", help = "Private. It stays on this computer and is never exported or shown to a helper." }
+columns.record = { label = "Record chosen" }
+columns.record_check = { label = "Record check" }

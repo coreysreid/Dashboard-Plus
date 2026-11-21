@@ -4,6 +4,7 @@
 <p class="muted"><a href="/">Home</a> · {{ title }}</p>
 <h1>Have you thought about…?</h1>
 <p class="lead">Questions to think through while things are calm. Answer as many or as few as you like, in any order.</p>
+{% if drills_link %}<p><a href="{{ drills_link }}">Think it through</a>: a few situations walked through step by step.</p>{% endif %}
 
 <div class="card">
   {% if coverage.not_fit == 0 %}

@@ -834,3 +834,13 @@ first_due = "today-13"
 next_due = "today+1"
 last_done = "today-6"
 paused = false
+
+# A "Think it through" practice run (decision 0108): which drill, when it was practised and when to look
+# again. Each step's own words are private and never part of an example.
+[[readiness.drill_runs]]
+scenario = "power-72-hours"
+scenario_version = 1
+started_on = "today-5"
+practised_on = "today-5"
+review_on = "today+180"
+status = "practised"

@@ -125,6 +125,11 @@ STAGES = [
      "recorded; a task with no date is under No date yet.", {"goto": "/to-do/month", "module": "routines"}),
     ("18x-routines", "Routines", "The household's own repeating tasks: the repeat it chose, the next date and when "
      "each was last done.", {"goto": "/t/routines__routines", "module": "routines"}),
+    ("18y-drills", "Think it through", "Eight calm practice runs, the emergency number for the household's country "
+     "first, when each was practised and when to look again; drills that do not fit the settings listed apart.",
+     {"goto": "/drills/readiness", "module": "readiness"}),
+    ("18z-drill", "One drill", "Its questions in order, Start or Not now, its sources with the date each was checked, "
+     "and earlier practice.", {"goto": "/drills/readiness/pipe-in-wall", "module": "readiness"}),
     ("19-needs-attention", "Needs attention", "Days of water with the working shown, running low, use-by "
      "and due dates, and details worth filling in.", {"goto": "/attention"}),
     ("19b-drinking-water", "Drinking water counted today", "Each water item behind Home's days of water, as a "

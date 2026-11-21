@@ -434,6 +434,37 @@ function expect(condition, message) { if (!condition) throw new Failed(message);
     }
   }
 
+  async function checkDrills() {  // Think it through (decision 0108): a step, Continue later, own words behind Show
+    const d = plan.drills;
+    await goto('/drills/readiness');
+    expect((await text('.drill-first')).includes(`first: ${d.number}`), `Think it through should name the emergency number ${d.number} first.`);
+    await Promise.all([page.waitForNavigation(), page.click(`a[href="/drills/readiness/${d.scenario}"]`)]);
+    expect((await text('main')).includes('Sources and local limits'), 'A drill should list its sources.');
+    await submit('.drill-start button[type=submit]');
+    await page.setViewportSize({ width: 320, height: 800 });
+    const wide = await page.evaluate(() => document.documentElement.scrollWidth);
+    expect(wide <= 321, `A drill step is ${wide} pixels wide on a 320-pixel screen.`);
+    await page.setViewportSize({ width: 1280, height: 800 });
+    await page.check('input[name=choice][value=plan]');
+    await page.fill('#own_words', d.words);
+    await submit('button[name=action][value=later]');
+    expect((await text('[role=status]')).includes('it is not marked as practised yet'), 'Continue later should say it is not marked as practised.');
+    await submit('.drill-start button[type=submit]');
+    expect((await text('main')).includes(d.record), `Step 2 should offer the household's own record "${d.record}".`);
+    expect(!(await page.isChecked('input[name=record]:not([value=""])')), 'A record must not be chosen before the person chooses it.');
+    for (let step = 2; step <= d.steps; step++) {
+      await page.check('input[name=choice][value=check]');
+      await submit('button[name=action][value=next]');
+    }
+    await submit('button:text-is("Save this practice")');
+    expect((await text('[role=status]')).startsWith('Practised on'), 'Saving the practice should confirm "Practised on … · Look again on …".');
+    expect(!(await html()).includes(d.words), 'The practice page sent the household\'s own words before Show was pressed.');
+    await page.locator('button.secret').first().click();
+    await page.locator('span', { hasText: d.words }).waitFor({ timeout: 5000 }).catch(() => {});
+    expect((await text('main')).includes(d.words), 'Pressing Show did not show the household\'s own words.');
+    ok(`drills: "${d.scenario}" names ${d.number}, Continue later is not practised, "${d.record}" offered not chosen, saved with own words behind Show, fits 320 pixels`);
+  }
+
   async function checkPrivateDetail() {
     const p = plan.private;
     await goto('/t/people__important_info');
@@ -498,6 +529,7 @@ function expect(condition, message) { if (!condition) throw new Failed(message);
       if (plan.review) await checkReview();
       if (plan.questions) await checkQuestions();
       if (plan.charts) await checkCharts();
+      if (plan.drills) await checkDrills();
       if (plan.private) { await checkPrivateDetail(); await checkPrivateSheet(); }
       await checkClose();
     }

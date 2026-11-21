@@ -9,8 +9,16 @@
 #   pets = true           the household has pets; mobility_needs = true: someone has mobility or care needs
 # answered_by: the field that may help, or "none". It is only offered as "You already recorded this. Does it
 # answer the question?" when `match` holds exactly, and a person always chooses the answer.
-schema = 1
+#
+# Schema 2 (decision 0108) adds "Think it through" drills at the end of this file: [[scenario]] lists its
+# steps in order, by id. A step is a [[prompt]] above (shared: answering it in a drill also counts on the
+# Questions page) or a drill-only [[step]] (never listed as a question). `missing` is the exact sentence
+# shown when nothing is recorded; `caution` is shown with any record offered. Practice runs are kept in
+# `runs`, and each step's choice and the person's own words (private, never travelling) in `run_steps`.
+schema = 2
 answers = "answers"
+runs = "drill_runs"
+run_steps = "drill_steps"
 
 [[group]]
 key = "fire"
@@ -78,6 +86,7 @@ question = "Have you thought about where everyone would meet after leaving the h
 why = "A shared meeting place can help people account for one another."
 fits = {}
 answered_by = "none"
+missing = "You haven't written down an outside meeting place. This is your own answer; no record decides it."
 review_every = 12
 source = { title = "US Fire Administration, Home Fire Escape Plans", url = "https://www.usfa.fema.gov/prevention/home-fires/prepare-for-fire/home-fire-escape-plans/", checked = "2026-11-16" }
 
@@ -99,6 +108,8 @@ why = "Knowing where alarms are helps a household keep its record current."
 fits = {}
 answered_by = "home_layout.equipment.last_tested"
 match = { table = "home_layout.equipment", where = { kind = "smoke_alarm" }, filled = ["place", "last_tested"] }
+missing = "You haven't recorded a smoke alarm with its place and the date it was last checked."
+caution = "A recorded check date says when someone last checked. It does not say the alarm works today."
 review_every = 12
 source = { title = "US Fire Administration, Home Fire Escape Plans", url = "https://www.usfa.fema.gov/prevention/home-fires/prepare-for-fire/home-fire-escape-plans/", checked = "2026-11-16" }
 
@@ -190,6 +201,7 @@ question = "Have you thought about where you would get local storm warnings?"
 why = "A household needs a source of current local information."
 fits = {hazards = ["storm"]}
 answered_by = "none"
+missing = "You haven't recorded which official warning source to check. A forecast track is not a warning for your street."
 review_every = 12
 source = { title = "NZ Civil Defence Get Ready, Storms", url = "https://getready.govt.nz/emergency/storms", checked = "2026-11-16" }
 
@@ -361,6 +373,7 @@ question = "Have you thought about which food needs attention if the fridge lose
 why = "Food storage changes during an outage."
 fits = {}
 answered_by = "none"
+missing = "No food plan is recorded. Your stock list is an inventory, not proof that food is still fine to eat; check local health advice."
 review_every = 12
 source = { title = "US CDC, What to Do to Protect Yourself During a Power Outage", url = "https://www.cdc.gov/natural-disasters/response/what-to-do-protect-yourself-during-a-power-outage.html", checked = "2026-11-16" }
 
@@ -381,6 +394,7 @@ question = "Have you thought about where you would get outage updates if the int
 why = "An alternative information source may help."
 fits = {}
 answered_by = "none"
+missing = "You haven't recorded an outage update source."
 review_every = 12
 source = { title = "US CDC, What to Do to Protect Yourself During a Power Outage", url = "https://www.cdc.gov/natural-disasters/response/what-to-do-protect-yourself-during-a-power-outage.html", checked = "2026-11-16" }
 
@@ -538,3 +552,313 @@ fits = {}
 answered_by = "none"
 review_every = 12
 source = { title = "NZ Civil Defence Get Ready, Make a Plan", url = "https://getready.govt.nz/prepared/household/make-a-plan", checked = "2026-11-16" }
+
+# ---- Think it through (decision 0108) --------------------------------------------------------------------
+# Eight calm practice runs about invented situations, from Lane B's draft (workbench/drafts/think_it_through,
+# now in git history). The situations and every question are original to Dashboard Plus. They are not
+# instructions for a real incident and never say a household is safe or ready. A record is only ever offered
+# to look at; a person chooses every answer. Sources were opened and checked on 21 November 2026; a source
+# limited to a country is shown only to a household whose Settings name that country. Emergency numbers are
+# shown only for a country with its own official source; anywhere else the drill says to use the local one.
+
+[[emergency]]
+country = "Australia"
+number = "000"
+source = { title = "Fire and Rescue NSW, Home escape plans", url = "https://www.fire.nsw.gov.au/page.php?id=883", checked = "2026-11-21" }
+
+[[emergency]]
+country = "United States"
+number = "911"
+source = { title = "US National 911 Program", url = "https://www.911.gov/", checked = "2026-11-21" }
+
+[[emergency]]
+country = "United Kingdom"
+number = "999"
+source = { title = "UK government, 999 and 112: the UK's national emergency numbers", url = "https://www.gov.uk/guidance/999-and-112-the-uks-national-emergency-numbers", checked = "2026-11-21" }
+
+# -- Drill-only steps, in the order the drills use them. Each says exactly what is offered and, in
+# `missing`, the words shown when nothing is recorded.
+
+[[step]]
+id = "pipe-notice"
+question = "What sign might tell you water had been leaking before you noticed it, and how long could that have gone unseen?"
+answered_by = "none"
+missing = "No leak-check plan is recorded. Think about how you would notice and whom you would ask."
+
+[[step]]
+id = "pipe-shutoff"
+question = "Where is the water shut-off you would check, and could everyone who needs it find it?"
+answered_by = "home_layout.shutoffs.place"
+match = { table = "home_layout.shutoffs", where = { kind = "water" }, filled = ["place"] }
+missing = "You haven't recorded where your water shut-off is."
+caution = "Any access details stay private on the shut-off's own record. This drill does not tell you to operate anything."
+
+[[step]]
+id = "pipe-who"
+question = "Who would you contact for help with the leak or the damaged wall?"
+answered_by = "people.roles.person"
+match = { table = "people.roles", where = { role = "tradesperson" }, filled = ["person.phone"] }
+missing = "You haven't recorded a person to call about a leak."
+
+[[step]]
+id = "pipe-after"
+question = "What would you want to check or photograph once the situation has settled?"
+answered_by = "none"
+missing = "No follow-up is recorded yet."
+
+[[step]]
+id = "fire-other-way"
+question = "If the usual doorway could not be used, what other way out would your household check in person?"
+answered_by = "home_layout.exits.place"
+match = { table = "home_layout.exits", filled = ["place"] }
+missing = "You haven't recorded another possible way out."
+caution = "A way out or a door you recorded is a possible path to check in person. Dashboard Plus cannot confirm that any route is clear or usable in a fire."
+
+[[step]]
+id = "fire-building-plan"
+question = "If this is a shared building, what does its own fire plan tell your household to do?"
+fits = { home_type = ["apartment", "townhouse"] }
+answered_by = "none"
+missing = "You haven't checked your building's fire instructions here. Some buildings ask residents to leave and others to stay put; only your building's own plan can say which."
+
+[[step]]
+id = "kitchen-who"
+question = "Who is likely to be in the kitchen or nearby at dinner, and how would you alert them?"
+answered_by = "people.people.name"
+match = { table = "people.people", where = { lives_here = true }, filled = ["name"] }
+missing = "You haven't recorded who is usually at home; add or check People."
+
+[[step]]
+id = "kitchen-ways-out"
+question = "Which ways from the kitchen lead outside without relying on the cooking area?"
+answered_by = "stock.connections.place"
+match = { table = "stock.connections", where = { kind = "outside_door" }, filled = ["place"] }
+missing = "You haven't recorded a way out from the kitchen area."
+caution = "A connection between places shows how rooms join. It is not a checked escape route."
+
+[[step]]
+id = "kitchen-alarm"
+question = "Which alarm is recorded near the kitchen, and when did someone last check it?"
+answered_by = "home_layout.equipment.last_tested"
+match = { table = "home_layout.equipment", where = { kind = "smoke_alarm" }, filled = ["place", "last_tested"] }
+missing = "You haven't recorded an alarm and check date near the kitchen."
+caution = "A recorded check date says when someone last checked. It does not say the alarm works today."
+
+[[step]]
+id = "breakin-caller"
+question = "If you believed someone was entering while people were home, who would phone the local emergency service and what address would they give?"
+answered_by = "people.people.phone"
+match = { table = "people.people", where = { lives_here = true }, filled = ["phone"] }
+missing = "You haven't recorded who would call or the address to give."
+
+[[step]]
+id = "breakin-help"
+question = "How would you account for children, visitors or anyone who needs help, without assuming where they sleep?"
+answered_by = "none"
+missing = "You haven't discussed who may need help at night."
+
+[[step]]
+id = "breakin-unchecked"
+question = "What part of your plan still depends on a lock, door or phone you have not checked?"
+answered_by = "none"
+missing = "You haven't checked those parts of the plan here. A recorded door says nothing about locks or security."
+
+[[step]]
+id = "breakin-after"
+question = "Who would you contact after the immediate danger has passed?"
+answered_by = "people.roles.person"
+match = { table = "people.roles", where = { role = ["emergency_contact", "neighbour"] }, filled = ["person.phone"] }
+missing = "You haven't recorded a follow-up contact."
+
+[[step]]
+id = "car-which"
+question = "Which vehicle is this, and how would you describe where you are to someone helping?"
+answered_by = "vehicles.vehicles.name"
+match = { table = "vehicles.vehicles", filled = ["name"] }
+missing = "You haven't recorded this vehicle or a way to describe your location."
+caution = "Dashboard Plus does not know where a vehicle is now. You describe the road and the place yourself."
+
+[[step]]
+id = "car-who"
+question = "Who would you call about the breakdown, and is the number current?"
+answered_by = "vehicles.vehicles.roadside_contact"
+match = { table = "vehicles.vehicles", filled = ["roadside_contact.phone"] }
+missing = "You haven't recorded who to call if this vehicle breaks down."
+
+[[step]]
+id = "car-kit"
+question = "What is in the vehicle now that you would rely on, and what might have been moved out?"
+answered_by = "vehicles.vehicles.emergency_kit"
+match = { table = "vehicles.vehicles", filled = ["emergency_kit"] }
+missing = "You haven't recorded a vehicle kit here; check the vehicle itself."
+caution = "This is the kit last recorded for the vehicle. It may have been moved or used since; check the vehicle itself."
+
+[[step]]
+id = "car-home-knows"
+question = "How would someone at home know where you are and whether you need collecting?"
+answered_by = "people.roles.person"
+match = { table = "people.roles", where = { role = "emergency_contact" }, filled = ["person.phone"] }
+missing = "You haven't recorded a contact or collection plan."
+
+[[step]]
+id = "power-needs"
+question = "Which people, pets or equipment in your home need power, and what would you check first?"
+answered_by = "people.important_info.detail"
+match = { table = "people.important_info", where = { kind = ["care_need", "condition"], "person.lives_here" = true }, filled = ["detail"] }
+missing = "You haven't recorded power-dependent needs here. That does not mean no one depends on electricity."
+
+[[step]]
+id = "power-lights"
+question = "Where are torches, batteries and any other recorded light sources, and are their amounts current?"
+answered_by = "stock.lots.place"
+match = { table = "stock.lots", where = { "item.category" = "power" }, positive = ["quantity"], filled = ["place"] }
+missing = "You haven't recorded where your light supplies are."
+caution = "Amounts are from your last count, not a check of what works today."
+
+[[step]]
+id = "water-authority"
+question = "Which authority issued the warning, what area and uses does it cover, and when will you check for an update?"
+answered_by = "none"
+missing = "You haven't recorded the current official warning or its update source. This drill knows of no current warning."
+
+[[step]]
+id = "water-stored"
+question = "Which water you have already recorded is separate from the tap supply and marked as drinking water?"
+answered_by = "stock.lots.place"
+match = { table = "stock.lots", where = { "item.category" = "water", "item.drinking" = true, "item.unit" = ["litres", "litre", "liters", "liter", "l"] }, positive = ["quantity"], filled = ["place"] }
+missing = "You haven't recorded drinking water in litres that you marked as drinking water."
+caution = "Stored water is offered from your last count. Only you, following the authority's advice, can say it is fit to drink."
+
+[[step]]
+id = "water-days"
+question = "Who in the household and which pets need that water, and what does your days-of-cover estimate say?"
+answered_by = "none"
+supply = "stock.items"
+missing = "A days estimate cannot be shown until people, pets and drinking-water litres are checked."
+
+[[step]]
+id = "water-other-uses"
+question = "What will you do for the uses your stored water does not cover, following the actual advisory?"
+answered_by = "none"
+missing = "You haven't decided how to follow this warning yet. Ordinary boiling does not fix every kind of contamination, so follow the authority's own words."
+
+[[step]]
+id = "cyclone-help"
+question = "Who might need help with a change of plan, and how will you reach them?"
+answered_by = "people.roles.person"
+match = { table = "people.roles", where = { role = "emergency_contact" }, filled = ["person.phone"] }
+missing = "You haven't recorded a contact and help plan for everyone."
+
+[[step]]
+id = "cyclone-go-bag"
+question = "Which go-bags, ways out and drinking water are currently recorded, and what would you check in person?"
+answered_by = "home_layout.equipment.place"
+match = { table = "home_layout.equipment", where = { kind = "go_bag" }, filled = ["place"] }
+missing = "You haven't recorded a go-bag with its place here."
+caution = "Records show what was written down, not what is in a bag today. Check in person."
+
+[[step]]
+id = "cyclone-plan-change"
+question = "If the authorities change the warning or advise leaving, what would need to change in your household's plan?"
+answered_by = "none"
+missing = "You haven't practised how you would update the plan. A forecast track is not an instruction to leave; the authorities' warnings decide that."
+
+# -- The eight drills, in the order shown.
+
+[[scenario]]
+id = "pipe-in-wall"
+version = 1
+title = "Water behind the bathroom wall"
+intro = "Imagine a damp patch appears on the bathroom wall and you suspect a pipe inside it has been leaking for a while. Nothing is happening now; this is a calm look at what you would check and whom you would ask."
+fits = {}
+sources = [
+  { title = "American Red Cross, Make a Plan", url = "https://www.redcross.org/get-help/how-to-prepare-for-emergencies/make-a-plan.html", checked = "2026-11-21" },
+  { title = "Water Corporation WA, Leaks (a utility provider)", url = "https://www.watercorporation.com.au/Help-and-advice/Water-issues/Leaks", checked = "2026-11-21", country = ["Australia"] },
+]
+steps = ["pipe-notice", "pipe-shutoff", "pipe-who", "pipe-after"]
+
+[[scenario]]
+id = "bedroom-fire-night"
+version = 1
+title = "A bedroom fire at night, alarm sounding"
+intro = "Imagine it is 9 pm, a smoke alarm sounds and there is a candle fire in a bedroom. This is a calm look at how people would be alerted, which ways out you would check and where everyone would meet."
+fits = {}
+sources = [
+  { title = "US Fire Administration, Home Fire Escape Plans", url = "https://www.usfa.fema.gov/prevention/home-fires/prepare-for-fire/home-fire-escape-plans/", checked = "2026-11-21" },
+  { title = "Fire and Rescue NSW, Home escape plans", url = "https://www.fire.nsw.gov.au/page.php?id=883", checked = "2026-11-21", country = ["Australia"] },
+  { title = "London Fire Brigade, Escape plan for blocks of flats", url = "https://www.london-fire.gov.uk/safety/the-home/escape-plan/escape-plan-blocks-of-flats/", checked = "2026-11-21", country = ["United Kingdom"] },
+]
+steps = ["fire-alarm-location", "fire-other-way", "fire-meeting-place", "fire-building-plan"]
+
+[[scenario]]
+id = "kitchen-fire"
+version = 1
+title = "A kitchen fire while dinner is cooking"
+intro = "Imagine a pan catches fire while dinner is being made. This drill is about alerting people and leaving; it does not teach firefighting or decide whether a fire is small enough to tackle."
+fits = {}
+sources = [
+  { title = "US Fire Administration, Cooking Fire Safety", url = "https://www.usfa.fema.gov/prevention/home-fires/prevent-fires/cooking/", checked = "2026-11-21" },
+  { title = "US Fire Administration, Home Fire Escape Plans", url = "https://www.usfa.fema.gov/prevention/home-fires/prepare-for-fire/home-fire-escape-plans/", checked = "2026-11-21" },
+  { title = "Fire and Rescue NSW, Home escape plans", url = "https://www.fire.nsw.gov.au/page.php?id=883", checked = "2026-11-21", country = ["Australia"] },
+]
+steps = ["kitchen-who", "kitchen-ways-out", "fire-meeting-place", "kitchen-alarm", "fire-building-plan"]
+
+[[scenario]]
+id = "break-in-night"
+version = 1
+title = "Someone breaking in at 2 am"
+intro = "Imagine you hear someone trying to get in at 2 am while people are home. This is a calm look at who would phone for help and who might need help; it gives no confrontation or legal advice, and your answers stay private on this computer."
+fits = {}
+sources = [
+  { title = "American Red Cross, Make a Plan", url = "https://www.redcross.org/get-help/how-to-prepare-for-emergencies/make-a-plan.html", checked = "2026-11-21" },
+  { title = "US National 911 Program", url = "https://www.911.gov/", checked = "2026-11-21", country = ["United States"] },
+  { title = "UK government, 999 and 112: the UK's national emergency numbers", url = "https://www.gov.uk/guidance/999-and-112-the-uks-national-emergency-numbers", checked = "2026-11-21", country = ["United Kingdom"] },
+  { title = "Fire and Rescue NSW, Home escape plans (names 000 for an emergency)", url = "https://www.fire.nsw.gov.au/page.php?id=883", checked = "2026-11-21", country = ["Australia"] },
+]
+steps = ["breakin-caller", "breakin-help", "breakin-unchecked", "breakin-after"]
+
+[[scenario]]
+id = "car-breakdown"
+version = 1
+title = "The car stops 150 km from home"
+intro = "Imagine your car breaks down on a trip, about 150 km from home. The distance is only part of the story, not a rule. This is a calm look at how you would describe where you are, whom you would call and what is really in the car."
+fits = { has_records = "vehicles.vehicles" }
+sources = [
+  { title = "American Red Cross, Make a Plan", url = "https://www.redcross.org/get-help/how-to-prepare-for-emergencies/make-a-plan.html", checked = "2026-11-21" },
+  { title = "National Highways, Breakdowns (UK motorways only)", url = "https://nationalhighways.co.uk/road-safety/breakdowns/", checked = "2026-11-21", country = ["United Kingdom"] },
+]
+steps = ["car-which", "car-who", "car-kit", "car-home-knows"]
+
+[[scenario]]
+id = "power-72-hours"
+version = 1
+title = "The power stays off for 72 hours"
+intro = "Imagine the power goes off and stays off for three days. This is a calm look at who depends on power, where your lights are and where you would get updates. It does not say how long any food keeps; local health advice does."
+fits = {}
+sources = [
+  { title = "US CDC, What to Do to Protect Yourself During a Power Outage (it also warns about carbon monoxide from generators used indoors)", url = "https://www.cdc.gov/natural-disasters/response/what-to-do-protect-yourself-during-a-power-outage.html", checked = "2026-11-21" },
+]
+steps = ["power-needs", "power-lights", "power-food-outage", "power-power-updates"]
+
+[[scenario]]
+id = "water-warning"
+version = 1
+title = "A region-wide warning not to drink tap water"
+intro = "Imagine the water authority for your region warns that tap water is not safe to drink. This is invented: no current warning is known here. The authority's own advisory decides what to do; this drill only asks what you would check."
+fits = {}
+sources = [
+  { title = "US CDC, How to Make Water Safe in an Emergency", url = "https://www.cdc.gov/water-emergency/about/index.html", checked = "2026-11-21" },
+]
+steps = ["water-authority", "water-stored", "water-days", "water-other-uses"]
+
+[[scenario]]
+id = "cyclone-forecast"
+version = 1
+title = "A cyclone or hurricane forecast near your suburb"
+intro = "Imagine a forecast track shows a cyclone or hurricane heading towards your area. A track on a map is not a warning that your suburb will be hit, and it is not an instruction to leave. This is a calm look at where you would check official warnings and what your plan would need."
+fits = { hazards = ["storm"], country = ["Australia", "United States"] }
+sources = [
+  { title = "Bureau of Meteorology, Tropical cyclones", url = "https://www.bom.gov.au/cyclone/", checked = "2026-11-21", country = ["Australia"] },
+  { title = "US National Weather Service, What to Do Before the Tropical Storm or Hurricane", url = "https://www.weather.gov/safety/hurricane-plan", checked = "2026-11-21", country = ["United States"] },
+]
+steps = ["storm-storm-alerts", "cyclone-help", "cyclone-go-bag", "cyclone-plan-change"]

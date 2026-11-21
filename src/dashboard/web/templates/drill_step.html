@@ -1,0 +1,57 @@
+{% extends "base.html" %}
+{% block title %}Step {{ number }}: {{ scenario.title }} · Dashboard Plus{% endblock %}
+{% block body %}
+<p class="muted"><a href="/">Home</a> · <a href="/drills/{{ module }}">Think it through</a> · <a href="/drills/{{ module }}/{{ scenario.id }}">{{ scenario.title }}</a></p>
+<p class="muted">Step {{ number }} of {{ total }}</p>
+<h1>{{ step.question }}</h1>
+{% include "drill_first.html" %}
+{% if errors %}<p class="problem" role="alert">{% for field, message in errors.items() %}{{ message }} {% endfor %}Nothing was saved yet.</p>{% endif %}
+{% if shared %}<p class="muted">This question is also on the Questions page. Your choice here counts there too{% if shared_answer %} (your answer there now: {{ answer_words[shared_answer.answer] }}){% endif %}.</p>{% endif %}
+{% if changed %}<p class="notice" role="status">{{ changed_words }}</p>{% endif %}
+
+<form class="record" method="post">
+  <input type="hidden" name="_csrf" value="{{ csrf_token }}">
+  <fieldset class="card" style="margin-top:0">
+    <legend style="font-weight:600">From your records</legend>
+    {% if candidates %}
+    <p class="help" style="margin-top:0">A record is something to look at, not an answer. Choose one if it helps you answer.</p>
+    {% for c in candidates %}
+    <label style="font-weight:400;display:block;margin:.4rem 0"><input type="radio" name="record" value="{{ c.key }}" {% if values.record == c.key or (not values and saved and saved.record == c.key) %}checked{% endif %}>
+      {% if c.private %}You have a private record that may relate to this question.{% else %}{{ c.text }}{% endif %}
+      <a href="{{ c.link }}">Open it</a></label>
+    {% endfor %}
+    <label style="font-weight:400;display:block;margin:.4rem 0"><input type="radio" name="record" value="" {% if not (values.record or (not values and saved and saved.record)) %}checked{% endif %}> None of these</label>
+    {% if step.caution %}<p class="help">{{ step.caution }}</p>{% endif %}
+    {% elif supply %}
+    <p style="margin-top:0">{{ supply.working }}</p>
+    <p class="help">An estimate from your last counts, not a promise. Your local authority's advice comes first.</p>
+    {% else %}
+    <p class="missing" style="margin-top:0">{{ step.missing }}</p>
+    {% if add %}<p><a href="{{ add.href }}">Add it now</a> <span class="muted">(opens {{ add.title }}; come back to this step afterwards)</span></p>{% endif %}
+    {% endif %}
+  </fieldset>
+
+  <fieldset class="card {% if errors.choice %}has-error{% endif %}">
+    <legend style="font-weight:600">Your answer</legend>
+    {% for key, words in choice_words.items() %}
+    <label style="font-weight:400;display:block;margin:.4rem 0"><input type="radio" name="choice" value="{{ key }}" required {% if values.choice == key or (not values and saved and saved.choice == key) %}checked{% endif %}> {{ words }}</label>
+    {% endfor %}
+  </fieldset>
+
+  <div><label for="own_words">In your own words (optional)</label>
+    <textarea id="own_words" name="own_words" rows="3"></textarea>
+    <p class="help">Private: it stays on this computer. It is never exported, sent to your other computers or shown to a helper.</p>
+    {% if saved and saved.has_words %}<p>Your words for this step are saved. <button type="button" class="quiet secret" data-reveal="/t/{{ steps_table }}/{{ saved.id }}/reveal?column=own_words" aria-label="Show your words for this step">Show</button> Typing here replaces them.</p>{% endif %}
+  </div>
+
+  <div class="drill-actions">
+    <button type="submit" name="action" value="next">{% if number < total %}Save and go on{% else %}Save and finish{% endif %}</button>
+    <button type="submit" name="action" value="later" class="quiet">Save and continue later</button>
+    {% if number > 1 %}<a href="/drills/{{ module }}/{{ scenario.id }}/runs/{{ run.id }}/{{ number - 1 }}">Back</a>{% endif %}
+  </div>
+</form>
+<p class="muted"><a href="/drills/{{ module }}/{{ scenario.id }}#sources">Sources and local limits</a></p>
+<style>
+  .drill-actions { display: flex; flex-wrap: wrap; gap: .8rem; align-items: center; margin-top: 1rem; }
+</style>
+{% endblock %}
