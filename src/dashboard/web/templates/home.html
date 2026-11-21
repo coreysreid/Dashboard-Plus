@@ -97,6 +97,8 @@
     <ul class="main-lists">
       <li><span><a class="list-name" href="{{ g.questions }}">Have you thought about…?</a>
         <span class="muted">Questions with their sources</span></span></li>
+      {% if g.drills %}<li><span><a class="list-name" href="{{ g.drills }}">Think it through</a>
+        <span class="muted">Calm practice runs for a few situations</span></span></li>{% endif %}
     </ul>
     {% endif %}
     {% if g.more %}

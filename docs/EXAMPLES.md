@@ -266,6 +266,18 @@ Why it may matter, its official source and the date checked, a record that may a
 
 ![One question](screenshots/smith/18u-question.png)
 
+### Think it through
+
+Eight calm practice runs, the emergency number for the household's country first, when each was practised and when to look again; drills that do not fit the settings listed apart.
+
+![Think it through](screenshots/smith/18v-drills.png)
+
+### One drill
+
+Its questions in order, Start or Not now, its sources with the date each was checked, and earlier practice.
+
+![One drill](screenshots/smith/18w-drill.png)
+
 ### Needs attention
 
 Days of water with the working shown, running low, use-by and due dates, and details worth filling in.
@@ -542,6 +554,18 @@ Why it may matter, its official source and the date checked, a record that may a
 
 ![One question](screenshots/garcia/18u-question.png)
 
+### Think it through
+
+Eight calm practice runs, the emergency number for the household's country first, when each was practised and when to look again; drills that do not fit the settings listed apart.
+
+![Think it through](screenshots/garcia/18v-drills.png)
+
+### One drill
+
+Its questions in order, Start or Not now, its sources with the date each was checked, and earlier practice.
+
+![One drill](screenshots/garcia/18w-drill.png)
+
 ### Needs attention
 
 Days of water with the working shown, running low, use-by and due dates, and details worth filling in.
@@ -811,6 +835,18 @@ Readiness: the questions that fit the household, by group, with how many have be
 Why it may matter, its official source and the date checked, a record that may already answer it for the household to confirm, and Yes, Not relevant, Not yet or Tell me more.
 
 ![One question](screenshots/taylor/18u-question.png)
+
+### Think it through
+
+Eight calm practice runs, the emergency number for the household's country first, when each was practised and when to look again; drills that do not fit the settings listed apart.
+
+![Think it through](screenshots/taylor/18v-drills.png)
+
+### One drill
+
+Its questions in order, Start or Not now, its sources with the date each was checked, and earlier practice.
+
+![One drill](screenshots/taylor/18w-drill.png)
 
 ### Needs attention
 

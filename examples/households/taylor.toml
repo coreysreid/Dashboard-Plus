@@ -425,3 +425,13 @@ answer = "not_yet"
 answered_on = "today-4"
 review_on = "today+26"
 note = "Chris is the contact, but his phone number still needs adding."
+
+# A "Think it through" practice run (decision 0108): which drill, when it was practised and when to look
+# again. Each step's own words are private and never part of an example.
+[[readiness.drill_runs]]
+scenario = "bedroom-fire-night"
+scenario_version = 1
+started_on = "today-1"
+practised_on = "today-1"
+review_on = "today+364"
+status = "practised"

@@ -5,7 +5,7 @@ from datetime import date
 
 from flask import Blueprint, abort, current_app, redirect, render_template, request, url_for
 
-from dashboard.core import dates, questions, records
+from dashboard.core import dates, drills, questions, records
 from dashboard.core.records import ValidationError
 from dashboard.web import display
 from dashboard.web.setup import HAZARDS
@@ -118,7 +118,9 @@ def question_list(module):
         groups.append({"key": key, "title": title, "questions": items})
     return render_template("questions.html", module=module, title=_title(module), groups=groups,
                            coverage=questions.coverage(found, prompt_set), filters=FILTERS, show=show,
-                           counts=counts, answer_words=ANSWER_WORDS, style=style, show_date=dates.show)
+                           counts=counts, answer_words=ANSWER_WORDS, style=style, show_date=dates.show,
+                           drills_link=url_for("drills.drill_list", module=module) if prompt_set.scenarios
+                           and module in drills.drill_sets(_registry()) else None)
 
 
 def _title(module: str) -> str:

@@ -117,6 +117,11 @@ STAGES = [
     ("18u-question", "One question", "Why it may matter, its official source and the date checked, a record that may "
      "already answer it for the household to confirm, and Yes, Not relevant, Not yet or Tell me more.",
      {"goto": "/questions/readiness/medical-kit-location", "module": "readiness"}),
+    ("18v-drills", "Think it through", "Eight calm practice runs, the emergency number for the household's country "
+     "first, when each was practised and when to look again; drills that do not fit the settings listed apart.",
+     {"goto": "/drills/readiness", "module": "readiness"}),
+    ("18w-drill", "One drill", "Its questions in order, Start or Not now, its sources with the date each was checked, "
+     "and earlier practice.", {"goto": "/drills/readiness/pipe-in-wall", "module": "readiness"}),
     ("19-needs-attention", "Needs attention", "Days of water with the working shown, running low, use-by "
      "and due dates, and details worth filling in.", {"goto": "/attention"}),
     ("20-supplies-sheet", "Emergency supplies sheet", "As it prints: water, first aid, power and food, and "

@@ -260,6 +260,8 @@ def create_app(shutdown_token: str, on_shutdown: Callable[[], None], report=None
     app.register_blueprint(restore_pages)
     app.register_blueprint(helper_api)
     app.register_blueprint(question_pages)
+    from dashboard.web.drills import drill_pages
+    app.register_blueprint(drill_pages)
 
     def for_helpers() -> bool:
         return request.path.startswith("/api/v1/")

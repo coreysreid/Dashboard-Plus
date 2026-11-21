@@ -1,0 +1,49 @@
+{% extends "base.html" %}
+{% block title %}{{ scenario.title }}: your practice · Dashboard Plus{% endblock %}
+{% block body %}
+<p class="muted"><a href="/">Home</a> · <a href="/drills/{{ module }}">Think it through</a> · <a href="/drills/{{ module }}/{{ scenario.id }}">{{ scenario.title }}</a></p>
+<h1>{{ scenario.title }}: your practice</h1>
+{% if saved and run.status == "practised" %}<p class="notice" role="status">Practised on {{ show_date(run.practised_on) }} · Look again on {{ show_date(run.review_on) }}</p>{% endif %}
+{% if errors %}<p class="problem" role="alert">{% for field, message in errors.items() %}{{ message }} {% endfor %}Nothing was saved yet.</p>{% endif %}
+{% include "drill_first.html" %}
+{% if run.status == "practised" %}
+<p><strong>Practised on {{ show_date(run.practised_on) }} · Look again on {{ show_date(run.review_on) }}</strong></p>
+{% else %}
+<p>Started on {{ show_date(run.started_on) }}. Not marked as practised yet.</p>
+{% endif %}
+<p class="muted">Practising means someone walked through these questions. It does not check or confirm the plan.</p>
+
+<ol class="drill-run">
+  {% for r in rows %}
+  <li><strong>{{ r.step.question }}</strong><br>
+    {% if r.answer %}{{ choice_words[r.answer.choice] }}{% if r.answer.record %}, using one of your records{% endif %}.
+    {% if r.answer.has_words %}Your own words: <button type="button" class="quiet secret" data-reveal="/t/{{ steps_table }}/{{ r.answer.id }}/reveal?column=own_words" aria-label="Show your words for step {{ r.number }}">Show</button>{% endif %}
+    {% else %}<span class="muted">Not answered yet.</span>{% endif %}
+    {% if run.status == "in_progress" %}<a href="/drills/{{ module }}/{{ scenario.id }}/runs/{{ run.id }}/{{ r.number }}">{% if r.answer %}Change{% else %}Answer{% endif %}</a>{% endif %}
+    {% if r.changed %}<br><span class="notice-inline">{{ changed_words }}</span>{% endif %}
+  </li>
+  {% endfor %}
+</ol>
+
+{% if run.status == "in_progress" %}
+{% if complete %}
+<form class="record" method="post" action="/drills/{{ module }}/{{ scenario.id }}/runs/{{ run.id }}/finish">
+  <input type="hidden" name="_csrf" value="{{ csrf_token }}">
+  <div class="{% if errors.practised_on %}has-error{% endif %}"><label for="practised_on">Practised on</label>
+    <input type="text" id="practised_on" name="practised_on" value="{{ practised_value }}" inputmode="numeric">
+    <p class="help">{{ date_hint }}.</p></div>
+  <div class="{% if errors.review_on %}has-error{% endif %}"><label for="review_on">Look again on</label>
+    <input type="text" id="review_on" name="review_on" value="{{ review_value }}" inputmode="numeric">
+    <p class="help">{{ date_hint }}. Suggested: in {{ scenario.review_every }} months. This is a reminder you choose, not an official deadline.</p></div>
+  <button type="submit">Save this practice</button>
+</form>
+{% else %}
+<p>Answer every step, then save this practice. Until then it stays saved to continue later.</p>
+{% endif %}
+{% endif %}
+<p><a href="/drills/{{ module }}/{{ scenario.id }}">Back to {{ scenario.title }}</a></p>
+<style>
+  .drill-run li { margin: .6rem 0; }
+  .notice-inline { font-weight: 600; }
+</style>
+{% endblock %}
