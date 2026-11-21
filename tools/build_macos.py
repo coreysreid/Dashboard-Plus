@@ -76,22 +76,36 @@ README_TXT = """Dashboard Plus for Mac (preview)
 Look after what your household has.
 
 This is an early test build. It is NOT signed or notarised by Apple yet, so
-macOS will warn you the first time. Only use it if you are helping to test.
+macOS will warn you. Only use it if you are helping to test. It is for Macs
+with Apple silicon (About This Mac shows a Chip starting M1, M2, M3 or later)
+on macOS 11 or later; it is not for a Mac whose Processor says Intel. If you
+got this from GitHub, the download is a ZIP inside a ZIP: open the inner
+Dashboard-Plus-...-macos-arm64-unsigned.zip to get this folder. The full steps
+are in README.md on the project page.
 
 To install:  drag "Dashboard Plus.app" into your Applications folder.
-To start:    double-click Dashboard Plus. Your browser opens the dashboard.
-To stop:     click "Save and exit" on the page.
+To start:    double-click Dashboard Plus. Look for a new page in your browser;
+             there is no app window or Dock icon.
+To stop:     click "Save and exit" on the page and wait for "Saved and closed".
 To get the page back: open Dashboard Plus again.
+To update:   Save and exit, then drag the new app into Applications and choose
+             Replace. Do not delete your records folder.
 
 The first time, macOS says it "could not verify" Dashboard Plus. Click Done
 (not Move to Bin). Then open System Settings, Privacy & Security, scroll down
-and click "Open Anyway" next to Dashboard Plus, and confirm. You only do this
-once. Do not change any other security setting.
+and click "Open Anyway" next to Dashboard Plus, and confirm. You may need to
+do this again for each new unsigned preview build. If the warning or button
+looks different, stop and tell us your macOS version and the words on screen.
+Do not turn off Mac security checks.
 
 Your records are kept in your own Mac account, in
 Library/Application Support/Dashboard Plus (in your home folder), not inside
-the app. Replacing or deleting the app does not touch them. Nothing is sent
-anywhere; the program only listens on this Mac.
+the app. Replacing or deleting the app does not erase them. Someone with access
+to this Mac account or its backups may be able to read them.
+
+Dashboard Plus runs on this Mac and does not send your records to an online
+service by itself. If you connect an online helper, information you allow it to
+read may be sent by that helper. Check Settings, Helpers before connecting one.
 """
 
 

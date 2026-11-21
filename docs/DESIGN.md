@@ -482,6 +482,11 @@ columns.returned_on = { type = "date", not_before = "lent_on" }
   history, batches and totals, in one transaction. If the record no longer
   matches `show_when` (a double click or an old page), nothing changes and the
   page says so.
+- `with_place` (on a single link column, naming a link column of the linked
+  table) shows that record's own place path after its name wherever the link is
+  shown or chosen: `meter = { type = "link", to = "home_layout.meters", with_place = "place" }`
+  reads "Water meter — Front yard › Meter box" (decision 0106). A blank place
+  shows just the name.
 - `not_before` (on a date column, naming another date column of the same
   table) refuses an earlier date when adding, editing or pressing an action:
   "Returned on can't be before Lent on.", from the labels. The same day is

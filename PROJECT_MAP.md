@@ -155,6 +155,7 @@ One record per decision, from `TEMPLATE.md`. Never deleted; reversed ones are ma
 | [0101](0101-review-speed-ups-and-allow-more.md) | Faster Review: Accept all asks first, then accepts group by group (each group all or nothing); tick boxes with Accept or Reject ticked (a group ticks whole); keys (Up/Down or J/K, A, R, Space) as a small script; Accept and Reject in one fixed column; "Allow 200 more today" per helper from a page with a one-use token (core 0008, history), the day being the household's own; 429 tells the helper to stop and ask | Accepted |
 | [0102](0102-helper-starting-prompt-and-stock-with-amount.md) | A starting message for the helper's assistant in Settings, Helpers (copy box) and as `GET /api/v1/guide` and the `dashboard_how_to_help` tool: its lists, fields, private fields by name, links to look up first, the stock model and today's limits, never records or the key; a new Stock item may carry its amount, use-by date and place as one suggestion, added with its first batch on Accept | Accepted |
 | [0103](0103-set-up-my-home.md) | Set up my home: one page for rooms and areas (Places), storage spots inside them and which rooms connect (new `stock__connections`, migration 0006 in Household stock); offered after the welcome and always on Home and Settings; `pair` in tables.toml refuses self-links and repeats either way round; doors to outside marked by kind; a deleted room takes its connections; nothing private | Accepted |
+| [0106](0106-mac-wording-meter-paths-sync-checks.md) | Mac preview wording follows the 21 November read-through (no absolute "nothing is sent", no "only once", two ZIPs, chip check); a link column may say `with_place` so Utilities shows the meter's full place path; Utilities still requires Home layout; sync check also names a pair pointing at nothing, with six more stage 1 tests | Accepted |
 | [TEMPLATE](TEMPLATE.md) | Blank record to copy for a new decision | recording a decision |
 
 ## docs/plans/  (summary: build plans for larger pieces of work, written before building)
@@ -404,7 +405,7 @@ Generate the next one with: python tools/make_migration.py stock --name <what_ch
 | Entry | What it is | Open it when |
 |---|---|---|
 | module.toml | Name, version, description; requires People (provider and fault contact) and Home layout (meter) | changing the module's details |
-| tables.toml | Services with a private account reference and notes, and two gap questions about the fault contact | adding a field or a gap question |
+| tables.toml | Services with a private account reference and notes, the meter shown with its place path (`with_place`), and two gap questions about the fault contact | adding a field or a gap question |
 | labels.toml | Friendly labels, help text (says what is private), form and list order | changing wording or order |
 | sheets.toml | Utility contacts sheet: service, provider, fault contact, their phone and the meter, with nothing private | changing what prints |
 | migrations/ | Numbered database changes | after changing tables.toml |
@@ -628,6 +629,7 @@ How to run them is in AGENTS.md.
 | test_api_contract.py | Tests that the published API description (openapi-v1.json) matches the real /api/v1 routes, errors and replies. | changing a helper route, reply or error code |
 | test_helper_starting_amounts.py | Tests for decision 0102: a new Stock item with its starting amount as one suggestion, and the helper's starting message. | changing starting amounts on suggestions or the starting message |
 | test_grouped_suggestions.py | Tests for receipt lines on suggestions and for suggestions that point at an earlier one in the same batch (decision 0097). | changing source lines, refs or grouped Review rows |
+| test_sync_extra_checks.py | Sync stage 1 extra checks from STAGE1_ACCEPTANCE.md: Utilities and Pets values, held People details, corrupt IDs and links, confinement, Set up my home rows. | changing sync checks or what may travel |
 | test_review_speedups.py | Tests for faster Review (decision 0101): Accept all by group, ticked rows, keys, fixed buttons and Allow 200 more today. | changing Accept all, ticked rows, Review keys or the daily limit |
 
 ## tools/  (summary: scripts that check, lock and build the project; run by CI)

@@ -58,7 +58,7 @@ TOTAL_KEYS = ("link", "amount", "into", "earliest", "starts_from")
 WATCH_KEYS = ("running_low", "expiring", "supply", "gaps")
 GAP_KEYS = ("missing", "none", "where", "message")
 COLUMN_KEYS = ("type", "required", "required_when", "default", "min", "max", "unit", "choices", "help", "sensitive",
-               "to", "on_delete", "not_before", "travels", "travels_when")
+               "to", "on_delete", "not_before", "travels", "travels_when", "with_place")
 LABEL_TABLE_KEYS = ("title", "columns", "form", "list", "empty", "home", "actions")
 LABEL_ACTION_KEYS = ("label", "done", "title", "intro", "undo")  # new words for an action's button, form, notice
 HOME_PLACES = ("main", "more")  # where a table sits on the home page: shown large, or in the line of links
@@ -93,6 +93,7 @@ class Column:
     help: str | None = None
     sensitive: bool = False
     to: str | None = None          # for link/links: "table" or "module.table"
+    with_place: str | None = None  # for link: a link column of the target that is shown after its name ("Water meter — Front yard › Meter box")
     on_delete: str = "restrict"
     required_when: dict = field(default_factory=dict)  # required only while another choice has a value
     not_before: str | None = None  # a date column of this table this date may not come before (decision 0075)
@@ -285,7 +286,7 @@ def _parse_column(file: str, table: str, name: str, raw, problems: list[str]) ->
                     unit=raw.get("unit"), help=raw.get("help"), sensitive=bool(raw.get("sensitive", False)),
                     to=raw.get("to"), on_delete=raw.get("on_delete", "restrict"),
                     required_when=raw.get("required_when") if isinstance(raw.get("required_when"), dict) else {},
-                    not_before=raw.get("not_before"))
+                    not_before=raw.get("not_before"), with_place=raw.get("with_place"))
     if "required_when" in raw and (not isinstance(raw["required_when"], dict) or len(raw["required_when"]) != 1):
         problems.append(f"{where}: required_when names one choice column and a value, like {{ category = \"water\" }}.")
     _parse_travels(where, raw, column, problems)
@@ -310,8 +311,10 @@ def _parse_column(file: str, table: str, name: str, raw, problems: list[str]) ->
             problems.append(f"{where}: a {kind} column needs 'to', naming the table it points at.")
         if column.on_delete not in ON_DELETE:
             problems.append(f"{where}: on_delete '{column.on_delete}' is not known.{_suggest(column.on_delete, ON_DELETE)}")
+        if "with_place" in raw and (kind != "link" or not isinstance(raw["with_place"], str)):
+            problems.append(f"{where}: 'with_place' names a link column of the linked table and only applies to a single link.")
     else:
-        for key in ("to", "on_delete"):
+        for key in ("to", "on_delete", "with_place"):
             if key in raw:
                 problems.append(f"{where}: '{key}' only applies to link columns.")
     if "unit" in raw and kind not in ("measure", "decimal", "integer"):

@@ -234,6 +234,33 @@ class UtilitiesModuleTests(UtilitiesTestCase):
         self.assertTrue(all(name.startswith("utilities__") for name in created), created)
         self.assertNotRegex(sql, r"(?m)^\s*(ALTER|DROP|UPDATE|INSERT|DELETE)\b")
 
+    def test_13_the_list_record_page_and_picker_show_the_meters_full_place_path(self):
+        yard = self.records.create("stock__places", {"name": "Front yard"})
+        box = self.records.create("stock__places", {"name": "Meter box", "inside": yard})
+        self.records.update("home_layout__meters", self.meter, {"name": "Water meter", "place": box})
+        service = self.service("Home water", kind="water")
+        client = self.client()
+        shown = "Water meter — Front yard › Meter box"
+        for path in ("/t/utilities__services", f"/t/utilities__services/{service}",
+                     "/sheet/utilities/utility_contacts"):
+            self.assertIn(shown, self.page(path, client), path)
+        self.records.update("stock__places", box, {"name": "Meter cupboard"})
+        self.assertIn("Water meter — Front yard › Meter cupboard", self.page("/t/utilities__services", client))
+        self.records.update("home_layout__meters", self.meter, {"place": None})  # no place: just the name
+        listed = self.page("/t/utilities__services", client)
+        self.assertIn("Water meter", listed)
+        self.assertNotIn("Water meter —", listed)
+
+    def test_14_with_place_is_checked_in_the_module_file_and_utilities_needs_home_layout(self):
+        module = modules.load_module(ROOT / "modules" / "utilities")
+        self.assertEqual(module.tables["services"].columns["meter"].with_place, "place")
+        self.assertEqual(module.requires, ["people", "home_layout"])  # decision 0106: no optional modules yet
+        problems = []
+        modules._check_tables("t", {"tables": {"x": {"title": "X", "description": "d",
+                                                    "columns": {"name": {"type": "text", "with_place": "place"}}}}},
+                              [], problems)
+        self.assertTrue(any("with_place" in p for p in problems), problems)
+
     def test_home_page_has_a_utilities_card_and_the_sheet_link(self):
         page = self.page("/")
         self.assertIn("/t/utilities__services", page)
