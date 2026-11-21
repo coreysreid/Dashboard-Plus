@@ -229,7 +229,7 @@ class FormActionLoadingTests(TempDirTestCase):
         module = modules.load_module(self.make_module(tables=FORM_TABLES, labels=None))
         action = module.tables["jobs"].actions[0]
         self.assertEqual(action["adds"], {"table": "work", "link": "job", "ask": ["done_on", "note"],
-                                          "values": {"kind": "check"}, "add_button": None})
+                                          "values": {"kind": "check"}, "add_button": None, "copy": {}})
         self.assertEqual(action["next_date"]["repeat"], {"count": "every", "unit": "unit"})
         self.assertEqual((action["show_when"], action["set"]), ({}, {}))  # neither is needed
         self.assertIn("Nothing was saved", action["messages"]["stale"])
@@ -270,7 +270,7 @@ class FormActionLoadingTests(TempDirTestCase):
                       self.problems('into = "last_done" }', 'into = "next_due" }'))
         self.assertIn("repeat: 'count' must name a whole-number column",
                       self.problems('count = "every"', 'count = "unit"'))
-        self.assertIn("whose choices are among weeks, months, years",
+        self.assertIn("whose choices are among days, weeks, months, years",
                       self.problems('choices = ["weeks", "months", "years"]', 'choices = ["weeks", "fortnights"]'))
         self.assertIn("'question' is the heading", self.problems('question = "When next?"', 'question = ""'))
 

@@ -70,6 +70,7 @@
   <header><nav>
     <a class="brand" href="/">Dashboard Plus</a>
     <a class="mode" href="/settings/helpers" title="Your records are kept on this computer and shared with no other device (decision 0082).">On this computer only{% if helper_count %} · {{ helper_count }} helper{{ "s" if helper_count != 1 }} can look{% endif %}</a>
+    <a href="/to-do">Things to do</a>
     <a href="/attention">Needs attention</a>
     <a href="/review">Review{% if review_count %} <span aria-label="{{ review_count }} waiting">({{ review_count }})</span>{% endif %}</a>
     <a href="/settings">Settings</a>

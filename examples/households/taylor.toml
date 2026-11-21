@@ -17,7 +17,7 @@ home_type = "apartment"
 storeys = 1
 mobility_needs = false
 hazards = ["flood", "snow", "storm"]
-modules = ["documents", "garden", "home_care", "home_layout", "lent_out", "medical", "people", "readiness", "stock", "utilities", "vehicles", "wine"]
+modules = ["documents", "garden", "home_care", "home_layout", "lent_out", "medical", "people", "readiness", "routines", "stock", "utilities", "vehicles", "wine"]
 
 # ---- People -----------------------------------------------------------------
 
@@ -425,3 +425,20 @@ answer = "not_yet"
 answered_on = "today-4"
 review_on = "today+26"
 note = "Chris is the contact, but his phone number still needs adding."
+
+# ---- Routines -----------------------------------------------------------------
+# Sam's first week: one routine with a date, and one written down with no date yet.
+
+[[routines.routines]]
+name = "Water the windowsill herbs"
+place = "Windowsill"
+repeat_count = 3
+repeat_unit = "days"
+first_due = "today+1"
+next_due = "today+1"
+paused = false
+
+[[routines.routines]]
+name = "Defrost the freezer"
+place = "Kitchen"
+paused = false

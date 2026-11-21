@@ -38,6 +38,13 @@
   .asked-actions form { margin: 0; }
 </style>
 {% endif %}
+{% if to_do %}
+<div class="card" id="to-do">
+  <div class="muted">Things to do</div>
+  <h2 style="margin-top:.2rem"><a href="/to-do">{% if to_do.today %}{{ to_do.today }} due or late today{% else %}Nothing due or late today{% endif %} · {{ to_do.week }} this week</a></h2>
+  <p class="muted" style="margin:.2rem 0">From the dates you recorded: today, this week, this month and this year. Each task is finished in its own list.</p>
+</div>
+{% endif %}
 {% if my_home %}
 <div class="card" id="my-home">
   <div class="muted">Your home</div>

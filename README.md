@@ -39,6 +39,15 @@ is new: keep a copy of anything important somewhere else too. See
 - **Needs attention:** what is running low, what expires soon, about how many
   days of water you have for the people (and pets) in the house, and details
   worth filling in, such as an emergency contact with no phone number.
+- **Things to do:** Today, This week, This month and This year (and No date
+  yet) in one place, from the dates you already recorded: Home care and Garden
+  jobs, alarm and kit checks, pet treatments, vehicle dates, document reviews,
+  things lent out, and **Routines**, your own repeating tasks such as watering
+  the pot plants or putting the bins out. Each task is finished the same way
+  as on its own page (Home care's Mark done, Garden's Mark done, or Open record
+  to update). Something late shows once, as "Due since", never as a pile of
+  missed days or a streak; a repeat only ever offers the next date, and Undo
+  puts a tick back straight after. Weeks start on the day you choose in Settings.
 - **Have you thought about…?** (Readiness) 49 calm questions about fire,
   flood, storms, heat, power cuts, medical needs and leaving home quickly, each
   with the official page it came from and the date that page was checked. Only

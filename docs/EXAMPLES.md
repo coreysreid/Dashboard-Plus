@@ -266,6 +266,24 @@ Why it may matter, its official source and the date checked, a record that may a
 
 ![One question](screenshots/smith/18u-question.png)
 
+### Things to do, Today
+
+What is due today and anything late, each shown once as Due since, with the button its own list uses: Mark done, Mark this occurrence done, or Open record to update.
+
+![Things to do, Today](screenshots/smith/18v-things-to-do.png)
+
+### Things to do, This month
+
+The calendar month by week, from the dates the household recorded; a task with no date is under No date yet.
+
+![Things to do, This month](screenshots/smith/18w-things-to-do-month.png)
+
+### Routines
+
+The household's own repeating tasks: the repeat it chose, the next date and when each was last done.
+
+![Routines](screenshots/smith/18x-routines.png)
+
 ### Needs attention
 
 Days of water with the working shown, running low, use-by and due dates, and details worth filling in.
@@ -542,6 +560,24 @@ Why it may matter, its official source and the date checked, a record that may a
 
 ![One question](screenshots/garcia/18u-question.png)
 
+### Things to do, Today
+
+What is due today and anything late, each shown once as Due since, with the button its own list uses: Mark done, Mark this occurrence done, or Open record to update.
+
+![Things to do, Today](screenshots/garcia/18v-things-to-do.png)
+
+### Things to do, This month
+
+The calendar month by week, from the dates the household recorded; a task with no date is under No date yet.
+
+![Things to do, This month](screenshots/garcia/18w-things-to-do-month.png)
+
+### Routines
+
+The household's own repeating tasks: the repeat it chose, the next date and when each was last done.
+
+![Routines](screenshots/garcia/18x-routines.png)
+
 ### Needs attention
 
 Days of water with the working shown, running low, use-by and due dates, and details worth filling in.
@@ -811,6 +847,24 @@ Readiness: the questions that fit the household, by group, with how many have be
 Why it may matter, its official source and the date checked, a record that may already answer it for the household to confirm, and Yes, Not relevant, Not yet or Tell me more.
 
 ![One question](screenshots/taylor/18u-question.png)
+
+### Things to do, Today
+
+What is due today and anything late, each shown once as Due since, with the button its own list uses: Mark done, Mark this occurrence done, or Open record to update.
+
+![Things to do, Today](screenshots/taylor/18v-things-to-do.png)
+
+### Things to do, This month
+
+The calendar month by week, from the dates the household recorded; a task with no date is under No date yet.
+
+![Things to do, This month](screenshots/taylor/18w-things-to-do-month.png)
+
+### Routines
+
+The household's own repeating tasks: the repeat it chose, the next date and when each was last done.
+
+![Routines](screenshots/taylor/18x-routines.png)
 
 ### Needs attention
 

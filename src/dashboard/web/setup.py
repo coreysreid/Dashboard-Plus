@@ -3,7 +3,7 @@ from __future__ import annotations
 
 from flask import Blueprint, current_app, g, redirect, render_template, request, url_for
 
-from dashboard.core import records, settings
+from dashboard.core import checklist, records, settings
 from datetime import datetime
 
 from dashboard.core import backups
@@ -122,7 +122,8 @@ def _current() -> dict:
             "country": get("household.country", ""), "region": get("household.region", ""),
             "home_type": get("household.home_type", ""), "storeys": get("household.storeys"),
             "mobility_needs": get("household.mobility_needs", False),
-            "hazards": get("household.hazards", []), "second_copy": get("backups.second_copy", True)}
+            "hazards": get("household.hazards", []), "second_copy": get("backups.second_copy", True),
+            "week_starts": checklist.week_start(_conn())}
 
 
 def _when(text: str | None) -> str | None:
@@ -193,6 +194,9 @@ def _save(form, mode: str):
         errors["home_type"] = "Choose one of the listed kinds of home."
     hazards = [h for h in form.getlist("hazards") if h in dict(HAZARDS)]
     country, region = _place(form, errors)
+    week_starts = form.get("week_starts")
+    if week_starts is not None and week_starts not in checklist.WEEK_STARTS:
+        errors["week_starts"] = "Choose Monday, Sunday or Saturday."
     chosen_modules = set(form.getlist("modules"))
     for module in current_app.config["LOADED"]:
         needed = [r for r in module.requires if r not in chosen_modules]
@@ -220,6 +224,8 @@ def _save(form, mode: str):
               "household.hazards": hazards, "backups.second_copy": bool(form.get("second_copy"))}
     if people is not None:
         values["household.people"] = people
+    if week_starts:  # only Settings asks; the first-run questions leave the household's usual week
+        values[checklist.WEEK_START_KEY] = week_starts
     if form.get("timezone"):
         values["household.timezone"] = form.get("timezone")[:64]
     for key, value in values.items():
@@ -257,6 +263,7 @@ def _form_values(form) -> dict:
             "region": form.get("region_other" if other else "region", ""), "country_is_other": other, "home_type": form.get("home_type", ""),
             "storeys": form.get("storeys"), "mobility_needs": bool(form.get("mobility_needs")),
             "hazards": form.getlist("hazards"), "second_copy": bool(form.get("second_copy")),
+            "week_starts": form.get("week_starts", ""),
             "names": [form.get(f"name_{i}", "") for i in range(1, NAME_SLOTS + 1)],
             "pet_names": [form.get(f"pet_{i}", "") for i in range(1, PET_SLOTS + 1)],
             "pet_kinds": [form.get(f"pet_kind_{i}", "") for i in range(1, PET_SLOTS + 1)]}

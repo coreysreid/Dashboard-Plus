@@ -117,6 +117,13 @@ STAGES = [
     ("18u-question", "One question", "Why it may matter, its official source and the date checked, a record that may "
      "already answer it for the household to confirm, and Yes, Not relevant, Not yet or Tell me more.",
      {"goto": "/questions/readiness/medical-kit-location", "module": "readiness"}),
+    ("18v-things-to-do", "Things to do, Today", "What is due today and anything late, each shown once as Due since, "
+     "with the button its own list uses: Mark done, Mark this occurrence done, or Open record to update.",
+     {"goto": "/to-do", "module": "routines"}),
+    ("18w-things-to-do-month", "Things to do, This month", "The calendar month by week, from the dates the household "
+     "recorded; a task with no date is under No date yet.", {"goto": "/to-do/month", "module": "routines"}),
+    ("18x-routines", "Routines", "The household's own repeating tasks: the repeat it chose, the next date and when "
+     "each was last done.", {"goto": "/t/routines__routines", "module": "routines"}),
     ("19-needs-attention", "Needs attention", "Days of water with the working shown, running low, use-by "
      "and due dates, and details worth filling in.", {"goto": "/attention"}),
     ("20-supplies-sheet", "Emergency supplies sheet", "As it prints: water, first aid, power and food, and "

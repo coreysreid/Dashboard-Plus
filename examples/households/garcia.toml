@@ -16,7 +16,7 @@ home_type = "apartment"
 storeys = 1
 mobility_needs = true
 hazards = ["earthquake", "heat", "power"]
-modules = ["documents", "garden", "home_care", "home_layout", "lent_out", "medical", "people", "pets", "readiness", "stock", "utilities", "vehicles"]
+modules = ["documents", "garden", "home_care", "home_layout", "lent_out", "medical", "people", "pets", "readiness", "routines", "stock", "utilities", "vehicles"]
 
 # ---- People -----------------------------------------------------------------
 
@@ -820,3 +820,17 @@ answer = "not_yet"
 answered_on = "today-10"
 review_on = "today+20"
 note = "Bags are by the apartment entry."
+
+# ---- Routines -----------------------------------------------------------------
+# One weekly routine, due tomorrow. Nothing is late.
+
+[[routines.routines]]
+name = "Sort the recycling"
+place = "Kitchen"
+who = "Luis Garcia"
+repeat_count = 1
+repeat_unit = "weeks"
+first_due = "today-13"
+next_due = "today+1"
+last_done = "today-6"
+paused = false

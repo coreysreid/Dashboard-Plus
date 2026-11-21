@@ -304,11 +304,14 @@ def run_action(table, record_id, key):
         abort(404)
     if action.get("adds"):  # an action with a small form, such as Mark done (decision 0091)
         return action_form.save_action_form(table, record_id, key)
+    back = action_form.back_to()  # pressed on Things to do (decision 0107): go back there
     try:
         store.action(table, record_id, key)
     except records.RecordNotFound:
         abort(404)
     except (records.ActionNotAvailable, records.ValidationError) as error:
+        if back and isinstance(error, records.ActionNotAvailable):
+            return redirect(f"{back}?changed=1")
         if isinstance(error, records.ValidationError):  # e.g. "Returned on can't be before Lent on."
             columns = info.table.columns
             said = [m if m[:1].isupper() else f"{display.column_label(info, columns[f])} {m}" if f in columns else m
@@ -318,6 +321,8 @@ def run_action(table, record_id, key):
             message = str(error)
         record = store.get(table, record_id)
         return _render_form(info, store, record, {"_form": message}, False, record=record, status=409)
+    if back:
+        return redirect(action_form.back_with(back, table, record_id, pressed=key))
     return redirect(url_for("pages.edit_record", table=table, record_id=record_id, done=key))
 
 

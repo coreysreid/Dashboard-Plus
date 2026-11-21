@@ -247,6 +247,34 @@ function expect(condition, message) { if (!condition) throw new Failed(message);
     ok(`Mark done: "${job.name}" saved once with Do again by ${job.next} (double click), then undone back to ${before}`);
   }
 
+  async function checkThingsToDo() {  // Things to do (decision 0107): a late routine once, ticked once, undone, at phone width
+    const name = plan.routine.name;
+    await page.setViewportSize({ width: 320, height: 900 });
+    await goto('/to-do');
+    const wide = await page.evaluate(() => document.documentElement.scrollWidth);
+    expect(wide <= 320, `Things to do should fit a 320 pixel phone screen; it is ${wide} pixels wide.`);
+    const row = page.locator('li.todo-row', { hasText: name });
+    expect(await row.count() === 1, `"${name}" should show once on Today; it shows ${await row.count()} times.`);
+    const when = await row.locator('.todo-when').innerText();
+    expect(when.startsWith('Due since'), `A late routine should say "Due since"; it says "${when}".`);
+    await Promise.all([page.waitForNavigation(), page.click(`a[aria-label="Mark this occurrence done: ${name}"]`)]);
+    expect(!(await page.locator('input[name=next_choice]:checked').count()), 'No next date should be chosen before the person chooses one.');
+    await page.check('input[name=next_choice][value=repeat]');
+    const [response] = await Promise.all([page.waitForNavigation(), page.dblclick('form.record button[type=submit]')]);
+    expect(response && response.ok(), `Saving the routine answered ${response ? response.status() : 'nothing'}.`);
+    expect(new URL(page.url()).pathname === '/to-do', `Saving from Things to do should come back to it; it went to ${page.url()}.`);
+    const said = await text('[role=status]');
+    expect(said.includes('Marked done on'), `After the tick Things to do should say "Marked done on"; it says "${said}".`);
+    expect(await page.locator('#done-title + ul li', { hasText: name }).count() === 1, `"${name}" should be listed once under Done today after a double click.`);
+    expect(!(await page.locator('section:not([aria-labelledby=done-title]) li.todo-row', { hasText: name }).count()), `"${name}" should leave Late once it is done.`);
+    await Promise.all([page.waitForNavigation(), page.click(`button[aria-label="Undo this tick: ${name}"]`)]);
+    expect((await text('[role=status]')).startsWith('Undone.'), `Undo should say "Undone."; it says "${await text('[role=status]')}".`);
+    const back = await page.locator('li.todo-row', { hasText: name }).locator('.todo-when').innerText();
+    expect(back === when, `After Undo "${name}" should be back as "${when}"; it says "${back}".`);
+    await page.setViewportSize({ width: 1280, height: 900 });
+    ok(`Things to do: "${name}" shown once as ${when}, ticked once at 320 pixels, then undone back to the same date`);
+  }
+
   async function checkReceiptLine(r) {  // a receipt line the helper could not match (decision 0105)
     expect((await text('[data-line=waiting]')).includes(r.line), 'The unmatched receipt line should still wait after Accept all.');
     await page.setViewportSize({ width: 320, height: 800 });
@@ -436,6 +464,7 @@ function expect(condition, message) { if (!condition) throw new Failed(message);
       if (plan.stock) { await checkStockIn(); await checkStocktake(); }
       if (plan.loan) await checkMarkReturned();
       if (plan.job) await checkMarkDone();
+      if (plan.routine) await checkThingsToDo();
       if (plan.csv) await checkImport();
       if (plan.review) await checkReview();
       if (plan.questions) await checkQuestions();

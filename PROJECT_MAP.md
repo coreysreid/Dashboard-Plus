@@ -158,6 +158,7 @@ One record per decision, from `TEMPLATE.md`. Never deleted; reversed ones are ma
 | [0104](0104-readiness-questions.md) | Readiness switched on from Lane B's draft: 49 sourced "Have you thought about…?" questions in a module `prompts.toml` (schema 1), fitted only from Settings; exact record matches offered, never assumed; answers Yes / Not relevant / Not yet as ordinary records with the record's permanent ID and a revision fingerprint; back for review on the chosen date, after 12 months or when that record changes; at most two on Home; "looked at", never "safe"; helpers look but never answer (`suggestions = false`); answers travel; drills later reuse the same answers | Accepted |
 | [0105](0105-receipt-review-unmatched-and-repeat.md) | Receipts on Review: each Stock in in one line with its unit, group words true under group-by-group Accept, the result names what was added; a receipt line a helper could not match waits for Choose item or Skip line (undoable until Finish receipt review); a receipt that looks sent before (same dated items, amounts and units, never its text) waits for Reject this copy or Keep this as another purchase, rechecked under the write lock; card-shaped numbers refused | Accepted |
 | [0106](0106-mac-wording-meter-paths-sync-checks.md) | Mac preview wording follows the 21 November read-through (no absolute "nothing is sent", no "only once", two ZIPs, chip check); a link column may say `with_place` so Utilities shows the meter's full place path; Utilities still requires Home layout; sync check also names a pair pointing at nothing, with six more stage 1 tests | Accepted |
+| [0107](0107-routine-checklists.md) | Things to do: Today, This week, This month, This year and No date yet over every table whose reminder says `wording = "due"`, read fresh with no stored ticks; each row finished by its record's own Mark done form, a one-step button that ends the reminder, or Open record to update; a late task shows once as Due since; Routines module (repeat in days to years, Mark this occurrence done, Skip this time, Undo); `adds.copy`, `latest` without `into`, `repeat.from`/`anchor` and `counts_as`; household week start in Settings | Accepted |
 | [TEMPLATE](TEMPLATE.md) | Blank record to copy for a new decision | recording a decision |
 
 ## docs/plans/  (summary: build plans for larger pieces of work, written before building)
@@ -244,6 +245,7 @@ numbered migrations. See docs/DESIGN.md section 6 for the module contract.
 | people/ | Who lives here, who to call, important details, emergency sheets | changing people, contacts or the emergency sheet |
 | pets/ | Pets, their vet, treatments and medicine with due dates, weigh-ins, vet visits; a pet details sheet | changing pets |
 | readiness/ | "Have you thought about…?": 49 questions in seven groups with official sources, the household's answers, and what may already be recorded | changing readiness questions or answers |
+| routines/ | Routines: your own repeating tasks with a repeat you choose (days to years), one next date at a time, and each time done or skipped; shown on Things to do | changing routines |
 | stock/ | Pantry, water, first aid, tools and hardware, with places (and which rooms connect), minimums and use-by dates | changing stock, running low or days of water |
 | utilities/ | Utilities and accounts: each service, its provider, fault contact (from People) and meter (from Home layout), a private account reference; a Utility contacts sheet | changing utility records |
 | vehicles/ | Each vehicle, who to call if it breaks down, registration, insurance and service dates; a Vehicles sheet | changing vehicle records |
@@ -397,6 +399,21 @@ Generate the next one with: python tools/make_migration.py readiness --name <wha
 |---|---|---|
 | 0001_first_tables.sql | The answers table, generated from tables.toml | checking how answers are stored |
 
+## modules/routines/  (summary: the Routines module, files only; the household's own repeating tasks, promoted from Lane B's routine checklist draft)
+| Entry | What it is | Open it when |
+|---|---|---|
+| module.toml | Name, version, description; requires People (who) and Household stock (places) | changing the module's details |
+| tables.toml | Routines with an optional repeat (days, weeks, months, years) and one next date; Done or skipped keeps the planned date; Mark this occurrence done and Skip this time | adding a field or changing the actions |
+| labels.toml | Friendly labels, help text, form and list order, routines main on home | changing wording or order |
+| migrations/ | Numbered database changes | after changing tables.toml |
+
+## modules/routines/migrations/  (summary: this module's numbered database changes; never edit a released one)
+Generate the next one with: python tools/make_migration.py routines --name <what_changed>
+
+| Entry | What it is | Open it when |
+|---|---|---|
+| 0001_first_tables.sql | The module's first tables, generated from tables.toml | checking how the tables are stored |
+
 ## modules/stock/  (summary: the Household stock module, files only)
 | Entry | What it is | Open it when |
 |---|---|---|
@@ -516,6 +533,7 @@ Generate the next one with: python tools/make_migration.py wine --name <what_cha
 | schema.py | Turn a module's declared tables into SQL, and work out its next migration. | changing how tables are built |
 | suggest.py | Suggestions while typing: a household's own records first, then a module's list of common things. | changing how picking from a list matches |
 | watch.py | Work out what is running low, what expires soon, how many days of supplies are on hand, and what is worth filling in. | changing running low, expiring, days of cover or gaps |
+| checklist.py | Things to do: Today, This week, This month and This year over the due dates modules already keep (decision 0107). | changing which tasks show, their windows, week start or what counts as done |
 | startup.py | Prepare the database at start-up: load modules, back up if needed, migrate, and give permanent record IDs. | changing what happens at start-up |
 | helper_address.py | The small address file a connector reads to find Dashboard after a restart: only the address and a run ID (0092). | changing how a connector finds Dashboard |
 | helpers.py | Helpers the household has given a key to: making a key, checking it, replacing it, and turning it off. | changing how helper keys work |
@@ -550,6 +568,7 @@ Add a new file with the next number instead of changing an old one.
 | setup.py | The first-run wizard and the settings page: who lives here, the home, modules and backups. | changing setup questions or settings |
 | home_setup.py | Set up my home: rooms and areas, the storage spots inside them, and which rooms connect, on one page. | changing the Set up my home page |
 | action_form.py | An action's small form, such as Mark done: open it, save it once as one operation, and Undo it (decision 0091). | changing Mark done or Undo screens |
+| checklist.py | Things to do: the Today, This week, This month, This year and No date yet pages, each row with its record's own action. | changing the Things to do pages or the Home card |
 | count.py | Count this batch: a stocktake of one batch, reviewed and then saved as one stocktake correction. | changing the stocktake screens |
 | home.py | Group the home page by area: each module's main lists shown large, its other lists as one line of links. | changing how the home page is grouped or ordered |
 | questions.py | The "Have you thought about…?" screens: the questions by group, one question with its four answers, and Not now. | changing the question screens |
@@ -578,6 +597,7 @@ Add a new file with the next number instead of changing an old one.
 | rows.html | One page of grid rows (also loaded as you scroll) | changing a row |
 | form.html | Add and edit forms, delete and restore, and history | changing the form |
 | action_form.html | An action's small form, such as Mark done: what it asks, the next-date choice, Save once | changing the Mark done wording |
+| checklist.html | Things to do: the tabs, rows with their own button, Done with Undo, and the year by month | changing the Things to do wording |
 | _*.html | Pieces shared by both forms: one field (_field), and the forms' styles and browser code (_form_script) | changing every form at once |
 | question*.html | "Have you thought about…?": the questions by group with what was looked at (questions), and one question with Yes, Not relevant, Not yet and Tell me more (question) | changing the question wording |
 | home_setup.html | Set up my home: add rooms and storage spots, rename, move or delete them, and connect rooms; no scripts needed | changing the Set up my home wording |
@@ -607,6 +627,7 @@ How to run them is in AGENTS.md.
 | test_csv_import.py | Tests for Import from a spreadsheet: reading a CSV, matching columns, the dry run, staging for Review and Accept. | changing spreadsheet import |
 | test_modules.py | Tests for loading module folders and the plain-language problems they report. | changing module rules |
 | test_actions.py | Tests for actions: one-step buttons like Mark returned, the date order rule `not_before` (decision 0075), and the checks on actions that add a record (decision 0091). | changing actions or date order |
+| test_routine_checklists.py | Tests for Things to do and Routines (decision 0107): the eleven checks in Lane B's routine checklist draft, and more. | changing Things to do, Routines or repeats |
 | test_example_garden.py | Exercise the garden example with a temporary database and synthetic harvest. | changing the garden example |
 | test_records.py | Tests for saving, checking, linking, deleting and restoring records, and their history. | changing how records are saved |
 | test_schema.py | Tests for turning declared tables into SQL and generating the next migration. | changing table building |
@@ -674,6 +695,6 @@ How to run them is in AGENTS.md.
 | load_example.py | Load a made-up example household into an empty data folder, for demos, screenshots and testing. | demonstrating or testing with realistic data |
 | make_screenshots.py | Make the example screenshots: run each example household through every stage of using the dashboard. | the screens changed and the gallery needs remaking |
 | screenshots.js | Browser steps for make_screenshots.py (Node and Playwright) | changing how screenshots are taken |
-| browser_check.py | Click through the real dashboard in Chromium (setup, Set up my home, dates, stock in, stocktake, Mark returned, Mark done, spreadsheet import, Review keys and buttons, readiness questions, private details, closing) and fail loudly. | a screen or its browser code changed |
+| browser_check.py | Click through the real dashboard in Chromium (setup, Set up my home, dates, stock in, stocktake, Mark returned, Mark done, Things to do, spreadsheet import, Review keys and buttons, readiness questions, private details, closing) and fail loudly. | a screen or its browser code changed |
 | browser_check.js | Browser steps for browser_check.py (Node and Playwright): what is clicked and checked | changing what the browser check clicks |
 | make_project_map.py | Build PROJECT_MAP.md from every INDEX.md in the repository. | changing the map format |
