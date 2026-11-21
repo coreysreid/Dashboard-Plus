@@ -653,6 +653,39 @@ Use made-up data only; never copy anything from Corey's real household.
     the new starting message (0102) once it is built and list every place a
     first-time assistant would still go wrong.
 
+95. **"Think it through" drills, written (Corey's priority).** Corey wants
+    calm, ahead-of-time walk-throughs of real situations, each a short run of
+    questions that point at the household's own records. Write our own
+    wording (see INFLUENCES.md: credit the general idea only, never a book's
+    selection, order or words; never name a feature after a book or person),
+    and cite a public safety body with the date checked for every safety
+    fact. Start with: a leaking pipe inside a bathroom wall (how long might it
+    have run before you noticed; where is your water shut-off); a bedroom
+    fire at night from a candle with the smoke alarm sounding (your way out,
+    your meeting place); a kitchen fire at dinner time; someone breaking in
+    at 2am; a car breakdown 150 km from home; a 72-hour power cut; a state
+    warning that tap water is unsafe across the whole region (for example
+    South East Queensland); a cyclone or hurricane forecast to track near
+    your suburb. For each: the questions, which record each answer comes
+    from (Home layout shut-offs and ways out, Set up my home rooms and
+    outside doors (0103), smoke alarms, stock such as torches, batteries and
+    days of drinking water, Vehicles, People and Who to call), what the
+    household sees when a record is missing ("You haven't recorded where
+    your water shut-off is"), what is saved (their own answers, a date
+    practised), a review date, and which country or region it applies to.
+    Never give medical or legal advice; say when to call 000/911/999 first.
+96. **Routine checklists, designed for the engine.** Corey wants checklists
+    "for making sure today's tasks are done, the weekly, the monthly and the
+    annual". Reconcile your seasonal_checklists draft with Home care repeats
+    (0091), Garden jobs and Needs attention: what a Today, This week, This
+    month and This year screen shows, how a tick is saved, what repeats, and
+    what happens to a missed one (never shaming). Acceptance checks Lane A
+    can test.
+97. **Charts, first two, re-checked.** Re-read your charts draft against the
+    now-shipped modules and pick the two most useful first charts (for
+    example drinking-water days over time and stock spend once 92 exists),
+    with exact data, empty states and an accessible table version.
+
 ## Brief for Lane B, batch 3 (done)
 
 > You are Lane B, the checker and drafter. You have full internet access for
