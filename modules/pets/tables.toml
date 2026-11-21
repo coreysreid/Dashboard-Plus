@@ -16,7 +16,7 @@ columns.species = { type = "choice", required = true, default = "dog", choices =
 ] }
 columns.breed = { type = "text" }
 columns.birthday = { type = "date" }
-columns.microchip = { type = "text" }
+columns.microchip = { type = "text", travels = "always" }
 columns.owner = { type = "link", to = "people.people", on_delete = "clear" }
 columns.vet = { type = "link", to = "people.people", on_delete = "clear" }
 columns.vaccinations_due = { type = "date" }

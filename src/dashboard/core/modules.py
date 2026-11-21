@@ -25,7 +25,9 @@ NUMERIC_TYPES = ("integer", "decimal", "money", "measure")
 ON_DELETE = ("restrict", "cascade", "clear")
 # Columns every table gets automatically (DESIGN.md section 3); modules may not declare them.
 SYSTEM_COLUMNS = ("id", "created_at", "updated_at", "review_status", "source", "batch_id",
-                  "edited_by_person", "deleted_at")
+                  "edited_by_person", "deleted_at", "global_id", "row_revision")  # the last two: decision 0100
+# Whether a column's value may travel to another computer of the household later (decision 0100).
+TRAVELS = ("always", "never")
 
 MODULE_KEYS = ("name", "title", "version", "description", "core_api", "kind", "requires", "outbound_hosts")
 MODULE_REQUIRED = ("name", "title", "version", "description", "core_api", "kind")
@@ -53,7 +55,7 @@ TOTAL_KEYS = ("link", "amount", "into", "earliest", "starts_from")
 WATCH_KEYS = ("running_low", "expiring", "supply", "gaps")
 GAP_KEYS = ("missing", "none", "where", "message")
 COLUMN_KEYS = ("type", "required", "required_when", "default", "min", "max", "unit", "choices", "help", "sensitive",
-               "to", "on_delete", "not_before")
+               "to", "on_delete", "not_before", "travels", "travels_when")
 LABEL_TABLE_KEYS = ("title", "columns", "form", "list", "empty", "home", "actions")
 LABEL_ACTION_KEYS = ("label", "done", "title", "intro", "undo")  # new words for an action's button, form, notice
 HOME_PLACES = ("main", "more")  # where a table sits on the home page: shown large, or in the line of links
@@ -91,6 +93,11 @@ class Column:
     on_delete: str = "restrict"
     required_when: dict = field(default_factory=dict)  # required only while another choice has a value
     not_before: str | None = None  # a date column of this table this date may not come before (decision 0075)
+    # Decision 0100: "always", "never" (stays on the computer where it was typed) or "when" (travels only
+    # while the one choice column in `travels_when` holds a listed choice, e.g. {"kind": ["allergy"]}).
+    travels: str = "always"
+    travels_when: dict = field(default_factory=dict)
+    travels_reviewed: bool = True  # False for a private column that does not say; it is then kept local
 
 
 @dataclass
@@ -207,6 +214,51 @@ def _parse_choices(where: str, raw, problems: list[str]) -> list[Choice]:
     return choices
 
 
+def _parse_travels(where: str, raw: dict, column: Column, problems: list[str]) -> None:
+    """Read `travels` or `travels_when` (decision 0100). A private column that says neither stays on this
+    computer and is listed as not yet reviewed; anything unclear is a problem, never a guess."""
+    if "travels" in raw and "travels_when" in raw:
+        problems.append(f"{where}: use either travels or travels_when, not both.")
+        column.travels, column.travels_reviewed = "never", False
+        return
+    if "travels" in raw:
+        if raw["travels"] not in TRAVELS:
+            problems.append(f"{where}: travels must be \"always\" or \"never\" (never keeps the value on the "
+                            f"computer where it was typed).")
+            column.travels, column.travels_reviewed = "never", False
+        else:
+            column.travels = raw["travels"]
+        return
+    if "travels_when" in raw:
+        rule = raw["travels_when"]
+        values = next(iter(rule.values()), None) if isinstance(rule, dict) and len(rule) == 1 else None
+        if not isinstance(values, list) or not values or not all(isinstance(v, str) for v in values):
+            problems.append(f"{where}: travels_when names one choice column and the choices that let the value "
+                            f"travel, like {{ kind = [\"allergy\", \"medication\"] }}.")
+            column.travels, column.travels_reviewed = "never", False
+            return
+        column.travels, column.travels_when = "when", {next(iter(rule)): list(values)}
+        return
+    if column.sensitive:
+        column.travels, column.travels_reviewed = "never", False
+
+
+def _check_travels_when(file: str, table: Table, problems: list[str]) -> None:
+    """A travels_when rule must name another choice column of the same table that itself always travels,
+    and only that column's own choices."""
+    for column in table.columns.values():
+        if column.travels != "when":
+            continue
+        (other, allowed), = column.travels_when.items()
+        target = table.columns.get(other)
+        keys = [c.key for c in target.choices] if target is not None else []
+        if column.type == "links" or target is None or target is column or target.type != "choice" \
+                or target.travels != "always" or not set(allowed) <= set(keys):
+            problems.append(f"In {file}, table '{table.name}', column '{column.name}': travels_when must name "
+                            f"another choice column of this table that always travels, and some of its choices.")
+            column.travels, column.travels_when, column.travels_reviewed = "never", {}, False
+
+
 def _parse_column(file: str, table: str, name: str, raw, problems: list[str]) -> Column | None:
     where = f"In {file}, table '{table}', column '{name}'"
     if not NAME.match(name):
@@ -232,6 +284,7 @@ def _parse_column(file: str, table: str, name: str, raw, problems: list[str]) ->
                     not_before=raw.get("not_before"))
     if "required_when" in raw and (not isinstance(raw["required_when"], dict) or len(raw["required_when"]) != 1):
         problems.append(f"{where}: required_when names one choice column and a value, like {{ category = \"water\" }}.")
+    _parse_travels(where, raw, column, problems)
     for bound in ("min", "max"):
         if bound in raw:
             if kind not in NUMERIC_TYPES:
@@ -571,6 +624,7 @@ def _check_tables(module: str, data: dict, requires: list[str], problems: list[s
         tables[tname] = Table(tname, str(raw.get("title", tname)), raw.get("description"), columns, watch,
                               raw.get("adjusts", {}))
     for table in tables.values():
+        _check_travels_when(file, table, problems)
         for column in table.columns.values():
             for other, value in column.required_when.items():
                 col = table.columns.get(other)

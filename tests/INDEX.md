@@ -26,6 +26,7 @@ How to run them is in AGENTS.md.
 | test_data_safety.py | Tests for the data-safety fixes from the November 2026 review: restore, stock counts, decimals and backups. | changing delete, restore, stock counts or backups |
 | test_robustness.py | Tests for the robustness fixes from the November 2026 review: modules, switching off, long lists, privacy. | changing module loading, settings or long lists |
 | test_adjusts.py | Tests for records that change a linked quantity (stock in and out), and the checks on `adjusts`. | changing stock in and out |
+| test_sync_stage1.py | Tests for sync stage 1: permanent record IDs, revisions, the filtered change log and the travel rule (decision 0100). | changing record IDs, the change log or what may travel |
 | test_backups.py | Tests for automatic backups: daily, on close, in two places, and keeping only recent ones. | changing backups |
 | test_setup.py | Tests for the first-run wizard and the settings page. | changing setup or settings |
 | test_sheets.py | Tests for printable sheets: checking sheets.toml and printing the emergency sheet. | changing sheets |

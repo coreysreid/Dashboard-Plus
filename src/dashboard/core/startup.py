@@ -1,4 +1,4 @@
-"""Prepare the database at start-up: load modules, back up if needed, and migrate."""
+"""Prepare the database at start-up: load modules, back up if needed, migrate, and give permanent record IDs."""
 from __future__ import annotations
 
 import logging
@@ -6,7 +6,7 @@ from dataclasses import dataclass, field
 from datetime import datetime, timezone
 from pathlib import Path
 
-from dashboard.core import db, helpers, migrations, modules
+from dashboard.core import db, helpers, migrations, modules, sync
 
 log = logging.getLogger("dashboard.startup")
 DATABASE_FILE = "dashboard.db"
@@ -77,9 +77,15 @@ def prepare(data_dir: Path, modules_dir: Path | None = None) -> StartupReport:
     try:
         # One backup before anything changes, then the core must update; a module whose update fails is
         # left out and reported, like any broken module.
+        backed_up = []
+
+        def back_up() -> None:
+            if not backed_up:
+                stamp = datetime.now().strftime("%Y%m%d-%H%M%S")
+                backed_up.append(db.backup_to(conn, data_dir / "backups" / f"before-update-{stamp}.db"))
+
         if migrations.plan(conn, tracks) and any(migrations.applied(conn).values()):
-            stamp = datetime.now().strftime("%Y%m%d-%H%M%S")
-            db.backup_to(conn, data_dir / "backups" / f"before-update-{stamp}.db")
+            back_up()
         applied = migrations.migrate(conn, {migrations.CORE_TRACK: tracks[migrations.CORE_TRACK]})
         for module in list(found):
             try:
@@ -93,6 +99,9 @@ def prepare(data_dir: Path, modules_dir: Path | None = None) -> StartupReport:
                 failures.setdefault(module.name, []).append(
                     f"Its tables.toml describes {', '.join(missing)}, which its migrations do not create. "
                     f"Run tools/make_migration.py for it.")
+        # Decision 0100: after every module's own migrations, the core gives each record a permanent ID and
+        # revision (backing up first if records already exist and none was made above).
+        sync.prepare(conn, [m for m in found if m.name not in failures], back_up, failures)
         found = modules.dependency_order([m for m in found if m.name not in failures], failures)
         record_modules(conn, found)
         stopped = helpers.stop_unfinished_key_changes(conn, data_dir)  # decision 0093

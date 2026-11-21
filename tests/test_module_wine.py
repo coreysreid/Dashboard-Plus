@@ -85,7 +85,7 @@ class WineModuleTests(WineTestCase):
         before = self.records.get("wine__wines", self.wine)
         self.records.update("wine__wines", self.wine, {"region": "Another Fictional Valley"})
         after = self.records.get("wine__wines", self.wine)
-        changed = {k for k in before if before[k] != after[k]} - {"updated_at", "edited_by_person"}
+        changed = {k for k in before if before[k] != after[k]} - {"updated_at", "edited_by_person", "row_revision"}
         self.assertEqual(changed, {"region"})
         self.assertEqual((after["name"], after["producer"], after["vintage"], after["grape"]),
                          ("Evening Red", "Example Vineyard", 2023, "Shiraz"))

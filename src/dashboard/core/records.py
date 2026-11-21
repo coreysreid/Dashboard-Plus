@@ -10,7 +10,7 @@ from datetime import date, datetime, timezone
 from decimal import Decimal, InvalidOperation
 from typing import Callable
 
-from dashboard.core import dates, db
+from dashboard.core import dates, db, sync
 from dashboard.core.modules import Column, Module, Table
 from dashboard.core.schema import join_table_name, table_name, target_table
 from dashboard.errors import PlainError
@@ -274,13 +274,19 @@ class Records:
 
     # ----- writing ------------------------------------------------------------
     def _audit(self, actor: str, action: str, info: TableInfo, record_id: int, before, after,
-               batch_id: int | None = None) -> None:
+               batch_id: int | None = None, effect: bool = False) -> None:
+        """Write one history entry and, for a record change, its line in the change log (decision 0100).
+
+        The history (core__audit) keeps everything, for this computer only. The change log keeps the
+        record's permanent ID, revision and changed field names, with only the values that may travel."""
+        at = self.clock()
         self.conn.execute(
             "INSERT INTO core__audit (at, actor, action, table_name, record_id, before, after, batch_id) "
             "VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
-            (self.clock(), actor, action, info.name, record_id,
+            (at, actor, action, info.name, record_id,
              json.dumps(before, sort_keys=True) if before is not None else None,
              json.dumps(after, sort_keys=True) if after is not None else None, batch_id))
+        sync.record(self.conn, info, record_id, action, before, after, effect=effect, at=at)
 
     @staticmethod
     def _check_actor(actor: str) -> None:
@@ -337,7 +343,8 @@ class Records:
             assignments["edited_by_person"] = 1
         self.conn.execute(f"UPDATE {target.name} SET {', '.join(f'{k} = ?' for k in assignments)} WHERE id = ?",
                           list(assignments.values()) + [target_id])
-        self._audit(actor, "update", target, target_id, {rule["quantity"]: before}, {rule["quantity"]: after})
+        self._audit(actor, "update", target, target_id, {rule["quantity"]: before}, {rule["quantity"]: after},
+                    effect=True)
         if target.table.total:
             owner = self.conn.execute(f"SELECT {target.table.total['link']} FROM {target.name} WHERE id = ?",
                                       (target_id,)).fetchone()[0]
@@ -431,32 +438,37 @@ class Records:
         made: dict[int, int] = {}
         self.conn.execute("BEGIN IMMEDIATE")
         try:
-            for position, (name, values) in enumerate(entries):
-                self.conn.execute("SAVEPOINT check_entry")
-                try:
-                    info = self.info(name)
-                    derived = self._derived(info)
-                    if starting_amounts:
-                        derived -= {c for other in self._totals_into(info) for c in other.table.total["starts_from"]}
-                    clash = sorted(set(values) & derived)
-                    if clash:
-                        problems[position] = {c: "is worked out from its batches; suggest a Stock in instead."
-                                              for c in clash}
-                        self.conn.execute("ROLLBACK TO check_entry")
-                    else:
-                        if resolve is not None:
-                            values = resolve(values, made)
-                        made[position] = self._create(info, values, actor, "confirmed", None)
-                except ValidationError as error:
-                    problems[position] = dict(error.problems)
-                    self.conn.execute("ROLLBACK TO check_entry")
-                except PlainError as error:
-                    problems[position] = {"": str(error)}
-                    self.conn.execute("ROLLBACK TO check_entry")
-                self.conn.execute("RELEASE check_entry")
+            with db.operation(self.conn):  # a dry run is one operation too; all of it is rolled back below
+                for position, (name, values) in enumerate(entries):
+                    self._check_one(position, name, values, actor, starting_amounts, resolve, made, problems)
         finally:
             self.conn.execute("ROLLBACK")
         return problems
+
+    def _check_one(self, position, name, values, actor, starting_amounts, resolve, made, problems) -> None:
+        """One entry of `check_create`, inside its own savepoint."""
+        self.conn.execute("SAVEPOINT check_entry")
+        try:
+            info = self.info(name)
+            derived = self._derived(info)
+            if starting_amounts:
+                derived -= {c for other in self._totals_into(info) for c in other.table.total["starts_from"]}
+            clash = sorted(set(values) & derived)
+            if clash:
+                problems[position] = {c: "is worked out from its batches; suggest a Stock in instead."
+                                      for c in clash}
+                self.conn.execute("ROLLBACK TO check_entry")
+            else:
+                if resolve is not None:
+                    values = resolve(values, made)
+                made[position] = self._create(info, values, actor, "confirmed", None)
+        except ValidationError as error:
+            problems[position] = dict(error.problems)
+            self.conn.execute("ROLLBACK TO check_entry")
+        except PlainError as error:
+            problems[position] = {"": str(error)}
+            self.conn.execute("ROLLBACK TO check_entry")
+        self.conn.execute("RELEASE check_entry")
 
     def _create(self, info: TableInfo, values: dict, actor: str, review_status: str = "confirmed",
                 batch_id: int | None = None) -> int:
@@ -478,6 +490,9 @@ class Records:
         now = self.clock()
         fields = ["created_at", "updated_at", "source", "review_status", "batch_id"] + list(stored)
         params = [now, now, actor, review_status, batch_id] + list(stored.values())
+        if sync.has_identity(self.conn, info.name):  # its permanent ID, made with it (decision 0100)
+            fields.append(sync.ID)
+            params.append(sync.new_id())
         cursor = self.conn.execute(
             f"INSERT INTO {info.name} ({', '.join(fields)}) VALUES ({', '.join('?' * len(fields))})", params)
         record_id = cursor.lastrowid
@@ -552,7 +567,7 @@ class Records:
             return
         self.conn.execute(f"UPDATE {target.name} SET {', '.join(f'{k} = ?' for k in changed)}, updated_at = ? "
                           f"WHERE id = ?", list(changed.values()) + [self.clock(), owner_id])
-        self._audit(actor, "update", target, owner_id, {k: current[k] for k in changed}, changed)
+        self._audit(actor, "update", target, owner_id, {k: current[k] for k in changed}, changed, effect=True)
 
     def _choose_batch(self, info: TableInfo, cleaned: dict, current: dict | None, actor: str,
                       review_status: str = "confirmed", batch_id: int | None = None) -> None:
