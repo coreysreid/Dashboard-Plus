@@ -33,10 +33,13 @@ TRAVELS = ("always", "never")
 MODULE_KEYS = ("name", "title", "version", "description", "core_api", "kind", "requires", "outbound_hosts")
 MODULE_REQUIRED = ("name", "title", "version", "description", "core_api", "kind")
 TABLE_KEYS = ("title", "description", "columns", "watch", "adjusts", "parent", "total", "record_name", "actions",
-              "pair", "suggestions", "chart")
+              "pair", "suggestions", "chart", "daily")
 # A chart of one subject's dated readings, such as one pet's weigh-ins as dots (decision 0109).
 CHART_KEYS = ("kind", "x", "y", "per", "what", "entry", "subject")
 CHART_KINDS = ("dots",)
+# Daily totals of one subject's timed entries by the household's own day, like a pet's feedings (decision 0110).
+DAILY_KEYS = ("when", "per", "amount", "unit", "entry", "what", "verb", "add", "sheet", "caveat", "repeat")
+DAILY_WORDS = ("what", "verb", "add", "sheet", "caveat")
 # A record that joins two records of one table, like two rooms with a door between them (decision 0103).
 PAIR_KEYS = ("columns", "blank_when")
 # A one-step button on a record's page, such as "Mark returned" (decision 0075).
@@ -129,6 +132,7 @@ class Table:
     suggestions: bool = True
     pair: dict = field(default_factory=dict)  # checked `pair`: joins two different records, each pair once (5.6)
     chart: dict = field(default_factory=dict)  # checked `chart`: one subject's dated readings drawn as dots (0109)
+    daily: dict = field(default_factory=dict)  # checked `daily`: totals by the household's own day (0110)
 
 
 @dataclass
@@ -649,6 +653,54 @@ def _check_chart(file: str, table: Table, raw, problems: list[str]) -> dict:
             "entry": list(raw["entry"]), "subject": raw["subject"].strip()}
 
 
+def _check_daily(file: str, table: Table, raw, problems: list[str]) -> dict:
+    """Check `daily`: one subject's timed entries added up by the household's own day, like a pet's feedings
+    (decision 0110). `amount` and `unit` are optional together: totals only ever add matching units."""
+    where = f"In {file}, table '{table.name}', daily"
+    example = ('[tables.servings.daily] with when = "given_at", per = "pet", amount = "amount", unit = "unit", '
+               'entry = ["feeding", "feedings"] and the words what, verb, add, sheet and caveat')
+    if not isinstance(raw, dict):
+        problems.append(f"{where}: write it as {example}.")
+        return {}
+    problems.extend(_unknown_keys(where, raw, DAILY_KEYS))
+    before = len(problems)
+    named = {k: table.columns.get(raw.get(k)) if isinstance(raw.get(k), str) else None
+             for k in ("when", "per", "amount", "unit")}
+    if named["when"] is None or named["when"].type != "datetime" or not named["when"].required:
+        problems.append(f"{where}: 'when' must name a required date-and-time column of this table.")
+    if named["per"] is None or named["per"].type != "link" or not named["per"].required:
+        problems.append(f"{where}: 'per' must name a required link column, so each total belongs to one subject.")
+    amount, unit = named["amount"], named["unit"]
+    if amount is None or amount.type not in ("integer", "decimal", "measure") or amount.required or amount.sensitive:
+        problems.append(f"{where}: 'amount' must name an optional number column that is not private.")
+    if unit is None or unit.type not in ("choice", "text") or unit.required or unit.sensitive:
+        problems.append(f"{where}: 'unit' must name an optional choice or text column that is not private.")
+    words = raw.get("entry")
+    if not (isinstance(words, list) and len(words) == 2 and all(isinstance(w, str) and w.strip() for w in words)):
+        problems.append(f"{where}: 'entry' must be two words, singular then plural, like [\"feeding\", \"feedings\"].")
+    for key in DAILY_WORDS:
+        if not (isinstance(raw.get(key), str) and raw[key].strip()):
+            problems.append(f"{where}: '{key}' must be the words to show, like {example}.")
+    repeat = raw.get("repeat", {})
+    if not isinstance(repeat, dict) or set(repeat) - {"minutes", "same"}:
+        problems.append(f"{where}: 'repeat' must be like {{ minutes = 30, same = [\"food\", \"amount\"] }}.")
+        repeat = {}
+    minutes = repeat.get("minutes", 0)
+    if repeat and (isinstance(minutes, bool) or not isinstance(minutes, int) or not 1 <= minutes <= 240):
+        problems.append(f"{where}: repeat 'minutes' must be a whole number from 1 to 240.")
+    same = repeat.get("same", [])
+    if not isinstance(same, list) or any(not isinstance(c, str) or c not in table.columns
+                                         or table.columns[c].sensitive for c in same):
+        problems.append(f"{where}: repeat 'same' must list columns of this table that are not private.")
+    if len(problems) > before:
+        return {}
+    rule = {k: raw[k] for k in ("when", "per", "amount", "unit")}
+    rule.update({k: raw[k].strip() for k in DAILY_WORDS})
+    rule["entry"] = [w.strip() for w in raw["entry"]]
+    rule["repeat"] = {"minutes": minutes, "same": list(same)} if repeat else {}
+    return rule
+
+
 def _check_record_name(file: str, table: Table, tables: dict[str, Table], template, problems: list[str]) -> str | None:
     """Check `record_name`: a pattern like "{quantity} {item.unit} of {item}" naming a record."""
     where = f"In {file}, table '{table.name}', record_name"
@@ -745,6 +797,8 @@ def _check_tables(module: str, data: dict, requires: list[str], problems: list[s
                 tables[tname].pair = _check_pair(file, tables[tname], raw["pair"], problems)
             if "chart" in raw:
                 tables[tname].chart = _check_chart(file, tables[tname], raw["chart"], problems)
+            if "daily" in raw:
+                tables[tname].daily = _check_daily(file, tables[tname], raw["daily"], problems)
     for table in tables.values():
         for column in table.columns.values():
             if column.type in ("link", "links") and column.to:

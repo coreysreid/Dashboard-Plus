@@ -1,0 +1,8 @@
+name = "pet_feeding"
+title = "Pet feeding log"
+version = "1.0.0"
+description = "Record food put in a pet's bowl or given as a treat, one entry at a time, with honest daily totals."
+core_api = "1"
+kind = "declarative"
+requires = ["pets"]
+outbound_hosts = []

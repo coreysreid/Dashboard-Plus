@@ -9,6 +9,7 @@ import subprocess
 import sys
 import tempfile
 import time
+from datetime import date, timedelta
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -130,6 +131,16 @@ STAGES = [
      {"goto": "/drills/readiness", "module": "readiness"}),
     ("18z-drill", "One drill", "Its questions in order, Start or Not now, its sources with the date each was checked, "
      "and earlier practice.", {"goto": "/drills/readiness/pipe-in-wall", "module": "readiness"}),
+    ("18za-feeding", "Food put out, one pet's day", "Pet feeding log: one pet's entries on one day, totals only in "
+     "matching units, entries with no amount counted, then Add food and recent entries to start from.",
+     {"goto": "/daily/pet_feeding__servings?subject={id:pets__pets:pet}&day={yesterday}", "module": "pet_feeding"}),
+    ("18zb-feeding-phone", "Food put out, on a phone", "The same day at 320 pixels wide, for one-handed entry.",
+     {"goto": "/daily/pet_feeding__servings?subject={id:pets__pets:pet}&day={yesterday}", "module": "pet_feeding",
+      "width": PHONE_WIDTH}),
+    ("18zc-feeding-sheet", "Pet feeding log sheet", "As it prints: every entry of the last 14 days with each day's "
+     "totals by unit, and \"Food put out, not necessarily eaten\"; notes are left off.",
+     {"goto": "/daily/pet_feeding__servings/sheet?subject={id:pets__pets:pet}", "media": "print",
+      "module": "pet_feeding"}),
     ("19-needs-attention", "Needs attention", "Days of water with the working shown, running low, use-by "
      "and due dates, and details worth filling in.", {"goto": "/attention"}),
     ("19b-drinking-water", "Drinking water counted today", "Each water item behind Home's days of water, as a "
@@ -263,6 +274,7 @@ def make(household: str, work: Path, executable: str | None) -> list[tuple[str, 
                 target = action["goto"]
                 for key, value in ids.items():
                     target = target.replace("{id:" + key + "}", str(value))
+                target = target.replace("{yesterday}", (date.today() - timedelta(days=1)).isoformat())
                 steps.append({"media": action.get("media", "screen")})
                 steps.append({"viewport": action.get("width", WIDTH)})
                 steps.append({"goto": target})

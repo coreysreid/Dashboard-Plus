@@ -174,8 +174,13 @@ def _render_form(info, store, values, errors, from_form, record=None, status=200
             charts.append({"title": f"Recorded {other.table.chart['what'][1]}",
                            "view": dots_view(store, other, record["id"]),
                            "href": f"/charts/{other.name}?subject={record['id']}"})
+    feeding = []  # a pet's food put out today, with Add food (decision 0110)
+    if record and not record.get("deleted_at"):
+        from dashboard.web.daily_pages import record_panels
+        feeding = record_panels(store, info, record)
     return render_template("form.html", info=info, title=display.table_title(info), fields=fields, record=record,
                            record_name=record_name, errors=errors, history=history, saved=saved, charts=charts,
+                           feeding=feeding,
                            related=related, back=back, batches=batches, count_href=count_href,
                            actions=display.actions_for(info, record), done=done, notice=notice), status
 
@@ -243,7 +248,10 @@ def new_record(table):
         column = info.table.columns[name]
         if column.type == "link" and value.isdecimal() and value.isascii():
             back = f"/t/{schema.target_table(info.module.name, column)}/{value}"
-    return _render_form(info, store, prefill, {}, True, saved=request.args.get("saved"), back=back)
+    notice = None  # remembered choices are shown for checking, never saved unseen (decision 0110)
+    if request.args.get("from") == "last" and info.table.daily:
+        notice = {"words": "Filled in from a recent entry. Check each answer before you save."}
+    return _render_form(info, store, prefill, {}, True, saved=request.args.get("saved"), back=back, notice=notice)
 
 
 @pages.post("/t/<table>/new")

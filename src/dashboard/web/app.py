@@ -184,6 +184,7 @@ def create_app(shutdown_token: str, on_shutdown: Callable[[], None], report=None
     @app.get("/")
     def home():
         groups, attention, last_backup, asked, my_home, to_do = [], None, None, [], None, None
+        daily_cards = []  # food put out today, one line per pet (decision 0110)
         if app.config["DATA_DIR"] is not None:
             last_backup = backups.latest(app.config["DATA_DIR"])
         if app.config["DATA_DIR"] is not None and registry():
@@ -199,12 +200,15 @@ def create_app(shutdown_token: str, on_shutdown: Callable[[], None], report=None
             my_home = summary(conn, registry())
             from dashboard.web.checklist import home_summary
             to_do = home_summary(conn, registry(), app.config["TODAY"]())
+            from dashboard.web.daily_pages import home_cards
+            daily_cards = home_cards(conn, registry(), app.config["NOW"]() if app.config.get("NOW") else None)
         from dashboard.web.setup import backup_report
         tables = [t for group in groups for t in group["main"] + group["more"]]
         return render_template("home.html", report=report, groups=groups, tables=tables, attention=attention,
                                last_backup=last_backup, backup=backup_report(app.config["DATA_DIR"]),
                                suggestions=waiting_suggestions(), asked=asked,
-                               review_words=REVIEW_WORDS, my_home=my_home, to_do=to_do)
+                               review_words=REVIEW_WORDS, my_home=my_home, to_do=to_do,
+                               daily_cards=daily_cards)
 
     @app.get("/attention")
     def attention_page():
@@ -266,6 +270,8 @@ def create_app(shutdown_token: str, on_shutdown: Callable[[], None], report=None
     app.register_blueprint(checklist_pages)
     from dashboard.web.chart_pages import chart_pages
     app.register_blueprint(chart_pages)
+    from dashboard.web.daily_pages import daily_pages
+    app.register_blueprint(daily_pages)
     from dashboard.web.drills import drill_pages
     app.register_blueprint(drill_pages)
 

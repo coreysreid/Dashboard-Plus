@@ -9,4 +9,4 @@ columns.bowl = { label = "Which bowl (optional)", help = "For example Kitchen bo
 columns.food = { label = "Food", help = "Use a name you recognise, such as Dry food. This is a log, not a feeding recommendation." }
 columns.amount = { label = "Amount put out", help = "Optional. Leave blank if you did not measure it. This does not say how much your pet ate." }
 columns.unit = { label = "Unit", help = "Choose one if you entered an amount. Totals only add matching units; a scoop is not converted to grams." }
-columns.notes = { help = "Optional. Do not use this to replace your vet's feeding or medicine instructions." }
+columns.notes = { help = "Optional. Do not use this to replace your vet's feeding or medicine instructions, and leave out anything private: notes go wherever this entry goes." }

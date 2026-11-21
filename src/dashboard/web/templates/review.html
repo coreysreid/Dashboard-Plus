@@ -179,6 +179,9 @@
       {% if p.twice %}<p class="problem" role="status" data-count-twice style="margin:.4rem 0"><bdi>{{ p.twice }}</bdi></p>{% endif %}
       {% if p.private %}<p class="problem" role="status" data-private-copy style="margin:.4rem 0">{{ p.private }}</p>{% endif %}
       {% if p.exists %}<p class="problem" role="status" style="margin:.4rem 0"><bdi>{{ p.exists }}</bdi></p>{% endif %}
+      {% if p.repeat %}<div class="problem" role="status" style="margin:.4rem 0"><p style="margin:0"><strong>{{ p.repeat.title }}.</strong> It looks like:</p>
+        <ul style="margin:.2rem 0">{% for m in p.repeat.matches %}<li><bdi>{{ m }}</bdi></li>{% endfor %}</ul>
+        <p style="margin:0">{{ p.repeat.words }}</p></div>{% endif %}
       {% if p.reason %}<p class="problem" role="alert" style="margin:.4rem 0">{{ p.reason }}</p>{% endif %}
       </div>
       <div class="decide">
@@ -187,9 +190,9 @@
         {% elif b.held %}
         <button type="button" disabled title="This may be the same receipt again. Choose Reject this copy or Keep this as another purchase first.">Accept</button>
         {% else %}
-        <form method="post" action="/review/{{ p.id }}/accept"><input type="hidden" name="_csrf" value="{{ csrf_token }}"><button type="submit" data-accept>Accept{% if p.needs | length == 1 %}<span class="hidden-words"> {{ p.text.noun }} and its new {{ p.needs_nouns[0] }}</span>{% endif %}</button></form>
+        <form method="post" action="/review/{{ p.id }}/accept"><input type="hidden" name="_csrf" value="{{ csrf_token }}"><button type="submit" data-accept>{{ p.repeat.accept if p.repeat else "Accept" }}{% if p.needs | length == 1 %}<span class="hidden-words"> {{ p.text.noun }} and its new {{ p.needs_nouns[0] }}</span>{% endif %}</button></form>
         {% endif %}
-        <form method="post" action="/review/{{ p.id }}/reject"><input type="hidden" name="_csrf" value="{{ csrf_token }}"><button type="submit" class="quiet" data-reject>Reject</button></form>
+        <form method="post" action="/review/{{ p.id }}/reject"><input type="hidden" name="_csrf" value="{{ csrf_token }}"><button type="submit" class="quiet" data-reject>{{ p.repeat.reject if p.repeat else "Reject" }}</button></form>
       </div>
     </li>
   {% endfor %}

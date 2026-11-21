@@ -1,0 +1,25 @@
+{# One subject's day (decision 0110): its accepted entries, the honest total, what is waiting, and fast entry. #}
+<div class="daily" data-daily>
+  <p class="daily-summary"><strong>{{ view.summary }}</strong></p>
+  <p class="muted daily-note">This adds up saved entries of food {{ view.rule.verb }}. It does not say what was eaten or prove every meal.</p>
+  {% if view.waiting %}<p class="muted"><a href="/review">{{ view.waiting }} suggestion{{ " is" if view.waiting == 1 else "s are" }} waiting on Review</a>, not counted until accepted.</p>{% endif %}
+  {% if view.rows %}
+  <ul class="daily-rows">
+    {% for r in view.rows %}<li><a href="{{ r.href }}">{{ r.line }}</a>{% if r.kind %} <span class="muted">({{ r.kind }})</span>{% endif %}</li>{% endfor %}
+  </ul>
+  {% endif %}
+  <div class="actions daily-add">
+    <a class="button" href="{{ view.add }}" data-add-food>{{ view.rule.add }}</a>
+  </div>
+  {% if view.picks %}
+  <p class="muted" style="margin:.4rem 0 .2rem">Add food fills in the last entry. Or start from an earlier one (you check it before saving):</p>
+  <ul class="daily-picks">{% for p in view.picks %}<li><a class="button quiet" href="{{ p.href }}">{{ p.words }}</a></li>{% endfor %}</ul>
+  {% endif %}
+</div>
+<style>
+  .daily-rows { padding-left: 1.1rem; }
+  .daily-rows li { margin: .25rem 0; overflow-wrap: anywhere; }
+  .daily-picks { list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: .4rem; }
+  .daily-picks .button { display: block; text-align: left; white-space: normal; overflow-wrap: anywhere; }
+  .daily-add .button { min-height: 2.75rem; }
+</style>

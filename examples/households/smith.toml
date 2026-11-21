@@ -16,7 +16,7 @@ home_type = "house"
 storeys = 2
 mobility_needs = false
 hazards = ["bushfire", "heat", "storm"]
-modules = ["documents", "garden", "home_care", "home_layout", "lent_out", "medical", "people", "pets", "readiness", "routines", "stock", "utilities", "vehicles", "wine"]
+modules = ["documents", "garden", "home_care", "home_layout", "lent_out", "medical", "people", "pet_feeding", "pets", "readiness", "routines", "stock", "utilities", "vehicles", "wine"]
 
 # ---- People -----------------------------------------------------------------
 
@@ -255,6 +255,27 @@ day = "today-200"
 vet = "Riverside Vet Clinic"
 reason = "Annual check-up and vaccinations"
 cost = 98.50
+
+# ---- Pet feeding log ----------------------------------------------------------
+# Food put out, not food eaten. Invented foods and amounts; not feeding advice. "today-1T07:15" is yesterday at 7:15.
+
+[[pet_feeding.servings]]
+pet = "Rex"
+given_at = "today-1T07:15"
+kind = "bowl"
+bowl = "Kitchen bowl"
+food = "Example dry dog food"
+amount = 120
+unit = "g"
+
+[[pet_feeding.servings]]
+pet = "Rex"
+given_at = "today-1T18:10"
+kind = "bowl"
+bowl = "Kitchen bowl"
+food = "Example dry dog food"
+amount = 120
+unit = "g"
 
 # ---- Household stock ----------------------------------------------------------
 

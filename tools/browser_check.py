@@ -1,4 +1,4 @@
-"""Click through the real dashboard in Chromium (setup, Set up my home, dates, stock in, stocktake, Mark returned, Mark done, Things to do, spreadsheet import, Review keys and buttons, readiness questions, Think it through drills, charts, private details, closing) and fail loudly."""
+"""Click through the real dashboard in Chromium (setup, Set up my home, dates, stock in, stocktake, Mark returned, Mark done, Things to do, spreadsheet import, Review keys and buttons, readiness questions, Think it through drills, charts, pet feeding at 320px, private details, closing) and fail loudly."""
 from __future__ import annotations
 
 import argparse
@@ -39,6 +39,8 @@ AU = {"household": "smith", "locale": "en-AU", "timezone": "Australia/Sydney",
                       "behind the flour\"\r\nBrowser import oats,1,,\r\nBrowser import salt,1,31/02/27,\r\n"},
       "questions": {"id": "medical-kit-location", "table": "medical__kits"},
       "charts": {"pet": "Rex", "dots": 3},  # the first charts (decision 0109): Rex has three weigh-ins
+      # Pet feeding log (decision 0110): Rex's last bowl was 120 g yesterday, so Add food shows 120 g to check.
+      "feeding": {"pet": "Rex", "amount": "120", "unit": "g", "after": "Recorded today: 120 g put out"},
       # Think it through (decision 0108): the pipe drill offers the Smiths' water main at step 2.
       "drills": {"scenario": "pipe-in-wall", "number": "000", "record": "Water main", "steps": 4,
                  "words": "Browser check: made-up words about the spare key"},
@@ -164,7 +166,7 @@ def run_au(work: Path, executable: str | None) -> list[str]:
             conn.close()
         done += drive(dict(plan, dates=AU["dates"], stock=AU["stock"], private=AU["private"], loan=AU["loan"],
                            job=AU["job"], routine=AU["routine"], csv=AU["csv"], review=AU["review"], questions=AU["questions"],
-                           charts=AU["charts"], drills=AU["drills"]), work,
+                           charts=AU["charts"], feeding=AU["feeding"], drills=AU["drills"]), work,
                            "main")
         closed = True
     finally:
