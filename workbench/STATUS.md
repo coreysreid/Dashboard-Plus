@@ -125,7 +125,11 @@ the "Requests" table of docs/WORKSTREAMS.md.
 | Batch 21 item 100: readiness return rules | ready for PR | lane-b/batch21-item100 | Field-level ask-again and no-ask rules for all eight selected-record questions, with twelve checks and a safe upgrade plan. |
 | Batch 21 item 101: Queensland pack sources | ready for PR | lane-b/batch21-item101 | Eight official-source rows mapped to prompts/drills, with checked dates, reuse limits and water-scope distinction. |
 
+| Batch 21 item 104: helper starting words | ready for PR | lane-b/batch21-item104 | Four ranked exact guide/connector replacements after decision 0112, with invented checks. |
+
 ## Messages to Lane A
+
+- **Batch 21 item 104, helper words after 0112:** `workbench/drafts/helper_move_in/WORDING.md` keeps the now-shipped double-count, path and private-copy guards. The highest remaining wording risk is the generated guide's instruction to send `reason = bought` for any existing Stock item: an old tracker balance is not a purchase. Three other exact changes cover tracker-plus-receipt overlap, Review-only prices and stale limits/status reports. Connector description counterparts and invented checks are included.
 
 - **Batch 21 item 98, Things to do, worst first:** This year makes the whole document 344px wide at a 320px viewport in Smith, Garcia and Taylor; the month summary needs its own accessible narrow layout. A one-step Garden “Mark done” has no Done row or Undo on current main; Lane A's open PR #191 addresses that known limit. The four tabs otherwise loaded at phone and desktop widths, and three routine actions saved once and undid back to their original dates. Exact words and steps: `workbench/reports/2026-11-21-routine-checklists-ux.md`.
 - **Batch 21 item 99, drills:** Smith's pipe leak, Garcia's power cut and Taylor's bedroom fire each completed four steps at 320px. The numbers 000, 911 and 999, all eight rendered missing-record sentences, and the “practice, not safety proof” wording held. Invented private answers stayed off Home, Needs attention, enabled sheets, the export zip, and the read-only helper response. No new blocker found; the exact evidence and limits are in `workbench/reports/2026-11-21-drills-ux.md`.
