@@ -1,0 +1,20 @@
+# The household's answers to the questions in prompts.toml (decision 0104). One record per question: a new
+# answer changes it, and its history keeps every earlier answer. Only a person answers, on the question's
+# own page, so helpers can look but never suggest an answer and a spreadsheet cannot be imported here.
+# Answers are ordinary household planning: every column travels to the household's other computers later
+# (decision 0100). The record used to confirm an answer is kept as its permanent ID, never as its words.
+[tables.answers]
+title = "Your answers"
+description = "What the household said about each \"Have you thought about…?\" question, and when to look again."
+suggestions = false
+columns.prompt = { type = "text", required = true }
+columns.answer = { type = "choice", required = true, choices = [
+  "yes",
+  { key = "not_relevant", label = "Not relevant" },
+  { key = "not_yet", label = "Not yet" },
+] }
+columns.answered_on = { type = "date", required = true, default = "today" }
+columns.review_on = { type = "date", not_before = "answered_on" }
+columns.note = { type = "longtext" }
+columns.record = { type = "text" }
+columns.record_check = { type = "text" }

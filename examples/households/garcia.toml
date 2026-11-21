@@ -16,7 +16,7 @@ home_type = "apartment"
 storeys = 1
 mobility_needs = true
 hazards = ["earthquake", "heat", "power"]
-modules = ["documents", "garden", "home_care", "home_layout", "lent_out", "medical", "people", "pets", "stock", "utilities", "vehicles"]
+modules = ["documents", "garden", "home_care", "home_layout", "lent_out", "medical", "people", "pets", "readiness", "stock", "utilities", "vehicles"]
 
 # ---- People -----------------------------------------------------------------
 
@@ -802,3 +802,21 @@ provider = "Example Power US"
 fault_contact = "Example Power Faults US"
 account_number = "DEMO-US-ACCOUNT-01"
 meter = "Apartment electricity meter"
+
+# ---- Readiness ----------------------------------------------------------------
+# Answers to "Have you thought about…?" questions (modules/readiness/prompts.toml). Not yet answers say
+# when to bring the question back; the rest come back after the question's own interval.
+
+[[readiness.answers]]
+prompt = "power-medical-power"
+answer = "not_yet"
+answered_on = "today-3"
+review_on = "today+27"
+note = "Review Rosa's equipment needs with the household."
+
+[[readiness.answers]]
+prompt = "leaving-go-bags"
+answer = "not_yet"
+answered_on = "today-10"
+review_on = "today+20"
+note = "Bags are by the apartment entry."

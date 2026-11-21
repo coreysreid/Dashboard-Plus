@@ -17,7 +17,7 @@ home_type = "apartment"
 storeys = 1
 mobility_needs = false
 hazards = ["flood", "snow", "storm"]
-modules = ["documents", "garden", "home_care", "home_layout", "lent_out", "medical", "people", "stock", "utilities", "vehicles", "wine"]
+modules = ["documents", "garden", "home_care", "home_layout", "lent_out", "medical", "people", "readiness", "stock", "utilities", "vehicles", "wine"]
 
 # ---- People -----------------------------------------------------------------
 
@@ -407,3 +407,21 @@ provider = "Example Water UK"
 fault_contact = "Example Water Faults UK"
 account_number = "DEMO-UK-ACCOUNT-01"
 meter = "Flat water meter"
+
+# ---- Readiness ----------------------------------------------------------------
+# Answers to "Have you thought about…?" questions (modules/readiness/prompts.toml). Not yet answers say
+# when to bring the question back; the rest come back after the question's own interval.
+
+[[readiness.answers]]
+prompt = "storm-storm-alerts"
+answer = "not_yet"
+answered_on = "today"
+review_on = "today+30"
+note = "Choose a local warning source."
+
+[[readiness.answers]]
+prompt = "leaving-contact-away"
+answer = "not_yet"
+answered_on = "today-4"
+review_on = "today+26"
+note = "Chris is the contact, but his phone number still needs adding."

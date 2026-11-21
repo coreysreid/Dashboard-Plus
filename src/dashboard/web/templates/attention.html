@@ -37,4 +37,11 @@
 {% if gaps %}
 <ul>{% for gap in gaps %}<li>{{ gap.message }} <a href="{{ gap.fix }}">Fill this in</a></li>{% endfor %}</ul>
 {% else %}<p class="muted">Nothing obvious is missing.</p>{% endif %}
+
+{% if asked %}
+<h2>Have you thought about…?</h2>
+<p class="muted">A few questions to think about when you have time.</p>
+<ul>{% for q in asked %}<li><a href="/questions/{{ q.module }}/{{ q.prompt.id }}">{{ q.prompt.question }}</a>{% if q.state == "review" %} <span class="muted">{{ review_words[q.review_reason] }}</span>{% endif %}</li>{% endfor %}</ul>
+<p><a href="/questions/{{ asked[0].module }}">See all the questions</a></p>
+{% endif %}
 {% endblock %}

@@ -36,7 +36,8 @@ def home_groups(registry: dict, count, sheets: list[dict]) -> list[dict]:
         if group is None:
             group = groups[module.name] = {
                 "name": module.name, "title": module.title, "main": [], "more": [],
-                "places": home_places(module), "sheets": [s for s in sheets if s["module"] == module.name]}
+                "places": home_places(module), "sheets": [s for s in sheets if s["module"] == module.name],
+                "questions": f"/questions/{module.name}" if module.prompts is not None else None}
         entry = {"name": name, "title": table_title(info), "module": module.title, "count": count(name),
                  "empty": empty_hint(info)}
         group[group["places"][info.table.name]].append(entry)

@@ -11,6 +11,7 @@
 | form.html | Add and edit forms, delete and restore, and history | changing the form |
 | action_form.html | An action's small form, such as Mark done: what it asks, the next-date choice, Save once | changing the Mark done wording |
 | _*.html | Pieces shared by both forms: one field (_field), and the forms' styles and browser code (_form_script) | changing every form at once |
+| question*.html | "Have you thought about…?": the questions by group with what was looked at (questions), and one question with Yes, Not relevant, Not yet and Tell me more (question) | changing the question wording |
 | home_setup.html | Set up my home: add rooms and storage spots, rename, move or delete them, and connect rooms; no scripts needed | changing the Set up my home wording |
 | setup.html | First-run wizard and Settings (one form, two modes) | changing setup questions |
 | *sheet.html | A printable sheet styled to fit one page (sheet), and the step before one with private details (private_sheet) | changing how sheets print |
@@ -18,10 +19,6 @@
 | report.html | Shown after saving a report | changing that message |
 | close*.html | The "Save and exit" page, and the page shown after a safe close | changing how closing works |
 | error.html | Plain-language error page with "Save a report" | changing error wording |
-| helpers.html | Settings, Helpers: the helper list, the address, and the form that makes a key | changing the Helpers settings page |
-| helper_key.html | The one page that shows a new helper key, with a Copy button and a warning to keep it private | changing the new-key page |
-| helper_connect.html | "Connect an AI assistant": settings to paste into an assistant's app, with a placeholder for the key | changing the assistant set-up words |
-| review.html | Review: each helper's waiting suggestions with Accept and Reject | changing the Review page |
 | helpers.html | Settings, Helpers: the helper list with Make a new key and Turn off access, and the form that makes a key | changing the Helpers settings page |
 | helper*_key.html | The one page that shows a key: helper_key for a new helper, helper_new_key for a new key for one already made; each with Copy and a warning | changing the key pages |
 | helper_connect.html | "Connect an AI assistant": settings to paste into an assistant's app (pointing at the address file), with a placeholder for the key, and Connection details | changing the assistant set-up words |

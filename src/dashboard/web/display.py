@@ -144,6 +144,22 @@ class Formatter:
                 self._names[key] = "(missing)"
         return self._names[key]
 
+    def link_with_place(self, info: TableInfo, column: Column, value) -> str:
+        """A linked record's name, then its own place's full path ("Water meter — Front yard › Meter box") when the
+        column says `with_place` and the record has one. A missing or unreadable place leaves just the name."""
+        target = self.target(info, column)
+        name = self.link_name(target, value)
+        place_column = target.table.columns.get(column.with_place or "")
+        if place_column is None or place_column.type != "link":
+            return name
+        try:
+            place_id = self.records.get(target.name, int(value), include_deleted=True).get(place_column.name)
+        except Exception:  # noqa: BLE001 - a missing link should never break a page
+            return name
+        if place_id in (None, ""):
+            return name
+        return f"{name} — {self.link_name(self.target(target, place_column), place_id)}"
+
     def text(self, info: TableInfo, column: Column, value) -> str:
         """The value as a person should read it."""
         if value is None or value == "" or value == []:
@@ -163,6 +179,8 @@ class Formatter:
         if kind == "datetime":
             return str(value).replace("T", " ")[:16]
         if kind == "link":
+            if column.with_place:
+                return self.link_with_place(info, column, value)
             return self.link_name(self.target(info, column), value)
         if kind == "links":
             target = self.target(info, column)
@@ -310,6 +328,9 @@ def build_fields(records: Records, info: TableInfo, values: dict, errors: dict, 
                             by_id.setdefault(above["id"], above)
                 options = sorted(((str(r["id"]), path_name(target, by_id, dict(r))) for r in rows),
                                  key=lambda option: option[1].lower())
+            elif column.with_place:
+                shown = Formatter(records)
+                options = [(str(r["id"]), shown.link_with_place(info, column, r["id"])) for r in rows]
             else:
                 options = [(str(r["id"]), display_name(target, r, records)) for r in rows]
             related = owner_field(records, info, column, on_form)

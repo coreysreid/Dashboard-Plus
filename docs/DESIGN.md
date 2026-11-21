@@ -482,6 +482,11 @@ columns.returned_on = { type = "date", not_before = "lent_on" }
   history, batches and totals, in one transaction. If the record no longer
   matches `show_when` (a double click or an old page), nothing changes and the
   page says so.
+- `with_place` (on a single link column, naming a link column of the linked
+  table) shows that record's own place path after its name wherever the link is
+  shown or chosen: `meter = { type = "link", to = "home_layout.meters", with_place = "place" }`
+  reads "Water meter — Front yard › Meter box" (decision 0106). A blank place
+  shows just the name.
 - `not_before` (on a date column, naming another date column of the same
   table) refuses an earlier date when adding, editing or pressing an action:
   "Returned on can't be before Lent on.", from the labels. The same day is
@@ -1282,6 +1287,16 @@ is no automatic reporting of any kind (see the non-goals). Over time this is how
 we find out whether the product delivers the experience intended.
 
 ### 10.5 Prompts: helping a household think
+
+> **Built (decision 0104).** The shipped format differs from the sketch below: a module's
+> `prompts.toml` has `schema = 1`, `answers` (its own answers table, which must say
+> `suggestions = false`), `[[group]]` (key, title) and `[[prompt]]` with `id`, `group`,
+> `question`, `why`, optional `how_to_check`, `fits` (`storeys_min`, `hazards`, `pets`,
+> `mobility_needs`, `country`, `home_type`, from Settings only), `answered_by` ("none" or
+> module.table.field), `match` (`table`, `where`, `filled`, `positive`; only offered, never an
+> answer), `review_every` (months), `source` (`title`, `url`, `checked`) and optional
+> `write_in`. Answers are Yes / Not relevant / Not yet. Drills will be ordered `[[scenario]]`
+> runs of these prompts.
 
 The question loop (10.2) explains a change in the numbers. **Prompts** surface
 blind spots before anything has changed. They are a small core feature (an

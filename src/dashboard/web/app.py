@@ -6,7 +6,7 @@ import logging
 import platform
 import secrets
 import sqlite3
-from datetime import datetime
+from datetime import date, datetime
 from pathlib import Path
 from typing import Callable
 
@@ -14,9 +14,10 @@ from flask import Flask, abort, g, jsonify, redirect, render_template, request
 from werkzeug.exceptions import HTTPException
 
 from dashboard import __version__
-from dashboard.core import backups, db, proposals, records, watch
+from dashboard.core import backups, db, proposals, questions, records, watch
 from dashboard.core.startup import database_path
 from dashboard.web.api import QUEUE_LIMIT_KEY, REQUESTS_PER_MINUTE, api_error
+from dashboard.web.questions import REVIEW_WORDS
 
 log = logging.getLogger("dashboard.web")
 SESSION_COOKIE = "dashboard_session"
@@ -49,6 +50,7 @@ def create_app(shutdown_token: str, on_shutdown: Callable[[], None], report=None
     app.config["LOADED"] = report.loaded if report else []
     app.config["HELPER_REQUESTS_PER_MINUTE"] = REQUESTS_PER_MINUTE  # tests may lower it (decision 0074)
     app.config[QUEUE_LIMIT_KEY] = proposals.MAX_WAITING  # suggestions per helper waiting on Review (decision 0085)
+    app.config["TODAY"] = date.today  # what day it is for questions coming back; tests may set another day
 
     def allowed_hosts() -> set[str]:
         port = app.config["PORT"]
@@ -181,7 +183,7 @@ def create_app(shutdown_token: str, on_shutdown: Callable[[], None], report=None
 
     @app.get("/")
     def home():
-        groups, attention, last_backup, my_home = [], None, None, None
+        groups, attention, last_backup, asked, my_home = [], None, None, [], None
         if app.config["DATA_DIR"] is not None:
             last_backup = backups.latest(app.config["DATA_DIR"])
         if app.config["DATA_DIR"] is not None and registry():
@@ -192,20 +194,24 @@ def create_app(shutdown_token: str, on_shutdown: Callable[[], None], report=None
             attention = {"low": watch.running_low(conn, registry()), "expiring": watch.expiring(conn, registry()),
                          "supplies": watch.supplies(conn, registry()),
                          "gaps": watch.gaps(conn, registry())}
+            asked = questions.next_up(conn, registry(), today=app.config["TODAY"]())
             from dashboard.web.home_setup import summary
             my_home = summary(conn, registry())
         from dashboard.web.setup import backup_report
         tables = [t for group in groups for t in group["main"] + group["more"]]
         return render_template("home.html", report=report, groups=groups, tables=tables, attention=attention,
                                last_backup=last_backup, backup=backup_report(app.config["DATA_DIR"]),
-                               suggestions=waiting_suggestions(), my_home=my_home)
+                               suggestions=waiting_suggestions(), asked=asked,
+                               review_words=REVIEW_WORDS, my_home=my_home)
 
     @app.get("/attention")
     def attention_page():
         conn, tables = connection(), registry()
         return render_template("attention.html", low=watch.running_low(conn, tables),
                                expiring=watch.expiring(conn, tables), supplies=watch.supplies(conn, tables),
-                               gaps=watch.gaps(conn, tables), household=watch.household(conn, tables))
+                               gaps=watch.gaps(conn, tables), household=watch.household(conn, tables),
+                               asked=questions.next_up(conn, tables, limit=3, today=app.config["TODAY"]()),
+                               review_words=REVIEW_WORDS)
 
     @app.get("/close")
     def close_page():
@@ -236,6 +242,7 @@ def create_app(shutdown_token: str, on_shutdown: Callable[[], None], report=None
     from dashboard.web.helper_settings import helper_settings
     from dashboard.web.home_setup import home_setup
     from dashboard.web.pages import pages
+    from dashboard.web.questions import question_pages
     from dashboard.web.restore import restore_pages
     from dashboard.web.review import review_pages
     from dashboard.web.setup import setup_pages
@@ -250,6 +257,7 @@ def create_app(shutdown_token: str, on_shutdown: Callable[[], None], report=None
     app.register_blueprint(review_pages)
     app.register_blueprint(restore_pages)
     app.register_blueprint(helper_api)
+    app.register_blueprint(question_pages)
 
     def for_helpers() -> bool:
         return request.path.startswith("/api/v1/")

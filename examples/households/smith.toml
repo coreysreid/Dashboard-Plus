@@ -16,7 +16,7 @@ home_type = "house"
 storeys = 2
 mobility_needs = false
 hazards = ["bushfire", "heat", "storm"]
-modules = ["documents", "garden", "home_care", "home_layout", "lent_out", "medical", "people", "pets", "stock", "utilities", "vehicles", "wine"]
+modules = ["documents", "garden", "home_care", "home_layout", "lent_out", "medical", "people", "pets", "readiness", "stock", "utilities", "vehicles", "wine"]
 
 # ---- People -----------------------------------------------------------------
 
@@ -913,3 +913,27 @@ provider = "Example Energy AU"
 fault_contact = "Example Energy Faults AU"
 account_number = "DEMO-AU-ACCOUNT-01"
 meter = "Electricity meter"
+
+# ---- Readiness ----------------------------------------------------------------
+# Answers to "Have you thought about…?" questions (modules/readiness/prompts.toml). Not yet answers say
+# when to bring the question back; the rest come back after the question's own interval.
+
+[[readiness.answers]]
+prompt = "fire-upper-floor"
+answer = "not_yet"
+answered_on = "today-7"
+review_on = "today+23"
+note = "Walk through the upstairs route together."
+
+[[readiness.answers]]
+prompt = "heat-heat-pets"
+answer = "not_yet"
+answered_on = "today-12"
+review_on = "today+18"
+note = "Rex and Whiskers need a cool place."
+
+[[readiness.answers]]
+prompt = "leaving-contact-away"
+answer = "yes"
+answered_on = "today-2"
+note = "The household confirmed Mary is the contact after leaving."

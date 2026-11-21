@@ -39,6 +39,17 @@ is new: keep a copy of anything important somewhere else too. See
 - **Needs attention:** what is running low, what expires soon, about how many
   days of water you have for the people (and pets) in the house, and details
   worth filling in, such as an emergency contact with no phone number.
+- **Have you thought about…?** (Readiness) 49 calm questions about fire,
+  flood, storms, heat, power cuts, medical needs and leaving home quickly, each
+  with the official page it came from and the date that page was checked. Only
+  the questions that fit what you told Settings are asked (storeys, the things
+  that can happen where you live, pets, mobility needs). Answer Yes, Not
+  relevant or Not yet, or open Tell me more. When one of your records may
+  already answer a question (a first aid kit with its place, an emergency
+  contact with a phone number) it is offered for you to confirm, never
+  answered for you; if that record changes, the question comes back. Home
+  shows at most two at a time, and the count says how many you have looked
+  at, never whether you are "safe".
 - **Helpers (early):** give an assistant, such as an AI program, a key in
   Settings so it can look at the parts of your records you choose and suggest
   new ones. Nothing is added until you accept it on the Review page. Private
@@ -148,34 +159,60 @@ There is an early **test build** for Macs. It is not yet signed or checked
 you are helping to test; a signed version comes later. It has only been built
 and checked automatically on GitHub's Apple silicon Macs, not yet tried by a
 person on a real Mac. You need macOS 11 (Big Sur) or later and a Mac with
-Apple silicon (M1 or later); an Intel version is not built yet.
+Apple silicon; an Intel version is not built yet.
 
-1. **Get the zip.** On the [Actions page](https://github.com/coreysreid/Dashboard-Plus/actions),
-   open the newest run on `main` with a green tick and download
-   **dashboard-plus-macos-arm64-unsigned** under *Artifacts*. Inside is
-   `Dashboard-Plus-<version>-macos-arm64-unsigned.zip`. Double-click it to unzip.
+**Check your Mac first.** Choose **Apple menu, About This Mac**. Continue only
+if **Chip** begins with M1, M2, M3 or a later Apple chip and your macOS version
+is 11 or later. If it says **Processor: Intel**, this preview download is not
+for your Mac.
+
+1. **Get the zip.** Sign in to GitHub. Open the
+   [Actions page](https://github.com/coreysreid/Dashboard-Plus/actions), choose
+   the newest completed run whose branch is **main** and whose result is a green
+   tick. Under *Artifacts*, download **dashboard-plus-macos-arm64-unsigned**.
+   Finder now has an outer ZIP; open it, then open the
+   `Dashboard-Plus-<version>-macos-arm64-unsigned.zip` inside it. If the
+   artifact is missing or has expired, stop and ask for a new main build.
 2. **Drag `Dashboard Plus.app` into your Applications folder.**
 3. **Double-click Dashboard Plus.** The first time, macOS says it could not
    verify that Dashboard Plus is free of malware. Click **Done** (not *Move to
    Bin*). Then open **System Settings**, choose **Privacy & Security**, scroll
    down to the message about Dashboard Plus and click **Open Anyway**, then
-   confirm with your password or Touch ID. You only do this once. On macOS 14
-   or earlier you can instead Control-click the app, choose **Open**, then
-   **Open** again. Do not change any other security setting.
+   confirm with your password or Touch ID. You may need to allow each new
+   unsigned preview build separately. If the warning or button is different
+   from these steps, stop and tell us your macOS version and the words on
+   screen. Do not turn off Mac security checks. On macOS 14 or earlier you can
+   instead Control-click the app, choose **Open**, then **Open** again.
 4. Your browser shows the dashboard. Answer the setup questions as on Windows.
 
-There is no window or Dock icon: the dashboard is the page in your browser. To
-**close it**, click **Save and exit** on the page. If you close the browser tab
-by mistake, open Dashboard Plus again and the page comes back.
+There is no separate app window or Dock icon: after opening the app, look for a
+new Dashboard Plus page in your browser. If it is not visible after about 20
+seconds, bring your browser to the front and check its tabs. If you closed only
+the tab, open the app once to bring the page back. To stop Dashboard Plus
+itself, click **Save and exit** on that page and wait for **Saved and closed**.
+If a failure alert appears, note its words (without personal details) for the
+Issues page.
 
-**Where your data is:** in your own Mac account, in the folder
-`Library/Application Support/Dashboard Plus` inside your home folder (in
-Finder, choose *Go*, *Go to Folder…* and paste
-`~/Library/Application Support/Dashboard Plus`). Only your account can open it.
-It is **not inside the app**, so replacing or deleting the app does not touch
-your records. To **update**, use Save and exit, then replace the app in
-Applications. To remove Dashboard Plus completely, delete the app and then that
-folder (and `~/.local/share/dashboard-plus`, which holds the second backup copy).
+**Where your data is:** in this Mac account's Application Support folder,
+separate from the app: `Library/Application Support/Dashboard Plus` inside your
+home folder (in Finder, choose *Go*, *Go to Folder…* and paste
+`~/Library/Application Support/Dashboard Plus`). Someone with access to this Mac
+account or its backups may be able to read it. Replacing the app does not erase
+it.
+
+**To update:** choose **Save and exit** and wait for **Saved and closed**.
+Download and unzip the new preview, then drag its **Dashboard Plus** app into
+Applications; if Finder asks, choose **Replace**. Open it, follow any new
+unsigned-app warning, and check that your existing records are still there. Do
+not delete the Application Support folder during an update.
+
+**To remove the app:** delete only **Dashboard Plus** from Applications. Delete
+the record and backup folders only if you deliberately want to erase your local
+copies, after checking any backup you want to keep. They are two separate
+folders:
+
+- `~/Library/Application Support/Dashboard Plus` (your records)
+- `~/.local/share/dashboard-plus` (the second backup copy)
 
 ## About the project
 

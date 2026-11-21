@@ -424,6 +424,14 @@ def check(conn, registry) -> list[str]:
     for name, info in registry.items():
         joins |= {join_table_name(info.module.name, info.table.name, c.name)
                   for c in info.table.columns.values() if c.type == "links"}
+        for column in info.table.columns.values():  # a pair that names a record that is not there
+            if column.type == "links":
+                join = join_table_name(info.module.name, info.table.name, column.name)
+                target = target_table(info.module.name, column)
+                if conn.execute(f"SELECT 1 FROM {join} AS p LEFT JOIN {name} AS a ON a.id = p.from_id "
+                                f"LEFT JOIN {target} AS b ON b.id = p.to_id "
+                                f"WHERE a.id IS NULL OR b.id IS NULL LIMIT 1").fetchone():
+                    problems.append(f"{join} has a pair that points at a record that is not there.")
         if not has_identity(conn, name):
             problems.append(f"{name} has no permanent IDs.")
             continue

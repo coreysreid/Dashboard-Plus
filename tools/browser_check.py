@@ -1,4 +1,4 @@
-"""Click through the real dashboard in Chromium (setup, Set up my home, dates, stock in, stocktake, Mark returned, Mark done, spreadsheet import, Review keys and buttons, private details, closing) and fail loudly."""
+"""Click through the real dashboard in Chromium (setup, Set up my home, dates, stock in, stocktake, Mark returned, Mark done, spreadsheet import, Review keys and buttons, readiness questions, private details, closing) and fail loudly."""
 from __future__ import annotations
 
 import argparse
@@ -37,6 +37,7 @@ AU = {"household": "smith", "locale": "en-AU", "timezone": "Australia/Sydney",
               "text": "\ufeffName,Keep at least,Use by,Notes\r\nBrowser import rice,2,20/05/27,\"Top shelf, left\r\n"
                       "behind the flour\"\r\nBrowser import oats,1,,\r\nBrowser import salt,1,31/02/27,\r\n"},
       # A made-up helper's receipt on Review: a new item with its Stock in (one group), and a Stock in on its own.
+      "questions": {"id": "medical-kit-location", "table": "medical__kits"},
       "review": {"helper": "Browser check helper", "item": "Browser check lentils", "existing": "Kidney beans",
                  "rows": 3}}
 US = {"household": "garcia", "locale": "en-US", "timezone": "America/Los_Angeles",
@@ -154,7 +155,8 @@ def run_au(work: Path, executable: str | None) -> list[str]:
         finally:
             conn.close()
         done += drive(dict(plan, dates=AU["dates"], stock=AU["stock"], private=AU["private"], loan=AU["loan"],
-                           job=AU["job"], csv=AU["csv"], review=AU["review"]), work, "main")
+                           job=AU["job"], csv=AU["csv"], review=AU["review"], questions=AU["questions"]), work,
+                           "main")
         closed = True
     finally:
         stop_server(process, closed)

@@ -1,0 +1,50 @@
+{% extends "base.html" %}
+{% block title %}Have you thought about…? · Dashboard Plus{% endblock %}
+{% block body %}
+<p class="muted"><a href="/">Home</a> · {{ title }}</p>
+<h1>Have you thought about…?</h1>
+<p class="lead">Questions to think through while things are calm. Answer as many or as few as you like, in any order.</p>
+
+<div class="card">
+  {% if coverage.not_fit == 0 %}
+  <p style="margin-top:0"><strong>{{ coverage.looked_at }} of {{ coverage.fit }} questions looked at.</strong></p>
+  {% else %}
+  <p style="margin-top:0"><strong>{{ coverage.looked_at }} of {{ coverage.fit }} questions that fit your household looked at.</strong></p>
+  <p>{{ coverage.not_fit }} do not fit the settings you gave. <a href="/settings">Change your settings</a> if your home or household has changed.</p>
+  {% endif %}
+  <p class="muted" style="margin-bottom:0">Looked at means someone answered a question. It does not say whether your household is safe or ready.</p>
+</div>
+
+<nav class="question-filters" aria-label="Show questions">
+  <a href="/questions/{{ module }}" {% if not show %}aria-current="page"{% endif %}>All</a>
+  {% for key, label in filters.items() %}
+  <a href="/questions/{{ module }}?show={{ key }}" {% if show == key %}aria-current="page"{% endif %}>{{ label }} ({{ counts[key] }})</a>
+  {% endfor %}
+</nav>
+
+{% for g in groups %}
+{% set gc = coverage.groups | selectattr("key", "equalto", g.key) | first %}
+<section aria-labelledby="group-{{ g.key }}">
+  <h2 id="group-{{ g.key }}">{{ g.title }} <span class="muted" style="font-weight:400;font-size:1rem">{% if gc.fit %}{{ gc.looked_at }} of {{ gc.fit }} looked at{% else %}none fit your settings{% endif %}</span></h2>
+  {% if g.questions %}
+  <ul class="question-list">
+    {% for q in g.questions %}
+    <li><a href="/questions/{{ module }}/{{ q.prompt.id }}">{{ q.prompt.question }}</a>
+      <span class="muted">
+      {% if q.state == "does_not_fit" %}Does not fit your settings{% if q.answer %} (your earlier answer is kept){% endif %}
+      {% elif q.state == "review" %}Review again{% if q.review_reason == "record_changed" %}: the record you used changed{% endif %}
+      {% elif q.state == "looked_at" %}{{ answer_words[q.answer.answer] }}, {{ show_date(q.answer.answered_on, style) }}
+      {% else %}To look at{% endif %}</span></li>
+    {% endfor %}
+  </ul>
+  {% elif show %}<p class="muted">None here.</p>{% endif %}
+</section>
+{% endfor %}
+<style>
+  .question-filters { display: flex; flex-wrap: wrap; gap: .4rem 1rem; margin: 1rem 0; }
+  .question-filters a[aria-current] { font-weight: 600; text-decoration: none; }
+  .question-list { padding-left: 1.1rem; }
+  .question-list li { margin: .45rem 0; }
+  .question-list .muted { display: block; font-size: .92rem; }
+</style>
+{% endblock %}
