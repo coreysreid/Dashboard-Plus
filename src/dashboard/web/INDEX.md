@@ -5,6 +5,7 @@
 | app.py | Build the Flask web application and its local-only protections. | changing sign-in, protections or reports |
 | pages.py | Pages built from module declarations: the record grid, add and edit forms, and history. | changing the grid or forms |
 | setup.py | The first-run wizard and the settings page: who lives here, the home, modules and backups. | changing setup questions or settings |
+| home_setup.py | Set up my home: rooms and areas, the storage spots inside them, and which rooms connect, on one page. | changing the Set up my home page |
 | action_form.py | An action's small form, such as Mark done: open it, save it once as one operation, and Undo it (decision 0091). | changing Mark done or Undo screens |
 | count.py | Count this batch: a stocktake of one batch, reviewed and then saved as one stocktake correction. | changing the stocktake screens |
 | home.py | Group the home page by area: each module's main lists shown large, its other lists as one line of links. | changing how the home page is grouped or ordered |

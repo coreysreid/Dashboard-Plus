@@ -366,6 +366,25 @@ columns.inside = { type = "link", to = "places", on_delete = "restrict" }
 - With `on_delete = "restrict"`, a room cannot be deleted while places are
   still inside it.
 
+A table can also **join two records** of one table, such as two rooms with a
+door between them (decision 0103), by naming its two link columns as a `pair`:
+
+```toml
+[tables.connections]
+columns.place = { type = "link", to = "places", required = true, on_delete = "cascade" }
+columns.connects_to = { type = "link", to = "places", on_delete = "cascade" }
+pair = { columns = ["place", "connects_to"], blank_when = { kind = "outside_door" } }
+```
+
+- Saving refuses a record that joins a record to itself, and a pair that is
+  already joined, either way round (Hallway to Kitchen is Kitchen to Hallway).
+- The second column may be blank only while the `blank_when` choice holds
+  (a door straight outside); without `blank_when` it may always be blank.
+- Restoring a joining record whose pair was joined again meanwhile is refused.
+- **Set up my home** (`/set-up-home`) uses Household stock's Places and
+  connections: rooms and areas, storage spots inside them, and which rooms
+  connect, on one page that works without scripts.
+
 ### 5.7 Batches: layered use-by dates
 
 An item's stock can be split into batches, each with its own amount, use-by

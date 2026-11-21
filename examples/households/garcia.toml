@@ -299,6 +299,31 @@ notes = "Basement locker 12."
 name = "Balcony"
 notes = "The sunny side, off the kitchen."
 
+# Which rooms lead into which (Set up my home, decision 0103).
+[[stock.connections]]
+place = "Hallway"
+kind = "outside_door"
+notes = "The apartment door, to the shared stairs."
+
+[[stock.connections]]
+place = "Hallway"
+connects_to = "Kitchen"
+kind = "opening"
+
+[[stock.connections]]
+place = "Hallway"
+connects_to = "Main bedroom"
+
+[[stock.connections]]
+place = "Hallway"
+connects_to = "Bathroom"
+
+[[stock.connections]]
+place = "Kitchen"
+connects_to = "Balcony"
+kind = "outside_door"
+notes = "Sliding door."
+
 # Amounts are what is on hand today, after the stock in and out below.
 [[stock.items]]
 name = "Water jugs (1 gallon)"

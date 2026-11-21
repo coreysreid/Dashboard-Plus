@@ -66,6 +66,7 @@
     <p class="help">Helps later questions about getting out safely fit your home.</p></div>
 
   <h2>2. Your home</h2>
+  {% if mode == "settings" and home_setup %}<p style="margin-top:0"><a href="/set-up-home">Set up my home: rooms and areas, storage spots inside them, and which rooms connect</a></p>{% endif %}
   {% set other = values.country_is_other or (values.country and values.country not in countries) %}
   <div class="{% if errors.country %}has-error{% endif %}"><label for="country">Country</label>
     <select id="country" name="country"><option value="">(choose)</option>

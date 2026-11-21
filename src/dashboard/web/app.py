@@ -181,7 +181,7 @@ def create_app(shutdown_token: str, on_shutdown: Callable[[], None], report=None
 
     @app.get("/")
     def home():
-        groups, attention, last_backup = [], None, None
+        groups, attention, last_backup, my_home = [], None, None, None
         if app.config["DATA_DIR"] is not None:
             last_backup = backups.latest(app.config["DATA_DIR"])
         if app.config["DATA_DIR"] is not None and registry():
@@ -192,11 +192,13 @@ def create_app(shutdown_token: str, on_shutdown: Callable[[], None], report=None
             attention = {"low": watch.running_low(conn, registry()), "expiring": watch.expiring(conn, registry()),
                          "supplies": watch.supplies(conn, registry()),
                          "gaps": watch.gaps(conn, registry())}
+            from dashboard.web.home_setup import summary
+            my_home = summary(conn, registry())
         from dashboard.web.setup import backup_report
         tables = [t for group in groups for t in group["main"] + group["more"]]
         return render_template("home.html", report=report, groups=groups, tables=tables, attention=attention,
                                last_backup=last_backup, backup=backup_report(app.config["DATA_DIR"]),
-                               suggestions=waiting_suggestions())
+                               suggestions=waiting_suggestions(), my_home=my_home)
 
     @app.get("/attention")
     def attention_page():
@@ -232,6 +234,7 @@ def create_app(shutdown_token: str, on_shutdown: Callable[[], None], report=None
     from dashboard.web.export_page import export_pages
     from dashboard.web.csv_import import imports
     from dashboard.web.helper_settings import helper_settings
+    from dashboard.web.home_setup import home_setup
     from dashboard.web.pages import pages
     from dashboard.web.restore import restore_pages
     from dashboard.web.review import review_pages
@@ -240,6 +243,7 @@ def create_app(shutdown_token: str, on_shutdown: Callable[[], None], report=None
     app.register_blueprint(pages)
     app.register_blueprint(sheet_pages)
     app.register_blueprint(setup_pages)
+    app.register_blueprint(home_setup)
     app.register_blueprint(helper_settings)
     app.register_blueprint(export_pages)
     app.register_blueprint(imports)

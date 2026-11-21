@@ -50,12 +50,55 @@ function expect(condition, message) { if (!condition) throw new Failed(message);
     }
   }
 
+  async function checkHomeSetup() {  // Set up my home (decision 0103): rooms, a spot inside one, a connection, with the keyboard
+    const card = (name) => page.locator(`section.room:has(h3:text-is("${name}"))`);
+    for (const name of ['Check room A', 'Check room B']) {
+      await page.focus('#new-room');
+      await page.keyboard.type(name);
+      await Promise.all([page.waitForNavigation(), page.keyboard.press('Enter')]);
+      expect(await card(name).count() === 1, `Adding the room "${name}" should show its card; it did not.`);
+    }
+    await card('Check room A').locator('summary', { hasText: 'Add a storage spot' }).click();
+    await card('Check room A').locator('input[name=name]').first().fill('Check shelf');
+    await submit(`section.room:has(h3:text-is("Check room A")) button:text-is("Add storage spot")`);
+    expect((await card('Check room A').innerText()).includes('Check shelf'), 'The new storage spot should show inside its room.');
+    const join = async () => {
+      await card('Check room A').locator('summary', { hasText: 'Connect Check room A' }).click();
+      const select = card('Check room A').locator('select[name=connects_to]');
+      const value = await select.locator('option', { hasText: 'Check room B' }).getAttribute('value');
+      await select.selectOption(value);
+      await Promise.all([page.waitForNavigation(), card('Check room A').locator('button:text-is("Add connection")').click()]);
+    };
+    await join();
+    expect((await card('Check room B').innerText()).includes('Check room A'), 'A connection should show on both rooms.');
+    refusalExpected = true;  // the same two rooms again is refused, in words
+    await join();
+    refusalExpected = false;
+    const refused = (await page.locator('.problem').allTextContents()).join(' ');
+    expect(refused.includes('already joined'), `Connecting the same two rooms twice should be refused; the page said "${refused}".`);
+    await page.goto(base + '/set-up-home?welcome=1');
+    await card('Check room A').locator('summary', { hasText: 'Rename, move or delete Check shelf' }).click();
+    await submit(`section.room:has(h3:text-is("Check room A")) button:text-is("Delete Check shelf")`);
+    await card('Check room A').locator('summary', { hasText: 'Rename, move or delete Check room A' }).click();
+    await submit(`section.room:has(h3:text-is("Check room A")) button:text-is("Delete Check room A")`);
+    expect(await card('Check room A').count() === 0, 'A deleted room should leave the page.');
+    expect(!(await card('Check room B').innerText()).includes('Check room A'), "A deleted room's connections should go with it.");
+    await card('Check room B').locator('summary', { hasText: 'Rename, move or delete Check room B' }).click();
+    await submit(`section.room:has(h3:text-is("Check room B")) button:text-is("Delete Check room B")`);
+    expect(await page.locator('#skip').count() === 1, 'Set up my home should still offer "Skip for now" after changes.');
+    ok('Set up my home: rooms added with the keyboard, a storage spot, a connection on both rooms, a repeat refused, deleting a room takes its connections');
+  }
+
   async function checkSetup() {
     await goto(plan.launch);
     expect(new URL(page.url()).pathname === '/setup', `A new data folder should open the setup questions, but opened ${page.url()}.`);
     await steps(plan.wizard);
     await submit('form.record button[type=submit]');
-    expect(new URL(page.url()).pathname === '/', `After setup the browser should be on Home, but is on ${page.url()}.`);
+    expect(new URL(page.url()).pathname === '/set-up-home', `After setup the browser should offer Set up my home, but is on ${page.url()}.`);
+    await checkHomeSetup();
+    await Promise.all([page.waitForNavigation(), page.click('#skip')]);
+    expect(new URL(page.url()).pathname === '/', `"Skip for now" should go to Home, but went to ${page.url()}.`);
+    expect(await page.locator('#my-home a[href="/set-up-home"]').count() === 1, 'Home should always link to Set up my home.');
     const areas = await page.locator('.areas section.area h2').allTextContents();
     expect(areas.length >= 2, `Home should show a card for each area, but showed ${areas.length}.`);
     expect(areas.includes('People'), `Home should have a People card; it has: ${areas.join(', ')}.`);

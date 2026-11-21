@@ -86,6 +86,13 @@ data in every screenshot that is shared.
 | Main way data gets in after M1: CSV import, receipt photos via a helper, or both | Typing only in M1 | Start of M2 |
 | Product name | "Dashboard Plus" as a working name | Before any public announcement |
 
+## Later ideas, not planned yet
+
+- **A simple map of the way out, drawn by the household** ("lego level accuracy", Corey,
+  21 November 2026). Set up my home already records rooms and areas, which rooms connect and
+  how, and which doors lead outside (decision 0103), so a map can start from rooms as boxes,
+  connections as lines and doors to outside as exits. Nothing is drawn yet.
+
 ## Workstreams beside the code
 
 - **Content:** prompts, country packs and medical links are research and
