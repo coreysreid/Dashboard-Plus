@@ -9,3 +9,4 @@
 | example.toml | Invented Smith, Garcia and Taylor rows | trying the draft |
 | ACCEPTANCE.md | Promotion and privacy checks | testing behavior |
 | NOTES.md | Utilities and Vehicles overlap, sources and core needs | deciding ownership |
+| RENEWAL.md | One vehicle-policy owner, household transfer choice, words and checks | avoiding duplicate reminders |
