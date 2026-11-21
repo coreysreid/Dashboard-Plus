@@ -1,0 +1,33 @@
+# Entirely invented demonstration rows; no actual bills, policies or account identifiers.
+[[smith.bills_insurance.commitments]]
+name = "Home electricity"
+kind = "bill"
+category = "electricity"
+provider = "Example Energy AU"
+amount = 96
+frequency = "monthly"
+next_due = "today+24"
+place = "Kitchen"
+covers = "Example household electricity service"
+reference = "DEMO-SMITH-POWER"
+
+[[garcia.bills_insurance.commitments]]
+name = "Contents insurance"
+kind = "policy"
+category = "contents"
+amount = 210
+frequency = "yearly"
+next_due = "today+42"
+covers = "Broad example contents description; check the policy for limits"
+reference = "DEMO-GARCIA-CONTENTS"
+
+[[taylor.bills_insurance.commitments]]
+name = "Family car insurance"
+kind = "policy"
+category = "vehicle"
+amount = 185
+frequency = "yearly"
+next_due = "today+18"
+vehicle = "Small car"
+covers = "Example vehicle cover description; check the policy for exclusions"
+reference = "DEMO-TAYLOR-CAR"

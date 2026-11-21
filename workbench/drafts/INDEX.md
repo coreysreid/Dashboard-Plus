@@ -29,3 +29,12 @@ and made-up example rows. Add a row here for each draft folder you create.
 | sync/ | Optional main/member household sync, conflicts, privacy and offline bundles | deciding sync |
 | macos/ | Researched app-bundle build, data location and release checks | preparing a Mac release |
 | phone/ | Android and iOS member app options, first screens and acceptance checks | designing mobile sync |
+| bills_insurance/ | Draft bills and policy reminders beside Utilities | reviewing financial reminders |
+| pet_feeding/ | Event-based pet food records, daily totals and phone/helper flow | designing pet feeding |
+| medicine_doses/ | Proposed human dose history linked to People's medication summaries | deciding safe medical scope |
+| vehicle_running/ | Odometer history and service quote comparison linked to Vehicles | designing running records |
+| purchase_history/ | Stock purchase lines, confirmed prices and receipt Review words | designing cost history |
+| exit_map/ | Fire-service research and a simple room-and-connection sketch | planning a home exit map |
+| helper_move_in/ | First-time helper move checklist and remaining traps | guiding household imports |
+| think_it_through/ | Eight sourced scenario drills tied to household records | building readiness practice |
+| routine_checklists/ | Today/week/month/year tasks reconciled with Home care and Garden | designing recurring work |

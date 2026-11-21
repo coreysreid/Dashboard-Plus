@@ -1,0 +1,10 @@
+[[sheet]]
+name = "upcoming_bills_and_policies"
+title = "Bills and policies to check"
+intro = "Dates are the ones your household entered. Check the latest bill or policy before paying or relying on cover. Amounts, cover summaries, references and private notes are left off this page."
+
+[[sheet.section]]
+title = "Dates to check"
+table = "commitments"
+columns = ["name", "kind", "category", "provider", "frequency", "next_due"]
+order_by = "next_due"

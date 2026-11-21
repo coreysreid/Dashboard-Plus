@@ -1,0 +1,19 @@
+# One commitment row is a reminder, not a payment ledger, policy document or automatic renewal schedule.
+[tables.commitments]
+title = "Bills and policies"
+description = "A bill or insurance policy, the date to check it, and who provides it."
+columns.name = { type = "text", required = true }
+columns.kind = { type = "choice", required = true, choices = ["bill", "policy"] }
+columns.category = { type = "choice", required = true, choices = ["electricity", "gas", "water", "internet", "phone", "vehicle", "home", "contents", "health", "pet", "other"] }
+columns.provider = { type = "link", to = "people.people", on_delete = "clear" }
+columns.amount = { type = "money", min = 0, sensitive = true, travels = "never" }
+columns.frequency = { type = "choice", choices = ["weekly", "monthly", "quarterly", "yearly", "other"] }
+columns.next_due = { type = "date" }
+columns.covers = { type = "longtext", sensitive = true, travels = "never" }
+columns.vehicle = { type = "link", to = "vehicles.vehicles", on_delete = "clear" }
+columns.place = { type = "link", to = "stock.places", on_delete = "clear" }
+columns.reference = { type = "text", sensitive = true, travels = "never" }
+columns.notes = { type = "longtext", sensitive = true, travels = "never" }
+
+[tables.commitments.watch]
+expiring = { date = "next_due", warn_days = 30, wording = "due", what = "bill or policy check" }
