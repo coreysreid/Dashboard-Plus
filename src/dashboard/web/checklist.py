@@ -122,8 +122,8 @@ def _view(window: str):
     finished = []
     if window != "undated" and window != "year":
         for entry in checklist.done(conn, registry, start, end, only):
-            action = next((a for a in entry.source.forms if a["key"] == entry.key), None)
-            label = display.action_word(entry.source.info, action, "undo") if action else None
+            action = next((a for a in entry.source.info.table.actions if a["key"] == entry.key), None)
+            label = display.undo_word(entry.source.info, action)
             can = label and actions.can_undo(store, entry.source.info, entry.record_id, entry.operation)
             finished.append({"name": entry.name, "source": _source_word(entry.source, all_sources),
                              "skipped": entry.counts_as == "skipped", "on": dates.show(entry.on, style),

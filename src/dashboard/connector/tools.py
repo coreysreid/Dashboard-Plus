@@ -111,7 +111,11 @@ TOOLS = [
          "same if you retry it, so it can never be added twice. Values use field names from dashboard_tables; "
          "money is in whole units like 12.50. A new Stock item may carry its starting amount (quantity), unit, "
          "use-by date (expires) and place in the same one entry; accepting it adds the item and its first batch "
-         "together. To add a new record and one that links to it together (a new "
+         "together; do not also send a Stock in for that amount, or it counts twice (the answer then carries a "
+         "may_count_twice warning: tell the person). A link takes a record id, never a name: look the record up "
+         "and compare its full place path; a name is refused with the exact matches, and if more than one "
+         "matches, ask the household. Never copy codes, account, card or registration numbers or private "
+         "medical details into names, notes, why or source. To add a new record and one that links to it together (a new "
          "Place and a Stock item kept there), put the new record first and set the link to {\"ref\": N}, N being "
          "that earlier entry's position from 0; the household sees them as one group. An entry may carry a "
          "`source`, the line it was read from and its price, like {\"line\": \"KIDNEY BEANS 400G x2\", "
@@ -139,7 +143,8 @@ TOOLS = [
          "GET", lambda a: "/batches" + _query(a, "after", "limit")),
     Tool("dashboard_get_suggestion_batch", "Get one suggestion batch",
          "Read one of this helper's own suggestion batches: each suggestion's status (waiting, accepted or "
-         "rejected) and, once accepted, the new record's id. This cannot accept or reject anything; only a person "
+         "rejected), once accepted the new record's id, and any warnings to tell the person about. Count accepted "
+         "and waiting from here before you report back. This cannot accept or reject anything; only a person "
          "can, on the Review page.",
          {"type": "object", "properties": {"batch_id": {"type": "integer", "minimum": 1}},
           "required": ["batch_id"], "additionalProperties": False},

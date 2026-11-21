@@ -432,12 +432,15 @@ def action_words(info: TableInfo, action: dict) -> tuple[str, str]:
 
 def operation_text(records: Records, info: TableInfo, entry: dict) -> str | None:
     """A history line for an action that added a record: "used Mark done: added Clean the gutters, done
-    19/11/26", or for its Undo "undid Mark done: removed ...". None for any other history entry."""
+    19/11/26", or for its Undo "undid Mark done: removed ...". A one-step button (decision 0112) reads "used
+    Mark returned" and "undid Mark returned". None for any other history entry."""
     if entry["action"] not in ("action", "undo") or not isinstance(entry.get("after"), dict):
         return None
     after = entry["after"]
     action = next((a for a in info.table.actions if a["key"] == after.get("key")), None)
     label = action_words(info, action)[0] if action else after.get("key", "a button")
+    if not after.get("added_table"):
+        return f"used {label}" if entry["action"] == "action" else f"undid {label}"
     other = records.registry.get(after.get("added_table", ""))
     name = "a record"
     if other is not None:
@@ -451,6 +454,14 @@ def operation_text(records: Records, info: TableInfo, entry: dict) -> str | None
 def action_word(info: TableInfo, action: dict, name: str) -> str | None:
     """One more of an action's words (its form's title or intro, or its Undo button), from labels.toml first."""
     return _labels(info).get("actions", {}).get(action["key"], {}).get(name) or action.get(name)
+
+
+def undo_word(info: TableInfo, action: dict | None) -> str | None:
+    """The Undo button's words for a saved action: its own words, or plain "Undo" for a one-step button
+    (decision 0112). A form that names no Undo words offers none, as before."""
+    if action is None:
+        return None
+    return action_word(info, action, "undo") or (None if action.get("adds") else "Undo")
 
 
 def actions_for(info: TableInfo, record: dict | None) -> list[dict]:

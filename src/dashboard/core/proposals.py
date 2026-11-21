@@ -13,7 +13,7 @@ import sqlite3
 from datetime import date, datetime, time, timezone
 from decimal import Decimal, InvalidOperation
 
-from dashboard.core import db, helpers, receipts
+from dashboard.core import db, helpers, move_in, receipts
 from dashboard.core.records import Records, ValidationError
 from dashboard.core.schema import target_table
 from dashboard.errors import PlainError
@@ -418,13 +418,21 @@ def _shape_problems(helper: helpers.Helper, registry: dict, entries: list[tuple[
 LINK_PROBLEMS = ("must point at a record.", "points at a record that does not exist or has been deleted.")
 
 
-def _with_link_hint(registry: dict, name: str, field: str, message: str) -> str:
-    """A link that points nowhere, with the plain next step: look the record up first, or suggest it (0102)."""
+def _with_link_hint(registry: dict, name: str, field: str, message: str, conn=None, value=None) -> str:
+    """A link that points nowhere, with the plain next step: look the record up first, or suggest it (0102).
+
+    A link sent as a name or part of a path ("Shelf 3") also names the exact full-path matches and their ids,
+    and says to ask the household when more than one matches (decision 0112)."""
     column = registry[name].table.columns.get(field) if name in registry else None
     if column is None or column.type not in ("link", "links") or message not in LINK_PROBLEMS:
         return message
     target = target_table(registry[name].module.name, column)
     title = _title(registry[target]) if target in registry else "the linked list"
+    named = move_in.name_hint(conn, registry, target, value) if conn is not None else None
+    if named:
+        return (f"{message} {named} Look up {title} first (GET /api/v1/tables/{target}/records, or the "
+                f"dashboard_list_records tool) and compare the full path, never only the last name. If it is not "
+                f'there, suggest it earlier in this request and point at it with {{"ref": N}}.')
     return (f"{message} Look up {title} first (GET /api/v1/tables/{target}/records, or the dashboard_list_records "
             f"tool) and send the id of the one that matches. If it is not there, suggest it earlier in this request "
             f'and point at it with {{"ref": N}}.')
@@ -451,7 +459,7 @@ def submit(conn: sqlite3.Connection, registry: dict, helper: helpers.Helper, bod
     stored = conn.execute("SELECT id, body_hash FROM core__helper_batches WHERE helper_id = ? AND request_key = ?",
                           (helper.id, key)).fetchone()
     if stored:
-        return _same_or_refuse(conn, stored, digest), False
+        return _same_or_refuse(conn, stored, digest, registry), False
     _check_limits(conn, helper, len(entries), queue_limit)
     line_table = None
     if any(name is None for name, _values in entries):  # receipt lines wait for a Stock in the person chooses
@@ -473,7 +481,8 @@ def submit(conn: sqlite3.Connection, registry: dict, helper: helpers.Helper, bod
                                                      resolve=_resolve_refs) if dry else {}
         problems = [{"entry": kept[number], "table": entries[kept[number]][0], "field": field[:60],
                      "message": _with_link_hint(registry, entries[kept[number]][0], field,
-                                                _renumbered(message, kept))}
+                                                _renumbered(message, kept), conn,
+                                                entries[kept[number]][1].get(field))}
                     for number, fields in sorted(wrong.items()) for field, message in fields.items()]
     if problems:
         raise _invalid(registry, problems)
@@ -506,8 +515,8 @@ def submit(conn: sqlite3.Connection, registry: dict, helper: helpers.Helper, bod
                               (helper.id, key)).fetchone()
         if stored is None:
             raise
-        return _same_or_refuse(conn, stored, digest), False
-    return batch_result(conn, batch_id), True
+        return _same_or_refuse(conn, stored, digest, registry), False
+    return batch_result(conn, batch_id, registry=registry), True
 
 
 def _check_limits(conn: sqlite3.Connection, helper: helpers.Helper, adding: int, queue_limit: int) -> None:
@@ -533,15 +542,16 @@ def daily_limit_message(limit: int, left: int = 0) -> str:
             f"Plus (\"Allow {ALLOW_MORE} more today\"). Otherwise, try again tomorrow.")
 
 
-def _same_or_refuse(conn, stored, digest: str) -> dict:
+def _same_or_refuse(conn, stored, digest: str, registry: dict | None = None) -> dict:
     if stored["body_hash"] != digest:
         raise ProposalError(409, "request_key_reused", "This request key was already used for different "
                                                         "suggestions. Check the earlier batch, then use a new key.")
-    return batch_result(conn, stored["id"])
+    return batch_result(conn, stored["id"], registry=registry)
 
 
-def batch_result(conn: sqlite3.Connection, batch_id: int, detail: bool = False) -> dict:
-    """One batch as the helper sees it: its rows with their state. `detail` adds record ids, reasons and dates."""
+def batch_result(conn: sqlite3.Connection, batch_id: int, detail: bool = False, registry: dict | None = None) -> dict:
+    """One batch as the helper sees it: its rows with their state. `detail` adds record ids, reasons and dates.
+    With `registry`, a new item's starting amount sent with a Stock in for it is named under `warnings`."""
     batch = conn.execute("SELECT * FROM core__helper_batches WHERE id = ?", (batch_id,)).fetchone()
     rows = conn.execute("SELECT * FROM core__proposals WHERE batch_id = ? ORDER BY position", (batch_id,)).fetchall()
     proposals = []
@@ -568,6 +578,12 @@ def batch_result(conn: sqlite3.Connection, batch_id: int, detail: bool = False) 
         message = "The household has decided on every suggestion in this batch."
     result = {"batch_id": batch_id, "state": "waiting" if waiting else "decided", "why": batch["why"],
               "proposals": proposals, "message": message}
+    # A new item's starting amount and a Stock in for it in one send (decision 0112): allowed, but said plainly.
+    twice = move_in.count_twice(registry, [dict(r, values=json.loads(r["values_json"])) for r in rows
+                                           if r["entry_kind"] == "record"]) if rows and registry else {}
+    if twice:
+        result["warnings"] = [{"entry": position, "code": "may_count_twice", "message": words}
+                              for position, words in sorted(twice.items())]
     if detail:
         result.update(request_key=batch["request_key"], created_at=batch["created_at"])
     return result
@@ -652,7 +668,8 @@ def pending(conn: sqlite3.Connection) -> list[dict]:
     `helper` names the author: the helper's name, or "Import 'pantry.csv'" for a person's import. Each row has
     its `source` (the line a helper read it from, or None) and `refs` ({field: earlier position}). `groups`
     holds the waiting rows again, gathered so that rows pointing at each other sit together (decision 0097),
-    and `made` maps the position of each row already accepted to its new record's id.
+    and `made` maps the position of each row already accepted to its new record's id. `records` holds every
+    record row of the batch, decided or not, for the move-in checks on Review (decision 0112).
 
     `lines` holds the batch's receipt lines the helper could not match (decision 0105), waiting or decided: a
     batch with any stays here until the person presses "Finish receipt review", so a skip can be undone."""
@@ -677,7 +694,8 @@ def pending(conn: sqlite3.Connection) -> list[dict]:
                       "decided": {"accepted": sum(1 for r in every if r["status"] == "accepted"),
                                   "rejected": sum(1 for r in every if r["status"] == "rejected"
                                                   and r["entry_kind"] == "record")},
-                      "made": {r["position"]: r["record_id"] for r in every if r["status"] == "accepted"}})
+                      "made": {r["position"]: r["record_id"] for r in every if r["status"] == "accepted"},
+                      "records": [_row_dict(r) for r in every if r["entry_kind"] == "record"]})
     return found
 
 

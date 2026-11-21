@@ -152,7 +152,7 @@ def done(conn: sqlite3.Connection, registry: dict[str, TableInfo], start: date, 
          only: str | None = None) -> list[Done]:
     """Mark done and Skip this time saved for dates from `start` to `end`, newest first, leaving out any that
     were undone, whose record or added entry was deleted since, or whose module is off."""
-    by_table = {s.info.name: s for s in sources(registry) if s.forms and (not only or s.info.name == only)}
+    by_table = {s.info.name: s for s in sources(registry) if s.info.table.actions and (not only or s.info.name == only)}
     if not by_table:
         return []
     marks = ",".join("?" * len(by_table))
@@ -167,9 +167,10 @@ def done(conn: sqlite3.Connection, registry: dict[str, TableInfo], start: date, 
         source, result = by_table[row["table_name"]], json.loads(row["after"])
         if result.get("operation") in undone:
             continue
-        action = next((a for a in source.forms if a["key"] == result.get("key")), None)
+        action = next((a for a in source.info.table.actions if a["key"] == result.get("key")), None)
         latest = (action or {}).get("latest") or {}
-        day = (result.get("answers") or {}).get(latest.get("date"))
+        # A form is dated by the day the person entered; a one-step press by the day it was pressed (0112).
+        day = result.get("on") if result.get("one_step") else (result.get("answers") or {}).get(latest.get("date"))
         try:
             on = date.fromisoformat(str(day)[:10])
         except ValueError:
@@ -178,15 +179,17 @@ def done(conn: sqlite3.Connection, registry: dict[str, TableInfo], start: date, 
             continue
         picked.append((source, row["record_id"], on, result, action))
         wanted.setdefault(source.info.name, set()).add(row["record_id"])
-        added.setdefault(result.get("added_table"), set()).add(result.get("added"))
+        if result.get("added_table"):
+            added.setdefault(result["added_table"], set()).add(result.get("added"))
     live = {t: _live(conn, t, ids) for t, ids in wanted.items()}
     live_added = {t: _live(conn, t, {i for i in ids if isinstance(i, int)}) for t, ids in added.items()
                   if t in registry}
     names: dict[tuple[str, int], str] = {}
     found = []
     for source, record_id, on, result, action in picked:
-        if record_id not in live.get(source.info.name, ()) or \
-                result.get("added") not in live_added.get(result.get("added_table"), ()):
+        if record_id not in live.get(source.info.name, ()) or (result.get("added_table") and
+                                                                 result.get("added") not in
+                                                                 live_added.get(result["added_table"], ())):
             continue
         key = (source.info.name, record_id)
         if key not in names:

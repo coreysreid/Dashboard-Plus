@@ -19,13 +19,14 @@ columns.returned_on = { type = "date", required_when = { status = "returned" }, 
 columns.notes = { type = "longtext" }
 
 # One press on the loan's page when it comes back: "Is it back?" becomes Yes and Returned on becomes today.
-# Shown only while it is still out, so a second press finds nothing to do (decision 0075).
+# Shown only while it is still out, so a second press finds nothing to do (decision 0075); Undo puts it back (0112).
 [[tables.loans.actions]]
 key = "returned"
 label = "Mark returned"
 show_when = { status = "out" }
 set = { status = "returned", returned_on = "today" }
 done = "Marked returned today. If it came back on another day, change Returned on below."
+undo = "Undo Mark returned"
 
 # Reminded a week before, and only while the thing is still out: a returned loan is never overdue.
 [tables.loans.watch]

@@ -105,6 +105,7 @@ Straight after a tick, **Undo** puts it back, as long as nothing has changed sin
 - Garden's and Things lent out's one-step buttons leave no named operation in
   history, so they do not appear under "Done this week" or in This year's done
   counts; the row simply leaves the list, and Garden keeps the finished job.
+  (Since decision 0112 they do write one, so they are listed and counted, with Undo.)
 - Only the most recent tick can be undone, and only while nothing changed since,
   as in decision 0091; after that, changes are made by editing.
 - "Due since" for every late row means a document review that is a year late

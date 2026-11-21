@@ -3,7 +3,7 @@ from __future__ import annotations
 
 from flask import Blueprint, abort, current_app, jsonify, redirect, render_template, request, url_for
 
-from dashboard.core import dates, records, schema, suggest
+from dashboard.core import actions, dates, records, schema, suggest
 from dashboard.core.units import unit_for
 from dashboard.web import display
 
@@ -312,8 +312,9 @@ def run_action(table, record_id, key):
     if action.get("adds"):  # an action with a small form, such as Mark done (decision 0091)
         return action_form.save_action_form(table, record_id, key)
     back = action_form.back_to()  # pressed on Things to do (decision 0107): go back there
+    op = actions.new_operation()  # named in history, so it counts as done and can be undone (decision 0112)
     try:
-        store.action(table, record_id, key)
+        store.action(table, record_id, key, op=op, today=current_app.config["TODAY"]())
     except records.RecordNotFound:
         abort(404)
     except (records.ActionNotAvailable, records.ValidationError) as error:
@@ -329,8 +330,8 @@ def run_action(table, record_id, key):
         record = store.get(table, record_id)
         return _render_form(info, store, record, {"_form": message}, False, record=record, status=409)
     if back:
-        return redirect(action_form.back_with(back, table, record_id, pressed=key))
-    return redirect(url_for("pages.edit_record", table=table, record_id=record_id, done=key))
+        return redirect(action_form.back_with(back, table, record_id, op=op))
+    return redirect(url_for("pages.edit_record", table=table, record_id=record_id, op=op))
 
 
 @pages.post("/t/<table>/<int:record_id>/restore")

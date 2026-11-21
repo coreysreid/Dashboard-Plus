@@ -845,7 +845,8 @@ def _check_actions(file: str, table: Table, raw, computed_by_table: dict[str, se
             problems.append(f"{a_where}: {', '.join(repr(k) for k in missing)} "
                             f"{'is' if len(missing) == 1 else 'are'} missing.")
             continue
-        extra = [k for k in FORM_ACTION_KEYS if k in action and k != "adds"]
+        # A one-step button may name its Undo words too (decision 0112); the rest belong to a small form.
+        extra = [k for k in FORM_ACTION_KEYS if k in action and k not in ("adds", "undo")]
         if extra and not form:
             problems.append(f"{a_where}: {', '.join(repr(k) for k in extra)} only work in an action that adds a "
                             f"record, with adds = {{ table = ..., link = ..., ask = [...] }}.")
@@ -891,8 +892,12 @@ def _check_actions(file: str, table: Table, raw, computed_by_table: dict[str, se
         if needed:
             problems.append(f"{a_where}: what it sets makes '{needed[0]}' required, so set that too.")
             continue
+        if not form and "undo" in action and not _words(action["undo"]):
+            problems.append(f"{a_where}: 'undo' must be a short sentence, like undo = \"Undo Mark returned\".")
+            continue
         checked = {"key": key, "label": action["label"].strip(), "done": action["done"].strip(),
-                   "show_when": dict(shown), "set": dict(values), "adds": None}
+                   "show_when": dict(shown), "set": dict(values), "adds": None,
+                   "undo": (action.get("undo") or "").strip() or None if not form else None}
         if form:  # a double press is caught by the form's one-use number instead (decision 0091)
             more = _check_form_action(a_where, table, tables, action, values, computed_by_table, problems)
             if more is None:
