@@ -1,0 +1,13 @@
+# Words for recording and reviewing a dose
+
+Designed **21 November 2026**. The screen below is proposed and cannot be used for treatment decisions.
+
+**Entry:** From a person's Important details medication row, button **Record a dose given**. Heading **Record medicine given**. Read-only **For: Rosa Garcia** and a masked **Medicine: Show details** control. After deliberate Show, display the linked People medication text with its last-edited date and **Check the pack or care instructions before recording. Dashboard does not tell you what to give.** Fields **When was it given?** (local time and date, editable), **Who gave it?** (People picker or **I do not know**), **Amount given (optional)** (free text copied by the person, not a suggested amount). Button **Save dose entry**. Do not offer a one-tap repeat that silently copies a previous amount. A phone member instead uses **Save on this phone**, then **Waiting for main to review**.
+
+**Confirmation:** On main, **Dose entry saved for Rosa Garcia at 8:00 am.** This confirms only a record was saved, not that the medicine was correct or effective. On a member, **Saved on this phone. This entry will wait for main to review.** Home and history distinguish accepted from pending.
+
+**History:** Behind **Show dose history**, group accepted entries by household-local date. Row when hidden: **Rosa Garcia · medicine entry · 8:00 am · Maria Garcia**. A deliberate **Show details** on that row reveals the medicine and entered amount. Keep any pending rows in a separate **Waiting for main** section. Empty: **No doses recorded here. This does not tell you whether medicine was given.** Do not say **No dose given**. A possible repeated entry shows **A dose entry for this person and medicine is already recorded near this time. Check both before saving.** Buttons **Keep this as another dose** and **Go back**. A real second dose remains possible.
+
+**Correction:** **Correct this entry** opens the original with a reason; save a revision and keep history. For a mistaken event, **Mark this entry mistaken** with confirmation retains an audit marker and removes it from current accepted history counts. Never silently delete or alter the People medication summary. A helper or member correction waits on main's Review. An entry after a People medicine summary is changed still needs a historical medicine display that explains what was selected then; see [PLAN.md](PLAN.md).
+
+**Needs attention:** No reminder, adherence claim or missed-dose question follows merely from the dose log. If a household wants a medicine schedule later, it needs a separate, checked source and explicit consent. Medical readiness continues to show its existing kit and training reminders.
