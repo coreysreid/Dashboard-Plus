@@ -611,6 +611,48 @@ members (your item 78 note); assume it does until he says otherwise.
     and out, Count this batch and Review on a phone member: what each shows,
     exact labels, and what is left out compared with a computer.
 
+### Batch 20: after Corey's first real helper move (M2)
+
+Corey had an assistant move an old household tracker into Dashboard Plus
+through the connector. Household stock moved across well. Lane A is now
+building: Review speed-ups (Accept all from one send, tick boxes, keyboard
+keys, buttons that never move) and "Allow 200 more today" (0101); a starting
+message for the assistant and a Stock item sent with its starting amount as
+one suggestion (0102); and a "Set up my home" page with rooms, storage spots
+and connections between rooms (0103). The gaps below had nowhere to live.
+Use made-up data only; never copy anything from Corey's real household.
+
+88. **Bills and insurance, drafted.** A module for regular bills and
+    policies (car, home and contents, health, pet): provider from People,
+    amount, how often, next due, what it covers, linked vehicle or place;
+    Needs attention before renewal; which fields are private and whether
+    they travel (decision 0100). Check overlap with Utilities (0099) and say
+    whether bills belong there or beside it.
+89. **Pet feeding log, drafted.** Daily bowl and food events for a pet and
+    a daily total, entered fast from a phone and by a helper. What is
+    logged, what Home shows, what a sheet shows, and how big it can grow in a
+    year (Corey's old tracker held about 700 events).
+90. **Medicine doses, drafted.** Individual doses given (who, what, when,
+    by whom) beside Medical readiness's summary per medicine: whether it
+    belongs in Medical, what is private, what travels to a member, and the
+    words.
+91. **Vehicle running log, drafted.** Odometer readings over time and
+    service cost estimates (dealer vs independent) on the maintenance
+    schedule; what Needs attention can say from them.
+92. **Purchase and price history, designed.** Today a purchase price only
+    lives in notes. How Stock in could carry price and shop so a household
+    can ask "what is preparing costing us", with the exact Review and form
+    words. Check against 0097's receipt lines.
+93. **Simple exit map, researched.** Corey's later idea: a household draws a
+    rough exit plan at "lego level" from the rooms and connections in "Set
+    up my home" (0103). Research what fire services recommend a home
+    escape plan shows (cite and date), and sketch in words the least a
+    household must enter. Design only.
+94. **Moving in with a helper, a checklist.** From the assistant's feedback
+    (no direct stock quantity, private fields, limits, Places unused): read
+    the new starting message (0102) once it is built and list every place a
+    first-time assistant would still go wrong.
+
 ## Brief for Lane B, batch 3 (done)
 
 > You are Lane B, the checker and drafter. You have full internet access for
