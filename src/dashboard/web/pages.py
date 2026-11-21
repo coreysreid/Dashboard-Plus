@@ -3,12 +3,13 @@ from __future__ import annotations
 
 from flask import Blueprint, abort, current_app, jsonify, redirect, render_template, request, url_for
 
-from dashboard.core import actions, dates, records, schema, suggest
+from dashboard.core import actions, confirm, dates, records, schema, settings, suggest
 from dashboard.core.units import unit_for
 from dashboard.web import display
 
 pages = Blueprint("pages", __name__)
 PAGE_SIZE = 50
+UNDER_LIMIT = 50  # records listed under another record's page, latest first; the rest are on their own list
 
 
 def _store() -> records.Records:
@@ -111,8 +112,40 @@ def suggest_names(table):
     return jsonify(suggest.suggestions(typed, own, catalogue))
 
 
+def _under(store, info, record) -> list[dict]:
+    """Records of other tables listed on this record's page, like a service's quotes (labels.toml `under`, 0111).
+    Private cells are never in the page: each is a Show button that fetches it, as on the list."""
+    found = []
+    formatter = display.Formatter(store)
+    for other in store.registry.values():
+        rule = display.labels_for(other).get("under")
+        if not rule or schema.target_table(other.module.name, other.table.columns[rule["link"]]) != info.name:
+            continue
+        columns = [other.table.columns[c] for c in rule["columns"]]
+        order = rule.get("order", "id")
+        total = store.conn.execute(f"SELECT COUNT(*) FROM {other.name} WHERE deleted_at IS NULL AND {rule['link']} = ?",
+                                   (record["id"],)).fetchone()[0]
+        rows = store.conn.execute(
+            f"SELECT * FROM {other.name} WHERE deleted_at IS NULL AND {rule['link']} = ? "
+            f"ORDER BY {order} DESC, id DESC LIMIT ?", (record["id"], UNDER_LIMIT)).fetchall()
+        listed = []
+        for row in rows:
+            row = dict(row)
+            cells = [{"label": display.column_label(other, c), "sensitive": c.sensitive, "column": c.name,
+                      "saved": row.get(c.name) not in (None, ""),
+                      "text": "" if c.sensitive else formatter.text(other, c, row.get(c.name))} for c in columns]
+            listed.append({"id": row["id"], "href": f"/t/{other.name}/{row['id']}", "cells": cells,
+                           "name": display.display_name(other, row, store),
+                           "private": any(c["sensitive"] and c["saved"] for c in cells)})
+        found.append({"table": other.name, "title": rule["title"], "intro": rule.get("intro"),
+                      "reveal": rule.get("reveal"), "labels": [display.column_label(other, c) for c in columns],
+                      "rows": listed, "total": total, "more": total - len(listed),
+                      "list": f"/t/{other.name}", "list_title": display.table_title(other)})
+    return found
+
+
 def _render_form(info, store, values, errors, from_form, record=None, status=200, saved=None, back=None,
-                 done=None, notice=None):
+                 done=None, notice=None, confirm_warnings=None, then=None):
     fields = display.build_fields(store, info, values, errors, from_form, editing=record is not None)
     history = []
     if record:
@@ -165,6 +198,7 @@ def _render_form(info, store, values, errors, from_form, record=None, status=200
             # An action that adds these records may give this button clearer words (decision 0091).
             words = next((a["adds"]["add_button"] for a in info.table.actions if a.get("adds") and
                           a["adds"]["table"] == other.table.name and a["adds"]["link"] == column.name), None)
+            words = words or display.labels_for(other).get("add_button")  # "Add a reading" (decision 0111)
             related.append({"href": f"/t/{other.name}/new?{column.name}={record['id']}",
                             "label": display.table_title(other), "words": words})
     charts = []  # a pet's recorded weights, drawn on its own page (decision 0109)
@@ -172,7 +206,7 @@ def _render_form(info, store, values, errors, from_form, record=None, status=200
         from dashboard.web.chart_pages import chart_tables, dots_view
         for other in chart_tables(store.registry, info):
             charts.append({"title": f"Recorded {other.table.chart['what'][1]}",
-                           "view": dots_view(store, other, record["id"]),
+                           "view": dots_view(store, other, record["id"], latest_only=UNDER_LIMIT),
                            "href": f"/charts/{other.name}?subject={record['id']}"})
     feeding = []  # a pet's food put out today, with Add food (decision 0110)
     if record and not record.get("deleted_at"):
@@ -182,6 +216,8 @@ def _render_form(info, store, values, errors, from_form, record=None, status=200
                            record_name=record_name, errors=errors, history=history, saved=saved, charts=charts,
                            feeding=feeding,
                            related=related, back=back, batches=batches, count_href=count_href,
+                           under=_under(store, info, record) if record and not record.get("deleted_at") else [],
+                           confirm=confirm_warnings or [], then=then,
                            actions=display.actions_for(info, record), done=done, notice=notice), status
 
 
@@ -241,6 +277,8 @@ def new_record(table):
     prefill = {c.name: _default_text(c) for c in info.table.columns.values()
                if c.default is not None and c.type != "boolean"}
     prefill.update({c.name: "yes" for c in info.table.columns.values() if c.type == "boolean" and c.default})
+    prefill.update({c.name: settings.household_choice(store.conn, c.default_from)  # the usual km or mi (0111)
+                    for c in info.table.columns.values() if c.default_from})
     from_address = {k: v for k, v in request.args.items() if k in info.table.columns and k != "saved"}
     prefill.update(from_address)
     back = None
@@ -254,19 +292,36 @@ def new_record(table):
     return _render_form(info, store, prefill, {}, True, saved=request.args.get("saved"), back=back, notice=notice)
 
 
+def _held(info, store, values: dict, record: dict | None) -> list:
+    """The gentle checks (tables.toml `confirm`, decision 0111) that Save as entered has not answered yet."""
+    if not info.table.confirm:
+        return []
+    cleaned = store.clean(info, values, creating=record is None)
+    whole = {**(record or {}), **cleaned}
+    formatter = display.Formatter(store)
+    found = confirm.warnings(store.conn, info, whole, record["id"] if record else None,
+                             lambda column, value: formatter.text(info, column, value))
+    return confirm.unconfirmed(found, request.form.getlist("_confirm"))
+
+
 @pages.post("/t/<table>/new")
 def create_record(table):
     info, store = _info(table), _store()
+    back = request.form.get("back") if request.form.get("back", "").startswith("/t/") else None
+    then = request.form.get("then") or request.form.get("_then")
     try:
-        record_id = store.create(table, _form_values(info, store, creating=True))
+        values = _form_values(info, store, creating=True)
+        held = _held(info, store, values, None)
+        if held:  # nothing saved yet: say why, with Go back and Save as entered
+            return _render_form(info, store, _raw_form(info), {}, True, back=back, confirm_warnings=held, then=then)
+        record_id = store.create(table, values)
     except records.ValidationError as error:
-        back = request.form.get("back") if request.form.get("back", "").startswith("/t/") else None
         return _render_form(info, store, _raw_form(info), error.problems, True, status=422, back=back)
-    if request.form.get("then") == "another":
+    if then == "another":
         return redirect(url_for("pages.new_record", table=table, saved=display.display_name(
             info, store.get(table, record_id), store)))
-    if request.form.get("then") == "back" and request.form.get("back", "").startswith("/t/"):
-        return redirect(request.form["back"])
+    if then == "back" and back:
+        return redirect(back)
     return redirect(url_for("pages.grid", table=table))
 
 
@@ -290,7 +345,11 @@ def update_record(table, record_id):
     except records.RecordNotFound:
         abort(404)
     try:
-        store.update(table, record_id, _form_values(info, store, creating=False))
+        values = _form_values(info, store, creating=False)
+        held = _held(info, store, values, record)
+        if held:
+            return _render_form(info, store, _raw_form(info), {}, True, record=record, confirm_warnings=held)
+        store.update(table, record_id, values)
     except records.ValidationError as error:
         return _render_form(info, store, _raw_form(info), error.problems, True, record=record, status=422)
     return redirect(url_for("pages.edit_record", table=table, record_id=record_id, saved="1"))

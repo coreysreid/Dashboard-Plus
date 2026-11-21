@@ -68,6 +68,15 @@ def _date(value, today: date):
     return value
 
 
+def _datetime(value, today: date):
+    """"today-1 09:00" (or "today-1T09:00") as that day and time, like 2026-11-20T09:00; any other value as it is."""
+    if isinstance(value, str) and (" " in value or "T" in value):
+        day, _, clock = value.partition(" " if " " in value else "T")
+        if RELATIVE_DATE.match(day):
+            return f"{_date(day, today)}T{clock}"
+    return value
+
+
 def _name_column(info) -> str | None:
     """The column an example names a row by, or None for a history table with no short text
     (such as kit checks, which are only links, dates and a note)."""
@@ -176,9 +185,8 @@ def load_records(conn: sqlite3.Connection, registry: dict, data: dict, today: da
                     value = ids
                 elif col.type == "date":
                     value = _date(value, today)
-                elif col.type == "datetime" and isinstance(value, str) and "T" in value:
-                    day, _, clock = value.partition("T")  # "today-1T07:15": a time on a day relative to today
-                    value = f"{_date(day, today)}T{clock}"
+                elif col.type == "datetime":
+                    value = _datetime(value, today)
                 values[column] = value
             name_column = _name_column(info)
             label = row.get(name_column) if name_column else None

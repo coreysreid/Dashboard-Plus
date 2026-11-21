@@ -162,6 +162,7 @@ One record per decision, from `TEMPLATE.md`. Never deleted; reversed ones are ma
 | [0108](0108-think-it-through-drills.md) | Think it through: eight calm drills (`[[scenario]]` with ordered steps in `prompts.toml` schema 2, drill-only `[[step]]` with exact missing words, `[[emergency]]` numbers by country), fitted from Settings and `has_records`, country-limited sources marked "Source needs checking" when old or broken; a shared step also saves its Questions answer; practice runs (`drill_runs`, `drill_steps`) with Continue later, practised and look-again dates and history; own words private, `travels = "never"`, never exported or shown to helpers | Accepted |
 | [0109](0109-first-charts.md) | The first two charts, drawn on the server as SVG with an equal table: today's drinking water by item from the same `watch.supplies` result as Home (left-out items with their reason), and one pet's recorded weigh-ins as dots (a `chart` line in tables.toml); exact empty words, nothing private, no library | Accepted |
 | [0110](0110-pet-feeding-log.md) | Pet feeding log switched on from Lane B's draft: food put out (not eaten), Add food from the pet's page, a generic `daily` declaration adding up accepted entries by the household's own day (the `household.timezone` setting; instants kept as sent) one total per unit, never inferring a missed meal; Home line, day page, a 14-day sheet that is complete or refused, possible-repeat warning on Review; every column travels, the sheet omits notes | Accepted |
+| [0111](0111-vehicle-running-log.md) | Vehicle running log beside Vehicles from Lane B's draft: dated odometer readings (lower or mixed-unit ones ask Go back or Save as entered, never refuse; a dots chart in the latest unit) and dealer, independent or other estimates on a service's page, private amount and scope behind Show that never travel; no mileage due logic, the service date stays the only reminder; core gains `confirm`, chart `unit`/`latest`/`caveat`, labels `under` and `add_button`, and a household distance unit | Accepted |
 | [0112](0112-done-history-and-move-in-guards.md) | One-press buttons (Garden Mark done, Mark returned, any one-step action) write a named history entry with the day pressed, so they count under Things to do's Done lists and This year and offer Undo straight after (optional `undo` words); move-in guards from Lane B's read-through: a new item's starting amount plus a Stock in for it gets a `may_count_twice` warning on Review and in the answer, a link sent as a name is refused with the exact full-path matches, and private text the household keeps is flagged on Review if copied into a suggestion, never repeated | Accepted |
 | [TEMPLATE](TEMPLATE.md) | Blank record to copy for a new decision | recording a decision |
 
@@ -225,7 +226,7 @@ Made by tools/make_screenshots.py from examples/households. Do not edit by hand.
 ## examples/households/  (summary: three made-up households for demos, screenshots and tests)
 Every name, number and address is invented; phones use ranges set aside for fiction, emails use example.com.
 Each file: `title`, `summary`, `[setup]` (the first-run answers), then records as `[[module.table]]` rows.
-Links name the record they point at (person = "Mary Smith"). Dates may be "today", "today+12" or "today-3"; a time "today-1T07:15".
+Links name the record they point at (person = "Mary Smith"). Dates may be "today", "today+12" or "today-3"; a date and time "today-1 09:00" or "today-1T07:15".
 Stock amounts are what is on hand today, after the `[[stock.movements]]` rows, which are oldest first.
 Load one with: `python tools/load_example.py smith --data <an empty folder>`.
 | Entry | What it is | Open it when |
@@ -253,6 +254,7 @@ numbered migrations. See docs/DESIGN.md section 6 for the module contract.
 | routines/ | Routines: your own repeating tasks with a repeat you choose (days to years), one next date at a time, and each time done or skipped; shown on Things to do | changing routines |
 | stock/ | Pantry, water, first aid, tools and hardware, with places (and which rooms connect), minimums and use-by dates | changing stock, running low or days of water |
 | utilities/ | Utilities and accounts: each service, its provider, fault contact (from People) and meter (from Home layout), a private account reference; a Utility contacts sheet | changing utility records |
+| vehicle_running/ | Vehicle running log: dated odometer readings per vehicle and dealer or independent estimates for a Vehicles service, amounts private | changing readings or estimates |
 | vehicles/ | Each vehicle, who to call if it breaks down, registration, insurance and service dates; a Vehicles sheet | changing vehicle records |
 | wine/ | Wine collection: wines, bottle counts you type, a free-text place, tasting notes; a Wine collection sheet | changing wine records |
 
@@ -474,6 +476,21 @@ Generate the next one with: python tools/make_migration.py utilities --name <wha
 |---|---|---|
 | 0001_initial.sql | The module's first table, generated from tables.toml | checking how services are stored |
 
+## modules/vehicle_running/  (summary: odometer readings and service estimates beside Vehicles, files only; built on Lane B's draft)
+| Entry | What it is | Open it when |
+|---|---|---|
+| module.toml | Name, version, description; requires Vehicles (vehicles and services) and People (providers) | changing the module's details |
+| tables.toml | Odometer readings with their gentle lower and mixed-unit checks and dots chart, and service estimates with private amount and scope | adding a field or a check |
+| labels.toml | Friendly labels, help, form and list order, Add a reading, and the Cost estimates list on a service's page | changing wording or order |
+| migrations/ | Numbered database changes | after changing tables.toml |
+
+## modules/vehicle_running/migrations/  (summary: this module's numbered database changes; never edit a released one)
+Generate the next one with: python tools/make_migration.py vehicle_running --name <what_changed>
+
+| Entry | What it is | Open it when |
+|---|---|---|
+| 0001_update_tables.sql | The readings and estimates tables with their indexes, generated from tables.toml | checking how the tables are stored |
+
 ## modules/vehicles/  (summary: the Vehicles module, files only; built on Lane B's draft, linking to People and Household stock)
 | Entry | What it is | Open it when |
 |---|---|---|
@@ -553,6 +570,7 @@ Generate the next one with: python tools/make_migration.py wine --name <what_cha
 | questions.py | Which "Have you thought about…?" questions fit the household, what may already be recorded, and how many were looked at. | changing how questions fit, match records, come back or are counted |
 | settings.py | Read and write household settings kept in the database (core__settings). | storing a new setting |
 | schema.py | Turn a module's declared tables into SQL, and work out its next migration. | changing how tables are built |
+| confirm.py | Gentle checks before a form saves, like an odometer reading lower than the last one: shown, never a block (0111). | changing Go back / Save as entered checks |
 | suggest.py | Suggestions while typing: a household's own records first, then a module's list of common things. | changing how picking from a list matches |
 | watch.py | Work out what is running low, what expires soon, how many days of supplies are on hand, and what is worth filling in. | changing running low, expiring, days of cover or gaps |
 | checklist.py | Things to do: Today, This week, This month and This year over the due dates modules already keep (decision 0107). | changing which tasks show, their windows, week start or what counts as done |
@@ -668,6 +686,7 @@ How to run them is in AGENTS.md.
 | test_server.py | Tests for starting, protecting and safely closing the local web server. | changing startup or closing |
 | test_watch.py | Tests for running low, expiring soon and days of cover, and for checking `watch` sections. | changing watch rules |
 | test_charts.py | Tests for the first charts (decision 0109): the drinking-water breakdown, one pet's weigh-ins and the SVG drawing. | changing a chart |
+| test_module_vehicle_running.py | Tests for the Vehicle running log: odometer readings and service estimates beside Vehicles (decision 0111). | changing readings, estimates, gentle checks or listed-under sections |
 | test_gaps.py | Tests for gaps: details worth filling in, declared in a table's `watch.gaps` and asked as questions. | changing gaps |
 | test_examples.py | Tests for the example households: each loads cleanly and shows exactly what it was written to show. | changing an example household |
 | test_suggest.py | Tests for suggestions while typing: matching, the household's own records first, and module catalogues. | changing picking from a list |
@@ -727,6 +746,6 @@ How to run them is in AGENTS.md.
 | load_example.py | Load a made-up example household into an empty data folder, for demos, screenshots and testing. | demonstrating or testing with realistic data |
 | make_screenshots.py | Make the example screenshots: run each example household through every stage of using the dashboard. | the screens changed and the gallery needs remaking |
 | screenshots.js | Browser steps for make_screenshots.py (Node and Playwright) | changing how screenshots are taken |
-| browser_check.py | Click through the real dashboard in Chromium (setup, Set up my home, dates, stock in, stocktake, Mark returned, Mark done, Things to do, spreadsheet import, Review keys and buttons, readiness questions, Think it through drills, charts, pet feeding at 320px, private details, closing) and fail loudly. | a screen or its browser code changed |
+| browser_check.py | Click through the real dashboard in Chromium (setup, Set up my home, dates, stock in, stocktake, Mark returned, Mark done, Things to do, spreadsheet import, Review keys and buttons, readiness questions, Think it through drills, charts, pet feeding at 320px, vehicle running log, private details, closing) and fail loudly. | a screen or its browser code changed |
 | browser_check.js | Browser steps for browser_check.py (Node and Playwright): what is clicked and checked | changing what the browser check clicks |
 | make_project_map.py | Build PROJECT_MAP.md from every INDEX.md in the repository. | changing the map format |

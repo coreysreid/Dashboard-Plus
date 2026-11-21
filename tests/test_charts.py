@@ -126,7 +126,7 @@ columns.note = { type = "text" }
             self.load('chart = { kind = "line", x = "note", y = "note", per = "day", what = "weight", '
                       'entry = ["reading"], colour = "red" }\n')
         text = str(caught.exception)
-        for words in ("'kind' must be \"dots\"", "'x' must name a required date column", "'y' must name a required "
+        for words in ("'kind' must be \"dots\"", "'x' must name a required date or date-and-time column", "'y' must name a required "
                       "number column", "'per' must name a required link column", "'what' must be two words",
                       "'entry' must be two words", "'subject' must be the word", "colour"):
             self.assertIn(words, text)

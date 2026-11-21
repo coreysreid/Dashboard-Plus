@@ -5,7 +5,7 @@
 {% else %}
 <p class="chart-headline" id="{{ view.chart_id }}-heading"><strong>{{ view.summary }}</strong></p>
 {% if view.note %}<p class="muted">{{ view.note }}</p>{% endif %}
-<p class="muted">These are the values written down, not a health check. Nothing here says why a value changed.</p>
+<p class="muted">{{ view.caveat }}</p>
 <figure class="chart">
   {{ view.chart }}
   <figcaption class="muted">The dots are not joined: nothing was measured between them. Choose a dot to go to its row.</figcaption>

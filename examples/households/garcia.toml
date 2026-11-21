@@ -16,7 +16,7 @@ home_type = "apartment"
 storeys = 1
 mobility_needs = true
 hazards = ["earthquake", "heat", "power"]
-modules = ["documents", "garden", "home_care", "home_layout", "lent_out", "medical", "people", "pet_feeding", "pets", "readiness", "routines", "stock", "utilities", "vehicles"]
+modules = ["documents", "garden", "home_care", "home_layout", "lent_out", "medical", "people", "pet_feeding", "pets", "readiness", "routines", "stock", "utilities", "vehicle_running", "vehicles"]
 
 # ---- People -----------------------------------------------------------------
 
@@ -702,6 +702,21 @@ vehicle = "Household car"
 name = "Oil change and inspection"
 last_done = "today-100"
 next_due = "today+75"
+
+# ---- Vehicle running log ----------------------------------------------------------
+# One reading in miles and one invented quote for the oil change (decision 0111).
+
+[[vehicle_running.readings]]
+vehicle = "Household car"
+read_at = "today-1 08:30"
+distance = 62100
+unit = "mi"
+
+[[vehicle_running.estimates]]
+service = "Oil change and inspection"
+kind = "independent"
+quoted_on = "today-1"
+amount = 190
 
 # ---- Important documents --------------------------------------------------------
 # Where the papers are and the dates the family chose. No document numbers or medical details are written down.

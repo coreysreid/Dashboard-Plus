@@ -31,7 +31,6 @@ and made-up example rows. Add a row here for each draft folder you create.
 | phone/ | Android and iOS member app options, first screens and acceptance checks | designing mobile sync |
 | bills_insurance/ | Draft bills and policy reminders beside Utilities | reviewing financial reminders |
 | medicine_doses/ | Proposed human dose history linked to People's medication summaries | deciding safe medical scope |
-| vehicle_running/ | Odometer history and service quote comparison linked to Vehicles | designing running records |
 | purchase_history/ | Stock purchase lines, confirmed prices and receipt Review words | designing cost history |
 | exit_map/ | Fire-service research and a simple room-and-connection sketch | planning a home exit map |
 | helper_move_in/ | First-time helper move checklist and remaining traps | guiding household imports |

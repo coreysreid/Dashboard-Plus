@@ -579,6 +579,39 @@ stored by the page.
   from saved operations in history, dated by the day entered, leaving out ones
   undone or whose records were deleted.
 
+### 5.10 Gentle checks, readings in their own unit and records listed under another (decision 0111)
+
+```toml
+# tables.toml: asked before the household's own form saves; never a block
+[[tables.readings.confirm]]
+key = "lower"            # its own key
+when = "lower"           # "lower": below the nearest earlier record in `order` (or above the nearest later one)
+column = "distance"      # "different": not the same as the record before ({before} names that value)
+per = "vehicle"          # a required link: only that subject's records are compared
+order = "read_at"        # a required date or date-and-time; record number breaks ties
+among = "unit"           # optional: only records with the same value here are compared
+message = "This is lower than the last reading. Check the vehicle and unit before saving."
+later = "This is higher than a later reading. Check the date, vehicle and unit before saving."
+
+columns.unit = { type = "choice", required = true, choices = ["km", "mi"], default_from = "distance_unit" }
+chart = { kind = "dots", x = "read_at", y = "distance", per = "vehicle", unit = "unit", latest = "Last recorded", caveat = "…", what = [...], entry = [...], subject = "vehicle" }
+
+# labels.toml: this table's records on the page of the record `link` points at
+[tables.estimates]
+add_button = "Add estimate"
+under = { link = "service", title = "Cost estimates", intro = "…", columns = ["kind", "quoted_on", "amount"], order = "quoted_on", reveal = "Show estimated cost and scope" }
+```
+
+- The form says "Nothing is saved yet.", the sentence, **Go back** and **Save as
+  entered**; Save as entered carries a fingerprint of the checked values, so a
+  changed value is asked about again. Helpers, Review and imports are not asked.
+- `default_from` starts an empty form from a household choice in Settings
+  (`distance_unit`: km or mi; unset, miles in the US and UK). Nothing converts.
+- A chart's `unit` draws only readings in the latest reading's unit and lists
+  the others as "Not drawn: recorded in km, not mi"; on a record's own page only
+  the latest 50 are read. `under` lists the latest 50, then links to the list;
+  private columns are Show buttons and `reveal` presses all of them.
+
 ## 6. Modules
 
 A module is a folder:

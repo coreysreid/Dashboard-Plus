@@ -209,31 +209,56 @@ def _changed(store: records.Records, info: records.TableInfo, ids: list[int], wa
     return marks
 
 
+DOTS_CAVEAT = "These are the values written down, not a health check. Nothing here says why a value changed."
+
+
+def _value_text(column, value, unit: str) -> str:
+    """"48,500 km" for a whole-number reading, "12.4 kg" for a decimal one."""
+    number = f"{int(value):,}" if column.type == "integer" else charts.number_text(value)
+    return f"{number}{' ' + unit if unit else ''}"
+
+
 def dots_view(store: records.Records, info: records.TableInfo, subject_id: int, start: str | None = None,
-              end: str | None = None, chosen_period: bool = False) -> dict:
-    """One subject's readings in a date range: the plain sentence, the dots and the equal table."""
+              end: str | None = None, chosen_period: bool = False, latest_only: int | None = None) -> dict:
+    """One subject's readings in a date range: the plain sentence, the dots and the equal table.
+
+    `latest_only` keeps a record's own page short: only that many latest readings are read, the count is of all
+    of them. A reading may carry its own unit (`chart.unit`, decision 0111): only readings in the latest one's unit
+    are drawn, never converted, and the others stay in the table saying why."""
     rule = info.table.chart
     columns = info.table.columns
     x, y, per = columns[rule["x"]], columns[rule["y"]], columns[rule["per"]]
+    unit_column = columns.get(rule.get("unit") or "")
     subject_info = store.registry[target_table(info.module.name, per)]
     subject = store.get(subject_info.name, subject_id)
     name = display.display_name(subject_info, subject, store)
     formatter = display.Formatter(store)
     style = formatter.date_style
-    unit = y.unit or ""
     what_one, what_many = rule["what"]
     entry_one, entry_many = rule["entry"]
     recorded = store.conn.execute(f"SELECT COUNT(*) FROM {info.name} WHERE deleted_at IS NULL AND {per.name} = ?",
                                   (subject_id,)).fetchone()[0]
+    day_sql = f"substr({x.name}, 1, 10)"  # a reading with a time counts on its own day
     clause, params = "", [subject_id]
     if start:
-        clause, params = clause + f" AND {x.name} >= ?", params + [start]
+        clause, params = clause + f" AND {day_sql} >= ?", params + [start]
     if end:
-        clause, params = clause + f" AND {x.name} <= ?", params + [end]
-    found = [dict(r) for r in store.conn.execute(
-        f"SELECT id, {x.name} AS day, {y.name} AS value FROM {info.name} WHERE deleted_at IS NULL "
-        f"AND {per.name} = ?{clause} ORDER BY {x.name}, id", params)]
+        clause, params = clause + f" AND {day_sql} <= ?", params + [end]
+    select = (f"SELECT id, {day_sql} AS day, {x.name} AS at, {y.name} AS value"
+              + (f", {unit_column.name} AS unit" if unit_column is not None else "")
+              + f" FROM {info.name} WHERE deleted_at IS NULL AND {per.name} = ?{clause}")
+    if latest_only:
+        found = [dict(r) for r in store.conn.execute(f"{select} ORDER BY {x.name} DESC, id DESC LIMIT ?",
+                                                     params + [latest_only])][::-1]
+    else:
+        found = [dict(r) for r in store.conn.execute(f"{select} ORDER BY {x.name}, id", params)]
     marks = _changed(store, info, [r["id"] for r in found], (x.name, y.name), style)
+
+    def unit_of(r) -> str:
+        return formatter.text(info, unit_column, r["unit"]) if unit_column is not None else (y.unit or "")
+
+    unit = unit_of(found[-1]) if found else (y.unit or "")
+    drawn = {r["id"] for r in found if unit_column is None or r["unit"] == found[-1]["unit"]}
     chart_id = f"chart-{info.name}-{subject_id}"
     per_day: dict[str, int] = {}
     for r in found:
@@ -242,14 +267,19 @@ def dots_view(store: records.Records, info: records.TableInfo, subject_id: int, 
     rows, dots = [], []
     for r in found:
         seen[r["day"]] = seen.get(r["day"], 0) + 1
-        value_text = f"{charts.number_text(r['value'])}{' ' + unit if unit else ''}"
+        value_text = _value_text(y, r["value"], unit_of(r))
         day_text = dates.show(r["day"], style)
+        when_text = formatter.text(info, x, r["at"]) if x.type == "datetime" else day_text
         same = f"reading {seen[r['day']]} of {per_day[r['day']]} that day" if per_day[r["day"]] > 1 else ""
-        rows.append({"id": r["id"], "day": day_text, "value": value_text, "same": same, "mark": marks.get(r["id"], ""),
+        mark = marks.get(r["id"], "")
+        if r["id"] not in drawn:
+            mark = "; ".join(m for m in (f"Not drawn: recorded in {unit_of(r)}, not {unit}", mark) if m)
+        rows.append({"id": r["id"], "day": when_text, "value": value_text, "same": same, "mark": mark,
                      "href": f"/t/{info.name}/{r['id']}"})
-        dots.append(charts.Dot(date.fromisoformat(r["day"]), float(r["value"]),
-                               f"{day_text}: {value_text}" + (f", {same}" if same else ""),
-                               f"#{chart_id}-row-{r['id']}"))
+        if r["id"] in drawn:
+            dots.append(charts.Dot(date.fromisoformat(r["day"]), float(r["value"]),
+                                   f"{when_text}: {value_text}" + (f", {same}" if same else ""),
+                                   f"#{chart_id}-row-{r['id']}"))
     if found:
         first, last = dates.show(found[0]['day'], style), dates.show(found[-1]['day'], style)
         span = f"{first} to {last}" if first != last else f"on {first}"
@@ -267,22 +297,33 @@ def dots_view(store: records.Records, info: records.TableInfo, subject_id: int, 
         empty = f"No {what_many} recorded in this period."
     elif len(found) == 1:
         note = f"One {what_one} recorded. Add another dated reading to compare, if you choose to track this."
+    elif latest_only and recorded > len(found):
+        note = f"The latest {len(found)} of {recorded:,} {entry_many} are shown here; the chart page has them all."
+        period = f"the latest {len(found)} ({span})"
     summary = None
     if found:
         last = found[-1]
-        summary = (f"{name} · {charts.number_text(last['value'])}{' ' + unit if unit else ''} on "
-                   f"{dates.show(last['day'], style)} · {len(found)} {entry_one if len(found) == 1 else entry_many} "
-                   f"recorded" + (f" from {period}" if chosen_period and (start or end) else ""))
+        count = recorded if latest_only else len(found)
+        said = f"{count:,} {entry_one if count == 1 else entry_many} recorded"
+        latest = _value_text(y, last["value"], unit) + f" on {dates.show(last['day'], style)}"
+        if rule.get("latest"):  # "Last recorded: 48,500 km on 20/11/26 · 3 readings recorded"
+            summary = f"{rule['latest']}: {latest} · {said}"
+        else:
+            summary = f"{name} · {latest} · {said}" + (f" from {period}" if chosen_period and (start or end) else "")
     chart = None
     if dots:
+        left_out = len(found) - len(drawn)
         description = (f"One dot for each recorded {what_one} of {name}, {span}, in {unit or 'the recorded unit'}, "
-                       f"on a scale starting at 0. The dots are not joined. The table lists the same values.")
+                       f"on a scale starting at 0. The dots are not joined. The table lists the same values"
+                       + (f", and {left_out} in another unit that is not drawn." if left_out else "."))
         chart = charts.dot_chart(chart_id, f"{name}'s recorded {what_many}", description, dots,
                                  display.column_label(info, x), unit, lambda d: dates.show(d, style))
+    fixed = "" if unit_column is not None else (y.unit or "")
     return {"name": name, "subject_id": subject_id, "table": info.name, "chart": chart, "chart_id": chart_id,
             "rows": rows, "empty": empty, "note": note, "summary": summary, "period": period,
+            "caveat": rule.get("caveat") or DOTS_CAVEAT,
             "heading": f"{name}'s recorded {what_many} · {period}", "x_label": display.column_label(info, x),
-            "y_label": display.column_label(info, y) + (f" ({unit})" if unit else ""),
+            "y_label": display.column_label(info, y) + (f" ({fixed})" if fixed else ""),
             "entry_one": entry_one, "add": f"/t/{info.name}/new?{per.name}={subject_id}"}
 
 
