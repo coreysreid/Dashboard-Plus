@@ -16,7 +16,7 @@ the "Requests" table of docs/WORKSTREAMS.md.
 | Home layout draft | merged by Lane A | PR #24 | Full paths, Stock migration and cycle checks need core support. |
 | Stock lots design | merged by Lane A | PR #25 | Includes a long-term phone or webcam scanning idea. |
 | Medical draft polish | merged by Lane A; Medical promoted | PR #26 | An unfiltered no-kit gap needs core support. |
-| Readiness prompts | merged by Lane A | PR #27 | Prompt engine and record matching need core support. |
+| Readiness prompts | merged by Lane A; promoted to modules/readiness (decision 0104) | PR #27 | Prompt engine and record matching now in the core; the draft folder is in git history. |
 | Country pack content | merged by Lane A | PR #28 | Local hazard checks and pack loader need core support. |
 | Documents, Home care and Wine | merged by Lane A | PR #29 | Repeat jobs and shared places need core support. |
 | UX check after catalogue merge | merged by Lane A | PR #30 | Drinking-water count, Stock in picker and date wording, worst first. |

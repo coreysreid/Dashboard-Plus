@@ -13,7 +13,7 @@ from datetime import date, datetime, timedelta, timezone
 
 from support import ROOT, TempDirTestCase
 from dashboard import __version__
-from dashboard.core import backups, db, export, helpers, modules, proposals, questions, records, restore, settings
+from dashboard.core import backups, db, export, helpers, modules, questions, records, restore, settings
 from dashboard.core import startup
 from dashboard.core.csv_import import why_not_table
 from dashboard.core.schema import next_migration_sql
@@ -79,11 +79,6 @@ class ReadinessTestCase(TempDirTestCase):
 
     def page(self, path, client=None):
         return (client or self.client()).get(path, base_url=BASE).get_data(as_text=True)
-
-    def answer(self, prompt_id, answer, client=None, **form):
-        return (client or self.client()).post(f"/questions/readiness/{prompt_id}", base_url=BASE,
-                                              data={"_csrf": (client or self._last).csrf if client else None,
-                                                    "answer": answer, **form})
 
     def post(self, client, path, **form):
         return client.post(path, base_url=BASE, data={"_csrf": client.csrf, **form})
@@ -307,7 +302,7 @@ class ReadinessScreenTests(ReadinessTestCase):
         self.assertEqual(q.state, "to_look_at")
 
     def test_6_and_8_each_record_match_needs_exactly_its_conditions(self):
-        kitchen, shelf = self.place("Kitchen"), None
+        kitchen = self.place("Kitchen")
         shelf = self.place("Shelf 3", inside=kitchen)
         for p in self.prompt_set.prompts:
             self.assertEqual(self.state(p.id).candidates, [], p.id)
@@ -477,7 +472,7 @@ class ReadinessScreenTests(ReadinessTestCase):
                          422)
         self.assertEqual(self.post(client, "/questions/readiness/no-such-question", answer="yes").status_code, 404)
         self.assertEqual(self.answers(), [])
-        self.assertTrue(kit)
+        self.assertEqual(self.state("medical-kit-location").candidates[0].record_id, kit)
 
     def test_11_changing_settings_recounts_without_rewriting_answers(self):
         questions.save(self.store, self.prompt_set, "flood-higher-ground", "yes", today=TODAY)
@@ -488,7 +483,7 @@ class ReadinessScreenTests(ReadinessTestCase):
         self.assertEqual(self.state("flood-higher-ground").state, "does_not_fit")
         self.assertEqual([tuple(r) for r in self.answers()], before)
         self.store.delete("pets__pets", self.pet)
-        self.assertEqual(self.coverage()["fit"], 40)  # two of the storm and heat questions are about pets
+        self.assertEqual(self.coverage()["fit"], 39)  # the storm, heat and leaving questions about pets
         settings.put(self.conn, "household.hazards", ["flood", "storm", "heat"])
         self.store.restore("pets__pets", self.pet)
         self.assertEqual((self.coverage()["fit"], self.coverage()["looked_at"]), (49, 1))
@@ -582,7 +577,6 @@ class ReadinessDataTests(ReadinessTestCase):
         self.assertEqual(client.get("/api/v1/tables/readiness__answers/records", base_url=BASE,
                                     headers={"Authorization": f"Bearer {other}"}).status_code, 404)
         self.assertIn("can't be imported", why_not_table(self.registry["readiness__answers"]))
-        self.assertTrue(proposals)
 
     def test_examples_load_their_answers_and_list_readiness_once(self):
         expected = {"smith": {"fire-upper-floor": "not_yet", "heat-heat-pets": "not_yet",
