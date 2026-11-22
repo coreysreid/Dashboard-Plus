@@ -72,7 +72,8 @@ class UtilitiesModuleTests(UtilitiesTestCase):
     def test_1_it_starts_with_its_dependencies_and_the_empty_list_says_what_to_add(self):
         self.assertEqual(self.report.module_problems, {})
         module = modules.load_module(ROOT / "modules" / "utilities")
-        self.assertEqual((sorted(module.requires), module.outbound_hosts), (["home_layout", "people"], []))
+        self.assertEqual((module.requires, module.optional_requires, module.outbound_hosts),
+                         (["people"], ["home_layout"], []))  # Home layout only for the meter (decision 0115)
         client = self.client()
         from dashboard.web import display
         self.assertEqual(display.empty_hint(self.registry["utilities__services"]),
@@ -251,10 +252,11 @@ class UtilitiesModuleTests(UtilitiesTestCase):
         self.assertIn("Water meter", listed)
         self.assertNotIn("Water meter —", listed)
 
-    def test_14_with_place_is_checked_in_the_module_file_and_utilities_needs_home_layout(self):
+    def test_14_with_place_is_checked_in_the_module_file_and_home_layout_is_optional(self):
         module = modules.load_module(ROOT / "modules" / "utilities")
         self.assertEqual(module.tables["services"].columns["meter"].with_place, "place")
-        self.assertEqual(module.requires, ["people", "home_layout"])  # decision 0106: no optional modules yet
+        self.assertEqual(module.requires, ["people"])  # decision 0115 replaces 0106's hard requirement
+        self.assertTrue(module.tables["services"].columns["meter"].optional)
         problems = []
         modules._check_tables("t", {"tables": {"x": {"title": "X", "description": "d",
                                                     "columns": {"name": {"type": "text", "with_place": "place"}}}}},

@@ -25,8 +25,10 @@ def _info(table: str) -> records.TableInfo:
 
 def _sorting(info: records.TableInfo) -> tuple[str, bool]:
     sort = request.args.get("sort", "id")
-    # Never sort by a private column: the order alone could give its values away.
-    allowed = {"id"} | {c.name for c in display.list_columns(info) if not c.sensitive}
+    # Never sort by a private column: the order alone could give its values away. Nor by a link into a list
+    # that is switched off: the order would follow records nobody can see (decision 0115).
+    off = _store().off_links(info)
+    allowed = {"id"} | {c.name for c in display.list_columns(info) if not c.sensitive and c.name not in off}
     return (sort if sort in allowed else "id"), request.args.get("desc") == "1"
 
 
@@ -69,7 +71,9 @@ def grid(table):
     sort, desc = _sorting(info)
     total = store.count(table)
     rows = _rows(store, info, 0, sort, desc)
-    columns = [{"name": c.name, "label": display.column_label(info, c)} for c in display.list_columns(info)]
+    off = store.off_links(info)  # a link into a list that is switched off is not sorted by (decision 0115)
+    columns = [{"name": c.name, "label": display.column_label(info, c), "sortable": c.name not in off}
+               for c in display.list_columns(info)]
     return render_template("grid.html", info=info, title=display.table_title(info), columns=columns, rows=rows,
                            total=total, next_offset=len(rows) if len(rows) < total else None,
                            sort=sort, desc=desc)
@@ -146,7 +150,7 @@ def _under(store, info, record) -> list[dict]:
 
 def _render_form(info, store, values, errors, from_form, record=None, status=200, saved=None, back=None,
                  done=None, notice=None, confirm_warnings=None, then=None):
-    fields = display.build_fields(store, info, values, errors, from_form, editing=record is not None)
+    fields = display.build_fields(store, info, values, errors, from_form, editing=record is not None, saved=record)
     history = []
     if record:
         formatter = display.Formatter(store)
@@ -242,8 +246,9 @@ def _raw_form(info):
 def _form_values(info, store, creating: bool) -> dict:
     """The submitted values, with dates read the household's way. A date that cannot be read is
     reported together with every other problem in the form, and nothing is saved."""
-    values, date_problems = display.values_from_form(info, request.form, dates.household_style(store.conn),
-                                                     () if creating else display.batch_columns(store, info))
+    # A link into a list that is switched off is never read from the form: the saved one is kept (0115).
+    hide = store.off_links(info) | (set() if creating else display.batch_columns(store, info))
+    values, date_problems = display.values_from_form(info, request.form, dates.household_style(store.conn), hide)
     if date_problems:
         problems = dict(date_problems)
         try:

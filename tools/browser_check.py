@@ -1,4 +1,4 @@
-"""Click through the real dashboard in Chromium (setup, Set up my home, dates, stock in, stocktake, Mark returned, Mark done, Things to do, spreadsheet import, Review keys and buttons, readiness questions, Think it through drills, charts, pet feeding at 320px, vehicle running log, private details, closing) and fail loudly."""
+"""Click through the real dashboard in Chromium (setup, Set up my home, dates, stock in, stocktake, Mark returned, Mark done, Things to do, spreadsheet import, Review keys and buttons, readiness questions, Think it through drills, charts, pet feeding at 320px, vehicle running log, Utilities with Our home off, private details, closing) and fail loudly."""
 from __future__ import annotations
 
 import argparse
@@ -54,7 +54,12 @@ AU = {"household": "smith", "locale": "en-AU", "timezone": "Australia/Sydney",
                  "rows": 3, "line": "BRWSR TOM 400G 1 @ 1.50", "hint": "1"}}
 US = {"household": "garcia", "locale": "en-US", "timezone": "America/Los_Angeles",
       "dates": {"item": "Browser check tins", "typed": "05/20/27", "words": "May 20, 2027",
-                "wrongOrder": "20/05/27", "hint": "Use MM/DD/YY"}}
+                "wrongOrder": "20/05/27", "hint": "Use MM/DD/YY"},
+      # Optional links (decision 0115): switch Our home off in Settings, the Garcias' meter link is kept unseen.
+      "optional": {"service": "Apartment electricity", "meter": "Apartment electricity meter",
+                   "kept": "Meter link saved; switch on Our home to see it.",
+                   "keptHelp": "A meter link is saved. Switch on Our home to see or change it.",
+                   "offHelp": "Meter places are available if you switch on Our home. You can save this service without one."}}
 
 
 class CheckFailed(Exception):
@@ -187,7 +192,7 @@ def run_us(work: Path, executable: str | None) -> list[str]:
     closed = False
     try:
         done = drive({"base": base, "launch": launch, "locale": US["locale"], "timezone": US["timezone"],
-                      "executablePath": executable, "dates": US["dates"]}, work, "main")
+                      "executablePath": executable, "dates": US["dates"], "optional": US["optional"]}, work, "main")
         closed = True
     finally:
         stop_server(process, closed)

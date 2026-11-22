@@ -12,7 +12,7 @@
 <table class="grid">
   <thead><tr>
     {% for c in columns %}
-    <th><a href="?sort={{ c.name }}{% if sort == c.name and not desc %}&desc=1{% endif %}">{{ c.label }}{% if sort == c.name %} {{ "↓" if desc else "↑" }}{% endif %}</a></th>
+    <th>{% if c.sortable is sameas false %}{{ c.label }}{% else %}<a href="?sort={{ c.name }}{% if sort == c.name and not desc %}&desc=1{% endif %}">{{ c.label }}{% if sort == c.name %} {{ "↓" if desc else "↑" }}{% endif %}</a>{% endif %}</th>
     {% endfor %}
     <th></th>
   </tr></thead>

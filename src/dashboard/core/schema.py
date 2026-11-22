@@ -54,7 +54,9 @@ def column_sql(module: str, column: Column) -> str:
     """The SQL definition of one declared column. Rules such as 'required' are checked by
     the program when saving, so they can change without rebuilding the table."""
     sql = f"{column.name} {SQL_TYPES[column.type]}"
-    if column.type == "link":
+    # A link into an optional module has no database rule (decision 0115): that module may not be installed,
+    # and its saved ID must survive the module being off. The program checks it when saving instead.
+    if column.type == "link" and not column.optional:
         sql += f" REFERENCES {target_table(module, column)}(id) ON DELETE {ON_DELETE_SQL[column.on_delete]}"
     return sql
 
@@ -67,9 +69,10 @@ def _indexes(module: str, table: Table, columns) -> list[str]:
 
 def _join_table(module: str, table: Table, column: Column) -> str:
     real = table_name(module, table.name)
+    target = "" if column.optional else f" REFERENCES {target_table(module, column)}(id) ON DELETE CASCADE"
     return (f"CREATE TABLE {join_table_name(module, table.name, column.name)} (\n"
             f"    from_id INTEGER NOT NULL REFERENCES {real}(id) ON DELETE CASCADE,\n"
-            f"    to_id INTEGER NOT NULL REFERENCES {target_table(module, column)}(id) ON DELETE CASCADE,\n"
+            f"    to_id INTEGER NOT NULL{target},\n"
             f"    PRIMARY KEY (from_id, to_id)\n);")
 
 
