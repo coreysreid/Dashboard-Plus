@@ -3,5 +3,6 @@
 |---|---|---|
 | CHECKLIST.md | Household and assistant steps from setup to review | guiding a move |
 | REVIEW.md | Remaining assistant failure points after the starting message | improving the guide |
+| WORDING.md | Exact generated-guide and connector replacements after decision 0112 | fixing move-in instructions |
 | ACCEPTANCE.md | Invented end-to-end move checks | testing a future guide |
 | NOTES.md | Source, limits and core gaps | planning fixes |

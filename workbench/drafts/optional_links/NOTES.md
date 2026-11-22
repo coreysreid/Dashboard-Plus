@@ -1,0 +1,5 @@
+# Promotion gap
+
+Checked 21 November 2026. Shipped `modules/utilities/module.toml` has `requires = ["people", "home_layout"]` only because `services.meter` points to `home_layout.meters`; an internet-only household is forced to enable Our home. Draft `workbench/drafts/bills_insurance/module.toml` requires People, Stock and Vehicles for two nullable links, so a bill-only household is similarly forced into extra lists. `src/dashboard/core/modules.py` validates cross-module links against `requires` and drops a module whose hard requirements are off. Today there is no optional-dependency contract.
+
+Implement CONTRACT.md in the core and renderer before changing those module declarations. The link values must survive a target module being turned off, and no private or target-module information may leak through a neutral placeholder. Test the behavior in the UI, export, sheets, helper API, import, restore and sync. Do not fake optional links with a text name or silently enable a module. Bills also needs item 105's one-renewal decision before promotion.
