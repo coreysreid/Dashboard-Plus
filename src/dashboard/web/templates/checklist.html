@@ -30,7 +30,7 @@
 <table class="todo-months">
   <caption class="muted">From dates and times you recorded. A day with nothing recorded is not counted as missed.</caption>
   <thead><tr><th scope="col">Month</th><th scope="col">Due</th><th scope="col">Done</th><th scope="col">Skipped</th></tr></thead>
-  <tbody>{% for m in months %}<tr><th scope="row">{{ m.name }}</th><td>{{ m.due }}</td><td>{{ m.done }}</td><td>{{ m.skipped }}</td></tr>{% endfor %}</tbody>
+  <tbody>{% for m in months %}<tr><th scope="row">{{ m.name }}</th><td data-label="Due">{{ m.due }}</td><td data-label="Done">{{ m.done }}</td><td data-label="Skipped">{{ m.skipped }}</td></tr>{% endfor %}</tbody>
 </table>
 {% endif %}
 {% if not rows %}<p class="card">{{ empty }}</p>{% endif %}
@@ -97,5 +97,14 @@
   .todo-months { border-collapse: collapse; margin: .5rem 0 1rem; }
   .todo-months caption { text-align: left; caption-side: bottom; font-size: .85rem; padding-top: .3rem; }
   .todo-months th, .todo-months td { border-bottom: 1px solid var(--line); padding: .2rem .7rem; text-align: left; }
+  /* On a narrow phone (320px) each month is one row of labelled values, so the page never scrolls sideways (0113). */
+  @media (max-width: 30rem) {
+    .todo-months, .todo-months tbody, .todo-months caption { display: block; width: 100%; }
+    .todo-months thead { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); }
+    .todo-months tr { display: flex; flex-wrap: wrap; gap: 0 1rem; border-bottom: 1px solid var(--line); padding: .3rem 0; }
+    .todo-months th, .todo-months td { display: block; border: 0; padding: 0; }
+    .todo-months th[scope=row] { flex-basis: 100%; }
+    .todo-months td::before { content: attr(data-label) ": "; font-weight: 600; }
+  }
 </style>
 {% endblock %}

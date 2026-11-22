@@ -175,7 +175,7 @@ class PromptFileTests(ReadinessTestCase):
             self.GOOD + 'match = { table = "answers", filled = ["note"] }\n'))
         self.assertIn("https://", self.problems(self.GOOD.replace("https://example.org/", "http://example.org/")))
         self.assertIn("source.checked", self.problems(self.GOOD.replace("2026-11-16", "16/11/26")))
-        self.assertIn("'schema' must be 1 or 2", self.problems(self.GOOD.replace("schema = 1", "schema = 3")))
+        self.assertIn("'schema' must be 1, 2 or 3", self.problems(self.GOOD.replace("schema = 1", "schema = 4")))
         self.assertEqual(self.problems(self.GOOD.replace("schema = 1", "schema = 2")), "")
         self.assertIn("Drills need schema = 2", self.problems(self.GOOD.replace(
             'answers = "answers"', 'answers = "answers"\nruns = "drill_runs"')))
@@ -453,8 +453,9 @@ class ReadinessScreenTests(ReadinessTestCase):
         self.store.delete("medical__kits", kit)
         q = self.state("medical-kit-location")
         self.assertEqual((q.state, q.answer["answer"]), ("review", "yes"))
+        self.assertEqual(q.review_reason, "record_missing")
         home = self.page("/", client)
-        self.assertIn(REVIEW_WORDS["record_changed"], home)
+        self.assertIn(REVIEW_WORDS["record_missing"], home)
         self.assertNotIn("Hall kit", home)
         # The old record can no longer be chosen; a person answers again without it.
         self.assertEqual(self.post(client, "/questions/readiness/medical-kit-location", answer="yes",

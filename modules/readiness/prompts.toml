@@ -15,7 +15,13 @@
 # Questions page) or a drill-only [[step]] (never listed as a question). `missing` is the exact sentence
 # shown when nothing is recorded; `caution` is shown with any record offered. Practice runs are kept in
 # `runs`, and each step's choice and the person's own words (private, never travelling) in `run_steps`.
-schema = 2
+#
+# Schema 3 (decision 0113): every `match` also says `ask_again`, the fields of the record a person chose whose
+# change brings a confirmed Yes back. `fields` are compared by value; a place also covers every place around it
+# (their names and what each sits inside, never their notes). `states` count only whether a field still meets
+# the match: water used from a batch that still has some left, or "litre" for "litres", asks nothing. Any other
+# edit (a kit's last-checked date, a note, a phone's email) leaves the answer alone; its look-again date stays.
+schema = 3
 answers = "answers"
 runs = "drill_runs"
 run_steps = "drill_steps"
@@ -108,6 +114,7 @@ why = "Knowing where alarms are helps a household keep its record current."
 fits = {}
 answered_by = "home_layout.equipment.last_tested"
 match = { table = "home_layout.equipment", where = { kind = "smoke_alarm" }, filled = ["place", "last_tested"] }
+ask_again = { fields = ["kind", "name", "place", "last_tested"] }
 missing = "You haven't recorded a smoke alarm with its place and the date it was last checked."
 caution = "A recorded check date says when someone last checked. It does not say the alarm works today."
 review_every = 12
@@ -171,6 +178,7 @@ why = "A shut-off is easier to find before conditions change."
 fits = {hazards = ["flood"]}
 answered_by = "home_layout.shutoffs.place"
 match = { table = "home_layout.shutoffs", where = { kind = ["water", "power", "gas"] }, filled = ["place"] }
+ask_again = { fields = ["kind", "name", "place", "how_to_find"] }
 review_every = 12
 source = { title = "NZ Civil Defence Get Ready, Floods", url = "https://getready.govt.nz/emergency/floods", checked = "2026-11-16" }
 
@@ -303,6 +311,7 @@ why = "Water plans should include the conditions your home may face."
 fits = {hazards = ["heat"]}
 answered_by = "stock.lots.place"
 match = { table = "stock.lots", where = { "item.category" = "water", "item.drinking" = true, "item.unit" = ["litres", "litre", "liters", "liter", "l"] }, positive = ["quantity"], filled = ["place"] }
+ask_again = { fields = ["item", "place", "item.category", "item.drinking", "item.name"], states = ["quantity", "item.unit"] }
 review_every = 12
 source = { title = "US CDC, About Heat and Your Health", url = "https://www.cdc.gov/extreme-heat/prevention/", checked = "2026-11-16" }
 
@@ -416,6 +425,7 @@ why = "A kit is more useful when people can find it."
 fits = {}
 answered_by = "medical.kits.place"
 match = { table = "medical.kits", filled = ["place"] }
+ask_again = { fields = ["name", "kept", "place"] }
 review_every = 12
 source = { title = "US CDC, Personal Needs", url = "https://www.cdc.gov/prepare-your-health/take-action/personal-needs.html", checked = "2026-11-16" }
 
@@ -427,6 +437,7 @@ why = "Medication information can be needed when normal records are unavailable.
 fits = {}
 answered_by = "people.important_info.detail"
 match = { table = "people.important_info", where = { kind = "medication", "person.lives_here" = true }, filled = ["detail"] }
+ask_again = { fields = ["kind", "detail", "person", "person.name", "person.lives_here"] }
 review_every = 12
 source = { title = "US CDC, Personal Needs", url = "https://www.cdc.gov/prepare-your-health/take-action/personal-needs.html", checked = "2026-11-16" }
 
@@ -438,6 +449,7 @@ why = "A contact can help coordinate care if routines change."
 fits = {mobility_needs = true}
 answered_by = "people.roles.person"
 match = { table = "people.roles", where = { role = ["doctor", "pharmacist"] }, filled = ["person.phone"] }
+ask_again = { fields = ["role", "person", "priority", "person.name", "person.phone"] }
 review_every = 12
 source = { title = "US CDC, Personal Needs", url = "https://www.cdc.gov/prepare-your-health/take-action/personal-needs.html", checked = "2026-11-16" }
 
@@ -449,6 +461,7 @@ why = "Some people rely on specific foods or feeding supplies."
 fits = {}
 answered_by = "people.important_info.detail"
 match = { table = "people.important_info", where = { kind = "dietary", "person.lives_here" = true }, filled = ["detail"] }
+ask_again = { fields = ["kind", "detail", "person", "person.name", "person.lives_here"] }
 review_every = 12
 source = { title = "US CDC, Personal Needs", url = "https://www.cdc.gov/prepare-your-health/take-action/personal-needs.html", checked = "2026-11-16" }
 
@@ -500,6 +513,7 @@ why = "A shared contact helps reconnect household members."
 fits = {}
 answered_by = "people.roles.person"
 match = { table = "people.roles", where = { role = "emergency_contact" }, filled = ["person.phone"] }
+ask_again = { fields = ["role", "person", "priority", "person.name", "person.phone"] }
 review_every = 12
 source = { title = "NZ Civil Defence Get Ready, Make a Plan", url = "https://getready.govt.nz/prepared/household/make-a-plan", checked = "2026-11-16" }
 
@@ -590,6 +604,7 @@ id = "pipe-shutoff"
 question = "Where is the water shut-off you would check, and could everyone who needs it find it?"
 answered_by = "home_layout.shutoffs.place"
 match = { table = "home_layout.shutoffs", where = { kind = "water" }, filled = ["place"] }
+ask_again = { fields = ["kind", "name", "place", "how_to_find"] }
 missing = "You haven't recorded where your water shut-off is."
 caution = "Any access details stay private on the shut-off's own record. This drill does not tell you to operate anything."
 
@@ -598,6 +613,7 @@ id = "pipe-who"
 question = "Who would you contact for help with the leak or the damaged wall?"
 answered_by = "people.roles.person"
 match = { table = "people.roles", where = { role = "tradesperson" }, filled = ["person.phone"] }
+ask_again = { fields = ["role", "person", "priority", "person.name", "person.phone"] }
 missing = "You haven't recorded a person to call about a leak."
 
 [[step]]
@@ -611,6 +627,7 @@ id = "fire-other-way"
 question = "If the usual doorway could not be used, what other way out would your household check in person?"
 answered_by = "home_layout.exits.place"
 match = { table = "home_layout.exits", filled = ["place"] }
+ask_again = { fields = ["name", "floor", "place", "route"] }
 missing = "You haven't recorded another possible way out."
 caution = "A way out or a door you recorded is a possible path to check in person. Dashboard Plus cannot confirm that any route is clear or usable in a fire."
 
@@ -626,6 +643,7 @@ id = "kitchen-who"
 question = "Who is likely to be in the kitchen or nearby at dinner, and how would you alert them?"
 answered_by = "people.people.name"
 match = { table = "people.people", where = { lives_here = true }, filled = ["name"] }
+ask_again = { fields = ["name", "lives_here"] }
 missing = "You haven't recorded who is usually at home; add or check People."
 
 [[step]]
@@ -633,6 +651,7 @@ id = "kitchen-ways-out"
 question = "Which ways from the kitchen lead outside without relying on the cooking area?"
 answered_by = "stock.connections.place"
 match = { table = "stock.connections", where = { kind = "outside_door" }, filled = ["place"] }
+ask_again = { fields = ["kind", "place", "connects_to"] }
 missing = "You haven't recorded a way out from the kitchen area."
 caution = "A connection between places shows how rooms join. It is not a checked escape route."
 
@@ -641,6 +660,7 @@ id = "kitchen-alarm"
 question = "Which alarm is recorded near the kitchen, and when did someone last check it?"
 answered_by = "home_layout.equipment.last_tested"
 match = { table = "home_layout.equipment", where = { kind = "smoke_alarm" }, filled = ["place", "last_tested"] }
+ask_again = { fields = ["kind", "name", "place", "last_tested"] }
 missing = "You haven't recorded an alarm and check date near the kitchen."
 caution = "A recorded check date says when someone last checked. It does not say the alarm works today."
 
@@ -649,6 +669,7 @@ id = "breakin-caller"
 question = "If you believed someone was entering while people were home, who would phone the local emergency service and what address would they give?"
 answered_by = "people.people.phone"
 match = { table = "people.people", where = { lives_here = true }, filled = ["phone"] }
+ask_again = { fields = ["name", "lives_here", "phone"] }
 missing = "You haven't recorded who would call or the address to give."
 
 [[step]]
@@ -668,6 +689,7 @@ id = "breakin-after"
 question = "Who would you contact after the immediate danger has passed?"
 answered_by = "people.roles.person"
 match = { table = "people.roles", where = { role = ["emergency_contact", "neighbour"] }, filled = ["person.phone"] }
+ask_again = { fields = ["role", "person", "priority", "person.name", "person.phone"] }
 missing = "You haven't recorded a follow-up contact."
 
 [[step]]
@@ -675,6 +697,7 @@ id = "car-which"
 question = "Which vehicle is this, and how would you describe where you are to someone helping?"
 answered_by = "vehicles.vehicles.name"
 match = { table = "vehicles.vehicles", filled = ["name"] }
+ask_again = { fields = ["name"] }
 missing = "You haven't recorded this vehicle or a way to describe your location."
 caution = "Dashboard Plus does not know where a vehicle is now. You describe the road and the place yourself."
 
@@ -683,6 +706,7 @@ id = "car-who"
 question = "Who would you call about the breakdown, and is the number current?"
 answered_by = "vehicles.vehicles.roadside_contact"
 match = { table = "vehicles.vehicles", filled = ["roadside_contact.phone"] }
+ask_again = { fields = ["name", "roadside_contact", "roadside_contact.name", "roadside_contact.phone"] }
 missing = "You haven't recorded who to call if this vehicle breaks down."
 
 [[step]]
@@ -690,6 +714,7 @@ id = "car-kit"
 question = "What is in the vehicle now that you would rely on, and what might have been moved out?"
 answered_by = "vehicles.vehicles.emergency_kit"
 match = { table = "vehicles.vehicles", filled = ["emergency_kit"] }
+ask_again = { fields = ["name", "emergency_kit", "emergency_kit.name"] }
 missing = "You haven't recorded a vehicle kit here; check the vehicle itself."
 caution = "This is the kit last recorded for the vehicle. It may have been moved or used since; check the vehicle itself."
 
@@ -698,6 +723,7 @@ id = "car-home-knows"
 question = "How would someone at home know where you are and whether you need collecting?"
 answered_by = "people.roles.person"
 match = { table = "people.roles", where = { role = "emergency_contact" }, filled = ["person.phone"] }
+ask_again = { fields = ["role", "person", "priority", "person.name", "person.phone"] }
 missing = "You haven't recorded a contact or collection plan."
 
 [[step]]
@@ -705,6 +731,7 @@ id = "power-needs"
 question = "Which people, pets or equipment in your home need power, and what would you check first?"
 answered_by = "people.important_info.detail"
 match = { table = "people.important_info", where = { kind = ["care_need", "condition"], "person.lives_here" = true }, filled = ["detail"] }
+ask_again = { fields = ["kind", "detail", "person", "person.name", "person.lives_here"] }
 missing = "You haven't recorded power-dependent needs here. That does not mean no one depends on electricity."
 
 [[step]]
@@ -712,6 +739,7 @@ id = "power-lights"
 question = "Where are torches, batteries and any other recorded light sources, and are their amounts current?"
 answered_by = "stock.lots.place"
 match = { table = "stock.lots", where = { "item.category" = "power" }, positive = ["quantity"], filled = ["place"] }
+ask_again = { fields = ["item", "place", "item.category", "item.name"], states = ["quantity"] }
 missing = "You haven't recorded where your light supplies are."
 caution = "Amounts are from your last count, not a check of what works today."
 
@@ -726,6 +754,7 @@ id = "water-stored"
 question = "Which water you have already recorded is separate from the tap supply and marked as drinking water?"
 answered_by = "stock.lots.place"
 match = { table = "stock.lots", where = { "item.category" = "water", "item.drinking" = true, "item.unit" = ["litres", "litre", "liters", "liter", "l"] }, positive = ["quantity"], filled = ["place"] }
+ask_again = { fields = ["item", "place", "item.category", "item.drinking", "item.name"], states = ["quantity", "item.unit"] }
 missing = "You haven't recorded drinking water in litres that you marked as drinking water."
 caution = "Stored water is offered from your last count. Only you, following the authority's advice, can say it is fit to drink."
 
@@ -747,6 +776,7 @@ id = "cyclone-help"
 question = "Who might need help with a change of plan, and how will you reach them?"
 answered_by = "people.roles.person"
 match = { table = "people.roles", where = { role = "emergency_contact" }, filled = ["person.phone"] }
+ask_again = { fields = ["role", "person", "priority", "person.name", "person.phone"] }
 missing = "You haven't recorded a contact and help plan for everyone."
 
 [[step]]
@@ -754,6 +784,7 @@ id = "cyclone-go-bag"
 question = "Which go-bags, ways out and drinking water are currently recorded, and what would you check in person?"
 answered_by = "home_layout.equipment.place"
 match = { table = "home_layout.equipment", where = { kind = "go_bag" }, filled = ["place"] }
+ask_again = { fields = ["kind", "name", "place"] }
 missing = "You haven't recorded a go-bag with its place here."
 caution = "Records show what was written down, not what is in a bag today. Check in person."
 
