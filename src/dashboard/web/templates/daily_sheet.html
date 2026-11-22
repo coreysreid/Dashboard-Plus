@@ -1,0 +1,67 @@
+{% extends "base.html" %}
+{% block title %}{{ title }} · Dashboard Plus{% endblock %}
+{% block body %}
+<style>
+  .sheet h1 { font-size: 1.5rem; }
+  .sheet h2 { font-size: 1.1rem; margin: 1rem 0 .3rem; }
+  .sheet table { width: 100%; border-collapse: collapse; }
+  .sheet th, .sheet td { text-align: left; padding: .3rem .5rem; border-bottom: 1px solid var(--line); vertical-align: top; }
+  .sheet td { overflow-wrap: anywhere; }
+  .sheet .subtotal { font-weight: 600; margin: .3rem 0 0; }
+  .sheet-choose { display: flex; flex-wrap: wrap; gap: .6rem 1rem; align-items: flex-end; }
+  .sheet-choose input, .sheet-choose select { max-width: 100%; }
+  @media screen and (max-width: 600px) {
+    .sheet table, .sheet tbody, .sheet tr, .sheet td { display: block; width: 100%; }
+    .sheet thead { position: absolute; left: -9999px; }
+    .sheet tr { border-bottom: 1px solid var(--line); padding: .4rem 0; }
+    .sheet td { border: 0; padding: .1rem 0; }
+    .sheet td::before { content: attr(data-label) ": "; color: var(--muted); }
+  }
+  @page { margin: 12mm; }
+  @media print {
+    header, footer, .no-print { display: none !important; }
+    body { background: #fff; color: #000; font-size: 10pt; line-height: 1.3; }
+    .sheet h1 { font-size: 15pt; margin: 0 0 4pt; }
+    .sheet h2 { font-size: 11.5pt; margin: 9pt 0 3pt; }
+    tr { break-inside: avoid; }
+    main { padding: 0; max-width: none; }
+    .sheet th, .sheet td { border-bottom: 1px solid #999; padding: 2pt 4pt; }
+    a { color: #000; text-decoration: none; }
+  }
+</style>
+<p class="muted no-print"><a href="/">Home</a> · <a href="/daily/{{ table }}?subject={{ chosen.id }}">{{ chosen.name }}'s day</a></p>
+<form method="get" action="/daily/{{ table }}/sheet" class="sheet-choose no-print">
+  <div><label for="s-subject">Whose log</label>
+    <select id="s-subject" name="subject">{% for s in subjects %}<option value="{{ s.id }}"{% if s.id == chosen.id %} selected{% endif %}>{{ s.name }}</option>{% endfor %}</select></div>
+  <div><label for="s-from">From <span class="muted">({{ hint }})</span></label>
+    <input type="text" id="s-from" name="from" value="{{ typed.from }}" inputmode="numeric" autocomplete="off" size="12"></div>
+  <div><label for="s-to">To <span class="muted">({{ hint }})</span></label>
+    <input type="text" id="s-to" name="to" value="{{ typed.to }}" inputmode="numeric" autocomplete="off" size="12"></div>
+  <div><button type="submit">Show</button></div>
+</form>
+<p class="muted no-print">Leave the dates blank for the last 14 days. That length keeps the paper short; it is not a feeding guideline.</p>
+{% if problems %}<div class="problem" role="alert">{% for p in problems %}<p style="margin:0">{{ p }}</p>{% endfor %}<p style="margin:0">Nothing is shown until the dates can be read.</p></div>
+{% elif too_long %}
+<div class="problem" role="alert"><p style="margin:0">{{ too_long.words }}</p></div>
+{% if too_long.pieces %}<p>Shorter ranges:</p><ul>{% for p in too_long.pieces %}<li><a href="{{ p.href }}">{{ p.words }}</a></li>{% endfor %}</ul>{% endif %}
+{% else %}
+<div class="actions no-print"><button type="button" onclick="window.print()">Print</button>
+  <span class="muted">Every entry in the range is on this sheet.</span></div>
+<div class="sheet">
+  <h1>{{ title }}: {{ chosen.name }}</h1>
+  <p>{{ range_words }} · {{ total }} {{ rule.entry[0] if total == 1 else rule.entry[1] }} recorded.</p>
+  <p><strong>{{ caveat }}</strong></p>
+  <p class="muted">Printed {{ printed }}. Notes are left off this sheet.</p>
+  {% for d in days %}
+  <h2>{{ d.day }}</h2>
+  <table>
+    <thead><tr>{% for h in headings %}<th>{{ h }}</th>{% endfor %}</tr></thead>
+    <tbody>{% for line in d.lines %}<tr>{% for cell in line %}<td data-label="{{ headings[loop.index0] }}">{{ cell }}</td>{% endfor %}</tr>{% endfor %}</tbody>
+  </table>
+  <p class="subtotal">Day total: {{ d.subtotal }}</p>
+  {% else %}
+  <p>No {{ rule.entry[0] }} entry recorded in this range.</p>
+  {% endfor %}
+</div>
+{% endif %}
+{% endblock %}

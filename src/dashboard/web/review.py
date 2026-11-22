@@ -11,6 +11,7 @@ from dashboard.core.units import unit_for
 from dashboard.errors import PlainError
 from dashboard.core.schema import target_table
 from dashboard.web import display, helper_settings
+from dashboard.web.daily_pages import review_note
 
 review_pages = Blueprint("review", __name__)
 
@@ -408,6 +409,7 @@ def review():
             item["twice"] = twice.get(item["position"])
             item["private"] = private_words(store, move_in.private_copies(known, item["values"], item["source"]))
             item["exists"] = _already_there(store, same, item) if batch["kind"] == "import" else None
+            item["repeat"] = review_note(store, item)  # a feeding that may be sent twice (decision 0110)
             item["source"] = {k: visible(v) for k, v in item["source"].items()} if item["source"] else None
             item["needs"] = sorted({ref for ref in item["refs"].values() if ref in waiting})
             item["needed_by"] = _needing(batch["proposals"], item["position"])

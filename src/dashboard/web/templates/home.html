@@ -45,6 +45,17 @@
   <p class="muted" style="margin:.2rem 0">From the dates you recorded: today, this week, this month and this year. Each task is finished in its own list.</p>
 </div>
 {% endif %}
+{% for card in daily_cards %}
+<section class="card" id="daily-{{ card.table }}" aria-labelledby="daily-{{ card.table }}-title">
+  <div class="muted" id="daily-{{ card.table }}-title">{{ card.title }}</div>
+  <ul class="daily-home">
+    {% for line in card.lines %}<li><a href="{{ line.href }}">{{ line.name }}</a> · {{ line.words }}</li>{% endfor %}
+  </ul>
+  {% if card.more %}<p class="muted" style="margin:.2rem 0">And {{ card.more }} more on the log.</p>{% endif %}
+  <p class="muted" style="margin:.2rem 0">Entries you saved, not food eaten. <a href="{{ card.href }}">See {{ card.entry_one }} log</a></p>
+</section>
+{% endfor %}
+{% if daily_cards %}<style>.daily-home { list-style: none; padding: 0; margin: .3rem 0; } .daily-home li { margin: .2rem 0; overflow-wrap: anywhere; }</style>{% endif %}
 {% if my_home %}
 <div class="card" id="my-home">
   <div class="muted">Your home</div>

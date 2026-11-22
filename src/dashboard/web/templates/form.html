@@ -47,8 +47,19 @@
   {% endfor %}
 </div>
 {% endif %}
-<form class="record" method="post" action="{% if record %}/t/{{ info.name }}/{{ record.id }}{% else %}/t/{{ info.name }}/new{% endif %}">
+{% if confirm %}{# a gentle check before saving, never a block (tables.toml `confirm`, decision 0111) #}
+<div class="problem" role="alert" id="confirm-box" tabindex="-1">
+  <p style="margin:0">Nothing is saved yet.</p>
+  {% for w in confirm %}<p style="margin:.3rem 0 0" data-confirm="{{ w.key }}"><strong>{{ w.message }}</strong></p>{% endfor %}
+  <div class="actions">
+    <a class="button quiet" href="#f-{{ confirm[0].column }}" id="confirm-back">Go back</a>
+    <button type="submit" form="record-form" name="_confirm" value="{{ confirm | map(attribute='token') | join(' ') }}" id="confirm-save">Save as entered</button>
+  </div>
+</div>
+{% endif %}
+<form class="record" id="record-form" method="post" action="{% if record %}/t/{{ info.name }}/{{ record.id }}{% else %}/t/{{ info.name }}/new{% endif %}">
   <input type="hidden" name="_csrf" value="{{ csrf_token }}">
+  {% if confirm and then %}<input type="hidden" name="_then" value="{{ then }}">{% endif %}
   {% for f in fields %}
   {% with first = loop.first %}{% include "_field.html" %}{% endwith %}
   {% endfor %}
@@ -83,6 +94,43 @@
 {% with view = c.view %}{% include "_dot_chart.html" %}{% endwith %}
 <p><a href="{{ c.href }}">Choose dates for this chart</a></p>
 {% endfor %}
+{% for view in feeding %}
+<h2>{{ view.rule.what }} today</h2>
+{% include "_daily_panel.html" %}
+<p><a href="{{ view.href }}">See {{ view.rule.sheet | lower }}</a> · <a href="{{ view.sheet }}">Print the last 14 days</a></p>
+{% endfor %}
+{% for u in under %}{# another list's records that point here, like a service's quotes (labels.toml `under`, 0111) #}
+<section class="under" id="under-{{ u.table }}" aria-labelledby="under-{{ u.table }}-heading">
+<h2 id="under-{{ u.table }}-heading">{{ u.title }}</h2>
+{% if u.intro %}<p><strong>{{ u.intro }}</strong></p>{% endif %}
+{% if u.rows %}
+{% if u.reveal and u.rows | selectattr("private") | list %}<p><button type="button" class="quiet" data-reveal-all="under-{{ u.table }}">{{ u.reveal }}</button></p>{% endif %}
+<table class="grid chart-table">
+  <thead><tr><th scope="col">Record</th>{% for l in u.labels %}<th scope="col">{{ l }}</th>{% endfor %}</tr></thead>
+  <tbody>
+  {% for r in u.rows %}
+  <tr>
+    <td data-label="Record"><a href="{{ r.href }}">{{ r.name }}</a></td>
+    {% for cell in r.cells %}<td data-label="{{ cell.label }}">{% if cell.sensitive %}{% if cell.saved %}<button type="button" class="quiet secret" data-reveal="/t/{{ u.table }}/{{ r.id }}/reveal?column={{ cell.column }}" aria-label="Show {{ cell.label | lower }} for {{ r.name }}">Show</button>{% endif %}{% else %}{{ cell.text }}{% endif %}</td>{% endfor %}
+  </tr>
+  {% endfor %}
+  </tbody>
+</table>
+{% if u.more %}<p class="muted">The latest {{ u.rows | length }} of {{ u.total }} are shown. <a href="{{ u.list }}">Open {{ u.list_title | lower }}</a> for the rest.</p>{% endif %}
+{% else %}<p class="muted">None recorded yet.</p>{% endif %}
+</section>
+{% endfor %}
+{% if under %}
+<script>
+  // One press shows every private cell of that list, each still fetched on its own (decision 0059).
+  document.addEventListener("click", function (event) {
+    var all = event.target.closest("[data-reveal-all]");
+    if (!all) return;
+    document.getElementById(all.dataset.revealAll).querySelectorAll("[data-reveal]").forEach(function (b) { b.click(); });
+    all.remove();
+  });
+</script>
+{% endif %}
 {% if related %}
 <div class="actions">{% for r in related %}<a class="button quiet" href="{{ r.href }}">{% if r.words %}{{ r.words }}{% else %}Add to {{ r.label | lower }}{% endif %}</a>{% endfor %}</div>
 {% endif %}

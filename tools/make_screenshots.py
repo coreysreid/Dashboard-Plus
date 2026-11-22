@@ -9,6 +9,7 @@ import subprocess
 import sys
 import tempfile
 import time
+from datetime import date, timedelta
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -113,6 +114,12 @@ STAGES = [
     ("18s-utilities-sheet", "Utility contacts sheet", "As it prints: service, provider, fault contact and their "
      "phone from People, and the meter, with no account numbers or notes.",
      {"goto": "/sheet/utilities/utility_contacts", "media": "print", "module": "utilities"}),
+    ("18sa-vehicle-readings", "A vehicle's odometer readings", "Last recorded, then each reading as a dot and a row "
+     "in the unit it was saved in; nothing is converted or worked out.",
+     {"goto": "/t/vehicles__vehicles/{id:vehicles__vehicles:vehicle}", "module": "vehicle_running"}),
+    ("18sb-service-estimates", "A service's cost estimates", "Each quote with who gave it and its dates; the "
+     "amount and what it covers stay hidden until Show. Estimates, not a bill.",
+     {"goto": "/t/vehicles__services/{id:vehicles__services:service}", "module": "vehicle_running"}),
     ("18t-questions", "Have you thought about…?", "Readiness: the questions that fit the household, by group, with "
      "how many have been looked at, never a safety score.", {"goto": "/questions/readiness", "module": "readiness"}),
     ("18u-question", "One question", "Why it may matter, its official source and the date checked, a record that may "
@@ -130,6 +137,16 @@ STAGES = [
      {"goto": "/drills/readiness", "module": "readiness"}),
     ("18z-drill", "One drill", "Its questions in order, Start or Not now, its sources with the date each was checked, "
      "and earlier practice.", {"goto": "/drills/readiness/pipe-in-wall", "module": "readiness"}),
+    ("18za-feeding", "Food put out, one pet's day", "Pet feeding log: one pet's entries on one day, totals only in "
+     "matching units, entries with no amount counted, then Add food and recent entries to start from.",
+     {"goto": "/daily/pet_feeding__servings?subject={id:pets__pets:pet}&day={yesterday}", "module": "pet_feeding"}),
+    ("18zb-feeding-phone", "Food put out, on a phone", "The same day at 320 pixels wide, for one-handed entry.",
+     {"goto": "/daily/pet_feeding__servings?subject={id:pets__pets:pet}&day={yesterday}", "module": "pet_feeding",
+      "width": PHONE_WIDTH}),
+    ("18zc-feeding-sheet", "Pet feeding log sheet", "As it prints: every entry of the last 14 days with each day's "
+     "totals by unit, and \"Food put out, not necessarily eaten\"; notes are left off.",
+     {"goto": "/daily/pet_feeding__servings/sheet?subject={id:pets__pets:pet}", "media": "print",
+      "module": "pet_feeding"}),
     ("19-needs-attention", "Needs attention", "Days of water with the working shown, running low, use-by "
      "and due dates, and details worth filling in.", {"goto": "/attention"}),
     ("19b-drinking-water", "Drinking water counted today", "Each water item behind Home's days of water, as a "
@@ -151,9 +168,12 @@ STAGES = [
 LOCALES = {"smith": ("en-AU", "Australia/Sydney"), "garcia": ("en-US", "America/Los_Angeles"),
            "taylor": ("en-GB", "Europe/London")}
 FEATURED = {
-    "smith": {"person": "Emily Smith", "item": "Adrenaline auto-injector (Emily)", "pet": "Rex"},
-    "garcia": {"person": "Rosa Garcia", "item": "Metformin 500 mg (Rosa)", "pet": "Luna"},
-    "taylor": {"person": "Sam Taylor", "item": "Bottled water (6 x 2 L)"},
+    "smith": {"person": "Emily Smith", "item": "Adrenaline auto-injector (Emily)", "pet": "Rex",
+              "vehicle": "Family car", "service": "Routine service"},
+    "garcia": {"person": "Rosa Garcia", "item": "Metformin 500 mg (Rosa)", "pet": "Luna",
+               "vehicle": "Household car", "service": "Oil change and inspection"},
+    "taylor": {"person": "Sam Taylor", "item": "Bottled water (6 x 2 L)", "vehicle": "Small car",
+               "service": "MOT test"},
 }
 
 
@@ -185,7 +205,8 @@ def record_ids(data_dir: Path, featured: dict) -> dict:
     conn = db.connect(data_dir / "dashboard.db")
     try:
         ids = {}
-        for key, table in (("person", "people__people"), ("item", "stock__items"), ("pet", "pets__pets")):
+        for key, table in (("person", "people__people"), ("item", "stock__items"), ("pet", "pets__pets"),
+                             ("vehicle", "vehicles__vehicles"), ("service", "vehicles__services")):
             if key not in featured:
                 continue
             row = conn.execute(f"SELECT id FROM {table} WHERE name = ? AND deleted_at IS NULL",
@@ -263,6 +284,7 @@ def make(household: str, work: Path, executable: str | None) -> list[tuple[str, 
                 target = action["goto"]
                 for key, value in ids.items():
                     target = target.replace("{id:" + key + "}", str(value))
+                target = target.replace("{yesterday}", (date.today() - timedelta(days=1)).isoformat())
                 steps.append({"media": action.get("media", "screen")})
                 steps.append({"viewport": action.get("width", WIDTH)})
                 steps.append({"goto": target})

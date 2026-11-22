@@ -254,6 +254,18 @@ As it prints: service, provider, fault contact and their phone from People, and 
 
 ![Utility contacts sheet](screenshots/smith/18s-utilities-sheet.png)
 
+### A vehicle's odometer readings
+
+Last recorded, then each reading as a dot and a row in the unit it was saved in; nothing is converted or worked out.
+
+![A vehicle's odometer readings](screenshots/smith/18sa-vehicle-readings.png)
+
+### A service's cost estimates
+
+Each quote with who gave it and its dates; the amount and what it covers stay hidden until Show. Estimates, not a bill.
+
+![A service's cost estimates](screenshots/smith/18sb-service-estimates.png)
+
 ### Have you thought about…?
 
 Readiness: the questions that fit the household, by group, with how many have been looked at, never a safety score.
@@ -295,6 +307,24 @@ Eight calm practice runs, the emergency number for the household's country first
 Its questions in order, Start or Not now, its sources with the date each was checked, and earlier practice.
 
 ![One drill](screenshots/smith/18z-drill.png)
+
+### Food put out, one pet's day
+
+Pet feeding log: one pet's entries on one day, totals only in matching units, entries with no amount counted, then Add food and recent entries to start from.
+
+![Food put out, one pet's day](screenshots/smith/18za-feeding.png)
+
+### Food put out, on a phone
+
+The same day at 320 pixels wide, for one-handed entry.
+
+![Food put out, on a phone](screenshots/smith/18zb-feeding-phone.png)
+
+### Pet feeding log sheet
+
+As it prints: every entry of the last 14 days with each day's totals by unit, and "Food put out, not necessarily eaten"; notes are left off.
+
+![Pet feeding log sheet](screenshots/smith/18zc-feeding-sheet.png)
 
 ### Needs attention
 
@@ -572,6 +602,18 @@ As it prints: service, provider, fault contact and their phone from People, and 
 
 ![Utility contacts sheet](screenshots/garcia/18s-utilities-sheet.png)
 
+### A vehicle's odometer readings
+
+Last recorded, then each reading as a dot and a row in the unit it was saved in; nothing is converted or worked out.
+
+![A vehicle's odometer readings](screenshots/garcia/18sa-vehicle-readings.png)
+
+### A service's cost estimates
+
+Each quote with who gave it and its dates; the amount and what it covers stay hidden until Show. Estimates, not a bill.
+
+![A service's cost estimates](screenshots/garcia/18sb-service-estimates.png)
+
 ### Have you thought about…?
 
 Readiness: the questions that fit the household, by group, with how many have been looked at, never a safety score.
@@ -613,6 +655,24 @@ Eight calm practice runs, the emergency number for the household's country first
 Its questions in order, Start or Not now, its sources with the date each was checked, and earlier practice.
 
 ![One drill](screenshots/garcia/18z-drill.png)
+
+### Food put out, one pet's day
+
+Pet feeding log: one pet's entries on one day, totals only in matching units, entries with no amount counted, then Add food and recent entries to start from.
+
+![Food put out, one pet's day](screenshots/garcia/18za-feeding.png)
+
+### Food put out, on a phone
+
+The same day at 320 pixels wide, for one-handed entry.
+
+![Food put out, on a phone](screenshots/garcia/18zb-feeding-phone.png)
+
+### Pet feeding log sheet
+
+As it prints: every entry of the last 14 days with each day's totals by unit, and "Food put out, not necessarily eaten"; notes are left off.
+
+![Pet feeding log sheet](screenshots/garcia/18zc-feeding-sheet.png)
 
 ### Needs attention
 
@@ -883,6 +943,18 @@ Each service, its provider, who to contact about a fault and its meter; the acco
 As it prints: service, provider, fault contact and their phone from People, and the meter, with no account numbers or notes.
 
 ![Utility contacts sheet](screenshots/taylor/18s-utilities-sheet.png)
+
+### A vehicle's odometer readings
+
+Last recorded, then each reading as a dot and a row in the unit it was saved in; nothing is converted or worked out.
+
+![A vehicle's odometer readings](screenshots/taylor/18sa-vehicle-readings.png)
+
+### A service's cost estimates
+
+Each quote with who gave it and its dates; the amount and what it covers stay hidden until Show. Estimates, not a bill.
+
+![A service's cost estimates](screenshots/taylor/18sb-service-estimates.png)
 
 ### Have you thought about…?
 

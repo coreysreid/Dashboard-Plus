@@ -1,0 +1,8 @@
+name = "vehicle_running"
+title = "Vehicle running log"
+version = "1.0.0"
+description = "Dated odometer readings for each vehicle, and dealer or independent estimates for services already on the Vehicles schedule."
+core_api = "1"
+kind = "declarative"
+requires = ["vehicles", "people"]
+outbound_hosts = []

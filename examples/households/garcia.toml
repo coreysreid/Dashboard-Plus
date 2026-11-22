@@ -16,7 +16,7 @@ home_type = "apartment"
 storeys = 1
 mobility_needs = true
 hazards = ["earthquake", "heat", "power"]
-modules = ["documents", "garden", "home_care", "home_layout", "lent_out", "medical", "people", "pets", "readiness", "routines", "stock", "utilities", "vehicles"]
+modules = ["documents", "garden", "home_care", "home_layout", "lent_out", "medical", "people", "pet_feeding", "pets", "readiness", "routines", "stock", "utilities", "vehicle_running", "vehicles"]
 
 # ---- People -----------------------------------------------------------------
 
@@ -251,6 +251,26 @@ vet = "Whisker Wellness Vet"
 reason = "Weight loss and drinking more water"
 cost = 310.00
 notes = "Early kidney disease. Started tablets and the kidney diet."
+
+# ---- Pet feeding log ----------------------------------------------------------
+# Food put out, not food eaten. Invented foods and amounts; not feeding advice. "today-1T08:00" is yesterday at 8:00.
+
+[[pet_feeding.servings]]
+pet = "Luna"
+given_at = "today-1T08:00"
+kind = "bowl"
+bowl = "Blue bowl"
+food = "Example cat food"
+amount = 1
+unit = "pouch"
+
+[[pet_feeding.servings]]
+pet = "Luna"
+given_at = "today-1T18:00"
+kind = "refill"
+bowl = "Blue bowl"
+food = "Example dry cat food"
+# No measured amount: the daily total says it is incomplete.
 
 # ---- Household stock ----------------------------------------------------------
 
@@ -682,6 +702,21 @@ vehicle = "Household car"
 name = "Oil change and inspection"
 last_done = "today-100"
 next_due = "today+75"
+
+# ---- Vehicle running log ----------------------------------------------------------
+# One reading in miles and one invented quote for the oil change (decision 0111).
+
+[[vehicle_running.readings]]
+vehicle = "Household car"
+read_at = "today-1 08:30"
+distance = 62100
+unit = "mi"
+
+[[vehicle_running.estimates]]
+service = "Oil change and inspection"
+kind = "independent"
+quoted_on = "today-1"
+amount = 190
 
 # ---- Important documents --------------------------------------------------------
 # Where the papers are and the dates the family chose. No document numbers or medical details are written down.
