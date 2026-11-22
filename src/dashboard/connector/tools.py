@@ -75,7 +75,8 @@ TOOLS = [
          "Read this first. A plain guide written for you from this household's lists: which lists this helper may "
          "use, each field and which are required, links to look up first, private fields only the person may type, "
          "how to add a new Stock item with its starting amount in one entry, how to send, and today's limits. "
-         + REVIEW_NOTE + " It holds no records and never the key.",
+         + REVIEW_NOTE + " It holds no records and never the key. Call again before each batch; its limits and "
+         "grants may have changed since a copied guide.",
          NOTHING, "GET", lambda a: "/guide", about=GUIDE_NOTE),
     Tool("dashboard_me", "Who am I",
          "Show this helper's name, whether it may only look or may also suggest, which parts of the household's "
@@ -112,16 +113,20 @@ TOOLS = [
          "money is in whole units like 12.50. A new Stock item may carry its starting amount (quantity), unit, "
          "use-by date (expires) and place in the same one entry; accepting it adds the item and its first batch "
          "together; do not also send a Stock in for that amount, or it counts twice (the answer then carries a "
-         "may_count_twice warning: tell the person). A link takes a record id, never a name: look the record up "
+         "may_count_twice warning: tell the person). A tracker balance is not a purchase. Do not send `bought` for "
+         "it; ask whether the number is stock already on hand, a new purchase or an amount used, and let the "
+         "person count a batch when the difference is unknown. A link takes a record id, never a name: look the record up "
          "and compare its full place path; a name is refused with the exact matches, and if more than one "
          "matches, ask the household. Never copy codes, account, card or registration numbers or private "
          "medical details into names, notes, why or source. To add a new record and one that links to it together (a new "
          "Place and a Stock item kept there), put the new record first and set the link to {\"ref\": N}, N being "
          "that earlier entry's position from 0; the household sees them as one group. An entry may carry a "
          "`source`, the line it was read from and its price, like {\"line\": \"KIDNEY BEANS 400G x2\", "
-         "\"price\": \"3.80\"}: it is shown on Review for checking and never saved in the records. When reading one "
+         "\"price\": \"3.80\"}: it is shown on Review only, not saved as a Stock price or spending total. Do not claim a cost history "
+         "was recorded or put the price in Stock notes. When reading one "
          "receipt, add `receipt_context` with its purchase_date (and shop_label), so the household is warned if the "
-         "same receipt is sent twice. A bought product line you cannot match to a Stock item may be sent as "
+         "same receipt is sent twice. A possible-repeat check compares receipts, not an old stocktake with a "
+         "receipt: ask whether the purchase is already in the starting count before suggesting both. A bought product line you cannot match to a Stock item may be sent as "
          "{\"kind\": \"unmatched_product_line\", \"source\": {\"line\": ...}} with optional receipt_date, "
          "quantity_hint and unit_hint: the person chooses the item and amount on Review. Never send totals, tax, "
          "discounts, payments or card numbers; say so in your conversation instead.",
