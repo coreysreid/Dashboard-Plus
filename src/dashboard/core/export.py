@@ -11,6 +11,7 @@ from datetime import datetime, timezone
 from decimal import Decimal
 from typing import Callable
 
+from dashboard.core import optional_links
 from dashboard.core.records import Records, TableInfo
 from dashboard.core.schema import join_table_name, target_table
 from dashboard.web import display
@@ -51,6 +52,9 @@ How the columns are written
   record shows its name (for a place inside a place, the whole path, such as
   "Kitchen > Pantry") and, in the column beside it called "... (id)", that record's ID.
   Names can repeat; an ID never does.
+- A link into a list that is switched off keeps its "... (id)" so nothing is lost, and
+  its name column only says that a link is saved. Switch that list on and export again
+  to see the name. A link whose record is no longer there says so, with its old ID.
 - Dates are written year-month-day, like 2027-05-20, and times like 2027-05-20T14:35.
 - Money is in whole units with two decimals, like 12.50 (not cents).
 - Yes or no answers are written Yes or No.
@@ -153,7 +157,31 @@ def _value(column, value):
     return _guard(str(value))  # text, longtext, date, datetime, file: dates and times stay as stored (ISO)
 
 
+def _optional_link_cols(snap: _Snapshot, info: TableInfo, column, label: str) -> list[Col]:
+    """An optional link (decision 0115): its saved ID always, and a name only when its list is on and the record
+    is there. A link into a list that is off says it is saved, unresolved, and never reads that list."""
+    def ids(r):
+        return [r[column.name]] if column.type == "link" else snap.many(info, column, r)
+
+    def name(r):
+        found = [i for i in ids(r) if i not in (None, "")]
+        if not found:
+            return ""
+        state = optional_links.state(snap.conn, snap.registry, info, column, found[0])
+        if state == optional_links.OFF:
+            return _guard(display.optional_words(info, column, "kept"))
+        target = snap.registry[target_table(info.module.name, column)]
+        names = [snap.name_of(target, i) if optional_links.state(snap.conn, snap.registry, info, column, i)
+                 == optional_links.LIVE else display.optional_words(info, column, "gone") for i in found]
+        return _guard(LIST_SEPARATOR.join(names))
+    return [Col(label, column.name, name),
+            Col(f"{label} (id)", f"{column.name}:id",
+                lambda r: LIST_SEPARATOR.join(str(i) for i in ids(r) if i not in (None, "")))]
+
+
 def _link_cols(snap: _Snapshot, info: TableInfo, column, label: str) -> list[Col]:
+    if column.optional:
+        return _optional_link_cols(snap, info, column, label)
     target = snap.registry[target_table(info.module.name, column)]
     if column.type == "link":
         return [Col(label, column.name, lambda r: _guard(snap.name_of(target, r[column.name]))

@@ -1,9 +1,12 @@
 {# One form field: label, input, error and help. Shared by form.html and action_form.html. #}
   <div class="{% if f.error %}has-error{% endif %}"{% if f.show_when %} data-show-when="{{ f.show_when[0] }}" data-show-value="{{ f.show_when[1] }}"{% endif %}{% if f.only_when_blank %} data-only-when-blank="{{ f.only_when_blank }}"{% endif %}>
     {% set fid = "f-" ~ f.name %}
-    {% set described = ([fid ~ "-error"] if f.error else []) + ([fid ~ "-help"] if f.help else []) %}
+    {% set described = ([fid ~ "-error"] if f.error else []) + ([fid ~ "-note"] if f.note else []) + ([fid ~ "-help"] if f.help else []) %}
     {% set aria %}{% if f.error %} aria-invalid="true"{% endif %}{% if described %} aria-describedby="{{ described | join(' ') }}"{% endif %}{% endset %}
-    {% if f.kind == "boolean" and f.column.required_when %}
+    {% if f.hidden_link %}{# an optional link whose list is switched off: no picker, the saved link kept (0115) #}
+      <p style="font-weight:600;margin:0" id="{{ fid }}-label">{{ f.label }}</p>
+      <p class="help" id="{{ fid }}-note" tabindex="0" aria-labelledby="{{ fid }}-label {{ fid }}-note" data-optional-link="off">{{ f.note }}</p>
+    {% elif f.kind == "boolean" and f.column.required_when %}
       <fieldset style="border:0;padding:0;margin:0"><legend style="font-weight:600;margin-bottom:.25rem">{{ f.label }}</legend>
         {% set answers = f.help_answers or ["Yes", "No"] %}
         <label style="font-weight:400"><input type="radio" id="{{ fid }}-yes" name="{{ f.name }}" value="yes"{{ aria }} {% if f.value in (1, "1", "yes", True) %}checked{% endif %}> {{ answers[0] }}</label>
@@ -48,6 +51,7 @@
         <div class="suggest-box"{% if f.kept_private %} hidden id="{{ fid }}-box"{% endif %}><input type="text" id="{{ fid }}" name="{{ f.name }}" value="{{ f.value or '' }}"{{ aria }} {% if first and not errors and not f.kept_private %}autofocus{% endif %}{% if f.suggest %} data-suggest="/t/{{ info.name }}/suggest?column={{ f.name }}" autocomplete="off" role="combobox" aria-autocomplete="list" aria-expanded="false" aria-controls="{{ fid }}-list"{% endif %}></div>
       {% endif %}
     {% endif %}
+    {% if f.note and not f.hidden_link %}<p class="problem" role="status" id="{{ fid }}-note" tabindex="0" data-optional-link="missing">{{ f.note }}</p>{% endif %}
     {% if f.error %}<p class="error" id="{{ fid }}-error">{% if f.error[:1].isupper() %}{{ f.error }}{% else %}{{ f.label }} {{ f.error }}{% endif %}</p>{% endif %}
     {% if f.help %}<p class="help" id="{{ fid }}-help">{{ f.help }}</p>{% endif %}
     {% if f.column.sensitive %}<p class="help">Private: not shown in lists, or when this page opens, until you choose to show it.</p>{% endif %}

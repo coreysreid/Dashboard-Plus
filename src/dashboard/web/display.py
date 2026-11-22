@@ -4,7 +4,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 from decimal import Decimal
 
-from dashboard.core import dates, naming
+from dashboard.core import dates, naming, optional_links
 from dashboard.core.modules import Column
 from dashboard.core.records import Records, TableInfo
 from dashboard.core.schema import target_table
@@ -39,6 +39,22 @@ def column_label(info: TableInfo, column: Column) -> str:
 def column_help(info: TableInfo, column: Column) -> str | None:
     """The help text shown under a field."""
     return _labels(info).get("columns", {}).get(column.name, {}).get("help") or column.help
+
+
+def module_title(name: str) -> str:
+    """A module's title by its name, even while it is switched off ("Home layout"), for the words beside an
+    optional link (decision 0115). Outside a running app, or for a module not installed, its name in words."""
+    from flask import current_app, has_app_context
+    if has_app_context():
+        found = next((m.title for m in current_app.config.get("LOADED") or [] if m.name == name), None)
+        if found:
+            return found
+    return name.replace("_", " ").capitalize()
+
+
+def optional_words(info: TableInfo, column: Column, key: str) -> str:
+    """The household's words for an optional link (labels.toml `optional`, or the defaults; decision 0115)."""
+    return optional_links.words(info, column, key, module_title(optional_links.target_module(column)))
 
 
 def form_columns(info: TableInfo, hide=()) -> list[Column]:
@@ -168,6 +184,13 @@ class Formatter:
         if value is None or value == "" or value == []:
             return ""
         kind = column.type
+        if column.optional:  # decision 0115: nothing is read from a module that is off, nothing is guessed
+            found = optional_links.state(self.records.conn, self.records.registry, info, column,
+                                         value if kind == "link" else value[0])
+            if found == optional_links.OFF:
+                return optional_words(info, column, "kept")
+            if found == optional_links.GONE and kind == "link":
+                return optional_words(info, column, "gone")
         if kind == "choice":
             return next((c.label for c in column.choices if c.key == value), str(value))
         if kind == "boolean":
@@ -217,6 +240,10 @@ class Field:
 
     kept_private: bool = False  # a saved private value, not sent until the person chooses Show
     add_first: tuple[str, str] | None = None  # for an empty link list: (where to add one, what they are called)
+    # An optional link (decision 0115): `hidden_link` when its module is off, so there is no picker and the saved
+    # value is kept as it is; `note` is the household's sentence beside it, such as the repair words.
+    hidden_link: bool = False
+    note: str | None = None
 
     @property
     def name(self) -> str:
@@ -295,17 +322,43 @@ def blank_choice(records: Records, info: TableInfo, column: Column, on_form: lis
     return direction.name, words
 
 
+def _optional_field(records: Records, info: TableInfo, column: Column, saved: dict | None) -> Field | None:
+    """The field for an optional link whose module is off (decision 0115): no picker, nothing sent, and words
+    that say whether a link is kept. None for any other column."""
+    if not optional_links.is_off(records.registry, info, column):
+        return None
+    value = (saved or {}).get(column.name)
+    if value not in (None, "", []):
+        note = optional_words(info, column, "kept_help")
+    elif saved is not None:
+        note = f"{optional_words(info, column, 'none')} {optional_words(info, column, 'off_help')}"
+    else:
+        note = optional_words(info, column, "off_help")
+    return Field(column, column_label(info, column), None, "", None, [], hidden_link=True, note=note)
+
+
 def build_fields(records: Records, info: TableInfo, values: dict, errors: dict, from_form: bool,
-                 editing: bool = False, only: list[str] | None = None) -> list[Field]:
+                 editing: bool = False, only: list[str] | None = None, saved: dict | None = None) -> list[Field]:
     """Fields for a form. `values` are stored values, or raw form text when `from_form`.
-    `only` lists the columns to ask, in order, for an action's small form (decision 0091)."""
+    `only` lists the columns to ask, in order, for an action's small form (decision 0091).
+    `saved` is the record as stored, for an edit form shown again after a problem (optional links, 0115)."""
     formatter = Formatter(records)
     fields = []
     on_form = [info.table.columns[n] for n in only] if only is not None else \
         form_columns(info, batch_columns(records, info) if editing else ())
     rule = info.table.adjusts or {}
     batch_field = rule["link"] if rule.get("belongs_to") and rule["link"] in {c.name for c in on_form} else None
+    if saved is None and editing and not from_form:
+        saved = values
     for column in on_form:
+        hidden = _optional_field(records, info, column, saved)
+        if hidden is not None:
+            fields.append(hidden)
+            continue
+        gone = column.optional and saved is not None and optional_links.state(
+            records.conn, records.registry, info, column, saved.get(column.name)) == optional_links.GONE
+        if gone and not from_form:  # the saved ID is not offered: the person chooses another or leaves it blank
+            values = dict(values, **{column.name: None})
         options: list[tuple[str, str]] = []
         follows = owners = None
         if column.type == "choice":
@@ -366,6 +419,8 @@ def build_fields(records: Records, info: TableInfo, values: dict, errors: dict, 
                       (info.table.name, column.name) in info.module.catalogues, add_new, search,
                       _labels(info).get("columns", {}).get(column.name, {}).get("answers"),
                       formatter.date_style if column.type == "date" else None, follows, owners)
+        if gone:
+            field.note = optional_words(info, column, "missing")
         if column.type in ("link", "links") and not options and not follows:
             # Nothing to choose yet: offer to add one in a new tab, so what is typed here is kept (Lane B, batch 18).
             target = formatter.target(info, column)

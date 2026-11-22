@@ -1,6 +1,6 @@
 # 0099. Utilities and accounts is switched on, built from the second agent's draft
 
-- **Status:** Accepted
+- **Status:** Accepted (that Utilities needs Home layout is replaced by [0115](0115-optional-links-between-modules.md))
 - **Date:** 2026-11-21
 - **Decided by:** Claude (technical decision delegated by Corey)
 

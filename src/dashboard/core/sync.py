@@ -428,6 +428,8 @@ def check(conn, registry) -> list[str]:
             if column.type == "links":
                 join = join_table_name(info.module.name, info.table.name, column.name)
                 target = target_table(info.module.name, column)
+                if column.optional and not _columns(conn, target):
+                    continue  # an optional module that is not installed (decision 0115): nothing to point at
                 if conn.execute(f"SELECT 1 FROM {join} AS p LEFT JOIN {name} AS a ON a.id = p.from_id "
                                 f"LEFT JOIN {target} AS b ON b.id = p.to_id "
                                 f"WHERE a.id IS NULL OR b.id IS NULL LIMIT 1").fetchone():
@@ -442,6 +444,8 @@ def check(conn, registry) -> list[str]:
         for column in info.table.columns.values():
             if column.type == "link":
                 target = target_table(info.module.name, column)
+                if column.optional and not _columns(conn, target):
+                    continue  # an optional module that is not installed (decision 0115): nothing to point at
                 if conn.execute(f"SELECT 1 FROM {name} AS a LEFT JOIN {target} AS b ON b.id = a.{column.name} "
                                 f"WHERE a.{column.name} IS NOT NULL AND b.id IS NULL LIMIT 1").fetchone():
                     problems.append(f"{name}.{column.name} points at a record that is not there.")

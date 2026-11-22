@@ -242,15 +242,49 @@ class Records:
             raise ValueError("points at a record that does not exist or has been deleted.")
         return record_id
 
+    def off_links(self, info: TableInfo) -> set[str]:
+        """Link columns of `info` into an optional module that is switched off or not installed (decision 0115).
+
+        Their saved value is kept exactly as it is: nobody can set, change or clear it until that module is on."""
+        return {c.name for c in info.table.columns.values()
+                if c.optional and target_table(info.module.name, c) not in self.registry}
+
+    def _keep_off_links(self, info: TableInfo, values: dict, current: dict | None) -> dict:
+        """Take out of `values` the off links (decision 0115) that would leave the saved value as it is, such as
+        a blank on a new record; refuse any that would set, change or clear one. The rest are checked as usual."""
+        off = self.off_links(info) & set(values)
+        if not off:
+            return values
+        values, problems = dict(values), {}
+        for name in sorted(off):
+            given = values.pop(name)
+            given = given.strip() if isinstance(given, str) else given
+            saved = None if current is None else current.get(name)
+            if isinstance(saved, list) or isinstance(given, (list, tuple)):
+                same = sorted(str(v) for v in (given or [])) == sorted(str(v) for v in (saved or []))
+            else:
+                same = (given in (None, "") and saved is None) or (saved is not None and str(given) == str(saved))
+            if not same:
+                problems[name] = ("can't be set, changed or cleared while the list it links to is switched off. "
+                                  "The saved link is kept as it is.")
+        if problems:
+            raise ValidationError(problems)
+        return values
+
     def clean(self, info: TableInfo, values: dict, creating: bool) -> dict:
         """Check and convert values; raise ValidationError listing every problem."""
         problems: dict[str, str] = {}
         columns = info.table.columns
         cleaned: dict = {}
+        off = self.off_links(info)
         for field, value in values.items():
             if field not in columns:
                 hint = difflib.get_close_matches(field, list(columns), n=1)
                 problems[field] = "is not a field of this table." + (f" Did you mean '{hint[0]}'?" if hint else "")
+                continue
+            if field in off:  # never looked up in a list that is off (decision 0115)
+                problems[field] = ("can't be set, changed or cleared while the list it links to is switched off. "
+                                   "The saved link is kept as it is.")
                 continue
             try:
                 cleaned[field] = self._clean_value(info, columns[field], value)
@@ -512,7 +546,7 @@ class Records:
 
     def _create(self, info: TableInfo, values: dict, actor: str, review_status: str = "confirmed",
                 batch_id: int | None = None) -> int:
-        values = dict(values)
+        values = self._keep_off_links(info, dict(values), None)
         first_batch = None
         for rule_info in self._totals_into(info):  # an item typed in with an amount starts its first batch
             start = {c: values.pop(c) for c in rule_info.table.total["starts_from"]
@@ -801,6 +835,7 @@ class Records:
     def _update(self, info: TableInfo, record_id: int, values: dict, actor: str) -> dict:
         """`update` inside a transaction the caller has already started."""
         current = self._row(info, record_id)
+        values = self._keep_off_links(info, values, current)
         cleaned = self.clean(info, values, creating=False)
         self._check_required_when(info, dict(current, **cleaned))
         self._check_date_order(info, dict(current, **cleaned))
