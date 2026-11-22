@@ -1,8 +1,9 @@
 name = "utilities"
 title = "Utilities and accounts"
-version = "1.0.0"
+version = "1.1.0"
 description = "Keep household service contacts, private account references and meter locations together."
 core_api = "1"
 kind = "declarative"
-requires = ["people", "home_layout"]
+requires = ["people"]
+optional_requires = ["home_layout"]  # the meter link only (decision 0115): a service makes sense without one
 outbound_hosts = []

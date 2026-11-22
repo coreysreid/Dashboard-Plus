@@ -357,14 +357,14 @@ class GuideAdditionTests(MoveInCase):
                       "a date whose day and month could be either way round (1/2/27)",  # trap 5, check 4
                       "whether water is safe to drink now",
                       "Its warnings (such as may_count_twice) need the person's attention",  # trap 1
-                      "Count from GET /api/v1/batches, not from memory",  # trap 4
+                      "Before you finish, read GET /api/v1/batches and the rows in each batch",  # trap 4
                       "THE HOME'S LAYOUT", "Never invent a connection or a door to outside"):  # trap 6, check 8
             self.assertIn(words, text)
 
     def test_a_look_only_helper_gets_no_sending_or_layout_words(self):
         reader, _key = helpers.issue(self.conn, self.data, "Look helper", "read", ["stock"])
         text = self.text(reader)
-        for words in ("THE HOME'S LAYOUT", "Count from GET /api/v1/batches", "Its warnings"):
+        for words in ("THE HOME'S LAYOUT", "Before you finish, read GET /api/v1/batches", "Its warnings"):
             self.assertNotIn(words, text)
 
     def test_the_connector_says_the_same_in_its_tool_descriptions(self):
@@ -373,3 +373,59 @@ class GuideAdditionTests(MoveInCase):
                       "Never copy codes"):
             self.assertIn(words, suggest)
         self.assertIn("warnings", tools.BY_NAME["dashboard_get_suggestion_batch"].description)
+
+
+class MoveInWordsTests(MoveInCase):
+    """Decision 0116: the starting message and the connector no longer call an old tracker balance a purchase."""
+
+    def test_the_guide_no_longer_sends_every_existing_item_as_bought(self):
+        text = guide(self, self.helper)
+        self.assertNotIn("For a record already in Stock items, send an entry to stock__movements", text)
+        self.assertNotIn("Count from GET /api/v1/batches, not from memory", text)
+        self.assertNotIn("with up-to-date limits", text)
+        for words in ("first ask whether the number is a new purchase, a count of what is on hand, or an amount used",
+                      "only for a purchase the household confirms, with its actual date and amount",
+                      "A tracker count is not a purchase: do not send \"bought\" for an old balance",
+                      "Let the person count the batch in Dashboard Plus",
+                      "confirm the current batch and the difference before suggesting a correction",
+                      "Never add the whole count on top of what is already there"):
+            self.assertIn(words, text)
+
+    def test_the_guide_asks_about_a_receipt_that_may_already_be_in_the_old_count(self):
+        text = guide(self, self.helper)
+        for words in ("ask whether the receipt's purchase is already included in the old count",
+                      "keep the receipt line for the person to check on Review",
+                      "do not silently add it as another purchase or leave it out"):
+            self.assertIn(words, text)
+
+    def test_the_guide_says_a_review_only_price_is_not_saved_spending(self):
+        text = guide(self, self.helper)
+        for words in ("it is not purchase-price history",
+                      "Do not say the price or a spending total was saved, and do not copy it into Stock notes"):
+            self.assertIn(words, text)
+
+    def test_the_guide_says_when_to_refresh_and_how_to_report_row_outcomes(self):
+        text = guide(self, self.helper)
+        for words in ("Before each new batch, and after a limit or validation refusal, read this guide again",
+                      "can be out of date. Use the current answer; do not keep retrying a refused send",
+                      "how many were sent, accepted, still waiting and refused; name each unresolved source row and why",
+                      "If you cannot verify a status, say it is unknown. Sent does not mean accepted or complete"):
+            self.assertIn(words, text)
+
+    def test_a_look_only_helper_gets_none_of_the_sending_words(self):
+        reader, _key = helpers.issue(self.conn, self.data, "Look helper", "read", ["stock"])
+        text = guide(self, reader)
+        for words in ("A tracker count is not a purchase", "not purchase-price history", "Before you finish, read",
+                      "receipt's purchase is already included"):
+            self.assertNotIn(words, text)
+
+    def test_the_connector_descriptions_carry_the_same_four_changes(self):
+        suggest = tools.BY_NAME["dashboard_suggest_new_records"].description
+        for words in ("A tracker balance is not a purchase. Do not send `bought` for it",
+                      "let the person count a batch when the difference is unknown",
+                      "not saved as a Stock price or spending total",
+                      "Do not claim a cost history was recorded or put the price in Stock notes",
+                      "compares receipts, not an old stocktake with a receipt"):
+            self.assertIn(words, suggest)
+        self.assertNotIn("never saved in the records", suggest)
+        self.assertIn("Call again before each batch", tools.BY_NAME["dashboard_how_to_help"].description)

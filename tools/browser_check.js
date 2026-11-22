@@ -544,6 +544,54 @@ function expect(condition, message) { if (!condition) throw new Failed(message);
     ok(`drills: "${d.scenario}" names ${d.number}, Continue later is not practised, "${d.record}" offered not chosen, saved with own words behind Show, fits 320 pixels`);
   }
 
+  async function switchModule(name, on) {  // Settings: tick or untick one module, then Save settings
+    await goto('/settings');
+    await page.setChecked(`input[name=modules][value=${name}]`, on);
+    await submit('button[type=submit]:has-text("Save settings")');
+  }
+
+  async function checkOptionalLink() {  // Utilities with Our home off (decision 0115): the meter link is kept, unseen
+    const o = plan.optional;
+    await switchModule('home_layout', false);
+    await goto('/t/utilities__services');
+    let words = await text('main');
+    expect(words.includes(o.kept), `With Our home off, the Utilities list should say "${o.kept}".`);
+    expect(!(await html()).includes(o.meter), `With Our home off, the Utilities list still names the meter "${o.meter}".`);
+    await page.setViewportSize({ width: 320, height: 800 });
+    try {
+      await Promise.all([page.waitForNavigation(), page.click(`a[aria-label="Open ${o.service}"]`)]);
+      const recordUrl = new URL(page.url()).pathname;
+      expect(!(await page.locator('select[name=meter]').count()), 'With Our home off, the service still offers a meter picker.');
+      expect((await text('#f-meter-note')) === o.keptHelp, `The service should say "${o.keptHelp}" where the picker was.`);
+      const wide = await page.evaluate(() => document.documentElement.scrollWidth);
+      expect(wide <= 320, `At 320px the service page is ${wide}px wide; it should not scroll sideways.`);
+      await page.focus('#f-name');
+      let reached = false;
+      for (let i = 0; i < 30 && !reached; i++) {
+        await page.keyboard.press('Tab');
+        const at = await page.evaluate(() => document.activeElement && (document.activeElement.id || document.activeElement.textContent));
+        if (at === 'f-meter-note') reached = true;
+        if (at && at.includes('Save changes')) break;
+      }
+      expect(reached, 'The keyboard should reach the saved-link words before Save changes.');
+      await page.fill('#f-name', `${o.service} (checked)`);
+      await submit('button[type=submit]:has-text("Save changes")');
+      await goto(recordUrl);
+      expect((await text('#f-meter-note')) === o.keptHelp, 'Saving another field should keep the saved meter link.');
+      await goto('/t/utilities__services/new');
+      expect((await text('#f-meter-note')) === o.offHelp, `A new service should say "${o.offHelp}" before Save.`);
+      const nwide = await page.evaluate(() => document.documentElement.scrollWidth);
+      expect(nwide <= 320, `At 320px the new service form is ${nwide}px wide; it should not scroll sideways.`);
+    } finally {
+      await page.setViewportSize({ width: 1280, height: 720 });
+    }
+    await switchModule('home_layout', true);
+    await goto('/t/utilities__services');
+    words = await text('main');
+    expect(words.includes(o.meter), `With Our home on again, the service should show its same meter "${o.meter}".`);
+    ok(`optional link: with Our home off "${o.service}" keeps its meter link unseen, fits 320px, keyboard reaches the words; on again it shows "${o.meter}"`);
+  }
+
   async function checkPrivateDetail() {
     const p = plan.private;
     await goto('/t/people__important_info');
@@ -611,6 +659,7 @@ function expect(condition, message) { if (!condition) throw new Failed(message);
       if (plan.feeding) await checkFeeding();
       if (plan.running) await checkRunning();
       if (plan.drills) await checkDrills();
+      if (plan.optional) await checkOptionalLink();
       if (plan.private) { await checkPrivateDetail(); await checkPrivateSheet(); }
       await checkClose();
     }

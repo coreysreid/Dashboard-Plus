@@ -31,7 +31,8 @@ SYSTEM_COLUMNS = ("id", "created_at", "updated_at", "review_status", "source", "
 # Whether a column's value may travel to another computer of the household later (decision 0100).
 TRAVELS = ("always", "never")
 
-MODULE_KEYS = ("name", "title", "version", "description", "core_api", "kind", "requires", "outbound_hosts")
+MODULE_KEYS = ("name", "title", "version", "description", "core_api", "kind", "requires", "optional_requires",
+               "outbound_hosts")
 MODULE_REQUIRED = ("name", "title", "version", "description", "core_api", "kind")
 TABLE_KEYS = ("title", "description", "columns", "watch", "adjusts", "parent", "total", "record_name", "actions",
               "pair", "suggestions", "chart", "daily", "confirm")
@@ -81,7 +82,11 @@ LABEL_TABLE_KEYS = ("title", "columns", "form", "list", "empty", "home", "action
 UNDER_KEYS = ("link", "title", "intro", "columns", "order", "reveal")
 LABEL_ACTION_KEYS = ("label", "done", "title", "intro", "undo")  # new words for an action's button, form, notice
 HOME_PLACES = ("main", "more")  # where a table sits on the home page: shown large, or in the line of links
-LABEL_COLUMN_KEYS = ("label", "help", "show_when", "suggest_from", "fills", "answers", "blank")
+LABEL_COLUMN_KEYS = ("label", "help", "show_when", "suggest_from", "fills", "answers", "blank", "optional")
+# The household words for a link into a module listed under optional_requires (decision 0115): the sentence
+# beside a hidden picker, a link kept while that module is off (on the form, and short for lists and sheets),
+# no link, and a saved link whose record is no longer there (short, and on the form with what to do).
+OPTIONAL_WORDS = ("off_help", "kept_help", "kept", "none", "gone", "missing")
 
 
 class ModuleError(PlainError):
@@ -121,6 +126,9 @@ class Column:
     travels: str = "always"
     travels_when: dict = field(default_factory=dict)
     travels_reviewed: bool = True  # False for a private column that does not say; it is then kept local
+    # For a link into a module listed under optional_requires (decision 0115): that module may be off or not
+    # installed, so the link is hidden and kept as saved instead of being shown, changed or cleared.
+    optional: bool = False
     default_from: str | None = None  # a household choice (HOUSEHOLD_CHOICES) that fills an empty form (0111)
 
 
@@ -162,6 +170,9 @@ class Module:
     # Lists of common things to pick from while typing, by (table, column) (DESIGN.md 5.5).
     catalogues: dict = field(default_factory=dict)
     prompts: object = None  # checked prompts.toml, a prompts.PromptSet, or None (decision 0104)
+    # Modules this one may link into but does not need: it loads and works while they are off or not
+    # installed, and its links into them are optional (decision 0115).
+    optional_requires: list[str] = field(default_factory=list)
 
 
 def _suggest(word: str, options) -> str:
@@ -213,9 +224,21 @@ def _check_module_toml(folder: Path, data: dict, problems: list[str]) -> None:
     kind = data.get("kind")
     if kind is not None and kind not in KINDS:
         problems.append(f"{where}: kind '{kind}' is not known.{_suggest(kind, KINDS)}")
-    for key in ("requires", "outbound_hosts"):
+    for key in ("requires", "optional_requires", "outbound_hosts"):
         if key in data and (not isinstance(data[key], list) or not all(isinstance(x, str) for x in data[key])):
             problems.append(f"{where}: '{key}' must be a list of names, like [\"people\"].")
+    optional = data.get("optional_requires", [])
+    if isinstance(optional, list) and all(isinstance(x, str) for x in optional):
+        hard = data.get("requires", []) if isinstance(data.get("requires", []), list) else []
+        for other in optional:
+            if other == name:
+                problems.append(f"{where}: optional_requires can't name this module itself.")
+            elif other in hard:
+                problems.append(f"{where}: '{other}' is under both requires and optional_requires. Keep it under "
+                                f"requires if this module can't work without it, otherwise only under "
+                                f"optional_requires.")
+            elif not NAME.match(other):
+                problems.append(f"{where}: '{other}' in optional_requires is not a module name.")
     if kind == "declarative" and data.get("outbound_hosts"):
         problems.append(f"{where}: a declarative module cannot contact anything, so outbound_hosts must be empty.")
     if kind == "code" and not (folder / "sources.py").exists():
@@ -804,7 +827,8 @@ def _check_record_name(file: str, table: Table, tables: dict[str, Table], templa
     return template
 
 
-def _check_tables(module: str, data: dict, requires: list[str], problems: list[str]) -> dict[str, Table]:
+def _check_tables(module: str, data: dict, requires: list[str], problems: list[str],
+                  optional: list[str] = ()) -> dict[str, Table]:
     file = "tables.toml"
     problems.extend(_unknown_keys(f"In {file}", data, ("tables",)))
     raw_tables = data.get("tables", {})
@@ -881,9 +905,20 @@ def _check_tables(module: str, data: dict, requires: list[str], problems: list[s
                 where = f"In {file}, table '{table.name}', column '{column.name}'"
                 if "." in column.to:
                     target_module, _, target_table = column.to.partition(".")
-                    if target_module != module and target_module not in requires:
+                    if target_module != module and target_module in optional:
+                        column.optional = True  # decision 0115: nullable, and kept while that module is off
+                        if column.required or column.required_when:
+                            problems.append(f"{where}: it points at the '{target_module}' module, which is only "
+                                            f"under optional_requires, so it can't be required. Leave it optional, "
+                                            f"or move '{target_module}' to requires.")
+                        if column.on_delete == "cascade":
+                            problems.append(f"{where}: a link into an optional module can't use on_delete = "
+                                            f"\"cascade\": a record that makes sense without the link must not be "
+                                            f"deleted with it. Use \"clear\" or \"restrict\".")
+                    elif target_module != module and target_module not in requires:
                         problems.append(f"{where}: it points at the '{target_module}' module, which must be listed "
-                                        f"in module.toml under requires.")
+                                        f"in module.toml under requires (or optional_requires, if this module "
+                                        f"works without it).")
                     if not NAME.match(target_table):
                         problems.append(f"{where}: '{column.to}' is not a valid table name.")
                 elif column.to not in tables:
@@ -1381,6 +1416,9 @@ def _check_labels(data: dict, tables: dict[str, Table], problems: list[str]) -> 
                 problems.append(f"{where}: there is no column '{cname}'.{_suggest(cname, list(known))}")
             elif isinstance(craw, dict):
                 problems.extend(_unknown_keys(f"{where}, column '{cname}'", craw, LABEL_COLUMN_KEYS))
+                if "optional" in craw:
+                    _check_optional_words(f"{where}, column '{cname}'", tables[tname].columns.get(cname),
+                                          craw["optional"], problems)
                 if "blank" in craw:  # the words for leaving "Which batch" blank (DESIGN.md 5.7)
                     blank = craw["blank"]
                     rule = tables[tname].adjusts or {}
@@ -1592,6 +1630,40 @@ def _load_catalogues(folder: Path, labels: dict, tables: dict[str, Table], probl
     return catalogues
 
 
+def _check_optional_uses(tables: dict[str, Table], sheets: dict, problems: list[str]) -> None:
+    """A link into an optional module (decision 0115) may be on forms, lists and sheets as itself, where the core
+    shows neutral words while that module is off. It may not be a gap question (the household could not answer
+    it with that module off) or lead a sheet to a column of the other module (which may not be there)."""
+    for table in tables.values():
+        optional = {c.name for c in table.columns.values() if c.optional}
+        if not optional:
+            continue
+        for gap in table.watch.get("gaps", []) if isinstance(table.watch, dict) else []:
+            missing = gap.get("missing") if isinstance(gap, dict) else None
+            if isinstance(missing, str) and missing.partition(".")[0] in optional:
+                problems.append(f"In tables.toml, table '{table.name}', watch.gaps: '{missing}' is a link into an "
+                                f"optional module, so it can't be a question; a record makes sense without it.")
+        for sheet in sheets.get("sheet", []) if isinstance(sheets.get("sheet", []), list) else []:
+            for section in sheet.get("section", []) if isinstance(sheet, dict) else []:
+                if not isinstance(section, dict) or section.get("table") != table.name:
+                    continue
+                for spec in section.get("columns", []) if isinstance(section.get("columns"), list) else []:
+                    if isinstance(spec, str) and "." in spec and spec.partition(".")[0] in optional:
+                        problems.append(f"In sheets.toml, sheet '{sheet.get('name')}': '{spec}' reads a column "
+                                        f"through a link into an optional module, which may be off. Print "
+                                        f"'{spec.partition('.')[0]}' itself instead.")
+
+
+def _check_optional_words(where: str, column: Column | None, words, problems: list[str]) -> None:
+    """labels.toml `optional = { off_help = "…", kept = "…", … }` for a link into an optional module."""
+    if column is None or not column.optional:
+        problems.append(f"{where}: 'optional' words only apply to a link into a module under optional_requires.")
+    elif not isinstance(words, dict) or not words or set(words) - set(OPTIONAL_WORDS) or \
+            any(not isinstance(v, str) or not v.strip() for v in words.values()):
+        problems.append(f"{where}: optional gives the household's words, each a short sentence, using only "
+                        f"{', '.join(OPTIONAL_WORDS)}.")
+
+
 def load_module(folder: Path) -> Module:
     """Read and check one module folder. Raises ModuleError listing every problem found."""
     folder = Path(folder)
@@ -1600,8 +1672,11 @@ def load_module(folder: Path) -> Module:
     if meta:
         _check_module_toml(folder, meta, problems)
     requires = meta.get("requires", []) if isinstance(meta.get("requires", []), list) else []
+    optional = meta.get("optional_requires", [])
+    optional = [x for x in optional if isinstance(x, str)] if isinstance(optional, list) else []
     tables = _check_tables(folder.name, _read_toml(folder / "tables.toml", problems, required=True),
-                           requires, problems)
+                           requires, problems, optional)
+    _check_optional_uses(tables, _read_toml(folder / "sheets.toml", [], required=False), problems)
     labels = _check_labels(_read_toml(folder / "labels.toml", problems, required=False), tables, problems)
     sheets = _check_sheets(_read_toml(folder / "sheets.toml", problems, required=False), tables, problems)
     catalogues = _load_catalogues(folder, labels, tables, problems)
@@ -1615,6 +1690,7 @@ def load_module(folder: Path) -> Module:
         raise ModuleError(folder.name, problems)
     return Module(name=meta["name"], title=meta["title"], version=meta["version"],
                   description=meta["description"], kind=meta["kind"], requires=list(requires),
+                  optional_requires=list(optional),
                   outbound_hosts=list(meta.get("outbound_hosts", [])), folder=folder,
                   tables=tables, labels=labels, migrations=migrations, sheets=sheets, catalogues=catalogues,
                   prompts=prompt_set)
@@ -1683,6 +1759,41 @@ def _cross_module_sheet_problems(module: Module, by_name: dict[str, Module]) -> 
     return problems
 
 
+def _needs(by_name: dict[str, Module], start: str, wanted: str) -> bool:
+    """True if module `start` requires `wanted`, directly or through the modules it requires."""
+    seen, todo = set(), [start]
+    while todo:
+        name = todo.pop()
+        if name == wanted:
+            return True
+        if name in seen or name not in by_name:
+            continue
+        seen.add(name)
+        todo.extend(by_name[name].requires)
+    return False
+
+
+def _optional_target_problems(module: Module, by_name: dict[str, Module]) -> list[str]:
+    """A link into an optional module that is installed must name one of its tables (decision 0115). A module
+    that is not installed, or could not be loaded, is simply off: the link is kept and hidden."""
+    problems = []
+    for table in module.tables.values():
+        for column in table.columns.values():
+            if not column.optional:
+                continue
+            other, _, other_table = column.to.partition(".")
+            target = by_name.get(other)
+            if target is not None and other_table not in target.tables:
+                problems.append(f"In tables.toml, table '{table.name}', column '{column.name}': the '{other}' module "
+                                f"has no table '{other_table}'.{_suggest(other_table, list(target.tables))}")
+            elif target is not None and column.with_place:
+                place = target.tables[other_table].columns.get(column.with_place)
+                if place is None or place.type != "link":
+                    problems.append(f"In tables.toml, table '{table.name}', column '{column.name}': with_place names "
+                                    f"'{column.with_place}', which is not a link column of '{column.to}'.")
+    return problems
+
+
 def dependency_order(modules: list[Module], failures: dict[str, list[str]]) -> list[Module]:
     """Order modules so each comes after the ones it requires; drop any whose requirements fail."""
     by_name = {m.name: m for m in modules}
@@ -1709,6 +1820,14 @@ def dependency_order(modules: list[Module], failures: dict[str, list[str]]) -> l
                 failures.setdefault(module.name, []).append(f"It requires the '{name}' module, which could not be loaded.")
                 state[module.name] = "failed"
                 return False
+        for name in module.optional_requires:  # decision 0115: loaded first when it is there, never needed
+            if name in by_name and name not in path and not _needs(by_name, name, module.name):
+                visit(by_name[name], path + [module.name])
+        problems = _optional_target_problems(module, {n: m for n, m in by_name.items() if state.get(n) != "failed"})
+        if problems:
+            failures.setdefault(module.name, []).extend(problems)
+            state[module.name] = "failed"
+            return False
         problems = _cross_module_gap_problems(module, by_name) + _cross_module_sheet_problems(module, by_name)
         if module.prompts is not None:
             problems += prompt_files.cross_module_problems(module.prompts, by_name)

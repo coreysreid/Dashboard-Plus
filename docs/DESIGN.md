@@ -143,6 +143,20 @@ Cross-module links are allowed only through an explicit `requires` entry in
 data. The loader refuses to switch off a module that another enabled module
 depends on, and says which one.
 
+A link the record makes sense without may instead name a module listed under
+`optional_requires` (decision 0115), like Utilities' meter in Home layout. The
+referring module loads and works while that module is off or not installed.
+Such a link is never required, never cascades, is not a gap question and is
+not printed through (`meter.place`). While its module is off the form has no
+picker and says so in the module's own words (labels.toml
+`columns.<name>.optional`), the saved ID is kept exactly, and any write that
+would set, change or clear it is refused. Lists, sheets, history and exports
+say only that a link is saved, never a name from the off module; helpers do not
+see the field. When the module is on again the same ID is shown; an ID that is
+no longer a live record is a repair state on the form ("Choose another, or
+leave it blank"), never matched by name. New optional links have no database
+`REFERENCES` rule.
+
 ## 5. Time
 
 Time is first-class because the question loop depends on it.
@@ -645,6 +659,7 @@ version = "1.0.0"
 description = "Track pets, their weight, food, medication and vet visits."
 core_api = "1"                 # the contract version this module was written for
 requires = []                  # other modules this one links into
+optional_requires = []         # modules it may link into but works without (0115)
 outbound_hosts = []            # empty for modules that never contact anything
 kind = "declarative"           # or "code"
 ```
@@ -1802,7 +1817,7 @@ Open a module's own INDEX.md before its files.
 | garden/ | Vegetable garden; the worked example module (files only) | learning to build a module |
 | stock/ | Pantry, emergency water, tools and hardware, receipts (files only) | changing stock, reorder or supply-cover behaviour |
 | wine/ | Wine collection (files only; compact module; shipped, decision 0095) | changing wine tables |
-| utilities/ | Utilities and accounts (files only; links People and Home layout; shipped, decision 0099) | changing utility records |
+| utilities/ | Utilities and accounts (files only; links People, and Home layout optionally; shipped, decisions 0099 and 0115) | changing utility records |
 | graphing/ | Charts over any table | changing chart behaviour |
 | analysis/ | Statistics and the question loop | changing how findings are made |
 | api_connector/ | Pulls data from outside APIs | adding or fixing a source |
