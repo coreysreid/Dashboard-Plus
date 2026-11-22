@@ -7,24 +7,31 @@ from datetime import date
 from pathlib import Path
 
 FILE = "prompts.toml"
-SCHEMA = 2  # the newest version of the prompts.toml format below (decisions 0104 and 0108)
-SCHEMAS = (1, 2)  # 1: questions only (0104); 2: also drills ([[scenario]], [[step]], [[emergency]], runs)
+SCHEMA = 3  # the newest version of the prompts.toml format below (decisions 0104, 0108 and 0113)
+# 1: questions only (0104); 2: also drills ([[scenario]], [[step]], [[emergency]], runs); 3: every match also says
+# `ask_again`, the fields whose change brings a confirmed answer back (0113).
+SCHEMAS = (1, 2, 3)
 TOP_KEYS = ("schema", "answers", "group", "prompt")
-DRILL_KEYS = ("runs", "run_steps", "scenario", "step", "emergency")  # schema 2 only
+DRILL_KEYS = ("runs", "run_steps", "scenario", "step", "emergency")  # schema 2 and 3 only
 GROUP_KEYS = ("key", "title")
-PROMPT_KEYS = ("id", "group", "question", "why", "how_to_check", "fits", "answered_by", "match", "review_every",
-               "source", "write_in")
+PROMPT_KEYS = ("id", "group", "question", "why", "how_to_check", "fits", "answered_by", "match", "ask_again",
+               "review_every", "source", "write_in")
 # Schema 2: the exact words a drill step shows when nothing is recorded, a caution shown with any record it
 # offers, and a supply (module.table with a days-of-cover rule) whose working it shows. A [[prompt]] used as
 # a shared drill step may say them too.
 STEP_TEXT_KEYS = ("missing", "caution", "supply")
-STEP_KEYS = ("id", "question", "why", "fits", "answered_by", "match") + STEP_TEXT_KEYS
+STEP_KEYS = ("id", "question", "why", "fits", "answered_by", "match", "ask_again") + STEP_TEXT_KEYS
 SCENARIO_KEYS = ("id", "version", "title", "intro", "fits", "sources", "steps", "review_every")
 SCENARIO_FITS_KEYS = ("has_records",)  # the household has at least one record in this table ("module.table")
 EMERGENCY_KEYS = ("country", "number", "source")
 # What a prompt may be matched to: only answers the household gave in Settings, never a guess from an address.
 FITS_KEYS = ("storeys_min", "hazards", "pets", "mobility_needs", "country", "home_type")
 MATCH_KEYS = ("table", "where", "filled", "positive")
+# Schema 3 (decision 0113): which changes to a chosen record bring a confirmed answer back. `fields` are compared
+# by value (a link also covers the record it reaches and, for a nested place, every place around it: their names
+# and what each sits inside); `states` only by whether they still meet the match (a positive amount, a unit of the
+# listed kind), so using one litre from a batch that still has some left changes nothing.
+ASK_AGAIN_KEYS = ("fields", "states")
 SOURCE_KEYS = ("title", "url", "checked")
 WRITE_IN_KEYS = ("table", "label")
 ANSWERS = ("yes", "not_relevant", "not_yet")
@@ -52,6 +59,13 @@ class Match:
 
 
 @dataclass
+class AskAgain:
+    """The fields of a chosen record whose change brings a confirmed answer back (decision 0113)."""
+    fields: list = field(default_factory=list)   # paths compared by value: "place", "person.phone"
+    states: list = field(default_factory=list)   # paths compared only by whether they meet the match: "quantity"
+
+
+@dataclass
 class Prompt:
     id: str
     group: str
@@ -63,6 +77,7 @@ class Prompt:
     source: dict                    # {"title", "url", "checked"}
     how_to_check: str | None = None
     match: Match | None = None
+    ask_again: AskAgain | None = None  # with every match; older files ask again for the fields the match reads
     write_in: dict | None = None    # {"table", "label"}: a list where a plan can be written, never an answer
     missing: str | None = None      # schema 2: the exact words shown when no record matches
     caution: str | None = None      # schema 2: shown with any record offered, e.g. a door is not a checked route
@@ -278,8 +293,56 @@ def _check_match(where: str, module: str, raw, answered_by, problems: list[str])
     return match
 
 
+def _check_ask_again(at: str, raw, match: Match, problems: list[str]) -> AskAgain:
+    """The fields whose change asks again. Every field the match reads must be listed, so a record that stopped
+    matching and matches again still asks; a linked field needs its link listed too."""
+    if not isinstance(raw, dict) or "fields" not in raw:
+        problems.append(f"{at}: 'ask_again' must list the fields whose change asks again, like "
+                        f"{{ fields = [\"place\"] }}.")
+        return _default_ask_again(match)
+    for key in raw:
+        if key not in ASK_AGAIN_KEYS:
+            problems.append(f"{at}: 'ask_again' has an unknown setting '{key}'. Allowed: {', '.join(ASK_AGAIN_KEYS)}.")
+    lists = {}
+    for key in ASK_AGAIN_KEYS:
+        value = raw.get(key, [])
+        if not isinstance(value, list) or not all(isinstance(p, str) and 1 <= p.count(".") + 1 <= 2 for p in value) \
+                or len(set(value)) != len(value):
+            problems.append(f"{at}: ask_again.{key} must be a list of different fields, each a column or link.column.")
+            value = []
+        lists[key] = list(value)
+    ask = AskAgain(lists["fields"], lists["states"])
+    if not ask.fields:
+        problems.append(f"{at}: ask_again.fields must name at least one field.")
+    both = set(ask.fields) & set(ask.states)
+    if both:
+        problems.append(f"{at}: '{sorted(both)[0]}' is in both ask_again.fields and ask_again.states.")
+    for path in ask.states:
+        if path not in match.where and path not in match.positive:
+            problems.append(f"{at}: ask_again.states '{path}' must be a field in match.where or match.positive.")
+    listed = set(ask.fields) | set(ask.states)
+    for path in list(match.where) + match.filled + match.positive:
+        if path not in listed:
+            problems.append(f"{at}: ask_again must list '{path}', a field the match reads.")
+    for path in sorted(listed):
+        if "." in path and path.split(".")[0] not in ask.fields:
+            problems.append(f"{at}: ask_again lists '{path}', so it must list the link '{path.split('.')[0]}' "
+                            f"in fields too.")
+    return ask
+
+
+def _default_ask_again(match: Match) -> AskAgain:
+    """For a schema 1 or 2 file: ask again when anything the match reads changes."""
+    fields = []
+    for path in list(match.where) + match.filled + match.positive:
+        for part in ([path.split(".")[0]] if "." in path else []) + [path]:
+            if part not in fields and part not in match.positive:
+                fields.append(part)
+    return AskAgain(fields, [p for p in match.positive if p not in fields])
+
+
 def _parse_prompt(at: str, raw: dict, module: str, groups: list, drills: bool, step: bool,
-                  problems: list[str]) -> Prompt | None:
+                  problems: list[str], schema=SCHEMA) -> Prompt | None:
     """One [[prompt]] (a question) or, with `step`, one [[step]] (a drill-only question)."""
     allowed = STEP_KEYS if step else PROMPT_KEYS + (STEP_TEXT_KEYS if drills else ())
     pid = raw.get("id")
@@ -316,6 +379,18 @@ def _parse_prompt(at: str, raw: dict, module: str, groups: list, drills: bool, s
     elif isinstance(answered_by, str) and answered_by != "none":
         problems.append(f"{at}: answered_by names a field, so 'match' must say exactly what that record "
                         f"must hold before it is offered.")
+    ask_again = None
+    if "ask_again" in raw and schema != 3:
+        problems.append(f"{at}: 'ask_again' needs schema = 3.")
+    elif "ask_again" in raw and match is None:
+        problems.append(f"{at}: 'ask_again' is only for a prompt with a match.")
+    elif match is not None and "ask_again" in raw:
+        ask_again = _check_ask_again(at, raw["ask_again"], match, problems)
+    elif match is not None:
+        if schema == 3:
+            problems.append(f"{at}: a match needs 'ask_again', the fields whose change asks again, like "
+                            f"{{ fields = [\"place\"] }}.")
+        ask_again = _default_ask_again(match)
     write_in = raw.get("write_in")
     if write_in is not None and not (isinstance(write_in, dict) and set(write_in) == set(WRITE_IN_KEYS)
                                      and all(_text(v) for v in write_in.values())):
@@ -325,7 +400,8 @@ def _parse_prompt(at: str, raw: dict, module: str, groups: list, drills: bool, s
     return Prompt(id=pid, group="" if step else str(raw.get("group")), question=str(raw.get("question", "")),
                   why=str(raw.get("why", "")), fits=_check_fits(at, raw.get("fits", {}), problems),
                   answered_by=str(answered_by), review_every=every if isinstance(every, int) else 12,
-                  source=source, how_to_check=raw.get("how_to_check"), match=match, write_in=write_in,
+                  source=source, how_to_check=raw.get("how_to_check"), match=match, ask_again=ask_again,
+                  write_in=write_in,
                   missing=raw.get("missing"), caution=raw.get("caution"), supply=raw.get("supply"))
 
 
@@ -396,14 +472,15 @@ def load(folder: Path, module: str, tables: dict, read_toml, problems: list[str]
         return None
     where = f"In {FILE}"
     schema = data.get("schema")
-    drills = schema == 2
+    drills = schema in (2, 3)
     allowed = TOP_KEYS + (DRILL_KEYS if drills else ())
     for key in data:
         if key not in allowed:
-            extra = " Drills need schema = 2." if key in DRILL_KEYS else ""
+            extra = " Drills need schema = 2 or 3." if key in DRILL_KEYS else ""
             problems.append(f"{where}: unknown setting '{key}'. Allowed: {', '.join(allowed)}.{extra}")
     if schema not in SCHEMAS:
-        problems.append(f"{where}: 'schema' must be {' or '.join(str(s) for s in SCHEMAS)}, the prompts formats "
+        problems.append(f"{where}: 'schema' must be {', '.join(str(s) for s in SCHEMAS[:-1])} or {SCHEMAS[-1]}, "
+                        f"the prompts formats "
                         f"this program reads.")
     answers_ok = _check_answers_table(where, data.get("answers"), tables, problems)
     groups = []
@@ -427,7 +504,8 @@ def load(folder: Path, module: str, tables: dict, read_toml, problems: list[str]
             if not isinstance(raw, dict):
                 problems.append(f"{at}: describe the {kind} with id, question and what may answer it.")
                 continue
-            parsed = _parse_prompt(at, raw, module, groups, drills, kind == "step", problems)
+            parsed = _parse_prompt(at, raw, module, groups, drills, kind == "step", problems,
+                                   schema if schema in SCHEMAS else SCHEMA)
             if parsed is None:
                 continue
             if parsed.id in seen:
@@ -491,13 +569,16 @@ def cross_module_problems(prompt_set: PromptSet, by_name: dict) -> list[str]:
             other, _, name = column.to.partition(".") if "." in column.to else (mod, ".", column.to)
             return by_name[other].tables.get(name) if other in by_name else None
 
-        for path in list(prompt.match.where) + prompt.match.filled + prompt.match.positive:
+        ask = prompt.ask_again or AskAgain()
+        for path in list(prompt.match.where) + prompt.match.filled + prompt.match.positive + ask.fields:
             first = table.columns.get(path.split(".")[0])
             if first is not None and "." in path and first.type == "link" and tables_of(first) is None:
                 continue  # the link leads to a module that is not installed: the match finds nothing
             column = _column_at(path, table, tables_of)
             if column is None:
                 problems.append(f"{where}: '{path}' is not a field of '{prompt.match.table}'.")
+            elif column.type == "links":
+                problems.append(f"{where}: '{path}' links several records, so it cannot be in ask_again.")
             elif path in prompt.match.positive and column.type not in ("integer", "decimal", "measure", "money"):
                 problems.append(f"{where}: match.positive '{path}' must be a number.")
             elif path in prompt.match.where and column.type == "choice":

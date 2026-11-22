@@ -4,16 +4,22 @@ Decision 0104. The questions are declared by modules in prompts.toml (core/promp
 ordinary records in that module's own answers table, written through Records like any other, so history,
 backups, export and the sync change log all cover them. Nothing here ever answers a question: a record
 that matches is only offered to a person, who must choose Yes, Not relevant or Not yet.
+
+Decision 0113: a Yes kept with a chosen record comes back only when a field its question lists in `ask_again`
+changed. The check kept with the answer is a versioned field stamp: a hash of permanent IDs and of how many
+times each listed field's value changed in the record's history, never the values themselves.
 """
 from __future__ import annotations
 
 import hashlib
+import json
+import re
 import sqlite3
 from dataclasses import dataclass, field
 from datetime import date
 
-from dashboard.core import dates, settings, watch
-from dashboard.core.prompts import ANSWERS, Prompt, PromptSet
+from dashboard.core import dates, db, settings, watch
+from dashboard.core.prompts import ANSWERS, AskAgain, Prompt, PromptSet
 from dashboard.core.records import Records, TableInfo, ValidationError
 from dashboard.core.schema import table_name, target_table
 from dashboard.core.sync import ID, REVISION
@@ -22,6 +28,12 @@ NOT_NOW_KEY = "questions.not_now"  # {"module:prompt": "until"}: cards set aside
 NOT_NOW_DAYS = 7
 HOME_LIMIT = 2  # at most two calm cards on Home at a time (Lane B's acceptance check 1)
 STATES = ("to_look_at", "looked_at", "review", "does_not_fit")
+# Decision 0113: the version of the check kept with an answer. A check without this prefix is decision 0104's
+# fingerprint of whole-record revisions, read only to upgrade it. OFF_CHECK marks an answer whose record's module
+# was switched off: it keeps asking again, even once the module is back, until a person answers.
+CHECK_VERSION = "2"
+CHECK_PREFIX = CHECK_VERSION + ":"
+OFF_CHECK = CHECK_PREFIX + "module-off"
 
 
 @dataclass
@@ -30,9 +42,10 @@ class Candidate:
     table: str          # real table name
     record_id: int
     key: str            # "people__roles:<permanent ID>", what an answer keeps
-    check: str          # a fingerprint of the revisions of every record the match looked at, never their words
+    check: str          # the field stamp of the fields the question lists (decision 0113), never their words
     private: bool       # the match read a private detail: show only that a private record may relate
     row: dict
+    legacy: str = ""    # decision 0104's revision fingerprint, read only to upgrade an older answer
 
 
 @dataclass
@@ -43,7 +56,7 @@ class Question:
     not_fit_reasons: list = field(default_factory=list)
     answer: dict | None = None        # the current answer record, if any
     state: str = "to_look_at"
-    review_reason: str | None = None  # "due" or "record_changed"
+    review_reason: str | None = None  # "due", "record_changed" or "record_missing"
     due_on: str | None = None
     candidates: list = field(default_factory=list)
 
@@ -114,6 +127,7 @@ class _Reader:
     def __init__(self, conn: sqlite3.Connection, registry: dict[str, TableInfo]):
         self.conn, self.registry = conn, registry
         self._rows: dict[tuple[str, int], dict | None] = {}
+        self._history: dict[tuple[str, int], list] = {}
 
     def row(self, table: str, record_id) -> dict | None:
         key = (table, int(record_id))
@@ -158,6 +172,113 @@ class _Reader:
         if inner.type == "link":
             return inner, target_row.get(rest), self.live_link(target, inner, target_row.get(rest), touched) is not None
         return inner, target_row.get(rest), True
+
+
+    # ----- field stamps (decision 0113) -----
+    def history(self, table: str, record_id: int) -> list[tuple[str, dict, dict]]:
+        """This record's history entries, oldest first, as (action, before, after). Read, never copied."""
+        key = (table, int(record_id))
+        if key not in self._history:
+            self._history[key] = [
+                (r["action"], json.loads(r["before"]) if r["before"] else {}, json.loads(r["after"]) if r["after"] else {})
+                for r in self.conn.execute("SELECT action, before, after FROM core__audit WHERE table_name = ? AND "
+                                           "record_id = ? ORDER BY id", key)]
+        return self._history[key]
+
+    def changes(self, table: str, record_id: int, column: str, normal) -> int:
+        """How many times this field's value really changed (as `normal` sees it) since the record was made.
+        Only ever goes up, so undoing an edit never makes an old check fit again."""
+        return sum(1 for action, before, after in self.history(table, record_id)
+                   if action == "update" and column in after and normal(before.get(column)) != normal(after[column]))
+
+    def deletes(self, table: str, record_id: int) -> int:
+        return sum(1 for action, _, _ in self.history(table, record_id) if action == "delete")
+
+    def identity(self, info: TableInfo, row: dict) -> str:
+        return f"{info.name}:{row.get(ID)}:deleted {self.deletes(info.name, row['id'])}"
+
+    def link_parts(self, info: TableInfo, column, value) -> list[str]:
+        """The record a link reaches and, for a nested place, every place around it: each one's name and what it
+        sits inside (never its notes), so renaming or moving any place on the path asks again."""
+        target = self.registry.get(target_table(info.module.name, column))
+        row = self.row(target.name, value) if target is not None and value not in (None, "") else None
+        if row is None:
+            return [f"{column.name}->none"]
+        parts = [self.identity(target, row)]
+        parent = target.table.parent
+        if parent:
+            seen = set()
+            while row is not None and row["id"] not in seen:
+                seen.add(row["id"])
+                parts.append(self.identity(target, row))
+                for name in _name_columns(target) + [parent]:
+                    parts.append(f"{target.name}:{row.get(ID)}:{name} {self.changes(target.name, row['id'], name, _normal)}")
+                outer = row.get(parent)
+                row = self.row(target.name, outer) if outer not in (None, "") else None
+        return parts
+
+    def stamp_parts(self, info: TableInfo, row: dict, path: str, normal) -> list[str]:
+        """What one listed field adds to a stamp: its change count and, for a link, what the link reaches."""
+        first, _, rest = path.partition(".")
+        column = info.table.columns[first]
+        if not rest:
+            parts = [f"{path} {self.changes(info.name, row['id'], first, normal)}"]
+            return parts + (self.link_parts(info, column, row.get(first)) if column.type == "link" else [])
+        target = self.registry.get(target_table(info.module.name, column))
+        linked = self.row(target.name, row.get(first)) if target is not None and row.get(first) not in (None, "") \
+            else None
+        if linked is None:
+            return [f"{path} none"]
+        inner = target.table.columns[rest]
+        parts = [f"{path} {self.changes(target.name, linked['id'], rest, normal)}", self.identity(target, linked)]
+        return parts + (self.link_parts(target, inner, linked.get(rest)) if inner.type == "link" else [])
+
+
+def _name_columns(info: TableInfo) -> list[str]:
+    """The columns a record is known by: those its record_name shows, else its name."""
+    named = [n for n in re.findall(r"\{([a-z0-9_]+)", info.table.record_name or "") if n in info.table.columns]
+    return list(dict.fromkeys(named)) or (["name"] if "name" in info.table.columns else [])
+
+
+def _normal(value) -> str:
+    """A value as compared for a field change: blank and missing are the same, spaces around text do not count."""
+    if value is None:
+        return ""
+    if isinstance(value, bool):
+        return str(int(value))
+    if isinstance(value, float) and value.is_integer():
+        return str(int(value))
+    return str(value).strip()
+
+
+def _condition(reader: _Reader, prompt: Prompt, info: TableInfo, path: str):
+    """For a field in ask_again.states: whether a value meets the match (above zero, or one of the listed values)."""
+    if path in prompt.match.positive:
+        def positive(value):
+            try:
+                return float(value) > 0
+            except (TypeError, ValueError):
+                return False
+        return positive
+    first, _, rest = path.partition(".")
+    column = info.table.columns[first]
+    if rest:
+        target = reader.registry.get(target_table(info.module.name, column))
+        column = target.table.columns[rest] if target is not None else None
+    wanted = prompt.match.where[path]
+    return lambda value: column is not None and _same(column, value, wanted)
+
+
+def field_stamp(reader: _Reader, info: TableInfo, row: dict, prompt: Prompt) -> str:
+    """The versioned field stamp of one record for one question (decision 0113): permanent IDs, how many times each
+    listed field changed and how often each record was deleted, hashed. It holds no value, private or not."""
+    ask = prompt.ask_again or AskAgain()
+    parts = [reader.identity(info, row)]
+    for path in ask.fields:
+        parts += reader.stamp_parts(info, row, path, _normal)
+    for path in ask.states:
+        parts += [f"state {p}" for p in reader.stamp_parts(info, row, path, _condition(reader, prompt, info, path))]
+    return CHECK_PREFIX + hashlib.sha256("|".join(sorted(set(parts))).encode()).hexdigest()[:24]
 
 
 def _stamp(table: str, row: dict) -> str:
@@ -219,9 +340,27 @@ def candidates(conn: sqlite3.Connection, registry: dict[str, TableInfo], prompt:
             if not ok:
                 break
         if ok:
-            check = hashlib.sha256(",".join(sorted(touched)).encode()).hexdigest()[:20]
-            found.append(Candidate(info.name, row["id"], f"{info.name}:{row.get(ID)}", check, private, row))
+            legacy = hashlib.sha256(",".join(sorted(touched)).encode()).hexdigest()[:20]
+            found.append(Candidate(info.name, row["id"], f"{info.name}:{row.get(ID)}",
+                                   field_stamp(reader, info, row, prompt), private, row, legacy))
     return found
+
+
+def record_review(found: list[Candidate], record: str | None, check: str | None) -> str | None:
+    """Why an answer kept with a chosen record needs looking at again, or None (decisions 0104 and 0113).
+
+    "record_missing" when the record is deleted, stopped matching or its module is off; "record_changed" when a
+    field its question lists changed, or its module was switched off since. An older answer's revision fingerprint
+    still counts until the upgrade gives it a field stamp."""
+    if not record:
+        return None
+    same = next((c for c in found if c.key == record), None)
+    if same is None:
+        return "record_missing"
+    check = check or ""
+    if check.startswith(CHECK_PREFIX):
+        return None if check == same.check else "record_changed"
+    return None if check == same.legacy else "record_changed"
 
 
 # ----- answers and where each question stands -------------------------------------------------------
@@ -256,10 +395,8 @@ def evaluate(conn: sqlite3.Connection, registry: dict[str, TableInfo], prompt_se
         answer = question.answer
         if answer is not None and answer.get("answer") in ANSWERS:
             question.due_on = due_on(prompt, answer)
-            if answer.get("record"):
-                same = [c for c in question.candidates if c.key == answer["record"]]
-                if not same or same[0].check != answer.get("record_check"):
-                    question.review_reason = "record_changed"
+            question.review_reason = record_review(question.candidates, answer.get("record"),
+                                                   answer.get("record_check"))
             if question.review_reason is None and question.due_on and question.due_on <= today.isoformat():
                 question.review_reason = "due"
             question.state = "review" if question.review_reason else "looked_at"
@@ -336,3 +473,79 @@ def save(store: Records, prompt_set: PromptSet, prompt_id: str, answer: str, rev
         store.update(table, existing["id"], values, actor=actor)
         return existing["id"]
     return store.create(table, values, actor=actor)
+
+
+# ----- keeping checks right when things change around them (decision 0113) ---------------------------------
+
+def _answer_tables(prompt_set: PromptSet, registry: dict[str, TableInfo]) -> list[tuple[str, str, object]]:
+    """(table, the column naming the question, how to find it) for answers and, with drills, practice answers."""
+    found = [(answers_table(prompt_set), "prompt", prompt_set.get)]
+    if prompt_set.run_steps and table_name(prompt_set.module, prompt_set.run_steps) in registry:
+        found.append((table_name(prompt_set.module, prompt_set.run_steps), "step", prompt_set.step))
+    return found
+
+
+def upgrade_checks(conn: sqlite3.Connection, registry: dict[str, TableInfo]) -> int:
+    """Give each answer still kept with decision 0104's revision fingerprint a field stamp; return how many.
+
+    Only an answer whose record still matches and whose fingerprint still fits gets one, from the record as it is
+    now. One that is already changed, deleted, no longer matching or whose module is off keeps its old check, so it
+    stays in Review again until a person answers. No answer, date or chosen record changes and nothing is added to
+    history: this is how the check is written, not a new answer. Run at start-up and after a restore, so a copy
+    from before and a paired computer follow the same rule."""
+    upgraded = 0
+    with db.transaction(conn):
+        for prompt_set in prompt_sets(registry).values():
+            for table, column, lookup in _answer_tables(prompt_set, registry):
+                offered = {}
+                for row in conn.execute(f"SELECT id, {column} AS question, record, record_check FROM {table} "
+                                        f"WHERE deleted_at IS NULL AND record IS NOT NULL AND record != '' AND "
+                                        f"(record_check IS NULL OR record_check NOT LIKE ?)",
+                                        (CHECK_PREFIX + "%",)).fetchall():
+                    prompt = lookup(row["question"])
+                    if prompt is None or prompt.match is None:
+                        continue
+                    if prompt.id not in offered:
+                        offered[prompt.id] = {c.key: c for c in candidates(conn, registry, prompt)}
+                    same = offered[prompt.id].get(row["record"])
+                    if same is not None and row["record_check"] and row["record_check"] == same.legacy:
+                        conn.execute(f"UPDATE {table} SET record_check = ? WHERE id = ?", (same.check, row["id"]))
+                        upgraded += 1
+    return upgraded
+
+
+def upgrade_loaded(conn: sqlite3.Connection, loaded: list) -> int:
+    """`upgrade_checks` with the modules switched on among those loaded (start-up and restore)."""
+    from dashboard.core.records import build_registry
+    on = settings.enabled_modules(conn)
+    return upgrade_checks(conn, build_registry([m for m in loaded if m.name in on]))
+
+
+def _modules_read(prompt: Prompt, info: TableInfo, registry: dict[str, TableInfo]) -> set[str]:
+    """The modules whose records a question's match and ask_again read."""
+    found = {info.module.name}
+    ask = prompt.ask_again or AskAgain()
+    for path in list(prompt.match.where) + prompt.match.filled + prompt.match.positive + ask.fields + ask.states:
+        column = info.table.columns.get(path.split(".")[0])
+        if column is not None and column.type == "link":
+            found.add(target_table(info.module.name, column).split("__")[0])
+    return found
+
+
+def modules_switching_off(store: Records, names: set[str]) -> int:
+    """Before modules are switched off: every answer kept with a record those modules hold, or read through,
+    keeps asking again even once they are back on, until a person answers. Returns how many were marked."""
+    marked = 0
+    for prompt_set in prompt_sets(store.registry).values():
+        for table, column, lookup in _answer_tables(prompt_set, store.registry):
+            for row in store.conn.execute(f"SELECT id, {column} AS question, record_check FROM {table} WHERE "
+                                          f"deleted_at IS NULL AND record IS NOT NULL AND record != ''").fetchall():
+                prompt = lookup(row["question"])
+                if prompt is None or prompt.match is None or row["record_check"] == OFF_CHECK:
+                    continue
+                mod, _, name = prompt.match.table.partition(".")
+                info = store.registry.get(table_name(mod, name))
+                if info is not None and _modules_read(prompt, info, store.registry) & set(names):
+                    store.update(table, row["id"], {"record_check": OFF_CHECK}, actor="system")
+                    marked += 1
+    return marked

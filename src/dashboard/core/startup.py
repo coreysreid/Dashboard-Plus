@@ -104,6 +104,8 @@ def prepare(data_dir: Path, modules_dir: Path | None = None) -> StartupReport:
         sync.prepare(conn, [m for m in found if m.name not in failures], back_up, failures)
         found = modules.dependency_order([m for m in found if m.name not in failures], failures)
         record_modules(conn, found)
+        from dashboard.core import questions  # decision 0113: older answers' checks become field stamps
+        questions.upgrade_loaded(conn, found)
         stopped = helpers.stop_unfinished_key_changes(conn, data_dir)  # decision 0093
         version = conn.execute("PRAGMA user_version").fetchone()[0]
     finally:

@@ -279,8 +279,15 @@ function expect(condition, message) { if (!condition) throw new Failed(message);
     expect((await text('[role=status]')).startsWith('Undone.'), `Undo should say "Undone."; it says "${await text('[role=status]')}".`);
     const back = await page.locator('li.todo-row', { hasText: name }).locator('.todo-when').innerText();
     expect(back === when, `After Undo "${name}" should be back as "${when}"; it says "${back}".`);
+    await goto('/to-do/year');  // This year's month summary must not widen the page (batch 21 item 98, decision 0113)
+    const yearWide = await page.evaluate(() => document.documentElement.scrollWidth);
+    expect(yearWide <= 320, `Things to do, This year should fit a 320 pixel phone screen; it is ${yearWide} pixels wide.`);
+    const months = await page.locator('table.todo-months tbody tr').count();
+    expect(months === 12, `This year should list twelve months; it lists ${months}.`);
+    const label = await page.locator('table.todo-months tbody td').first().evaluate((e) => getComputedStyle(e, '::before').content);
+    expect(label.includes('Due'), `At 320 pixels each month's numbers should be labelled; the first says ${label}.`);
     await page.setViewportSize({ width: 1280, height: 900 });
-    ok(`Things to do: "${name}" shown once as ${when}, ticked once at 320 pixels, then undone back to the same date`);
+    ok(`Things to do: "${name}" shown once as ${when}, ticked once at 320 pixels, then undone back to the same date; This year fits 320 pixels with 12 labelled months`);
   }
 
   async function checkReceiptLine(r) {  // a receipt line the helper could not match (decision 0105)
