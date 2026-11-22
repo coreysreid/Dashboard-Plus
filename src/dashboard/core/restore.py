@@ -12,7 +12,7 @@ from dataclasses import dataclass
 from datetime import datetime, timezone
 from pathlib import Path
 
-from dashboard.core import backups, db, helpers, migrations, startup, sync
+from dashboard.core import backups, db, helpers, migrations, questions, startup, sync
 from dashboard.errors import PlainError
 
 log = logging.getLogger("dashboard.restore")
@@ -364,6 +364,7 @@ def _stage(source: Path, staged: Path, data_dir: Path, loaded, tracks: dict, pre
             raise RestoreError("This copy could not be brought up to date.")
         startup.record_modules(conn, loaded)
         sync.after_restore(conn, loaded, previous, undo)
+        questions.upgrade_loaded(conn, loaded)  # a copy from before decision 0113 follows the same rule
         _turn_off_lost_helpers(conn, data_dir)
         if not db.integrity_ok(conn):
             raise RestoreError("The prepared copy failed its check.")

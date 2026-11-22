@@ -188,7 +188,7 @@ class DrillFileTests(DrillTestCase):
         self.assertIn("own_words", problems(base, tables.replace(
             'columns.own_words = { type = "longtext", sensitive = true, travels = "never" }',
             'columns.own_words = { type = "longtext" }')))
-        self.assertIn("Drills need schema = 2", problems(base.replace("schema = 2", "schema = 1")))
+        self.assertIn("Drills need schema = 2", problems(base.replace("schema = 3", "schema = 1")))
         self.assertIn("has_records must be a table", problems(base.replace(
             'has_records = "vehicles.vehicles"', 'has_records = "vehicles"')))
 

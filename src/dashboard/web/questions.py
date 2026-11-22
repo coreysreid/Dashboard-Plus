@@ -16,6 +16,8 @@ FILTERS = {"to_look_at": "To look at", "looked_at": "Looked at", "review": "Revi
 ANSWER_WORDS = {"yes": "Yes", "not_relevant": "Not relevant", "not_yet": "Not yet"}
 # The same words wherever a question comes back; they never repeat what a record says.
 REVIEW_WORDS = {"record_changed": "The record you used for this answer changed. Does your answer still fit?",
+                "record_missing": "The record you used for this answer is no longer available. Does your answer "
+                                  "still fit?",
                 "due": "It is time to look at your answer again. Does it still fit?"}
 
 

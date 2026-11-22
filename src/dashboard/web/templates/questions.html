@@ -33,7 +33,7 @@
     <li><a href="/questions/{{ module }}/{{ q.prompt.id }}">{{ q.prompt.question }}</a>
       <span class="muted">
       {% if q.state == "does_not_fit" %}Does not fit your settings{% if q.answer %} (your earlier answer is kept){% endif %}
-      {% elif q.state == "review" %}Review again{% if q.review_reason == "record_changed" %}: the record you used changed{% endif %}
+      {% elif q.state == "review" %}Review again{% if q.review_reason == "record_changed" %}: the record you used changed{% elif q.review_reason == "record_missing" %}: the record you used is no longer available{% endif %}
       {% elif q.state == "looked_at" %}{{ answer_words[q.answer.answer] }}, {{ show_date(q.answer.answered_on, style) }}
       {% else %}To look at{% endif %}</span></li>
     {% endfor %}

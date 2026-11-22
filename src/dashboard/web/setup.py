@@ -3,7 +3,7 @@ from __future__ import annotations
 
 from flask import Blueprint, current_app, g, redirect, render_template, request, url_for
 
-from dashboard.core import checklist, records, settings
+from dashboard.core import checklist, questions, records, settings
 from datetime import datetime
 
 from dashboard.core import backups
@@ -237,6 +237,10 @@ def _save(form, mode: str):
         values["household.timezone"] = form.get("timezone")[:64]
     for key, value in values.items():
         settings.put(conn, key, value)
+    going_off = settings.enabled_modules(conn) - chosen_modules
+    if going_off:  # decision 0113: an answer kept with their records keeps asking again once they are back
+        questions.modules_switching_off(records.Records(conn, current_app.config["REGISTRY_FOR_REQUEST"]()),
+                                        going_off)
     for module in current_app.config["LOADED"]:
         settings.set_module_enabled(conn, module.name, module.name in chosen_modules)
     if mode == "setup":

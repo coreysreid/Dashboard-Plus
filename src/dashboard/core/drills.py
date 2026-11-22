@@ -151,12 +151,13 @@ def run_answers(conn: sqlite3.Connection, prompt_set: PromptSet, run_id: int) ->
 
 def record_changed(conn: sqlite3.Connection, registry: dict[str, TableInfo], prompt_set: PromptSet,
                    answer: dict) -> bool:
-    """True when the record chosen at a step changed, moved, was deleted or stopped matching since."""
+    """True when a field the step lists in ask_again changed on the record chosen there, or the record was deleted,
+    stopped matching or its module was switched off since (decision 0113, the same rule as a question's)."""
     step = prompt_set.step(answer["step"])
     if not answer.get("record") or step is None:
         return False
-    same = [c for c in questions.candidates(conn, registry, step) if c.key == answer["record"]]
-    return not same or same[0].check != answer.get("record_check")
+    return questions.record_review(questions.candidates(conn, registry, step), answer["record"],
+                                   answer.get("record_check")) is not None
 
 
 def overview(conn: sqlite3.Connection, registry: dict[str, TableInfo], prompt_set: PromptSet,
