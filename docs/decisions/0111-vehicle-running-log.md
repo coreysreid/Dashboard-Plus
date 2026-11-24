@@ -3,6 +3,9 @@
 - **Status:** Accepted
 - **Date:** 2026-11-21
 - **Decided by:** Claude (technical decision delegated by Corey)
+- **Amended 2026-11-24 by Corey:** quote amounts and what a quote includes now travel to the household's paired
+  computers (`travels = "always"`); they stay private (hidden until Show, off lists, sheets, export and helpers).
+  Notes still stay on the computer where they were typed.
 - **Builds on:** 0058 (Vehicles), 0059 (private details), 0075 (`not_before`), 0100 (what travels), 0109 (dots
   charts), Lane B's draft `workbench/drafts/vehicle_running/` (batch 20 item 91; now removed, in git history)
 
