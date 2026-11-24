@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import argparse
+import hashlib
 import re
 import sys
 from dataclasses import dataclass
@@ -31,6 +32,22 @@ PLACEHOLDER_HINTS = (
     "example", "your", "xxxx", "changeme", "placeholder", "<", "dummy",
     "sample", "redacted", "token_here",
 )
+
+# The project owner's and household's own names, stored only as SHA-256 fingerprints of the lower-case
+# word so this public file never contains them. Write "User 1" and "User 2" instead (AGENTS.md).
+PROTECTED_WORD_HASHES = frozenset({
+    "d04baed6caa39c30437152ad7397ba610259357c44130915f141501479d99dca",
+    "48d4a7bd3a31b5c7366c7b75e6e9d718066dad5f5ac4516026ad393b0406be36",
+    "1720b5bf165cebe26e75c6c392a61a1aed38f32e44e806c502cc90894fef93fd",
+    "6446d58d6dfafd58586d3ea85a53f4a6b3cc057f933a22bb58e188a74ac8f663",
+})
+WORD = re.compile(r"[A-Za-z]+")
+
+
+def protected_word(word: str) -> bool:
+    """True if this word is one of the household's own names."""
+    return hashlib.sha256(word.lower().encode()).hexdigest() in PROTECTED_WORD_HASHES
+
 
 # Patterns are written so that this file does not match them itself.
 SECRET_PATTERNS = [
@@ -124,6 +141,9 @@ def check_text(path: str, text: str) -> list[Finding]:
             for match in pattern.finditer(line):
                 if match.group(1).lower() not in PLACEHOLDER_USERS:
                     problems.append(Finding(path, number, f"personal path ({label})", mask(match.group(0))))
+        for word in WORD.findall(line):
+            if protected_word(word):
+                problems.append(Finding(path, number, "a household name (write User 1 or User 2)", mask(word)))
         for match in EMAIL.finditer(line):
             if match.group(1).lower() not in PLACEHOLDER_EMAIL_DOMAINS:
                 problems.append(Finding(path, number, "real-looking email address", mask(match.group(0))))

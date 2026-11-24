@@ -22,6 +22,12 @@ def scan_files(files: dict[str, str | bytes]):
 
 
 class PrivacyCheckTests(unittest.TestCase):
+    def test_a_household_name_is_flagged_but_user_1_is_not(self):
+        name = "".join(chr(c) for c in (67, 111, 114, 101, 121))  # built at run time so this file holds no name
+        found = check_privacy.check_text("a.md", f"Asked by {name} today.")
+        self.assertTrue(any("household name" in f.reason for f in found))
+        self.assertFalse(check_privacy.check_text("a.md", "Asked by User 1 today. See coreysreid/Dashboard-Plus."))
+
     def test_clean_files_pass(self):
         self.assertEqual(scan_files({"a.md": "Nothing private here.\n", "src/b.py": "x = 1\n"}), [])
 
