@@ -15,6 +15,7 @@
 | records.py | Create, change, delete and read records, checking every value and keeping a history. | changing how records are saved or checked |
 | prompts.py | Read and check a module's prompts.toml: "Have you thought about…?" questions, their groups, exact record matches and "Think it through" drills. | changing what prompts.toml may say |
 | drills.py | Think it through: which drills fit the household, what each step may find in its records, and the practice runs kept with their dates. | changing how drills fit, cite sources, save runs or keep own words private |
+| exit_sketch.py | The way-out sketch's facts: rooms by floor, recorded connections and doors to outside, and what still needs checking. | changing what the way-out sketch reads, its route words or Check together |
 | questions.py | Which "Have you thought about…?" questions fit the household, what may already be recorded, and how many were looked at. | changing how questions fit, match records, come back or are counted |
 | settings.py | Read and write household settings kept in the database (core__settings). | storing a new setting |
 | schema.py | Turn a module's declared tables into SQL, and work out its next migration. | changing how tables are built |

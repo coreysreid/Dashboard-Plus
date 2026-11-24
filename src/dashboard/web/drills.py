@@ -6,7 +6,7 @@ from urllib.parse import urlencode
 
 from flask import Blueprint, abort, current_app, redirect, render_template, request, url_for
 
-from dashboard.core import dates, drills, questions, records
+from dashboard.core import dates, drills, exit_sketch, questions, records
 from dashboard.core.records import ValidationError
 from dashboard.web import display
 from dashboard.web.questions import ANSWER_WORDS, candidate_view
@@ -14,6 +14,7 @@ from dashboard.web.setup import HAZARDS
 
 drill_pages = Blueprint("drills", __name__)
 # The same words wherever a chosen record changed; they never repeat what the record says.
+SKETCH_TABLES = ("stock.connections", "home_layout.exits")  # steps about ways out show the sketch's link
 CHANGED_WORDS = "A record you chose for this practice changed since. Look at this step again when you have time."
 
 
@@ -141,6 +142,12 @@ def _add_link(store, step) -> dict | None:
     return {"href": href + ("?" + urlencode(prefill) if prefill else ""), "title": display.table_title(info)}
 
 
+def _sketch_link(store, step) -> bool:
+    """A step about ways out links to the way-out sketch (decision 0118) while Set up my home's rooms are on."""
+    about = step.match.table if step.match is not None else None
+    return about in SKETCH_TABLES and exit_sketch.ready_to_read(store.registry)
+
+
 def _render_step(prompt_set, scenario, run, number: int, errors: dict | None = None, values: dict | None = None,
                  status: int = 200):
     steps = _steps(prompt_set, scenario)
@@ -159,6 +166,7 @@ def _render_step(prompt_set, scenario, run, number: int, errors: dict | None = N
         "drill_step.html", run=run, step=step, number=number, total=len(steps),
         shared=prompt_set.is_shared(step.id), shared_answer=shared, answer_words=ANSWER_WORDS,
         candidates=candidate_view(store, q, display.Formatter(store)), add=_add_link(store, step),
+        sketch=_sketch_link(store, step),
         supply=supply, saved=saved, changed=bool(saved and drills.record_changed(
             store.conn, store.registry, prompt_set, saved)), changed_words=CHANGED_WORDS,
         steps_table=drills.steps_table(prompt_set), choice_words=drills.CHOICE_WORDS,

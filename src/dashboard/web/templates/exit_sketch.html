@@ -1,0 +1,141 @@
+{% extends "base.html" %}
+{% import "_exit_parts.html" as parts %}
+{% block title %}Our way-out sketch · Dashboard Plus{% endblock %}
+{% block body %}
+{{ parts.styles() }}
+<style>
+  .sketch-scroll { overflow-x: auto; max-width: 100%; border: 1px solid var(--line); border-radius: 6px; padding: .5rem; background: var(--card); }
+  .sketch-scroll .sketch-svg { width: 600px; max-width: none; }
+  .sketch-scroll:focus { outline: 3px solid var(--accent); outline-offset: 2px; }
+  .sk-rooms { list-style: none; padding: 0; margin: 0; display: grid; gap: .6rem; grid-template-columns: repeat(auto-fill, minmax(min(100%, 18rem), 1fr)); }
+  .sk-rooms li { border: 1px solid var(--line); border-radius: 6px; padding: .5rem .6rem; }
+  .sk-rooms fieldset { border: 0; padding: 0; margin: 0; min-width: 0; }
+  .sk-rooms legend { font-weight: 600; padding: 0; overflow-wrap: anywhere; }
+  .sk-rooms label.tick { font-weight: 400; display: block; margin: .3rem 0; }
+  .sk-rooms select { max-width: 100%; }
+</style>
+<p class="muted"><a href="/">Home</a> · <a href="/set-up-home">Set up my home</a></p>
+<h1>{{ f.TITLE if ready else "Our way-out sketch" }}</h1>
+{% if not ready %}
+<div class="card"><p style="margin-top:0">The sketch is drawn from the rooms and connections in <strong>Household stock</strong>, which is switched off,
+so it cannot show your current rooms or ways out. Switch it on in <a href="/settings">Settings</a>.</p></div>
+{% else %}
+<p class="lead">{{ f.INTRO }}</p>
+{% if notice %}<p class="notice" role="status">{{ {"rooms": "Saved the rooms.", "doors": "Saved where the doors to outside lead.", "household": "Saved the household's answers.", "reviewed": "Marked as reviewed by the household today."}.get(notice, "Saved.") }}</p>{% endif %}
+{% if problem %}<p class="problem" role="alert">{{ problem }}</p>{% endif %}
+{{ parts.status(sketch, reviewed_words) }}
+{{ parts.warnings(sketch, f) }}
+
+<div class="actions">
+  <a class="button" href="/set-up-home" id="review-rooms">Review rooms and ways out</a>
+  <a href="#household">Add meeting place</a>
+</div>
+
+<section aria-labelledby="draw-h">
+  <h2 id="draw-h">The drawing</h2>
+  <p class="muted">Boxes are rooms, lines are the connections you recorded. On a small screen the drawing scrolls sideways inside its box.</p>
+  <div class="sketch-scroll" role="region" aria-label="Way-out sketch drawing" tabindex="0">
+    {% for b in blocks %}{{ b.svg }}{% endfor %}
+  </div>
+  <p><a href="#as-text" id="read-as-text">Read the connections as text</a></p>
+</section>
+
+<h2>Print</h2>
+<p><strong>{{ f.LAYOUT_WARNING }}</strong></p>
+{% if pages > 1 %}<p id="pages-needed">This sketch needs {{ pages }} pages to show every recorded place and connection. Print all pages or choose the text version.</p>{% endif %}
+<div class="actions">
+  <a class="button" href="/exit-sketch/print?paper=a4" id="print-a4">Print the sketch (A4)</a>
+  <a class="button quiet" href="/exit-sketch/print?paper=letter">Print the sketch (Letter)</a>
+  <a class="button quiet" href="/exit-sketch/text" id="print-text">Print as text</a>
+</div>
+
+{{ parts.legend() }}
+
+<section id="check" aria-labelledby="check-h">
+  <h2 id="check-h">Check together</h2>
+  {{ parts.checks(sketch) }}
+  <form method="post" action="/exit-sketch/reviewed">
+    <input type="hidden" name="_csrf" value="{{ csrf_token }}">
+    <button type="submit" id="mark-reviewed">We reviewed this sketch together today</button>
+    <p class="help">Only once every fact above says Recorded. Ready to print for practice means the facts were entered, never that a route is safe.</p>
+  </form>
+</section>
+
+<section id="as-text" aria-labelledby="as-text-h">
+  <h2 id="as-text-h">The sketch as text</h2>
+  <p class="muted">The same rooms, connections and facts as the drawing, in order. Each line opens its record.</p>
+  {{ parts.as_text(sketch, f) }}
+</section>
+
+<section id="rooms" aria-labelledby="rooms-h">
+  <h2 id="rooms-h">Rooms on the sketch</h2>
+  <form class="record" method="post" action="/exit-sketch/rooms">
+    <input type="hidden" name="_csrf" value="{{ csrf_token }}">
+    <p class="help">Give each room or area its floor. Choose Leave off the sketch for places that are not part of the home, like the car. Storage spots stay off the sketch.</p>
+    <ul class="sk-rooms">
+      {% for room in sketch.rooms %}
+      <li><fieldset><legend>{{ room.name }}</legend>
+        <label for="floor-{{ room.id }}">Floor</label>
+        <select id="floor-{{ room.id }}" name="floor-{{ room.id }}">
+          <option value="" {% if not room.floor %}selected{% endif %}>Floor not given</option>
+          {% for key, words in floor_choices %}<option value="{{ key }}" {% if room.floor == key %}selected{% endif %}>{{ words }}</option>{% endfor %}
+        </select>
+        <label class="tick"><input type="checkbox" name="sleeping-{{ room.id }}" value="yes" {% if room.sleeping %}checked{% endif %}> Someone sleeps here</label>
+        <label class="tick"><input type="checkbox" name="window-{{ room.id }}" value="yes" {% if room.window %}checked{% endif %}> Possible window exit, checked locally</label>
+      </fieldset></li>
+      {% endfor %}
+      {% for p in sketch.left_off %}
+      <li><fieldset><legend>{{ p.name }}</legend>
+        <label for="floor-{{ p.id }}">Floor</label>
+        <select id="floor-{{ p.id }}" name="floor-{{ p.id }}">
+          <option value="">Floor not given</option>
+          {% for key, words in floor_choices %}<option value="{{ key }}" {% if key == f.LEFT_OFF %}selected{% endif %}>{{ words }}</option>{% endfor %}
+        </select>
+      </fieldset></li>
+      {% endfor %}
+    </ul>
+    {% if sketch.rooms or sketch.left_off %}
+    <p class="help">Tick a window only after your household has checked it with local fire guidance; it is never worked out for you.</p>
+    <div><button type="submit" id="save-rooms">Save rooms</button></div>
+    {% else %}<p class="muted">No rooms yet. <a href="/set-up-home">Add rooms in Set up my home</a>.</p>{% endif %}
+  </form>
+</section>
+
+<section id="doors" aria-labelledby="doors-h">
+  <h2 id="doors-h">Where each door to outside leads</h2>
+  {% if doors %}
+  <form class="record" method="post" action="/exit-sketch/doors">
+    <input type="hidden" name="_csrf" value="{{ csrf_token }}">
+    <p class="help">A door to a balcony, an enclosed yard or a shared corridor might not reach safety. Choose Outside only once your household has checked it.</p>
+    {% for room, link in doors %}
+    <div><label for="destination-{{ link.id }}">{{ room.name }}: door to outside{% if link.other_name %} (into {{ link.other_name }}){% endif %}</label>
+      <select id="destination-{{ link.id }}" name="destination-{{ link.id }}">
+        {% for key, words in destination_choices %}<option value="{{ key }}" {% if (destinations.get(link.id) or "") == key or (key == "" and destinations.get(link.id) == "check") %}selected{% endif %}>{{ words }}</option>{% endfor %}
+      </select></div>
+    {% endfor %}
+    <div><button type="submit" id="save-doors">Save where they lead</button></div>
+  </form>
+  {% else %}<p class="muted">No door to outside is recorded yet. <a href="/set-up-home">Add one in Set up my home</a> (choose Outside under Connects to).</p>{% endif %}
+</section>
+
+<section id="household" aria-labelledby="household-h">
+  <h2 id="household-h">Meeting place, help and your building</h2>
+  <form class="record" method="post" action="/exit-sketch/household">
+    <input type="hidden" name="_csrf" value="{{ csrf_token }}">
+    <div><label for="meeting_place">Outside meeting place</label>
+      <input type="text" id="meeting_place" name="meeting_place" maxlength="{{ f.MEETING_LIMIT }}" value="{{ sketch.meeting }}">
+      <p class="help">Broad words everyone recognises, like "Letterbox at the front path". No address needed. It prints on the sketch.</p></div>
+    <fieldset><legend>Does anyone need help to leave?</legend>
+      <p class="help" style="margin-top:0">Talk about it privately. No names or health details go on the sketch.</p>
+      {% for key, words in f.HELP.items() %}<label class="tick" style="font-weight:400;display:block"><input type="radio" name="help" value="{{ key }}" {% if sketch.help == key %}checked{% endif %}> {{ words }}</label>{% endfor %}
+    </fieldset>
+    <fieldset><legend>What does your building tell residents to do in a fire?</legend>
+      <p class="help" style="margin-top:0">For a flat or shared building. The sketch cannot choose leave or stay put for you.</p>
+      {% for key, words in f.BUILDING.items() %}<label class="tick" style="font-weight:400;display:block"><input type="radio" name="building" value="{{ key }}" {% if sketch.building == key %}checked{% endif %}> {{ words }}</label>{% endfor %}
+    </fieldset>
+    <div><button type="submit" id="save-household">Save answers</button></div>
+  </form>
+</section>
+<p class="muted">{{ f.FOOTER }}</p>
+{% endif %}
+{% endblock %}

@@ -115,7 +115,6 @@ the "Requests" table of docs/WORKSTREAMS.md.
 | Batch 20 item 90: medicine doses | ready for PR | lane-b/batch20-item90 | Dose data, privacy and member-travel design; no loadable schema until the private medication picker is safe. |
 | Batch 20 item 91: vehicle running log | ready for PR | lane-b/batch20-item91 | Loadable reading/estimate draft, three invented examples, careful due wording and eight checks. |
 | Batch 20 item 92: purchase and price history | ready for PR | lane-b/batch20-item92 | Stock purchase contract, exact form and Review words, cost coverage rule and eleven checks. |
-| Batch 20 item 93: simple exit map | ready for PR | lane-b/batch20-item93 | NSW and London fire guidance checked, minimal map input, privacy and flat limits, nine checks. |
 | Batch 20 item 94: moving in with a helper | acted on by Lane A (decision 0112): traps 1 to 6, 10 and 11 in the guide or core; draft kept | lane-b/batch20-item94 | Invented end-to-end checklist, 13 ranked remaining traps and nine checks after reading the generated guide. |
 | Batch 20 item 95: Think it through drills | ready for PR | lane-b/batch20-item95 | Eight original sourced scenarios, exact record/missing maps, practice state and twelve checks. |
 | Batch 20 item 96: routine checklists | promoted by Lane A to Things to do and modules/routines (decision 0107) | lane-b/batch20-item96 | Four time windows, source-owned ticks, missed/repeat behavior, eleven checks (automated); seasonal questions still to come; the draft folder is in git history. |
@@ -126,7 +125,7 @@ the "Requests" table of docs/WORKSTREAMS.md.
 | Batch 21 item 101: Queensland pack sources | ready for PR | lane-b/batch21-item101 | Eight official-source rows mapped to prompts/drills, with checked dates, reuse limits and water-scope distinction. |
 
 | Batch 21 item 102: optional module links | promoted by Lane A to core `optional_requires`; Utilities now only optionally needs Home layout (decision 0115) | lane-b/batch21-item102 | Household words, dependency contract and the checks that apply before Bills are automated; Bills still waits for item 105; the draft folder is in git history. |
-| Batch 21 item 103: exit sketch on paper | ready for PR | lane-b/batch21-item103 | One-page layout, printed legend, complete text alternative, overflow rule and eight paper checks. |
+| Batch 20 item 93 and batch 21 item 103: exit map and paper sketch | promoted by Lane A as Our way-out sketch (decision 0118) | lane-b/batch20-item93, lane-b/batch21-item103 | Drawing, text version and numbered sheet built from Set up my home; the draft folder is in git history. |
 | Batch 21 item 104: helper starting words | built by Lane A (decision 0116); draft kept for the remaining core gates | lane-b/batch21-item104 | Four ranked exact guide/connector replacements after decision 0112, with invented checks. |
 | Batch 21 item 105: one insurance renewal | ready for PR | lane-b/batch21-item105 | Household choice, exact old-ID mapping, one watch owner, reverse transfer and nine checks. |
 

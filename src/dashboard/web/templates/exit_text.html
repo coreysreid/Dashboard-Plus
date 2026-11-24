@@ -1,0 +1,41 @@
+{% extends "base.html" %}
+{% import "_exit_parts.html" as parts %}
+{% block title %}Way-out sketch as text · Dashboard Plus{% endblock %}
+{% block body %}
+{{ parts.styles() }}
+<style>
+  .sk-textpage { font-size: 1.05rem; line-height: 1.5; }
+  .sk-textpage h1 { font-size: 1.4rem; }
+  .sk-running { display: none; }
+  @page { margin: 14mm 12mm; }
+  @media print {
+    header, footer, .no-print { display: none !important; }
+    body { background: #fff; color: #000; font-size: 11pt; }
+    main { padding: 0; max-width: none; }
+    .sk-running { display: block; position: fixed; top: 0; right: 0; font-size: 9pt; font-weight: 700; }
+    .sk-textpage { padding-top: 12pt; }
+    .sk-text li { break-inside: avoid; }
+    a { color: #000; text-decoration: none; }
+  }
+</style>
+<div class="no-print">
+  <p class="muted"><a href="/">Home</a> · <a href="/exit-sketch">Our way-out sketch</a></p>
+  <p><strong>{{ f.LAYOUT_WARNING }}</strong></p>
+  <div class="actions"><button type="button" onclick="window.print()">Print</button>
+    <a href="/exit-sketch/print?paper=a4">Print the drawing instead</a></div>
+</div>
+<p class="sk-running" aria-hidden="true">{{ f.DRAFT_MARK }}</p>
+<div class="sk-textpage">
+  <p><strong>{{ f.DRAFT_MARK }}</strong></p>
+  <h1>{{ f.PRINT_TITLE }}</h1>
+  {% if reviewed_words %}<p>Reviewed by household on {{ reviewed_words }}{% if sketch.changed_since_review %}; changed since then, so review it again{% endif %}.</p>{% else %}<p>Not reviewed yet.</p>{% endif %}
+  <p>{% if sketch.ready %}Ready to print for practice.{% else %}Draft: some facts need checking.{% endif %} Printed {{ printed }}.</p>
+  {{ parts.warnings(sketch, f) }}
+  <h2>Rooms and connections, floor by floor</h2>
+  {{ parts.as_text(sketch, f, links=False) }}
+  {{ parts.facts_box(sketch, f) }}
+  <h2>Check together</h2>
+  {{ parts.checks(sketch) }}
+  <p>{{ f.FOOTER }}</p>
+</div>
+{% endblock %}
