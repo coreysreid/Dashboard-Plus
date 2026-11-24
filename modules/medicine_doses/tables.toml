@@ -30,3 +30,13 @@ add = "Record a dose"
 sheet = "Dose history"
 caveat = "A record of doses entered here, not a schedule or advice. It never says a dose was missed: check the pack or care instructions."
 repeat = { minutes = 120, same = ["medication"], form = "A dose of this medicine is already recorded for this person near this time. Check both before saving.", keep = "Keep this as another dose" }
+
+# A month calendar of one person's doses by the household's own day (decision 0121): a day with doses shows ● and
+# how many, never which medicine, how much, a state, or anything due or missed. The table is private, so the
+# calendar's day list says only how many until a person presses Show on the calendar or the day page.
+[tables.doses.calendar]
+when = "given_at"
+per = "recipient"
+show = "one"
+title = "Dose calendar"
+entry = ["dose", "doses"]

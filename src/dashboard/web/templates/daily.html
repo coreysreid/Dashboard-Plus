@@ -19,10 +19,10 @@
 {% else %}<form method="post" action="/daily/{{ table }}" class="actions">{# a pressed button, never a link (decision 0071) #}
   <input type="hidden" name="_csrf" value="{{ csrf_token }}">
   <input type="hidden" name="subject" value="{{ view.subject_id }}"><input type="hidden" name="day" value="{{ view.day }}">
-  <button type="submit" class="quiet" data-show-details>Show details</button> <span class="muted">Shows what was given and how much, on this page only.</span>
+  <button type="submit" class="quiet" data-show-details>Show details</button> <span class="muted">Shows what was given, how much and who gave it, on this page only.</span>
 </form>{% endif %}{% endif %}
 {% include "_daily_private_panel.html" %}
-<p><a href="{{ view.subject_href }}">{{ view.name }}'s page</a></p>
+<p>{% if view.calendar %}<a href="{{ view.calendar }}">See the month as a calendar</a> · {% endif %}<a href="{{ view.subject_href }}">{{ view.name }}'s page</a></p>
 {% else %}
 {% include "_daily_panel.html" %}
 <p>{% if view.calendar %}<a href="{{ view.calendar }}">See the month as a calendar</a> · {% endif %}<a href="{{ view.sheet }}">Print: {{ view.rule.sheet }} (last 14 days, or dates you choose)</a> · <a href="{{ view.subject_href }}">{{ view.name }}'s page</a></p>

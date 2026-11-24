@@ -24,13 +24,23 @@
   {% for l in cal.legend %}<li><span class="cal-chip cal-{{ l.look }}" aria-hidden="true">{{ l.symbol }}</span> {{ l.words }}</li>{% endfor %}
   <li><span class="cal-chip cal-empty" aria-hidden="true">&nbsp;</span> {{ cal.blank }}</li>
 </ul>
+{% if cal.private %}{# private history (decision 0121): ● and how many until a pressed Show, never a link #}
+{% if cal.show %}{% if cal.hide %}<p><a class="button quiet" href="{{ cal.hide }}" data-hide-details>Hide details</a></p>{% endif %}
+{% elif cal.days %}<p class="muted" data-private-words>{{ cal.private_words }}</p>
+{% if cal.show_action %}<form method="post" action="{{ cal.show_action }}" class="actions">
+  <input type="hidden" name="_csrf" value="{{ csrf_token }}">
+  {% if cal.subject_id is not none %}<input type="hidden" name="subject" value="{{ cal.subject_id }}">{% endif %}
+  <input type="hidden" name="month" value="{{ cal.month }}">
+  <button type="submit" class="quiet" data-show-calendar>Show</button> <span class="muted">Shows each day's entries, on that page only.</span>
+</form>{% endif %}{% endif %}
+{% endif %}
 <details class="cal-list"{% if open_list %} open{% endif %}>
   <summary>{{ cal.heading }} in words, day by day</summary>
   {% if cal.days %}
   <ol>
     {% for d in cal.days %}
     <li id="{{ d.anchor }}"><strong>{{ d.day }}</strong>: {{ d.summary }}{% if d.day_href %} · <a href="{{ d.day_href }}">See this day</a>{% endif %}
-      <ul>{% for i in d.marks %}<li><span class="cal-chip cal-{{ i.look }}" aria-hidden="true">{{ i.symbol }}</span> <a href="{{ i.href }}">{{ i.words }}</a></li>{% endfor %}</ul>
+      {% if d.marks %}<ul>{% for i in d.marks %}<li><span class="cal-chip cal-{{ i.look }}" aria-hidden="true">{{ i.symbol }}</span> <a href="{{ i.href }}">{{ i.words }}</a></li>{% endfor %}</ul>{% endif %}
     </li>
     {% endfor %}
   </ol>

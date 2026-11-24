@@ -760,9 +760,15 @@ As it prints: every entry of the last 14 days with each day's totals by unit, an
 
 ### Medicine given, one person's day
 
-Medicine doses: how many doses and when, with who gave them; the medicine and amounts stay hidden until Show details, and nothing says a dose was missed.
+Medicine doses: how many doses and when; the medicine, amounts and who gave them stay hidden until Show details, and nothing says a dose was missed.
 
 ![Medicine given, one person's day](screenshots/garcia/18zd-doses.png)
+
+### Dose calendar, on a phone
+
+One person's month at 320 pixels wide: a day with doses shows ● and how many, never which medicine or how much; Show lists each day's doses.
+
+![Dose calendar, on a phone](screenshots/garcia/18ze-dose-calendar-phone.png)
 
 ### Needs attention
 

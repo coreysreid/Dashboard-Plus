@@ -113,7 +113,10 @@ def path_name(info: TableInfo, rows_by_id: dict, row: dict) -> str:
 
 
 def display_name(info: TableInfo, row: dict, records: Records | None = None) -> str:
-    """A short human name for a record, used wherever another record links to it."""
+    """A short human name for a record, used wherever another record links to it. A record of a private table is
+    only its list and number, "Medicine doses #4", so its name never carries what it holds (decision 0121)."""
+    if info.table.private:
+        return f"{table_title(info)} #{row['id']}"
     if info.table.record_name and records is not None:
         return naming.record_name(records.conn, records.registry, info, row)  # "3 tins of Kidney beans"
     column = name_column(info)

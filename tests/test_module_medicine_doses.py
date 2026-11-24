@@ -302,7 +302,8 @@ class DayAndRepeatTests(DoseTestCase):
         self.dose(at="2026-11-20T08:00:00", amount=AMOUNT, unit="drop")
         page = self.page(f"/t/people__people/{self.rosa}", client)
         self.assertIn("1 dose entry recorded today", page)
-        self.assertIn("8:00 am · dose · Who gave it: Maria Garcia", page)
+        self.assertIn(">8:00 am · dose</a>", page)  # when only: the giver waits for Show too (decision 0121)
+        self.assertNotIn("Who gave it", page)
         self.assertNotIn(AMOUNT, page)
         link = re.search(r'href="([^"]+)" data-add-entry>Record a dose<', page).group(1).replace("&amp;", "&")
         args = {k: v[0] for k, v in parse_qs(urlparse(link).query).items()}

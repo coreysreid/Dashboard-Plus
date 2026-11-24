@@ -318,7 +318,7 @@ def candidates(conn: sqlite3.Connection, registry: dict[str, TableInfo], prompt:
             return []
     reader, found = _Reader(conn, registry), []
     for raw in conn.execute(f"SELECT * FROM {info.name} WHERE deleted_at IS NULL ORDER BY id"):
-        row, touched, private, ok = dict(raw), set(), False, True
+        row, touched, private, ok = dict(raw), set(), info.table.private, True  # a private list: only that one exists (0121)
         touched.add(_stamp(info.name, row))
         for path, wanted in match.where.items():
             column, value, present = reader.value(info, row, path, touched)

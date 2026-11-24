@@ -125,11 +125,31 @@ class Words:
                 "href": f"/t/{self.info.name}/{mark.record_id}"}
 
 
-def month_view(store: records.Records, info, year: int, month: int, today: date, subject_id: int | None = None,
-               link=None, full_href: str | None = None) -> dict:
-    """Everything one calendar shows for one month: the grid, the legend, the summary and the same days in words.
-    `link(year, month)` makes the Previous month and Next month addresses."""
+PRIVATE_WORDS = "Private history — press Show to see it."
+
+
+def _private_lines(store: records.Records, info, subject_id: int | None, first: date, last: date) -> dict:
+    """After Show on a private calendar (decision 0121): each entry's line by its household day, from the private
+    daily log when it has one ("8:00 am · dose · the medicine · 1 tablet · Who gave it: ..."), else None."""
+    from dashboard.web import private_daily
     rule = info.table.calendar
+    if not info.table.daily or subject_id is None or info.table.daily["per"] != rule["per"]:
+        return {}
+    formatter = display.Formatter(store)
+    zone = daily.household_zone(store.conn)
+    found = {}
+    for result in daily.days(store.conn, info, subject_id, first.isoformat(), last.isoformat(), zone):
+        found[result.day] = {e["id"]: private_daily.line(store, info, e, formatter, True) for e in result.entries}
+    return found
+
+
+def month_view(store: records.Records, info, year: int, month: int, today: date, subject_id: int | None = None,
+               link=None, full_href: str | None = None, show: bool = False, show_action: str | None = None) -> dict:
+    """Everything one calendar shows for one month: the grid, the legend, the summary and the same days in words.
+    `link(year, month)` makes the Previous month and Next month addresses. A private table (decision 0121) shows
+    only ● and how many each day until `show`, a person's pressed Show: no times, names, amounts or record links."""
+    rule = info.table.calendar
+    private = info.table.private
     words = Words(store, info)
     style = dates.household_style(store.conn)
     first_day = week_start(store.conn)
@@ -137,7 +157,8 @@ def month_view(store: records.Records, info, year: int, month: int, today: date,
     cal_id = f"cal-{info.name}" + (f"-{subject_id}" if subject_id is not None else "")
     name = words.subject(subject_id) if subject_id is not None else None
     totals_by_day = {}
-    if info.table.daily and subject_id is not None and rule["show"] == "one" and info.table.daily["per"] == rule["per"]:
+    lines = _private_lines(store, info, subject_id, found.days[0].day, found.days[-1].day) if private and show else {}
+    if not private and info.table.daily and subject_id is not None and rule["show"] == "one" and info.table.daily["per"] == rule["per"]:
         last = found.days[-1].day.isoformat()  # food put out by unit, never added across units (decision 0110)
         zone = daily.household_zone(store.conn)
         for result in daily.days(store.conn, info, subject_id, found.days[0].day.isoformat(), last, zone):
@@ -164,10 +185,19 @@ def month_view(store: records.Records, info, year: int, month: int, today: date,
                 day_href = None
                 if info.table.daily and subject_id is not None and rule["show"] == "one":
                     day_href = f"/daily/{info.name}?" + urlencode({"subject": subject_id, "day": cell.day.isoformat()})
+                if private and not show:  # counts only: no time, name or link to a record (decision 0121)
+                    marks = []
+                elif private and cell.day.isoformat() in lines:
+                    shown = lines[cell.day.isoformat()]
+                    marks = [{"look": m.look, "symbol": calendars.SYMBOLS[m.look], "href": f"/t/{info.name}/{m.record_id}",
+                              "words": shown.get(m.record_id) or words.item(m, today, style)["words"]}
+                             for m in cell.marks]
+                else:
+                    marks = [words.item(m, today, style) for m in cell.marks]
                 listed.append({"anchor": anchor, "day": _short_day(cell.day, style) + (" (today)" if cell.day == today
                                                                                        else ""),
                                "summary": said + (f" · {extra}" if extra else ""), "day_href": day_href,
-                               "marks": [words.item(m, today, style) for m in cell.marks]})
+                               "marks": marks})
         weeks.append(row)
     order = calendars.weekday_order(first_day)
     heading = month_words(year, month)
@@ -197,7 +227,10 @@ def month_view(store: records.Records, info, year: int, month: int, today: date,
             "next": link(next_y, next_m) if link and (next_y, next_m) <= latest else None,
             "next_words": month_words(next_y, next_m),
             "this_month": link(today.year, today.month) if link and (year, month) != (today.year, today.month) else None,
-            "full": full_href}
+            "full": full_href, "private": private, "show": show, "private_words": PRIVATE_WORDS,
+            "show_action": show_action if private else None, "subject_id": subject_id,
+            "month": f"{year:04d}-{month:02d}",
+            "hide": link(year, month) if private and show and link else None}
 
 
 def _href(path: str, **args):
@@ -211,21 +244,46 @@ def record_panels(store: records.Records, subject_info, record: dict) -> list[di
     """On a record's own page (a pet, a routine): this month's calendar of what was recorded for it."""
     panels = []
     for info in calendars.calendar_tables(store.registry, subject_info):
+        if not _applies(store, info, record["id"]):
+            continue  # a neighbour with no medication detail and no doses gets no dose calendar (decision 0121)
         today = today_for(store, info)
         path = f"/calendar/{info.name}"
         panels.append(month_view(store, info, today.year, today.month, today, record["id"],
                                  link=_href(path, subject=record["id"]),
-                                 full_href=f"{path}?" + urlencode({"subject": record["id"]})))
+                                 full_href=f"{path}?" + urlencode({"subject": record["id"]}), show_action=path))
     return panels
+
+
+def _applies(store: records.Records, info, subject_id: int) -> bool:
+    """Whether a subject has this calendar: always, except a private log that does not apply to them (0120)."""
+    if info.table.private and info.table.daily and info.table.daily["per"] == info.table.calendar["per"]:
+        from dashboard.web import private_daily
+        return private_daily.applies(store, info, subject_id)
+    return True
 
 
 def todo_calendar_tables(registry: dict) -> list:
     """Calendars that show due dates, like Routines': the ones Things to do's Calendar tab shows."""
-    return [info for info in calendars.calendar_tables(registry) if info.table.calendar.get("due")]
+    return [info for info in calendars.calendar_tables(registry)
+            if info.table.calendar.get("due") and not info.table.private]
 
 
 @calendar_pages.get("/calendar/<table>")
 def calendar_page(table):
+    return _calendar_page(table, show=False)
+
+
+@calendar_pages.post("/calendar/<table>")
+def show_calendar_page(table):
+    """Show on a private calendar (decision 0121): a pressed button with the session check, like the private sheet
+    (decision 0071), so no address, bookmark or shared link opens each day's entries. Others have nothing to show."""
+    info = _store().registry.get(table)
+    if info is None or not info.table.private:
+        abort(404)
+    return _calendar_page(table, show=True)
+
+
+def _calendar_page(table, show: bool):
     store = _store()
     info = store.registry.get(table)
     if info is None or not info.table.calendar or info not in calendars.calendar_tables(store.registry):
@@ -233,12 +291,12 @@ def calendar_page(table):
     rule = info.table.calendar
     subject_info = calendars.subject_table(store.registry, info)
     today = today_for(store, info)
-    year, month = chosen_month(request.args.get("month"), today)
+    year, month = chosen_month(request.values.get("month"), today)
     rows = [dict(r) for r in store.conn.execute(f"SELECT * FROM {subject_info.name} WHERE deleted_at IS NULL "
                                                  f"ORDER BY id")]
-    subjects = sorted(({"id": r["id"], "name": display.display_name(subject_info, r, store)} for r in rows),
-                      key=lambda s: (s["name"].lower(), s["id"]))
-    wanted = request.args.get("subject", type=int)
+    subjects = sorted(({"id": r["id"], "name": display.display_name(subject_info, r, store)} for r in rows
+                       if _applies(store, info, r["id"])), key=lambda s: (s["name"].lower(), s["id"]))
+    wanted = request.values.get("subject", type=int)
     chosen = next((s for s in subjects if s["id"] == wanted), None)
     if rule["show"] == "one" and chosen is None:
         if not subjects:
@@ -247,7 +305,8 @@ def calendar_page(table):
                                    no_subject=f"Add to {display.table_title(subject_info)} first.")
         chosen = subjects[0]
     subject_id = chosen["id"] if chosen else None
-    view = month_view(store, info, year, month, today, subject_id, link=_href(f"/calendar/{table}", subject=subject_id))
+    view = month_view(store, info, year, month, today, subject_id, link=_href(f"/calendar/{table}", subject=subject_id),
+                      show=show, show_action=f"/calendar/{table}")
     return render_template("calendar.html", title=rule["title"], view=view, subjects=subjects, chosen=chosen,
                            table=table, month=f"{year:04d}-{month:02d}", no_subject=None,
                            show_all=rule["show"] == "all",

@@ -1,0 +1,14 @@
+{% extends "base.html" %}
+{% block title %}{{ title }} · Dashboard Plus{% endblock %}
+{% block body %}
+{# One record of a private table (decision 0121), such as a medicine dose: nothing of it is in this page, not even
+   who, when or which medicine, until the person presses Show, a POST with the session check (decision 0071). #}
+<p class="muted"><a href="/">Home</a> · <a href="/t/{{ info.name }}">{{ title }}</a></p>
+<h1>{{ title }} #{{ record.id }}{% if record.deleted_at %} <span class="muted">(deleted)</span>{% endif %}</h1>
+{% if saved %}<p class="notice" role="status">Saved.</p>{% endif %}
+<p data-private-words><strong>{{ words }}</strong></p>
+<form method="post" action="/t/{{ info.name }}/{{ record.id }}/show" class="actions">
+  <input type="hidden" name="_csrf" value="{{ csrf_token }}">
+  <button type="submit" data-show-record>Show</button> <span class="muted">Shows this entry, its history and the form to change it, on this page only.</span>
+</form>
+{% endblock %}
