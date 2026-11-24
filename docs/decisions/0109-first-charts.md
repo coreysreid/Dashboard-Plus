@@ -2,7 +2,7 @@
 
 - **Status:** Accepted
 - **Date:** 2026-11-21
-- **Decided by:** Claude (technical decision delegated by Corey)
+- **Decided by:** Claude (technical decision delegated by User 1)
 - **Builds on:** 0004 (charting library, superseded here for now), 0015 (days of water), 0047 (Pets), 0059 (private details), `workbench/drafts/charts/FIRST_TWO.md` and `FIRST_TWO_ACCEPTANCE.md` (Lane B, batch 20 item 97)
 
 ## In plain words

@@ -1,13 +1,13 @@
 # Sharing with your household: three options (a design, not built)
 
-Written 18 November 2026 for Corey's question: "how can I also configure it so
+Written 18 November 2026 for User 1's question: "how can I also configure it so
 my partner can see the same database? I'd love to have a sync option, key word
 is option. The app should clearly display that it's in isolation mode or
 online. And use best practices."
 
 Nothing here is built. The decision record is
-[0081](../decisions/0081-household-sharing-options.md); it waits for Corey to
-choose. Every name, device and address below is made up: "Corey's desktop",
+[0081](../decisions/0081-household-sharing-options.md); it waits for User 1 to
+choose. Every name, device and address below is made up: "User 1's desktop",
 "Sam's laptop", "Sam's phone", `192.168.1.20`.
 
 ## 0. The short version
@@ -60,24 +60,24 @@ a switch in Settings, and every page says which mode it is in (section 5).
 Every option breaks one of these promises on purpose: A sends the records to a
 folder another computer reads (and, with OneDrive or Dropbox, to a company); B
 lets other devices on the home network talk to the program; C does both or one
-of them. So **any option needs Corey's OK** under "the privacy and security
+of them. So **any option needs User 1's OK** under "the privacy and security
 rules" in `docs/WORKSTREAMS.md`, and a fresh security review before it ships.
 
 ## 2. Option A: take turns through a shared folder
 
 ### How it works for the household
-1. Corey opens **Settings → Sharing → Share through a folder**. The page
+1. User 1 opens **Settings → Sharing → Share through a folder**. The page
    explains the one-at-a-time rule and asks for a folder that OneDrive, Dropbox
    or Syncthing keeps in step between your computers (for example a folder
    called `Dashboard Plus household` inside OneDrive).
 2. Dashboard Plus makes a checked copy of the records into that folder, with a
-   small note saying which copy is newest. Corey's own data folder, backups and
+   small note saying which copy is newest. User 1's own data folder, backups and
    helper keys stay where they are.
 3. On Sam's laptop, Sam installs Dashboard Plus, chooses **Join a shared
    household folder**, picks the same folder and types a name for the laptop.
 4. Whoever opens Dashboard Plus first "takes" the records. The other computer
-   sees: "Corey's desktop has the records open (since 7:40 pm). You can look at
-   the copy from 7:40 pm, but not change it, until Corey closes."
+   sees: "User 1's desktop has the records open (since 7:40 pm). You can look at
+   the copy from 7:40 pm, but not change it, until User 1 closes."
 5. **Save and exit** puts the records back into the shared folder and hands
    them back. A few seconds to a few minutes later (depending on the cloud
    service) Sam's laptop sees the newer copy and can take it.
@@ -129,7 +129,7 @@ backups are never put in the shared folder.
   `household.json` still shows the generation it checked out. If someone else
   has checked in since, the device does not overwrite; it puts its own copy in
   `aside/` as `household from Sam's laptop 2026-11-18 2040.db` and says so:
-  "Corey's desktop saved newer records while this laptop had them open. Your
+  "User 1's desktop saved newer records while this laptop had them open. Your
   changes from this session are kept separately. Open them on Review to copy
   anything across." Nothing is merged automatically in option A.
 - **Stale leases** (the other computer crashed, went to sleep, or lost
@@ -225,11 +225,11 @@ set-aside copy if the other computer also changed things.
 ## 3. Option B: one "home base" computer, others use a browser
 
 ### How it works for the household
-1. Corey picks a computer that is usually on at home (the "home base"), opens
+1. User 1 picks a computer that is usually on at home (the "home base"), opens
    **Settings → Sharing → Let others at home use Dashboard Plus**, and confirms
    the home network ("You are on the network called HomeNet. Only devices on
    this network can connect.").
-2. Corey makes an account for Sam: a name and a password Sam chooses on the
+2. User 1 makes an account for Sam: a name and a password Sam chooses on the
    spot (at least 8 characters; no rules about symbols).
 3. The page shows the address, for example `https://192.168.1.20:8765`, and a
    pairing code, `482 913`, valid for 5 minutes.
@@ -238,9 +238,9 @@ set-aside copy if the other computer also changed things.
    After checking, Sam continues, types the pairing code, then Sam's name and
    password. The phone is now an **allowed device**, listed in Settings with a
    **Remove** button.
-5. Sam uses the same pages as Corey. Two people can save at the same time.
+5. Sam uses the same pages as User 1. Two people can save at the same time.
 6. When the home base closes, sleeps, or leaves the home network, the others
-   see "Dashboard Plus on Corey's desktop is not available right now."
+   see "Dashboard Plus on User 1's desktop is not available right now."
 
 ### Listening beyond this computer, only when switched on
 - Off by default. When on, the server listens on `127.0.0.1` **and** the one
@@ -253,7 +253,7 @@ set-aside copy if the other computer also changed things.
   on some computers, which clashes with "no admin rights needed"; to test on a
   clean Windows computer before promising anything.
 - **Auto-off:** at Save and exit; when the network changes; optionally after a
-  set time ("Stop sharing at midnight"). Question for Corey: when Dashboard Plus
+  set time ("Stop sharing at midnight"). Question for User 1: when Dashboard Plus
   opens next time, does sharing come back on by itself? Suggested answer: yes,
   but only on the same home network, and the home base's own screen says so.
 - The helper door (`/api/v1/`), safe close (`/api/shutdown`) and the pages for
@@ -273,7 +273,7 @@ set-aside copy if the other computer also changed things.
 - **Sessions:** after signing in, a random 256-bit session id in a cookie that
   is `Secure`, `HttpOnly`, `SameSite=Strict` and, with HTTPS, named with the
   `__Host-` prefix. A new id at every sign-in (OWASP Session Management Cheat
-  Sheet). Signed out after 30 minutes of no use on other devices (Corey to
+  Sheet). Signed out after 30 minutes of no use on other devices (User 1 to
   choose); **Sign out** on every page. Removing a device or account ends its
   sessions at once.
 - **Allowed devices:** a device must be paired once with a pairing code shown
@@ -281,7 +281,7 @@ set-aside copy if the other computer also changed things.
   long random device token, kept as a fingerprint in `data/secrets/`. A device
   that is not paired cannot even reach the sign-in form.
 - **Private details:** each account has "May see private details" (allergies,
-  medicines, access codes). Off by default for new accounts; Corey decides for
+  medicines, access codes). Off by default for new accounts; User 1 decides for
   Sam. Showing one is recorded in the history as who, when and which detail,
   never the value.
 - **History:** every change records the account, for example `person:Sam`.
@@ -372,13 +372,13 @@ needs an account; it always works as today.
 ## 4. Option C: every device keeps its own copy, and they sync
 
 ### How it works for the household
-1. Corey opens **Settings → Sharing → Sync with another computer** and gets a
+1. User 1 opens **Settings → Sharing → Sync with another computer** and gets a
    pairing code. Sam enters it on Sam's laptop. The two now trust each other.
 2. Each computer keeps its own full records and works alone, at home or away.
 3. Whenever they can reach each other (or the shared folder, see below),
    each sends the changes the other has not seen. Usually nobody notices.
 4. If both changed the **same detail** of the same record, Dashboard Plus keeps
-   one for now and puts both on Review: "Corey set Rice, minimum to 4 and Sam
+   one for now and puts both on Review: "User 1 set Rice, minimum to 4 and Sam
    set it to 6, at about the same time. Kept 6 for now. Keep 6 / Use 4."
 
 ### Merge rules
@@ -405,7 +405,7 @@ needs an account; it always works as today.
   each is a sizeable dependency. Field-level last-writer-wins plus Review for
   clashes is enough for household records and easy to explain.
 - **Stock in and out merges naturally** if each movement is a record that is
-  only ever added (a grow-only set): Corey's "used 2 tins" and Sam's "bought 6"
+  only ever added (a grow-only set): User 1's "used 2 tins" and Sam's "bought 6"
   both arrive, and each device works the count out from all movements. But
   today saving a movement also **changes the item's count** directly
   (DESIGN 5.3). Under sync the count must be worked out, never copied, or it
@@ -414,7 +414,7 @@ needs an account; it always works as today.
   both add their difference. They need to become "counted 12 at 7:40 pm", with
   a Review item when two counts clash.
 - **Deletions** keep a marker (the program already deletes softly with
-  `deleted_at`). "Sam deleted a record Corey just changed" goes to Review.
+  `deleted_at`). "Sam deleted a record User 1 just changed" goes to Review.
 - **Rules a merge can break:** a required link to a record deleted elsewhere,
   a "not before" date order (0075), a choice list a module removed. Each goes
   to Review; nothing is dropped.
@@ -488,16 +488,16 @@ Settings → Sharing. On narrow screens it wraps onto its own line under the
 name; it is never hidden behind a menu. The footer sentence repeats the same
 mode in full, replacing "Runs on this computer only. Nothing is sent anywhere."
 only when sharing is on. Printed sheets show it in small print too ("Printed
-from Corey's desktop, shared with Sam's laptop").
+from User 1's desktop, shared with Sam's laptop").
 
 ### Exact words
 | Mode | Label | Footer and Sharing page |
 |---|---|---|
 | Default, no sharing set up | **On this computer only** | Runs on this computer only. Nothing is sent anywhere. |
-| A, you have the records | **Shared folder · open here** | Open on Corey's desktop. Sam's laptop can look but not change until you choose Save and exit. Shared through your OneDrive folder. |
+| A, you have the records | **Shared folder · open here** | Open on User 1's desktop. Sam's laptop can look but not change until you choose Save and exit. Shared through your OneDrive folder. |
 | A, another computer has them | **Look only · Sam's laptop has them open** | Sam's laptop has had the records open since 7:40 pm. You are looking at the copy from 7:40 pm. |
 | B, home base | **Sharing on home Wi-Fi with 2 devices** (or **with 1 device**, or **Sharing on home Wi-Fi · nobody connected**) | Other devices on HomeNet can use Dashboard Plus with their own password. Switch off |
-| B, another device | **Using Corey's desktop · signed in as Sam** | You are using Dashboard Plus on Corey's desktop over home Wi-Fi. Sign out |
+| B, another device | **Using User 1's desktop · signed in as Sam** | You are using Dashboard Plus on User 1's desktop over home Wi-Fi. Sign out |
 | C, in step | **Syncing with Sam's laptop, last synced 2 minutes ago** | Changes from both computers are swapped through your Syncthing folder. |
 | C, out of touch | **Syncing with Sam's laptop, last synced yesterday at 6:40 pm** | Sam's laptop has not been in touch since yesterday at 6:40 pm. Your changes are saved here and will be sent when it is. |
 | C, clashes | **Syncing with Sam's laptop · 2 changes need a look** (links to Review) | |
@@ -559,11 +559,11 @@ taking turns turns out to be a real nuisance. It is the most convenient and by
 far the largest and riskiest change, and it puts a lasting cost on every future
 module change.
 
-Before any of it ships: Corey's OK on the rule change (decision 0081), a
+Before any of it ships: User 1's OK on the rule change (decision 0081), a
 security review like 0055's, and a test on two real Windows computers with the
 chosen cloud folder.
 
-## 7. Questions for Corey
+## 7. Questions for User 1
 
 1. Who should see the records: just you and Sam, or anyone else (children, a
    carer, a house-sitter)? Should anyone see only some parts?

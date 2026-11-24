@@ -2,7 +2,7 @@
 
 - **Status:** Accepted
 - **Date:** 2026-11-08
-- **Decided by:** Corey (M1 scope), Claude (sequencing)
+- **Decided by:** User 1 (M1 scope), Claude (sequencing)
 
 ## In plain words
 Instead of building all of v1 before anyone can use it, we ship five smaller

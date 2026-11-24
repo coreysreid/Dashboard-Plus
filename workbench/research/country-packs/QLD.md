@@ -1,6 +1,6 @@
 # Batch 21 item 101: South East Queensland source handoff
 
-Checked 21 November 2026. This is source research for a **Queensland** row within a future Australian country pack, not a live warning feed or a claim that a hazard applies to Corey's address. The official pages below were opened during this check. Direct command-line fetches of the QFD and SES pages returned a short site response despite HTTP 200, so a future pack editor should re-open those pages in a browser before publishing their exact wording. This handoff paraphrases facts and links to the authorities; it reproduces no maps, logos or instruction blocks.
+Checked 21 November 2026. This is source research for a **Queensland** row within a future Australian country pack, not a live warning feed or a claim that a hazard applies to User 1's address. The official pages below were opened during this check. Direct command-line fetches of the QFD and SES pages returned a short site response despite HTTP 200, so a future pack editor should re-open those pages in a browser before publishing their exact wording. This handoff paraphrases facts and links to the authorities; it reproduces no maps, logos or instruction blocks.
 
 ## Proposed sourced rows
 

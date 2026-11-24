@@ -2,7 +2,7 @@
 
 - **Status:** Accepted
 - **Date:** 2026-11-18
-- **Decided by:** Claude (technical decision delegated by Corey)
+- **Decided by:** Claude (technical decision delegated by User 1)
 - **Refines:** DESIGN sections 3 and 8 (which had suggestions stored as `needs_review` rows in the module's own tables)
 
 ## In plain words

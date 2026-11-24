@@ -2,8 +2,8 @@
 
 - **Status:** Accepted
 - **Date:** 2026-11-21
-- **Decided by:** Claude (technical decision delegated by Corey)
-- **Builds on:** 0104 (Readiness questions and the recorded `[[scenario]]` shape), 0100 (permanent IDs, revisions and the travel rule), 0103 (Set up my home: rooms and connections), 0054 and 0077 (Home layout and its private access details), 0059 (private details only on Show), Lane B's draft `workbench/drafts/think_it_through/` (now removed; its DRILLS, SOURCES, STATE, ACCEPTANCE and NOTES are in git history), Corey's request in docs/BACKLOG.md
+- **Decided by:** Claude (technical decision delegated by User 1)
+- **Builds on:** 0104 (Readiness questions and the recorded `[[scenario]]` shape), 0100 (permanent IDs, revisions and the travel rule), 0103 (Set up my home: rooms and connections), 0054 and 0077 (Home layout and its private access details), 0059 (private details only on Show), Lane B's draft `workbench/drafts/think_it_through/` (now removed; its DRILLS, SOURCES, STATE, ACCEPTANCE and NOTES are in git history), User 1's request in docs/BACKLOG.md
 
 ## In plain words
 Readiness now has **Think it through**: eight short practice runs for situations a household

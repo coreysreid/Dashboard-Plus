@@ -21,7 +21,7 @@ from build_portable import BuildError, copy_program, download, program_version, 
 ROOT = Path(__file__).resolve().parents[1]
 FOLDER_NAME = "Dashboard Plus"
 APP_NAME = "Dashboard Plus.app"
-BUNDLE_ID = "io.github.coreysreid.dashboard-plus"
+BUNDLE_ID = "org.dashboardplus.app"
 MINIMUM_MACOS = "11.0"  # the first macOS for Apple silicon; python-build-standalone supports it
 ARCHES = {"arm64": "Apple silicon", "x86_64": "Intel"}
 
@@ -175,7 +175,7 @@ def info_plist(version: str) -> dict:
         "LSMinimumSystemVersion": MINIMUM_MACOS,
         # No Dock icon or menu: the dashboard is the browser page, and "Save and exit" closes it.
         "LSUIElement": True,
-        "NSHumanReadableCopyright": "Copyright (C) 2026 Corey Reid. GNU AGPL v3 or later.",
+        "NSHumanReadableCopyright": "Copyright (C) 2026 the Dashboard Plus contributors. GNU AGPL v3 or later.",
     }
 
 

@@ -2,7 +2,7 @@
 
 - **Status:** Accepted
 - **Date:** 2026-11-20
-- **Decided by:** Claude (technical decision delegated by Corey), from Lane B's batch 18 UX check
+- **Decided by:** Claude (technical decision delegated by User 1), from Lane B's batch 18 UX check
 
 ## In plain words
 When a form asks you to choose something there are none of yet (for example

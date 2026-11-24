@@ -2,8 +2,8 @@
 
 - **Status:** Accepted
 - **Date:** 2026-11-22
-- **Decided by:** Claude (technical decision delegated by Corey)
-- **Builds on:** 0103 (Set up my home: Places and Connections), 0109 (server-drawn SVG with an equal table), 0108 (drills never certify a route; emergency numbers by country), 0054 and 0077 (Home layout and its private access details), 0100 (what travels), Lane B's draft `workbench/drafts/exit_map/` (batch 20 item 93 and batch 21 item 103; now removed, its RESEARCH, SKETCH, PRINT, NOTES and ACCEPTANCE are in git history), Corey's request in docs/BACKLOG.md
+- **Decided by:** Claude (technical decision delegated by User 1)
+- **Builds on:** 0103 (Set up my home: Places and Connections), 0109 (server-drawn SVG with an equal table), 0108 (drills never certify a route; emergency numbers by country), 0054 and 0077 (Home layout and its private access details), 0100 (what travels), Lane B's draft `workbench/drafts/exit_map/` (batch 20 item 93 and batch 21 item 103; now removed, its RESEARCH, SKETCH, PRINT, NOTES and ACCEPTANCE are in git history), User 1's request in docs/BACKLOG.md
 
 ## In plain words
 **Our way-out sketch** draws the rooms you entered in Set up my home as boxes, one floor at a time,
@@ -66,7 +66,7 @@ never appear.
   household's country, otherwise *your local emergency number*.
 
 ## Why we chose it
-- Corey asked for simple exit maps "with maybe lego level accuracy"; the rooms and connections he
+- User 1 asked for simple exit maps "with maybe lego level accuracy"; the rooms and connections he
   already records are enough for boxes and lines with no drawing tool.
 - Fire and Rescue NSW and London Fire Brigade (checked by Lane B on 21 November 2026) support drawing
   ways out, a meeting place, practice and planning for help, and say flats follow their building's plan;

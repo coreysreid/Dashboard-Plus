@@ -10,12 +10,15 @@ and the files you may edit before changing anything.
 ## Rules that never bend
 - The repository is public. Never commit real names, personal data, tokens,
   database files, a real `config.toml`, or personal paths. Use synthetic data.
+- Never name the project owner or their household in files, commit messages,
+  pull requests or comments. Write **User 1** for the owner and **User 2** for
+  their partner, and leave out their home town, region and real belongings.
 - Every technical decision needs a record in `docs/decisions/` (copy
   `TEMPLATE.md`): what was chosen, why, the downsides, and how to undo it.
 - Every folder has a short `INDEX.md` (25 lines or fewer, one row per entry).
   Every Python file starts with a one-line docstring that its index row quotes.
 - Dependencies are few and pinned to exact versions. Ask before adding one.
-- Explain choices in plain language. Corey judges the product, not the code.
+- Explain choices in plain language. User 1 judges the product, not the code.
 - Lane A merges its own pull requests once every check is green; see "Who merges" in docs/WORKSTREAMS.md for the exceptions.
 
 ## Before you finish any change

@@ -2,7 +2,7 @@
 
 - **Status:** Accepted
 - **Date:** 2026-11-19
-- **Decided by:** Claude (technical decision delegated by Corey), from Lane B's UX check of the helper feature
+- **Decided by:** Claude (technical decision delegated by User 1), from Lane B's UX check of the helper feature
 
 ## In plain words
 If you press **Make a key** and the form is sent again, for example by

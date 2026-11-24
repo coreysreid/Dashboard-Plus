@@ -2,7 +2,7 @@
 
 - **Status:** Accepted
 - **Date:** 2026-11-06
-- **Decided by:** Claude (technical decision delegated by Corey)
+- **Decided by:** Claude (technical decision delegated by User 1)
 
 ## In plain words
 Every folder has a one-page summary so an AI agent or newcomer can skim the project without reading everything.
@@ -11,7 +11,7 @@ Every folder has a one-page summary so an AI agent or newcomer can skim the proj
 Nested `INDEX.md` files (25 lines or fewer), a one-line summary at the top of each code file, a root `AGENTS.md`, and a checker script in CI that keeps them complete and current.
 
 ## Why we chose it
-- Corey asked for context-friendly layout for agents.
+- User 1 asked for context-friendly layout for agents.
 - Automatic checking is the only way such documents stay true.
 
 ## What else we considered

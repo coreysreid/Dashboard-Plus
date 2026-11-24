@@ -207,22 +207,23 @@ class AcceptanceTests(RunningTestCase):
             self.assertNotIn(private, reply)
         log = sync.changes(self.conn, 0, limit=100000)
         created = next(e for e in log if e["table_name"] == ESTIMATES and e["action"] == "create")
-        self.assertEqual(sorted(created["withheld"]), ["amount", "notes", "scope"])
-        self.assertNotIn(SCOPE, str(log))
-        self.assertNotIn(str(AMOUNT), str(log))
+        # User 1, 24 November: quote amounts and scope travel to the household's other computers; notes stay here.
+        self.assertEqual(sorted(created["withheld"]), ["notes"])
+        self.assertIn(SCOPE, str(log))
+        self.assertNotIn(NOTE, str(log))
         backups.daily(self.data, today=date(2026, 6, 1))
         kept = sqlite3.connect(self.data / "backups" / "daily-2026-06-01.db")
         self.addCleanup(kept.close)
         self.assertEqual(kept.execute(f"SELECT amount, scope, notes FROM {ESTIMATES}").fetchone(), (AMOUNT, SCOPE, NOTE))
 
-    def test_6_private_fields_say_only_on_this_computer_and_a_suggestion_waits_for_review(self):
+    def test_6_private_fields_say_where_they_travel_and_a_suggestion_waits_for_review(self):
         client = self.client()
         form = self.page(f"/t/{ESTIMATES}/new", client)
-        self.assertGreaterEqual(form.count("only on this computer"), 2)
+        self.assertGreaterEqual(form.count("shared with paired household computers"), 2)
         self.assertIn("not a final bill or a cost paid", form)
         module = modules.load_module(ROOT / "modules" / "vehicle_running")
         travel = {n: c.travels for n, c in module.tables["estimates"].columns.items()}
-        self.assertEqual({n for n, t in travel.items() if t == "never"}, {"amount", "scope", "notes"})
+        self.assertEqual({n for n, t in travel.items() if t == "never"}, {"notes"})
         self.assertTrue(all(c.travels == "always" for c in module.tables["readings"].columns.values()))
         helper, _ = helpers.issue(self.conn, self.data, "Car helper", "suggest", ["vehicle_running", "vehicles"])
         with self.assertRaises(proposals.ProposalError) as refused:

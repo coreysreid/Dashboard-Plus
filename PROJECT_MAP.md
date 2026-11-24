@@ -14,7 +14,7 @@ Follow the INDEX.md in a folder before opening its files. Hidden files are not l
 | CONTRIBUTING.md | Public contribution rules and checks | before contributing |
 | SECURITY.md | How to report a problem that could expose household data | reporting security concerns |
 | CLAUDE.md | One line pointing to AGENTS.md | never; tools read it for you |
-| LICENSE | GNU AGPL v3 or later; Copyright (C) 2026 Corey Reid (README) | checking reuse terms |
+| LICENSE | GNU AGPL v3 or later; Copyright (C) 2026 the Dashboard Plus contributors (README) | checking reuse terms |
 | PROJECT_MAP.md | Generated one-page map of every INDEX.md | you want the whole picture |
 | config.example.toml | Example settings (the real file lives in the data folder) | adding a setting |
 | pyproject.toml | Project name, version and Python version | changing project metadata |
@@ -36,7 +36,7 @@ Follow the INDEX.md in a folder before opening its files. Hidden files are not l
 | CORE.md | The one-page v1 promise and acceptance list | testing any feature against it |
 | DESIGN.md | Object model, modules, API, security, packaging, build order | planning or building |
 | ROADMAP.md | Milestones M1 to M5, what M1 includes, success measures, open questions | deciding what comes next |
-| BACKLOG.md | Corey's feedback from using it, and what happened to each item | adding feedback or choosing the next fix |
+| BACKLOG.md | User 1's feedback from using it, and what happened to each item | adding feedback or choosing the next fix |
 | WORKSTREAMS.md | How two agents split the work: lanes, owned files, contracts, status | before starting any work |
 | JOURNEYS.md | Short stories of real use, each an acceptance test | reviewing the experience |
 | plans/ | Build plans for larger pieces of work, such as the Agent API | building or reviewing a big feature |
@@ -168,7 +168,7 @@ One record per decision, from `TEMPLATE.md`. Never deleted; reversed ones are ma
 | [0114](0114-bundle-time-zone-data.md) | Ship `tzdata` (pinned and locked) so household days follow the household's time zone on Windows too; the CI Windows run had put pet feedings on the computer's day | Accepted |
 | [0115](0115-optional-links-between-modules.md) | Optional links between modules: `optional_requires` in module.toml; a link into an optional module is nullable, hidden with household words while that module is off, kept by exact ID (guarded writes refuse any set, change or clear), neutral on lists, sheets, exports and helpers, a gone record is repair never a same-name guess; Utilities now needs only People, so an internet-only household can switch it on alone; Bills not promoted | Accepted |
 | [0116](0116-helper-words-for-moving-in.md) | The helper's starting message, connector descriptions and OpenAPI no longer call an old tracker balance a purchase (it points to Count this batch), ask whether a receipt is already in the old count, say a Review-only price is not saved spending, and say when to refresh the guide and how to report sent, accepted, waiting and refused rows | Accepted |
-| [0117](0117-bills-and-insurance.md) | Bills and insurance switched on from Lane B's draft beside Utilities (needs only People; Vehicles and Stock optional): private amount, cover, reference and notes that never travel; due words per row (`what_when`); one reminder per vehicle policy: nothing moves until the household chooses Keep, Review and move (row by row, by ID, after a backup; the old record kept read-only) or Decide later; Transfer back; sheets say when they are not complete | Accepted (Corey to confirm the move choice) |
+| [0117](0117-bills-and-insurance.md) | Bills and insurance switched on from Lane B's draft beside Utilities (needs only People; Vehicles and Stock optional): private amount, cover, reference and notes that never travel; due words per row (`what_when`); one reminder per vehicle policy: nothing moves until the household chooses Keep, Review and move (row by row, by ID, after a backup; the old record kept read-only) or Decide later; Transfer back; sheets say when they are not complete | Accepted (User 1 to confirm the move choice) |
 | [0118](0118-exit-sketch.md) | Our way-out sketch from Set up my home: a floor, sleeping and checked-window flag per room and a confirmed destination per door out (stock migration 0007), meeting place, help and building-plan answers in Settings; rooms as boxes and connections as lines drawn on the server in a steady grid, a complete text version with the same IDs, a sheet with legend and warnings on numbered continuation pages; only recorded possibilities and gaps, never a safe or independent route; no notes, codes or People details | Accepted |
 | [TEMPLATE](TEMPLATE.md) | Blank record to copy for a new decision | recording a decision |
 
@@ -176,7 +176,7 @@ One record per decision, from `TEMPLATE.md`. Never deleted; reversed ones are ma
 | Entry | What it is | Open it when |
 |---|---|---|
 | agent-api-v1.md | The Agent API skeleton plan: helper keys, read routes, suggestions held for Review, security model, tests | building or reviewing the Agent API |
-| household-sharing.md | Sharing with your household: three options (shared folder, home base on Wi-Fi, true sync), the mode label on every page, a recommendation and questions for Corey | choosing or building household sharing |
+| household-sharing.md | Sharing with your household: three options (shared folder, home base on Wi-Fi, true sync), the mode label on every page, a recommendation and questions for User 1 | choosing or building household sharing |
 
 ## docs/releases/  (summary: release checks, one file per milestone)
 | Entry | What it is | Open it when |

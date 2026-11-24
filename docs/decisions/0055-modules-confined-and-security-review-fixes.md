@@ -2,7 +2,7 @@
 
 - **Status:** Accepted
 - **Date:** 2026-11-17
-- **Decided by:** Claude (technical decision delegated by Corey), at Corey's request for a security and privacy review
+- **Decided by:** Claude (technical decision delegated by User 1), at User 1's request for a security and privacy review
 - **Refines:** decision 0007 ("declarative modules are safe by construction")
 
 ## In plain words

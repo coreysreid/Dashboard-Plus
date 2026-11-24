@@ -5,7 +5,7 @@
 | CORE.md | The one-page v1 promise and acceptance list | testing any feature against it |
 | DESIGN.md | Object model, modules, API, security, packaging, build order | planning or building |
 | ROADMAP.md | Milestones M1 to M5, what M1 includes, success measures, open questions | deciding what comes next |
-| BACKLOG.md | Corey's feedback from using it, and what happened to each item | adding feedback or choosing the next fix |
+| BACKLOG.md | User 1's feedback from using it, and what happened to each item | adding feedback or choosing the next fix |
 | WORKSTREAMS.md | How two agents split the work: lanes, owned files, contracts, status | before starting any work |
 | JOURNEYS.md | Short stories of real use, each an acceptance test | reviewing the experience |
 | plans/ | Build plans for larger pieces of work, such as the Agent API | building or reviewing a big feature |

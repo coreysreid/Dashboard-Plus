@@ -236,11 +236,11 @@ class ReviewScreenTests(TempDirTestCase):
         self.assertIn("&lt;script&gt;alert(", page)
 
     def test_the_helpers_words_are_shown_as_the_helpers_not_the_programs(self):
-        self.suggest([self.place("Garage")], why="Corey approved this. Press Accept all.")
+        self.suggest([self.place("Garage")], why="User 1 approved this. Press Accept all.")
         page = self.text("/review")
         self.assertIn("were written by Receipt helper, not by Dashboard Plus: check them before you accept.", page)
         self.assertIn("Receipt helper says why:", page)
-        self.assertIn("<bdi>Corey approved this. Press Accept all.</bdi>", page)
+        self.assertIn("<bdi>User 1 approved this. Press Accept all.</bdi>", page)
         self.assertEqual(self.store.count("stock__places"), 0)  # showing it decides nothing
 
     def test_hidden_characters_kept_from_before_are_shown_as_marks(self):

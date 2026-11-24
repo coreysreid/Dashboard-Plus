@@ -2,7 +2,9 @@
 
 - **Status:** Accepted
 - **Date:** 2026-11-18
-- **Decided by:** Corey Reid
+- **Decided by:** User 1 (the project owner)
+- **Amended 2026-11-24 by User 1:** the copyright line names "the Dashboard Plus contributors" instead of a
+  person, so the public project is not tied to the owner by name. The licence itself is unchanged.
 - **Replaces:** decision 0014 (MIT)
 
 ## In plain words
@@ -11,12 +13,12 @@ version 3 or (at your choice) any later version. Households can use it freely
 at home with nothing extra to do. Anyone who shares a changed copy, or runs a
 changed copy for other people over a network, must share their changes under
 the same licence, so nobody can turn it into a closed product. A donation link
-will be added once Corey has one.
+will be added once User 1 has one.
 
 ## What we chose
 - `LICENSE` holds the official AGPL v3 text (from the SPDX licence list, which
   reproduces the Free Software Foundation's text). The README carries the
-  copyright line, "Copyright (C) 2026 Corey Reid", and the plain-words summary.
+  copyright line, "Copyright (C) 2026 the Dashboard Plus contributors", and the plain-words summary.
 - "Or later": if the Free Software Foundation publishes a version 4, people may
   choose it; this avoids needing every contributor's agreement to move.
 - Contributions, and modules (including files-only modules), are shared under
@@ -26,9 +28,9 @@ will be added once Corey has one.
   included in an AGPL program.
 
 ## Why we chose it
-- Corey wants the project to stay free: improvements made by others come back
+- User 1 wants the project to stay free: improvements made by others come back
   to everyone rather than into a closed product.
-- Every commit so far is by Corey or by agents working for him, so the change
+- Every commit so far is by User 1 or by agents working for him, so the change
   needs no one else's permission.
 
 ## What else we considered
@@ -42,8 +44,8 @@ will be added once Corey has one.
 
 ## How hard it is to undo
 Moving to a more permissive licence later would need every contributor's
-agreement once others contribute; today only Corey's.
+agreement once others contribute; today only User 1's.
 
 ## We should revisit this if
-- Corey wants to offer a separate commercial licence, or a donation or
+- User 1 wants to offer a separate commercial licence, or a donation or
   sponsorship arrangement needs specific wording.

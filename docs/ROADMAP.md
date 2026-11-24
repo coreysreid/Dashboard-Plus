@@ -9,7 +9,7 @@ from people using the earlier ones; that is the point of shipping early.
 | **M1** | Unzip, run the wizard, record People, Stock, Pets, first aid kits (Medical), where the ways out and shut-offs are (Home layout, decision 0054), their vehicles with the dates to remember (Vehicles, decision 0058) and their odometer readings and service quotes (Vehicle running log, decision 0111), where important papers are kept (Important documents, decision 0062), jobs around the home with the dates they choose (Home care, decision 0063) things lent out with the date each is due back (Things lent out, decision 0073) and a vegetable garden with its jobs (Vegetable garden, decision 0076), their own repeating tasks and one Things to do page for today, this week, this month and this year (Routines, decision 0107), who provides each utility, who to contact about a fault and where its meter is (Utilities, decision 0099), the dates to check each bill and policy, with one reminder per car insurance policy (Bills and insurance, decision 0117), each pet's food put out with honest daily totals by the household's own day (Pet feeding log, decision 0110), see running low, expiring soon and days of water, print the emergency sheet | **In progress** |
 | M2 | Restore and export, review queue, inbox, Agent API, receipt entry, spreadsheet import | Planned. Agent API skeleton built (decisions 0066 to 0069): helpers look and suggest new records, a person reviews. Export my records built (decision 0078): a zip of spreadsheet files, private details left out. Restore from a backup built, with Undo (decision 0079). Import from a spreadsheet built (decision 0080): a CSV into any list, its rows wait on Review |
 | M3 | Readiness prompts (Medical moved into M1, decision 0051; built, decision 0104: 49 sourced questions, answers, record matches offered for confirmation, review dates and a coverage count; "Think it through" drills built, decision 0108: eight sourced situations step by step, records offered or missing words, practice runs with private own words), first country pack, optional data-folder passphrase, optional sharing with the household, household sync (decision 0089: one main, members push requests to Review), a macOS build | Planned. Sync direction chosen (0089); built in stages after a security review; stage 1 (permanent record IDs, revisions and a filtered change log, nothing sent) is built (decision 0100). macOS: an unsigned preview app for Apple silicon is built and started by CI on every change, records in Application Support (decision 0096); Apple signing and notarisation, an Intel or universal build and a check on a real Mac are still to come (the README and bundled read-me wording was tightened after a read-through, decision 0106) |
-| M3b | Phone apps for Android and iOS, joining the household as sync members (0089) | Planned, near pipeline (Corey, 20 November 2026); design with Lane B |
+| M3b | Phone apps for Android and iOS, joining the household as sync members (0089) | Planned, near pipeline (User 1, 20 November 2026); design with Lane B |
 | M4 | Graphing, Analysis, the question loop, the monthly outcomes screen | Graphing started (decision 0109): the first two charts, drawn on the server with an equal table: today's drinking water by item (the same sum as Home's days of water) and one pet's recorded weights. Time series, annotations, Analysis, the question loop and outcomes are still to come |
 | M5 | API connector (Pets moved into M1, decision 0047; Garden switched on, decision 0076; Wine switched on, decision 0095: wines, bottle counts you type, tasting notes) | Planned. The connector for AI assistants is done (decision 0083): assistant apps that support MCP can use a helper's key through `python -m dashboard.connector`. The connector that pulls data from outside services (DESIGN 6.1) is still to come |
 
@@ -76,7 +76,7 @@ Measured only on the household's own computer, shared only if they choose.
 | Minutes per week to keep it current | under 15 |
 | Prompts and insights marked useful (from M3) | more than half |
 
-M1 is first tested by Corey's household and one or two others, with synthetic
+M1 is first tested by User 1's household and one or two others, with synthetic
 data in every screenshot that is shared.
 
 ## Decisions still open
@@ -88,7 +88,7 @@ data in every screenshot that is shared.
 
 ## Later ideas, not planned yet
 
-- **A simple map of the way out** ("lego level accuracy", Corey, 21 November 2026): started.
+- **A simple map of the way out** ("lego level accuracy", User 1, 21 November 2026): started.
   **Our way-out sketch** draws Set up my home's rooms as boxes and connections as lines, with a
   text version and a printable sheet (decision 0118). Arranging the boxes by hand is a later idea.
 

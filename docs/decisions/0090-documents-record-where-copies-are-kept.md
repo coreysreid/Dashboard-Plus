@@ -2,7 +2,7 @@
 
 - **Status:** Accepted
 - **Date:** 2026-11-20
-- **Decided by:** Corey (product choice, 20 November 2026); Claude (technical shape)
+- **Decided by:** User 1 (product choice, 20 November 2026); Claude (technical shape)
 - **Refines:** decision 0062 (Important documents); follows decision 0089 (not a vault)
 
 ## In plain words
@@ -11,9 +11,9 @@ drive", "Family cloud folder", "Solicitor". You name each place once and tick
 it on every paper that has a copy there. Dashboard Plus still never holds the
 paper, a scan or its number; it only remembers where to look.
 
-## What Corey asked for (20 November 2026)
+## What User 1 asked for (20 November 2026)
 "Maybe it's best for the app to provide a location for where the medical docs
-are? Backed up on green HDD, and on family iCloud, instead of hard copies in
+are? Backed up on a blue USB drive, and on a family cloud folder, instead of hard copies in
 the app." He also said he does not want the app to be a vault.
 
 ## What we chose
@@ -33,9 +33,9 @@ the app." He also said he does not want the app to be a vault.
   folder"); the household's own words go in on their own copy.
 
 ## Why we chose it
-- It answers Corey's wish exactly: the app points at the backup, it is not the
+- It answers User 1's wish exactly: the app points at the backup, it is not the
   backup.
-- One place named once and reused avoids typing "Green HDD" ten different ways.
+- One place named once and reused avoids typing "Blue USB drive" ten different ways.
 - It reuses a core feature that already existed, so the change is small and
   tested the same way as the rest.
 

@@ -2,7 +2,7 @@
 
 - **Status:** Accepted
 - **Date:** 2026-11-06
-- **Decided by:** Claude (technical decision delegated by Corey)
+- **Decided by:** Claude (technical decision delegated by User 1)
 
 ## In plain words
 This is the rule that every other record follows.
@@ -11,7 +11,7 @@ This is the rule that every other record follows.
 Every technical decision gets a short record in `docs/decisions/` before or when it is built, using `TEMPLATE.md`. Records are never deleted; a reversed decision is marked *Superseded* and points to its replacement.
 
 ## Why we chose it
-- Corey judges the product by what he sees and uses, not by the technology. He needs a way to question a choice later without reading code.
+- User 1 judges the product by what he sees and uses, not by the technology. He needs a way to question a choice later without reading code.
 - A future maintainer needs to know whether a choice was deliberate or accidental.
 - Writing the downsides and the 'revisit if' trigger at the time means a decision can be judged as good or bad later, not just defended.
 

@@ -2,7 +2,10 @@
 
 - **Status:** Accepted
 - **Date:** 2026-11-21
-- **Decided by:** Claude (technical decision delegated by Corey)
+- **Decided by:** Claude (technical decision delegated by User 1)
+- **Amended 2026-11-24 by User 1:** quote amounts and what a quote includes now travel to the household's paired
+  computers (`travels = "always"`); they stay private (hidden until Show, off lists, sheets, export and helpers).
+  Notes still stay on the computer where they were typed.
 - **Builds on:** 0058 (Vehicles), 0059 (private details), 0075 (`not_before`), 0100 (what travels), 0109 (dots
   charts), Lane B's draft `workbench/drafts/vehicle_running/` (batch 20 item 91; now removed, in git history)
 
@@ -70,7 +73,7 @@ only service reminder: nothing works out a distance due point or a distance trav
   no change to a shipped module and can be switched off on its own.
 - **A mileage target with warnings now.** The draft says it needs a household-entered target, same-unit rules and
   stale-reading wording first; building it without those would make confident claims from uncertain readings.
-- **Letting quotes travel.** The draft asks for local-only quotes; Corey can reverse it by changing `travels`.
+- **Letting quotes travel.** The draft asks for local-only quotes; User 1 can reverse it by changing `travels`.
 - **A hard block on lower readings.** Refused: real rollovers and replaced odometers would be impossible to record.
 
 ## What this costs us (the downsides)

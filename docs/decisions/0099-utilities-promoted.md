@@ -2,7 +2,7 @@
 
 - **Status:** Accepted (that Utilities needs Home layout is replaced by [0115](0115-optional-links-between-modules.md))
 - **Date:** 2026-11-21
-- **Decided by:** Claude (technical decision delegated by Corey)
+- **Decided by:** Claude (technical decision delegated by User 1)
 
 ## In plain words
 A household can now keep a short list of its services (electricity, gas,

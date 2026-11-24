@@ -2,7 +2,7 @@
 
 - **Status:** Accepted
 - **Date:** 2026-11-18
-- **Decided by:** Claude (technical decision delegated by Corey)
+- **Decided by:** Claude (technical decision delegated by User 1)
 - **Refines:** decisions 0067 and 0068; answers cases 8, 11, 13, 16, 18, 20 and 22 of Lane B's abuse-case catalogue
 
 ## In plain words

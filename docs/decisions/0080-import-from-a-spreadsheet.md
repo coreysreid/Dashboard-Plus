@@ -2,7 +2,7 @@
 
 - **Status:** Accepted
 - **Date:** 2026-11-18
-- **Decided by:** Claude (technical decision delegated by Corey)
+- **Decided by:** Claude (technical decision delegated by User 1)
 - **Refines:** decision 0068 (the waiting place now also holds imported rows); answers Lane B's
   `workbench/drafts/csv_import/` draft in part
 

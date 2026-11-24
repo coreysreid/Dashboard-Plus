@@ -1,13 +1,13 @@
-# 0081. Sharing the records with your household: three options, Corey to choose
+# 0081. Sharing the records with your household: three options, User 1 to choose
 
-- **Status:** Superseded by 0089 (Corey chose the main-and-members direction)
+- **Status:** Superseded by 0089 (User 1 chose the main-and-members direction)
 - **Date:** 2026-11-18
-- **Decided by:** Corey (needs his OK: any option changes the privacy and security rules); designed by Claude
+- **Decided by:** User 1 (needs his OK: any option changes the privacy and security rules); designed by Claude
 - **Would refine:** decisions 0011, 0055 and 0067, and DESIGN section 12; the full design is in
   [docs/plans/household-sharing.md](../plans/household-sharing.md)
 
 ## In plain words
-Corey asked how a partner could see the same records, as an option, with the
+User 1 asked how a partner could see the same records, as an option, with the
 program always showing whether it is "on this computer only" or sharing. There
 are three ways to do it. **A:** keep the records in a folder OneDrive, Dropbox
 or Syncthing copies between your computers, and take turns: one computer has
@@ -18,7 +18,7 @@ clashes shown on Review. Nothing is built yet. The suggestion is A first (or B
 first if the partner mainly uses a phone), and C only later if needed.
 
 ## What we chose
-Nothing yet. Proposed, for Corey to choose:
+Nothing yet. Proposed, for User 1 to choose:
 - **Stage 1: option A**, through a shared folder, Syncthing recommended. The
   records are never opened inside the shared folder: each computer checks out a
   checked copy, works on it locally, and checks it back in as a finished file.
@@ -74,5 +74,5 @@ Sharing page and its core piece; each computer's local records stay as they
 are); C is High (world-wide ids and the change log reach every table).
 
 ## We should revisit this if
-- Corey answers the questions in the plan (who, which devices, phone or not),
+- User 1 answers the questions in the plan (who, which devices, phone or not),
   or a household asks for sharing outside the home.

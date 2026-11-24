@@ -2,7 +2,7 @@
 
 - **Status:** Accepted
 - **Date:** 2026-11-16
-- **Decided by:** Claude (technical decision delegated by Corey), from Lane B's product review
+- **Decided by:** Claude (technical decision delegated by User 1), from Lane B's product review
 
 ## In plain words
 The home page's water estimate now says what it assumes ("Based on 3 litres

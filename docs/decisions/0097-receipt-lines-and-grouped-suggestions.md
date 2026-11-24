@@ -2,7 +2,7 @@
 
 - **Status:** Accepted
 - **Date:** 2026-11-20
-- **Decided by:** Claude (technical decision delegated by Corey)
+- **Decided by:** Claude (technical decision delegated by User 1)
 - **Refines:** 0068 (suggestions wait until a person accepts), 0074 (helper text is screened), 0084 (the published API description)
 - **Answers:** Lane B's receipt findings in `workbench/drafts/receipt_entry/` (HELPER_FLOW.md, CONNECTOR_RUN.md, NOTES.md)
 

@@ -2,7 +2,7 @@
 
 - **Status:** Accepted
 - **Date:** 2026-11-21
-- **Decided by:** Claude (technical decision delegated by Corey)
+- **Decided by:** Claude (technical decision delegated by User 1)
 
 ## In plain words
 There is now a **Set up my home** page. On one screen you add your rooms and areas, the storage
@@ -48,7 +48,7 @@ the Home page and in Settings, not only behind an empty picker.
   with doors to outside as the exits. Nothing is drawn now (BACKLOG).
 
 ## Why we chose it
-- Corey: "there should be a configure my home section on either the intro to the app or on the
+- User 1: "there should be a configure my home section on either the intro to the app or on the
   main page ... The real tool is the home config first: add rooms and connections between them,
   storage locations within the rooms etc."
 - Reusing Places keeps one list of where things are; a second "rooms" list would drift.

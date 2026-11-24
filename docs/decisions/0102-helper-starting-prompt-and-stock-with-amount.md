@@ -2,12 +2,12 @@
 
 - **Status:** Accepted
 - **Date:** 2026-11-21
-- **Decided by:** Claude (technical decision delegated by Corey)
+- **Decided by:** Claude (technical decision delegated by User 1)
 - **Refines:** 0067 (the helper API), 0083 (the connector), 0084 (the published API description), 0097 (grouped suggestions)
 - **Answers:** feedback from an AI assistant that moved a household's records in through the connector
 
 ## In plain words
-When Corey's assistant moved his household in, it only found out how stock works when its first try was refused.
+When User 1's assistant moved his household in, it only found out how stock works when its first try was refused.
 Every counted item then took two suggestions (the item, then a "Stock in" for its amount), so about 138 things
 became about 273 suggestions against a limit of 200 a day. It also did not know that private details such as a
 vehicle registration cannot be sent by helpers, learned the limits late, and never used Places.

@@ -2,7 +2,7 @@
 
 - **Status:** Accepted
 - **Date:** 2026-11-09
-- **Decided by:** Codex (working from Corey's Lane B brief)
+- **Decided by:** Codex (working from User 1's Lane B brief)
 
 ## In plain words
 The garden shows how to make a useful module without adding it to every household's dashboard.

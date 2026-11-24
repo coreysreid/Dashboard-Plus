@@ -1,6 +1,6 @@
 # Where a first-time assistant can still go wrong
 
-Checked **21 November 2026** against one generated **9,951-character** starting message from the repository's invented Stock/Vehicles helper fixture (`tests/test_helper_starting_amounts.py`), plus decisions 0101–0103 and the shipped helper guide. This is a read-through and proposed checklist, not a test of Corey's private move. Ranked by potential harm; “covered” means the starting message says the rule, not that every assistant obeys it.
+Checked **21 November 2026** against one generated **9,951-character** starting message from the repository's invented Stock/Vehicles helper fixture (`tests/test_helper_starting_amounts.py`), plus decisions 0101–0103 and the shipped helper guide. This is a read-through and proposed checklist, not a test of User 1's private move. Ranked by potential harm; “covered” means the starting message says the rule, not that every assistant obeys it.
 
 | Risk and actual guide coverage | What a careful move must do | Suggested guide addition or core gate |
 |---|---|---|

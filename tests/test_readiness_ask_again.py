@@ -137,10 +137,10 @@ class EightQuestionTests(AskAgainTestCase):
         self.asks("flood-flood-utilities", "its place path")
 
     def private_detail(self, prompt_id, kind):
-        alex = self.store.create("people__people", {"name": "Alex Example", "lives_here": True, "phone": "0400 000 001"})
+        alex = self.store.create("people__people", {"name": "Alex Example", "lives_here": True, "phone": "0491 570 101"})
         detail = self.store.create("people__important_info", {"person": alex, "kind": kind, "detail": SECRET})
         self.confirm(prompt_id)
-        self.edit("people__people", alex, birthday="1990-01-01", phone="0400 000 002", notes="Prefers texts",
+        self.edit("people__people", alex, birthday="1990-01-01", phone="0491 570 102", notes="Prefers texts",
                   email="alex@example.org")
         self.store.create("people__important_info", {"person": alex, "kind": kind, "detail": "Another invented"})
         self.quiet(prompt_id, "birthday, phone, email, notes and another detail")
@@ -166,8 +166,8 @@ class EightQuestionTests(AskAgainTestCase):
         self.private_detail("medical-special-food", "dietary")
 
     def contact(self, prompt_id, role, other_role):
-        sam = self.person("Sam Example", lives_here=False, phone="0400 000 010")
-        kim = self.person("Kim Example", lives_here=False, phone="0400 000 020")
+        sam = self.person("Sam Example", lives_here=False, phone="0491 570 110")
+        kim = self.person("Kim Example", lives_here=False, phone="0491 570 120")
         chosen = self.store.create("people__roles", {"person": sam, "role": role, "priority": 1})
         other = self.store.create("people__roles", {"person": kim, "role": role, "priority": 2})
         self.confirm(prompt_id, chosen)
@@ -175,9 +175,9 @@ class EightQuestionTests(AskAgainTestCase):
                   address="1 Invented Street", notes="Works late")
         self.edit("people__roles", chosen, notes="Call after 6")
         self.edit("people__roles", other, priority=3)
-        self.edit("people__people", kim, phone="0400 000 021")
+        self.edit("people__people", kim, phone="0491 570 121")
         self.quiet(prompt_id, "email, birthday, address, notes, another contact's priority and phone")
-        self.edit("people__people", sam, phone="0400 000 011")
+        self.edit("people__people", sam, phone="0491 570 111")
         self.asks(prompt_id, "the chosen person's phone", again=False)
         self.confirm(prompt_id, chosen)
         self.edit("people__roles", chosen, priority=2)

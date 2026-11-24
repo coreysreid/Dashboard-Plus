@@ -2,10 +2,10 @@
 
 - **Status:** Accepted
 - **Date:** 2026-11-21
-- **Decided by:** Claude (technical decision delegated by Corey)
+- **Decided by:** Claude (technical decision delegated by User 1)
 
 ## In plain words
-Corey asked for "checklists for making sure today's tasks are done, the weekly
+User 1 asked for "checklists for making sure today's tasks are done, the weekly
 tasks are done and the monthly, and annual tasks are done". There is now a
 **Things to do** page (in the top bar, and a card on Home) with tabs **Today**,
 **This week**, **This month**, **This year** and **No date yet**. It gathers the

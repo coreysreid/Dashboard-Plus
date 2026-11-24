@@ -2,7 +2,7 @@
 
 - **Status:** Accepted
 - **Date:** 2026-11-21
-- **Decided by:** Claude (technical decision delegated by Corey)
+- **Decided by:** Claude (technical decision delegated by User 1)
 - **Builds on:** DESIGN.md 10.5 (prompts), 0026 (Medical and Readiness in v1), 0054 (places), 0055 (modules confined to their own tables), 0100 (permanent IDs, revisions, change log, travel rules), Lane B's draft `workbench/drafts/readiness/` (now removed; its NOTES, SCREENS, ACCEPTANCE and examples are in git history)
 
 ## In plain words

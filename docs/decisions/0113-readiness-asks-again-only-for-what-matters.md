@@ -2,7 +2,7 @@
 
 - **Status:** Accepted
 - **Date:** 2026-11-22
-- **Decided by:** Claude (technical decision delegated by Corey)
+- **Decided by:** Claude (technical decision delegated by User 1)
 - **Builds on:** 0104 (Readiness questions), 0108 (Think it through drills), 0100 (permanent IDs, history, change log), 0107 (Things to do), Lane B's `workbench/drafts/readiness_review/` (batch 21 item 100, now removed; in git history) and report `workbench/reports/2026-11-21-routine-checklists-ux.md` (batch 21 item 98)
 - **Narrows:** the "ask again on any change" rule of 0104 (point 6) and 0108 (a chosen record that changed asks for the step again). Everything else in those decisions stands.
 
@@ -55,7 +55,7 @@ This year now fits a 320px phone: each month is one line of labelled numbers.
    it does not list twelve months or if the numbers are unlabelled.
 
 ## Why we chose it
-- Corey worried that questions coming back after any small edit would feel chatty; Lane B named exactly which
+- User 1 worried that questions coming back after any small edit would feel chatty; Lane B named exactly which
   edits matter for each question, and these rules follow them word for word.
 - Counting changes in history needs no new table and no copy of any value; a hash of counts and IDs reveals
   nothing a guess could recover, unlike a hash of a short medicine name.

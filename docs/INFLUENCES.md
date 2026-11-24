@@ -43,7 +43,7 @@ an idea valuable, please buy and read the original.
   - **Think it through** (decision 0108): calm, step-by-step practice runs for
     eight everyday situations, walked through ahead of time. Only the general
     idea of thinking a situation through before it happens is credited here.
-    The choice of situations came from Corey's own list; their order, questions
+    The choice of situations came from User 1's own list; their order, questions
     and wording are original to this project, and each drill cites the public
     safety bodies it was checked against. The feature is not named after any
     book or person.

@@ -2,7 +2,7 @@
 
 - **Status:** Accepted (refined by decision 0042)
 - **Date:** 2026-11-09
-- **Decided by:** Claude (direction from Corey to use a second agent)
+- **Decided by:** Claude (direction from User 1 to use a second agent)
 
 ## In plain words
 Two AI agents now build the project at the same time. Each owns different
@@ -32,7 +32,7 @@ files only gain rows. Each agent has its own branch and pull requests.
 ## What this costs us (the downsides)
 - Gaps in decision numbering.
 - A contract mistake is found later, when both halves meet.
-- Corey has two streams of pull requests to review.
+- User 1 has two streams of pull requests to review.
 
 ## How hard it is to undo
 Easy. It is a working agreement.

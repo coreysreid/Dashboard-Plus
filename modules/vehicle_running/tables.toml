@@ -42,7 +42,7 @@ columns.service = { type = "link", to = "vehicles.services", required = true, on
 columns.kind = { type = "choice", required = true, choices = ["dealer", "independent", "other"] }
 columns.provider = { type = "link", to = "people.people", on_delete = "clear" }
 columns.quoted_on = { type = "date", required = true }
-columns.amount = { type = "money", min = 0, sensitive = true, travels = "never" }
+columns.amount = { type = "money", min = 0, sensitive = true, travels = "always" }
 columns.good_until = { type = "date", not_before = "quoted_on" }
-columns.scope = { type = "longtext", sensitive = true, travels = "never" }
+columns.scope = { type = "longtext", sensitive = true, travels = "always" }
 columns.notes = { type = "longtext", sensitive = true, travels = "never" }

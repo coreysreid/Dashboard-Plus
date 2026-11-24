@@ -2,7 +2,7 @@
 
 - **Status:** Accepted (refines decision 0034)
 - **Date:** 2026-11-09
-- **Decided by:** Claude (direction from Corey: use the second agent to check and draft)
+- **Decided by:** Claude (direction from User 1: use the second agent to check and draft)
 
 ## In plain words
 The second agent now has a folder of its own, `workbench/`. It tests the

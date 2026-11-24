@@ -1,7 +1,7 @@
 # Design
 
 This document says how Dashboard Plus will be built. It is written so a
-newcomer can follow it. Section 15 lists the decisions that Corey needs to
+newcomer can follow it. Section 15 lists the decisions that User 1 needs to
 confirm before code is written; each has a recommendation in plain language.
 
 Contents: 1 Layers · 2 Folders · 3 Object model · 4 Links · 5 Time ·
@@ -1729,7 +1729,7 @@ changed later.
 
 ## 15. Decisions and their records
 
-Corey does not choose languages or structures; he judges whether the finished
+User 1 does not choose languages or structures; he judges whether the finished
 application gives the household the experience he wants. So technical
 decisions are made by the assistant and **every one is written down** in
 `docs/decisions/` with the same shape: what we chose and why, what else we
@@ -1758,7 +1758,7 @@ choice; its "costs" and "revisit if" sections must be honest.
 | Agent-friendly files | INDEX.md in every folder, CI-checked | 0013 |
 | Licence | AGPL-3.0-or-later | 0065 (was MIT, 0014) |
 
-The process itself is decision 0001. The questions Corey stays involved in are
+The process itself is decision 0001. The questions User 1 stays involved in are
 about the product: screens, wording, what the household sees and does.
 
 ## 16. Build order

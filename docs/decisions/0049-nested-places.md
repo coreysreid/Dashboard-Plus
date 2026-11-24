@@ -2,7 +2,7 @@
 
 - **Status:** Accepted
 - **Date:** 2026-11-17
-- **Decided by:** Claude (technical decision delegated by Corey), from Corey's stocktake request and Lane B's Home layout draft
+- **Decided by:** Claude (technical decision delegated by User 1), from User 1's stocktake request and Lane B's Home layout draft
 
 ## In plain words
 A place can now be inside another place: Shelf 3 inside the Pantry, inside the
@@ -27,7 +27,7 @@ You can stop at any level: "Garage" is fine on its own.
   or renamed automatically.
 
 ## Why we chose it
-- Corey's stocktake: "kidney beans, location kitchen, sub location pantry, sub
+- User 1's stocktake: "kidney beans, location kitchen, sub location pantry, sub
   location shelf 3". Several rooms have a "Top drawer"; only the full path
   says which.
 - Putting it in the core means the path shows the same everywhere with no
@@ -38,7 +38,7 @@ You can stop at any level: "Garage" is fine on its own.
   a fourth level and repeats the same place in every module.
 - Moving places into a new Home layout module first: the right long-term home
   (with exits, shut-offs and safety equipment), but it means moving every
-  item's place link between modules. Doing nesting first gives Corey the
+  item's place link between modules. Doing nesting first gives User 1 the
   result now; the move to Home layout can follow with a backup and a way back.
 
 ## What this costs us (the downsides)

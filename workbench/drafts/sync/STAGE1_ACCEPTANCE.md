@@ -106,7 +106,7 @@ A test should inspect both the ordinary database state and `sync.changes(conn)` 
 
 **Action:** Create, edit an ordinary field on each row, delete/restore one record, read serialized `sync.changes` and `sync.snapshot`, and call `sync.check`.
 
-**Assert:** All seven local-only values are absent from both outputs in raw and derived form and appear only as field names in `withheld`; they remain in local records and audit. The Pets microchip **does** appear because Corey confirmed it travels under 0089. `sync.check` is empty for the shipped declarations. Existing tests cover Home layout, Vehicle and the Pets declaration; **add** actual Utilities sentinels and Pets value projection. Do not log sentinels in test failure output.
+**Assert:** All seven local-only values are absent from both outputs in raw and derived form and appear only as field names in `withheld`; they remain in local records and audit. The Pets microchip **does** appear because User 1 confirmed it travels under 0089. `sync.check` is empty for the shipped declarations. Existing tests cover Home layout, Vehicle and the Pets declaration; **add** actual Utilities sentinels and Pets value projection. Do not log sentinels in test failure output.
 
 ### S1-13 — no local helper, settings or audit payload in portable output
 

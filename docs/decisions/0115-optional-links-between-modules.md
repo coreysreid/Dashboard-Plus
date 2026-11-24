@@ -2,7 +2,7 @@
 
 - **Status:** Accepted
 - **Date:** 2026-11-22
-- **Decided by:** Claude (technical decision delegated by Corey)
+- **Decided by:** Claude (technical decision delegated by User 1)
 - **Builds on:** 0099 (Utilities), 0106 (meter place paths; its "Utilities still requires Home layout" is
   replaced here), 0055 (module migrations stay in their own tables), 0074 (helpers see only what they were
   given), 0100 (permanent IDs and the change log), `workbench/drafts/optional_links/` (Lane B, batch 21 item

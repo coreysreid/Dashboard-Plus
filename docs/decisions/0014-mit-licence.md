@@ -2,13 +2,13 @@
 
 - **Status:** Superseded by [0065](0065-agpl-licence.md) on 2026-11-18
 - **Date:** 2026-11-06
-- **Decided by:** Claude (technical decision delegated by Corey)
+- **Decided by:** Claude (technical decision delegated by User 1)
 
 ## In plain words
 Anyone can use, change and share the program for free.
 
 ## What we chose
-MIT, with 'Copyright (c) 2026 Corey Reid' kept in `LICENSE` and the README.
+MIT, with 'Copyright (c) 2026 the Dashboard Plus contributors' kept in `LICENSE` and the README.
 
 ## Why we chose it
 - Specified in the brief; simple, well understood and permissive, which encourages module authors.
@@ -23,4 +23,4 @@ MIT, with 'Copyright (c) 2026 Corey Reid' kept in `LICENSE` and the README.
 Hard for past releases (a licence given cannot be withdrawn from them), easy for future ones.
 
 ## We should revisit this if
-- Corey wants different terms for future versions.
+- User 1 wants different terms for future versions.

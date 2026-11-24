@@ -2,7 +2,7 @@
 
 Checked **2026-11-09**, with NSW and NEMA access checked again **2026-11-13**. These are source notes, not emergency instructions or program content. A household must check its local authority and current conditions. Review by **2027-02-09**, or sooner if a source changes. We paraphrase and link; we do not copy guidance text.
 
-Corey's suggested creators and companies are logged as [supplementary research leads](../supplementary-preparedness-sources.md). They are not the source for the official facts below.
+User 1's suggested creators and companies are logged as [supplementary research leads](../supplementary-preparedness-sources.md). They are not the source for the official facts below.
 
 ## National body
 

@@ -2,7 +2,7 @@
 
 - **Status:** Accepted
 - **Date:** 2026-11-06
-- **Decided by:** Claude (scope change requested by Corey; technical shape chosen by Claude)
+- **Decided by:** Claude (scope change requested by User 1; technical shape chosen by Claude)
 
 ## In plain words
 The product's headline is "Look after what your household has" (stewardship
@@ -18,7 +18,7 @@ supply). Wine stays as a serious but compact module, and the vision says that ev
 module matters to someone.
 
 ## Why we chose it
-- It is what Corey set out to build and what makes the product worth using.
+- It is what User 1 set out to build and what makes the product worth using.
 - "Below a minimum" and "past a date" are generic, so they belong in the core
   once rather than being rebuilt per topic. This keeps the core free of any
   topic-specific knowledge.

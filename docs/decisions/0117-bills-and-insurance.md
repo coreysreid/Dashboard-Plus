@@ -2,7 +2,7 @@
 
 - **Status:** Accepted
 - **Date:** 2026-11-22
-- **Decided by:** Claude (technical decision delegated by Corey). **Corey should confirm the Vehicle insurance
+- **Decided by:** Claude (technical decision delegated by User 1). **User 1 should confirm the Vehicle insurance
   choice below before this is merged**: it is the first feature that can move where an existing reminder lives.
 - **Builds on:** 0058 (Vehicles and its insurance renewals), 0055 (modules stay in their own tables), 0099
   (Utilities), 0100 (what travels), 0107 (Things to do and "due" words), 0111 (gentle checks before saving), 0115
@@ -93,7 +93,7 @@ is now in Bills. Every move and move back makes a backup first.
   back in a real browser at 320 pixels and desktop.
 
 ## Why we chose it
-- Corey's old tracker had bills and car insurance with nowhere to live here, and a missed renewal is costly.
+- User 1's old tracker had bills and car insurance with nowhere to live here, and a missed renewal is costly.
 - One policy with two reminders that drift apart is worse than none. The draft (RENEWAL.md) made this the
   condition for promoting Bills at all.
 - Moving a household's record between lists is a data move. Making it opt-in, per row, by ID, after a backup,

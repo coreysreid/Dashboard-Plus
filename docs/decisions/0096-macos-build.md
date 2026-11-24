@@ -2,7 +2,7 @@
 
 - **Status:** Accepted
 - **Date:** 2026-11-20
-- **Decided by:** Claude (technical decision delegated by Corey), from Lane B's research `workbench/drafts/macos/MACOS.md`
+- **Decided by:** Claude (technical decision delegated by User 1), from Lane B's research `workbench/drafts/macos/MACOS.md`
 
 ## In plain words
 There is now a Mac version for testing: a normal-looking `Dashboard Plus.app`
@@ -110,7 +110,7 @@ for program data, not inside the app, so replacing the app never touches them.
 - **Left for a real release:** a Developer ID Application certificate (kept as a
   CI secret, never in the repository), hardened-runtime signing of every nested
   file, `notarytool` notarisation and stapling, a decision on Intel versus
-  universal, and Corey testing a downloaded zip on a real Mac: install, first
+  universal, and User 1 testing a downloaded zip on a real Mac: install, first
   open, setup, Save and exit, reopen, update by replacing the app, and the
   records still there afterwards.
 

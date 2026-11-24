@@ -2,7 +2,7 @@
 
 - **Status:** Accepted
 - **Date:** 2026-11-18
-- **Decided by:** Claude (technical decision delegated by Corey); Corey asked for it: "The app should clearly display that it's in isolation mode or online."
+- **Decided by:** Claude (technical decision delegated by User 1); User 1 asked for it: "The app should clearly display that it's in isolation mode or online."
 
 ## In plain words
 The top of every page now says **On this computer only**. If any helpers can
@@ -21,7 +21,7 @@ a design), this is where it will say so.
   0074) "Nothing is sent anywhere" was no longer the whole truth.
 
 ## Why we chose it
-- Corey asked for the mode to be clear at all times.
+- User 1 asked for the mode to be clear at all times.
 - Isolation is the default, so saying it plainly sets the pattern for when
   sharing exists: the badge will change words, never disappear.
 - A helper with access is the one way records can leave the computer today
