@@ -18,7 +18,7 @@ The short bundled read-me should point to the main README or repeat the processo
 
 ## What only a real Mac test can confirm
 
-Corey should use **invented records in a fresh Mac account or disposable test Mac**, not real household data, and record the macOS version and chip. This ordered check is still outstanding:
+User 1 should use **invented records in a fresh Mac account or disposable test Mac**, not real household data, and record the macOS version and chip. This ordered check is still outstanding:
 
 1. Sign in to GitHub, find the current green **main** run and download both nested ZIPs. Confirm the artifact name and Finder's extracted app name actually match the instructions. CI builds the artifact but does not test this download path.
 2. Drag the extracted app to Applications and open it from there. Record the exact Gatekeeper warning, **Done**, **Open Anyway**, authentication and any second warning. Do not disable Mac security features. CI starts from the build folder without downloaded-file quarantine.

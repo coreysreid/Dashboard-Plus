@@ -2,10 +2,10 @@
 
 - **Status:** Accepted
 - **Date:** 2026-11-16
-- **Decided by:** Claude (technical decision delegated by Corey), at Corey's request
+- **Decided by:** Claude (technical decision delegated by User 1), at User 1's request
 
 ## In plain words
-Pets was planned for the last milestone (M5). Corey found it missing on his
+Pets was planned for the last milestone (M5). User 1 found it missing on his
 first run, so it is now a shipped module. Setup asks for each pet's name and
 kind, and the Pets lists record the vet, microchip, vaccinations, regular
 treatments and medicine with when each is next due, weigh-ins and vet visits.
@@ -32,7 +32,7 @@ A printable pet details sheet is there for a sitter, kennel or evacuation.
   low already works.
 
 ## Why we chose it
-- Corey asked for it. Pets matter to many households, and in an evacuation
+- User 1 asked for it. Pets matter to many households, and in an evacuation
   the vet, microchip and medicine details are exactly what gets forgotten.
 - The draft was close; promoting it costs less than leaving the household with
   a bare pet count.

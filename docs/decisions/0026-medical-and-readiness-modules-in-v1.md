@@ -2,7 +2,7 @@
 
 - **Status:** Accepted
 - **Date:** 2026-11-06
-- **Decided by:** Claude (direction from Corey; technical shape chosen by Claude)
+- **Decided by:** Claude (direction from User 1; technical shape chosen by Claude)
 
 ## In plain words
 First aid and "have you thought about…?" planning are part of the first release, not left for later.
@@ -11,7 +11,7 @@ First aid and "have you thought about…?" planning are part of the first releas
 Ship two files-only modules in v1: Medical (first aid kit checks, first aid and CPR training and renewals, medical contacts, built on Household stock and People) and Readiness (prompts, plans, drills, coverage, country packs). Medical uses the shared running-low and expiring-soon views, so it needs no special code.
 
 ## Why we chose it
-- Corey named medical readiness as a pillar and helping people think as another.
+- User 1 named medical readiness as a pillar and helping people think as another.
 - Both reuse existing core features, so the cost is mostly content.
 - They are a strong test of the "files only" design.
 

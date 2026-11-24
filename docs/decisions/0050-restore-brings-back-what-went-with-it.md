@@ -2,7 +2,7 @@
 
 - **Status:** Accepted
 - **Date:** 2026-11-17
-- **Decided by:** Claude (technical decision delegated by Corey), from an independent review
+- **Decided by:** Claude (technical decision delegated by User 1), from an independent review
 
 ## In plain words
 An independent review (a second AI model, reading the code and trying to break

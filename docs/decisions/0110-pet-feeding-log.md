@@ -2,7 +2,7 @@
 
 - **Status:** Accepted
 - **Date:** 2026-11-21
-- **Decided by:** Claude (technical decision delegated by Corey)
+- **Decided by:** Claude (technical decision delegated by User 1)
 - **Builds on:** 0047 (Pets), 0055 (module confinement), 0066-0069 and 0101-0102 (helpers and Review), 0100 (sync stage 1 travel rules), 0107 (Things to do), 0109 (charts); Lane B's draft `workbench/drafts/pet_feeding/` (batch 20 item 89, now removed; its FLOW, NOTES, ACCEPTANCE and example rows are in git history)
 
 ## In plain words
@@ -78,7 +78,7 @@ feeding entry** with **Accept as another feeding** and **Reject this copy**.
   module. `tools/load_example.py` reads times like `today-1T07:15`.
 
 ## Why we chose it
-- Corey's old tracker had about 700 events a year with daily totals; they need
+- User 1's old tracker had about 700 events a year with daily totals; they need
   a home that is fast to add to and honest about what a total means.
 - A declaration lets a later module (medicine given, water drunk) reuse the
   same local-day arithmetic instead of copying it.

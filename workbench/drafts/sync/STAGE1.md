@@ -53,7 +53,7 @@ Each row below gets `global_id`/`row_revision` unless marked relation or local c
 | `garden__jobs` | `bed` → Beds; completion and chosen due date travel. |
 | `lent_out__loans` | `stock_item` → Stock Items, `borrower` → People; status and returned date travel. Mark returned and Undo are one logical row revision each. |
 | `wine__wines` | Wine root; label details travel. |
-| `wine__bottles` | `wine` → Wines; typed count and free-text place travel. Price paid is ordinary under decision 0095 and travels unless Corey later changes that product rule. |
+| `wine__bottles` | `wine` → Wines; typed count and free-text place travel. Price paid is ordinary under decision 0095 and travels unless User 1 later changes that product rule. |
 | `wine__tastings` | `wine` → Wines; tasting notes are ordinary under 0095 and travel. Saving one never changes a bottle count. |
 
 There are **35 record tables and one relation table**. The relation is not a 36th record with a made-up local ID. New modules must declare global-ID behavior and a per-column travel classification before stage 2 allows them in a snapshot.

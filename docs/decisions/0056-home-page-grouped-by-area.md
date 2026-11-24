@@ -2,7 +2,7 @@
 
 - **Status:** Accepted
 - **Date:** 2026-11-17
-- **Decided by:** Claude (technical decision delegated by Corey)
+- **Decided by:** Claude (technical decision delegated by User 1)
 
 ## In plain words
 The home page had one large tile for every list: about twenty for a household
@@ -82,6 +82,6 @@ Easy. The `home` word is optional and affects only the home page; removing the
 grouping means restoring the old loop in `home.html`. No data is involved.
 
 ## We should revisit this if
-- Corey or a tester cannot find a list or a sheet from home.
+- User 1 or a tester cannot find a list or a sheet from home.
 - A module needs three or more main lists and its card grows long.
 - A module author asks for a say in where their area sits.

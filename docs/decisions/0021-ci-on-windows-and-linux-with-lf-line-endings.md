@@ -2,7 +2,7 @@
 
 - **Status:** Accepted
 - **Date:** 2026-11-06
-- **Decided by:** Claude (technical decision delegated by Corey)
+- **Decided by:** Claude (technical decision delegated by User 1)
 
 ## In plain words
 Every change is checked on the operating system the product targets first (Windows) and on Linux.

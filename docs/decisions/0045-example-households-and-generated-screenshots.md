@@ -2,7 +2,7 @@
 
 - **Status:** Accepted
 - **Date:** 2026-11-09
-- **Decided by:** Claude (technical decision delegated by Corey)
+- **Decided by:** Claude (technical decision delegated by User 1)
 
 ## In plain words
 The project now has three invented households (the Smith family in Australia,
@@ -33,7 +33,7 @@ screenshots, so they always match the current program.
   views are correct for test data.
 
 ## Why we chose it
-- Corey asked for plenty of example screenshots for the launch, using typical
+- User 1 asked for plenty of example screenshots for the launch, using typical
   made-up details.
 - Three different households show different parts of the program: a busy
   family with pets, three generations with care needs and medication, and one

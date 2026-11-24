@@ -2,7 +2,7 @@
 
 - **Status:** Accepted
 - **Date:** 2026-11-06
-- **Decided by:** Claude (direction from Corey; technical shape chosen by Claude)
+- **Decided by:** Claude (direction from User 1; technical shape chosen by Claude)
 
 ## In plain words
 The garden module is the one we use to teach people how to build a module of their own.
@@ -13,7 +13,7 @@ Ship a files-only Vegetable garden module as an optional v1 module and base the 
 ## Why we chose it
 - It touches every feature a module can use: stock (seeds), time (seasons), weather (connector), recurring jobs (events), and a money-saved outcome.
 - It is relatable and easy to explain to a non-technical author.
-- Corey chose it as the perfect example.
+- User 1 chose it as the perfect example.
 
 ## What else we considered
 - Wine as the teaching example: too narrow, with no recurring jobs or outside data.

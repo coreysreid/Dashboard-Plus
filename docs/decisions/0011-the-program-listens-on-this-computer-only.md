@@ -2,7 +2,7 @@
 
 - **Status:** Accepted
 - **Date:** 2026-11-06
-- **Decided by:** Claude (technical decision delegated by Corey)
+- **Decided by:** Claude (technical decision delegated by User 1)
 
 ## In plain words
 Nothing else on the network, and no other website, can reach the dashboard.
@@ -24,4 +24,4 @@ Bind to `127.0.0.1` only. Add a per-start secret, host and origin checks. No rem
 Medium. It is a deliberate non-goal; reversing it needs authentication, HTTPS and a new security review.
 
 ## We should revisit this if
-- Corey changes the product direction to include phones.
+- User 1 changes the product direction to include phones.

@@ -2,7 +2,7 @@
 
 - **Status:** Accepted
 - **Date:** 2026-11-21
-- **Decided by:** Claude (technical shape delegated by Corey under decision 0089); product rules from Corey in 0089
+- **Decided by:** Claude (technical shape delegated by User 1 under decision 0089); product rules from User 1 in 0089
 - **Builds on:** 0089 (household sync, stage 1), 0055 (modules confined to their own tables), 0032 (one checked path for every record change), 0079 (restore), `workbench/drafts/sync/STAGE1.md`
 
 ## In plain words
@@ -66,13 +66,13 @@ yet: there is no network code in this step.
    - A private (`sensitive`) column that says none of these **stays local** and
      is listed by `sync.check` as not yet reviewed, so a later exchange refuses
      to start until someone decides. Mistakes in the rule are load errors.
-   Applied to the shipped modules exactly as Corey chose in 0089: People
+   Applied to the shipped modules exactly as User 1 chose in 0089: People
    "Important details" `detail` travels for allergy, condition, medication,
    care or mobility need and dietary, and stays local for access instructions
    and "other"; all four Home layout `access_details` and Vehicles
    `registration` are `travels = "never"`; Pets `microchip` is marked
    `travels = "always"`; Utilities `account_number` and `notes` (switched on
-   in parallel, decision 0099) are `travels = "never"` until Corey says otherwise. A withheld field appears in the log by **name only**:
+   in parallel, decision 0099) are `travels = "never"` until User 1 says otherwise. A withheld field appears in the log by **name only**:
    never its value, length, hash or anything worked out from it.
 6. **A kind changed across the line (the safe minimum).** If an Important
    detail changes from a kind that stays local (access, other) to one that
@@ -169,4 +169,4 @@ computers, undoing it would break sync: high.
 - The change log grows enough to matter on a USB stick (then: keep only what
   members still need, with a fresh snapshot for anyone further behind).
 - A module needs a table rebuild (then: a core helper that carries the IDs).
-- Households want to see a record's permanent ID, or Corey changes what travels.
+- Households want to see a record's permanent ID, or User 1 changes what travels.

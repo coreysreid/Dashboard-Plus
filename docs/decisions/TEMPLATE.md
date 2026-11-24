@@ -2,10 +2,10 @@
 
 - **Status:** Proposed | Accepted | Superseded by NNNN
 - **Date:** 2026-11-06
-- **Decided by:** Claude (technical decision delegated by Corey)
+- **Decided by:** Claude (technical decision delegated by User 1)
 
 ## In plain words
-One or two sentences Corey can read without technical knowledge.
+One or two sentences User 1 can read without technical knowledge.
 
 ## What we chose
 What we are doing, specifically.

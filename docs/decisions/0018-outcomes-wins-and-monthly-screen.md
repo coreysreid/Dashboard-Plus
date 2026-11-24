@@ -2,7 +2,7 @@
 
 - **Status:** Accepted
 - **Date:** 2026-11-06
-- **Decided by:** Claude (direction from Corey; technical shape chosen by Claude)
+- **Decided by:** Claude (direction from User 1; technical shape chosen by Claude)
 
 ## In plain words
 The program shows the difference it made, in plain numbers, and only claims a win when it is computed from records or a person confirmed it.
@@ -11,7 +11,7 @@ The program shows the difference it made, in plain numbers, and only claims a wi
 Add metrics (period against previous period, with the basis shown), a wins table filled from computed facts, confirmed questions and the person's own notes, and a monthly "What your records did for you" screen. Keep usefulness answers locally and offer an opt-in, counts-only usefulness report. No automatic reporting.
 
 ## Why we chose it
-- Corey's goal is that input time produces results that matter: less waste, fewer takeaways, problems caught early.
+- User 1's goal is that input time produces results that matter: less waste, fewer takeaways, problems caught early.
 - Confirmation keeps claims honest; guessed savings would damage trust.
 - Local feedback lets us learn whether the product works without breaking the local-only promise.
 

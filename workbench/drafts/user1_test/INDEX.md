@@ -1,4 +1,4 @@
-# workbench/drafts/corey_test/ (summary: one-hour solo household trial)
+# workbench/drafts/user1_test/ (summary: one-hour solo household trial)
 | Entry | What it is | Open it when |
 |---|---|---|
 | RUN.md | Fifteen timed tasks from download through Save and exit | running the trial |

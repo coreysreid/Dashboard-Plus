@@ -2,7 +2,7 @@
 
 - **Status:** Accepted
 - **Date:** 2026-11-09
-- **Decided by:** Claude (technical decision delegated by Corey)
+- **Decided by:** Claude (technical decision delegated by User 1)
 
 ## In plain words
 The summary page of the tests folder may list up to 40 entries instead of 25,

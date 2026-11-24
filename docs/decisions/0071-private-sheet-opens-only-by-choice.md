@@ -2,7 +2,7 @@
 
 - **Status:** Accepted
 - **Date:** 2026-11-18
-- **Decided by:** Claude (technical decision delegated by Corey), from Lane B's current-build UX check and sensitive-detail recheck
+- **Decided by:** Claude (technical decision delegated by User 1), from Lane B's current-build UX check and sensitive-detail recheck
 
 ## In plain words
 The private medical sheet asks "Show it only when you mean to print or share

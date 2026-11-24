@@ -21,7 +21,7 @@ Keep this short. **Do not paste real names, phone numbers, addresses, account nu
 For each distinct problem, copy **one row** into the top of the **Open** table in `docs/BACKLOG.md`, directly below its header. Replace the bracketed text; omit private details. The **Plan** cell can say “Lane A to reproduce” until the fix is known. Use a screen name and the exact visible words where possible.
 
 ```markdown
-| 2026-11-20 | (Corey one-hour test, task [number]) I [what I did with demo data]. I expected [what I expected]. The screen said/showed “[exact words]” and [what happened]. | Lane A to reproduce; [suggested change, if any]. |
+| 2026-11-20 | (User 1 one-hour test, task [number]) I [what I did with demo data]. I expected [what I expected]. The screen said/showed “[exact words]” and [what happened]. | Lane A to reproduce; [suggested change, if any]. |
 ```
 
 If a task worked well, add a short note under the row instead of a false bug report. If a problem stopped the session, put its row first and mention the task number. This is a copy-and-paste form; it does not automatically write to the repository.

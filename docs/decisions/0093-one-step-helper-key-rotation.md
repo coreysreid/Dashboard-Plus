@@ -2,7 +2,7 @@
 
 - **Status:** Accepted
 - **Date:** 2026-11-20
-- **Decided by:** Claude (technical decision delegated by Corey), from Lane B's design `workbench/drafts/agent_api/ROTATE_KEY.md`
+- **Decided by:** Claude (technical decision delegated by User 1), from Lane B's design `workbench/drafts/agent_api/ROTATE_KEY.md`
 
 ## In plain words
 If a helper's key was lost or may have been seen, press **Make a new key** on

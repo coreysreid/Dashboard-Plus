@@ -1,14 +1,14 @@
 # 0067. The Agent API v1: local, bearer-only, module-scoped, and never private details
 
-- **Status:** Accepted (Corey said yes on 2026-11-18, after a plain-words explanation)
+- **Status:** Accepted (User 1 said yes on 2026-11-18, after a plain-words explanation)
 - **Date:** 2026-11-18
-- **Decided by:** Claude (technical decision delegated by Corey); needs Corey's plain-words OK because it changes a security rule
+- **Decided by:** Claude (technical decision delegated by User 1); needs User 1's plain-words OK because it changes a security rule
 - **Refines:** DESIGN sections 9 and 12; decision 0055
 
 ## In plain words
 Helpers talk to Dashboard through a small door at `/api/v1`, only from this computer. The door has its own lock: a
 helper's key. This is the first place where a request is allowed in without the "launch link" cookie and page token that
-every screen needs, because a helper is a program, not a person with a browser. **That is the change that needs Corey's
+every screen needs, because a helper is a program, not a person with a browser. **That is the change that needs User 1's
 OK.** Everything else (every screen) is exactly as strict as before. Helpers can look at the parts the household chose and
 suggest new records for a person to accept. They can never see private details, change or delete anything, or accept
 their own suggestions.

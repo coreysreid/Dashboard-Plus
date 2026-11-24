@@ -2,7 +2,7 @@
 
 - **Status:** Accepted
 - **Date:** 2026-11-16
-- **Decided by:** Claude (technical decision delegated by Corey), from Corey's stocktake request and Lane B's catalogue
+- **Decided by:** Claude (technical decision delegated by User 1), from User 1's stocktake request and Lane B's catalogue
 
 ## In plain words
 When you add a stock item, typing "kid" offers **Kidney beans**. Picking it fills
@@ -27,7 +27,7 @@ nothing matches.
   copies it into the module when a round is accepted.
 
 ## Why we chose it
-- Corey's stocktake is "pick Kidney beans, Kitchen › Pantry › Shelf 3, 5, use by
+- User 1's stocktake is "pick Kidney beans, Kitchen › Pantry › Shelf 3, 5, use by
   20/05/27". Typing names by hand is slow and creates near-duplicates
   ("kidney beans", "Kidney Beans 400g").
 - Lane B's UX check found the Stock in form started with a long, unfiltered

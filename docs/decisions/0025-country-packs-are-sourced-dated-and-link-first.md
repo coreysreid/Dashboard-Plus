@@ -2,7 +2,7 @@
 
 - **Status:** Accepted
 - **Date:** 2026-11-06
-- **Decided by:** Claude (direction from Corey; technical shape chosen by Claude)
+- **Decided by:** Claude (direction from User 1; technical shape chosen by Claude)
 
 ## In plain words
 Where we ship local safety information for a country, every fact names its official source and date, and we never invent statistics.

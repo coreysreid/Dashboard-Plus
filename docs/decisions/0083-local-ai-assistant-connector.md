@@ -2,7 +2,7 @@
 
 - **Status:** Accepted
 - **Date:** 2026-11-19
-- **Decided by:** Claude (technical decision delegated by Corey), from Lane B's design in `workbench/drafts/agent_api/MCP_CONNECTOR.md`
+- **Decided by:** Claude (technical decision delegated by User 1), from Lane B's design in `workbench/drafts/agent_api/MCP_CONNECTOR.md`
 
 ## In plain words
 Many AI assistant apps can use "tools" through a standard called MCP. Dashboard

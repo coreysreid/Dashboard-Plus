@@ -2,7 +2,7 @@
 
 - **Status:** Accepted
 - **Date:** 2026-11-09
-- **Decided by:** Claude (technical decision delegated by Corey)
+- **Decided by:** Claude (technical decision delegated by User 1)
 
 ## In plain words
 A module can describe a one-page sheet, such as the emergency sheet with who

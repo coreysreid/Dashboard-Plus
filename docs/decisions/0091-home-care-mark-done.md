@@ -2,7 +2,7 @@
 
 - **Status:** Accepted
 - **Date:** 2026-11-20
-- **Decided by:** Claude (technical decision delegated by Corey)
+- **Decided by:** Claude (technical decision delegated by User 1)
 
 ## In plain words
 Every Home care job now has a **Mark done** button. It opens a short form:

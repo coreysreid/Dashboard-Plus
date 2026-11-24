@@ -1,6 +1,6 @@
 # Contributing to Dashboard Plus
 
-Thanks for helping make this local household dashboard useful. Start with [the project vision](docs/VISION.md) and [the working rules](AGENTS.md). Describe the household benefit in plain language so Corey can judge the result.
+Thanks for helping make this local household dashboard useful. Start with [the project vision](docs/VISION.md) and [the working rules](AGENTS.md). Describe the household benefit in plain language so User 1 can judge the result.
 
 Dashboard Plus is licensed under the GNU AGPL, version 3 or later (see [`LICENSE`](LICENSE)). By contributing you agree your contribution is shared under the same licence. Modules, including files-only modules, are part of the program and are expected to use the same licence.
 

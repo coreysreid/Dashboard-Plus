@@ -2,7 +2,7 @@
 
 - **Status:** Accepted
 - **Date:** 2026-11-17
-- **Decided by:** Claude (technical decision delegated by Corey)
+- **Decided by:** Claude (technical decision delegated by User 1)
 
 ## In plain words
 The household can now write down each vehicle, who it would call if the vehicle

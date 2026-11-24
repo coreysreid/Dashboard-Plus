@@ -2,10 +2,10 @@
 
 - **Status:** Accepted
 - **Date:** 2026-11-17
-- **Decided by:** Claude (technical decision delegated by Corey), at Corey's request
+- **Decided by:** Claude (technical decision delegated by User 1), at User 1's request
 
 ## In plain words
-Corey asked for layered use-by dates: 3 tins of kidney beans that expire next
+User 1 asked for layered use-by dates: 3 tins of kidney beans that expire next
 month and 10 that expire in six months. An item's stock is now kept in
 batches. Each batch has its own amount, use-by date and place (3 tins on
 Kitchen › Pantry › Shelf 3, 10 on the garage shelves). The item's amount is

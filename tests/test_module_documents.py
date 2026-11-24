@@ -55,7 +55,7 @@ class DocumentsModuleTests(TempDirTestCase):
     def test_notes_help_points_to_the_copies_field(self):
         page = self.page("/t/documents__documents/new")
         self.assertIn("Choose where copies are kept in ‘Copies also kept at’ above.", page)
-        self.assertNotIn("Green HDD", page)
+        self.assertNotIn("Blue USB drive", page)
 
     def test_module_loads_without_problems(self):
         self.assertEqual(self.report.module_problems, {})

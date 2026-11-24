@@ -2,7 +2,7 @@
 
 - **Status:** Accepted
 - **Date:** 2026-11-21
-- **Decided by:** Corey chose all five changes after moving a household in with a helper; the technical choices are Claude's (delegated by Corey)
+- **Decided by:** User 1 chose all five changes after moving a household in with a helper; the technical choices are Claude's (delegated by User 1)
 - **Refines:** 0068 (suggestions wait until a person accepts), 0085 (Review queue cap), 0088 (limits under the write lock), 0097 (grouped suggestions)
 
 ## In plain words
@@ -55,7 +55,7 @@ limit is 200 again. A helper can never press it itself.
   left behind half done when its Stock in fails.
 - A raised limit for one day only keeps the cap's purpose (a runaway helper cannot flood Review) while letting a
   person who is watching say "keep going". Telling the helper to stop and ask puts the person in charge.
-- The household's own day is what "today" means to Corey; UTC midnight falls in the middle of the day in some places.
+- The household's own day is what "today" means to User 1; UTC midnight falls in the middle of the day in some places.
 
 ## What else we considered
 - A separate confirmation page for Accept all: one more page load; the fold-out box works without a script too.

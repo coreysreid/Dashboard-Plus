@@ -2,10 +2,10 @@
 
 - **Status:** Accepted
 - **Date:** 2026-11-17
-- **Decided by:** Claude (technical decision delegated by Corey), at Corey's request
+- **Decided by:** Claude (technical decision delegated by User 1), at User 1's request
 
 ## In plain words
-Corey wants to type a use-by date as 20/05/27. The dashboard now reads and
+User 1 wants to type a use-by date as 20/05/27. The dashboard now reads and
 shows dates the way the household's country writes them: day first in
 Australia, the UK, New Zealand and most places (20/05/27), month first in the
 United States (05/20/27). Underneath, every date is still saved as 2027-05-20,

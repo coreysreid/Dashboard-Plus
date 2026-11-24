@@ -1,7 +1,7 @@
 # Workstreams: two agents in parallel
 
 Two AI agents build Dashboard Plus. Each owns different files, so they never
-overwrite each other, and they talk only through the repository. Corey reviews
+overwrite each other, and they talk only through the repository. User 1 reviews
 pull requests and judges the product. Read this page before any work.
 
 ## Who owns what
@@ -47,7 +47,7 @@ every draft automatically. You do not write tests in `tests/`.
 1. Branch from the latest `main`; merge `main` again just before opening the
    pull request.
 2. Run `python tools/check_all.py`. Everything passes, nothing skipped.
-3. One pull request per task, described in plain language for Corey: what a
+3. One pull request per task, described in plain language for User 1: what a
    household can now do or what was found, and anything left undone. GitHub
    does not let Lane B create pull requests, so Lane B pushes its branch and
    writes "ready for a pull request: `<branch>`" with a plain-language summary
@@ -57,18 +57,18 @@ every draft automatically. You do not write tests in `tests/`.
 5. Lane B updates `workbench/STATUS.md` in the same pull request.
 6. No real names, places, numbers or data, anywhere.
 
-## Who merges (delegated by Corey on 16 November 2026)
+## Who merges (delegated by User 1 on 16 November 2026)
 
-Lane A merges without waiting for Corey:
+Lane A merges without waiting for User 1:
 - its own pull requests, and
 - Lane B's pull requests that change only `workbench/`, after checking them,
 
 once every check is green on the current head and there is no conflict. Lane A
-then tells Corey in plain words what was merged and what changed for a
-household. Corey reviews the result by using the program, not each pull
+then tells User 1 in plain words what was merged and what changed for a
+household. User 1 reviews the result by using the program, not each pull
 request.
 
-**Still asks Corey first:** anything published outside the repository (a
+**Still asks User 1 first:** anything published outside the repository (a
 release, a public announcement), a change to the licence or the privacy and
 security rules, deleting or rewriting history, and any change that could lose
 or alter a household's existing records without a backup and a way back.
@@ -109,7 +109,7 @@ Draft modules may link to these with `requires = ["people"]` and
 
 | Item | Lane | State |
 |---|---|---|
-| M1: core, People, Household stock, gaps, README, release checks, examples | A | merged; three hands-on checks are with Corey |
+| M1: core, People, Household stock, gaps, README, release checks, examples | A | merged; three hands-on checks are with User 1 |
 | Water basis on the home page, second backup status | A | merged |
 | Setup country and state drop-downs, "Save and exit" | A | in review |
 | Pets module (moved forward from M5, from Lane B's draft) | A | in review |
@@ -126,7 +126,7 @@ Draft modules may link to these with `requires = ["people"]` and
    country content, example data, test scripts.
 2. **Lane A polishes and integrates**: reviews each draft, fixes what the core
    needs, promotes it into `modules/` or `docs/`, adds tests and screenshots.
-3. **Corey tests the result** as a household would (UX and UI), and his notes go
+3. **User 1 tests the result** as a household would (UX and UI), and his notes go
    into [`BACKLOG.md`](BACKLOG.md). Lane B also runs the journeys after each
    Lane A merge and reports what it finds.
 
@@ -140,7 +140,7 @@ session can finish; Lane A keeps it stocked.
 | A | B | Finish both in-flight branches: merge `main`, run `python tools/check_all.py` (it will ask you to regenerate `PROJECT_MAP.md`), resolve `docs/decisions/INDEX.md` by keeping every row in number order, start the commit message with `Lane B:`, then mark each "ready for a pull request" in `workbench/STATUS.md`. | module guide merged (pull request #10); project files: merge `main` again (it is missing #9 and #10), then mark it ready |
 | A | B | Start batch 2 below, all inside `workbench/`. | done: pull requests #12, #13, #15 |
 | B | A | M1 check findings (`workbench/reports/2026-11-09-m1-check.md`): J1 first step, J5 home summary. | fixed in the M1 release checks pull request |
-| B | A | Product review (`workbench/reports/2026-11-13-product-swot.md`): show the water basis; show whether the second backup worked; finish the hands-on M1 checks. | first two done (decision 0046); hands-on checks are with Corey |
+| B | A | Product review (`workbench/reports/2026-11-13-product-swot.md`): show the water basis; show whether the second backup worked; finish the hands-on M1 checks. | first two done (decision 0046); hands-on checks are with User 1 |
 | A | B | Start batch 3 below: drafting heavy lifting for Lane A to polish and integrate. | done (#22, #24 to #33) |
 | A | B | Start batch 4 below: check the new picking, fill the catalogue from evidence, a places list, acceptance checks for nested places and lots, tie readiness questions to records, Collections and Vehicles drafts, a getting-started guide. | done (#38 to #50) |
 | B | A | Medical promotion blocker: the example loader failed on kit checks (no name column); also `none = {}` for "Is there a first aid kit?". | both fixed; Medical ships (decision 0051). Batches 5 and 6 merged (#62). Dates your way shipped (decision 0052); lots are next for Lane A. Lane B: carry on with batch 6 item 20, then batches 7 and 8. |
@@ -207,7 +207,7 @@ session can finish; Lane A keeps it stocked.
 >    role, a Pets field, a Household stock category with an amount above zero,
 >    or a Home layout or Medical table from your drafts), or `none`. List in
 >    `NOTES.md` the rules the core needs to decide "already answered".
-> 7. **Two more module drafts from Corey's vision.** `collections` (a hobby or
+> 7. **Two more module drafts from User 1's vision.** `collections` (a hobby or
 >    collection such as Lego sets, trading cards or vinyl: item, set or
 >    catalogue number, condition, where it is, bought for, value now, sold
 >    for, with a total value) and `vehicles` (registration, insurance and
@@ -304,13 +304,13 @@ Lane A" and carry on.
 27. **Utilities and household accounts**: providers, account numbers kept
     private, outage and fault lines in People, meter locations in Home layout.
 
-### Batch 9: ready for Corey's hands-on round (M1)
+### Batch 9: ready for User 1's hands-on round (M1)
 
 Batches 5 to 8 are done and merged (#62, #65 to #73). Since then Medical and
 dates your way have shipped (decisions 0051, 0052); layered use-by dates
 (lots) are Lane A's next build.
 
-28. **Corey's test session script.** A one-hour guided session Corey can run
+28. **User 1's test session script.** A one-hour guided session User 1 can run
     alone on his own computer: ten tasks from download to Save and exit
     (stocktake twenty goods with places and dates, a first aid kit, a pet, the
     emergency sheet), what to notice, and a short form whose answers drop
@@ -368,7 +368,7 @@ asked (0059). Work down this list, one pull request per item, as before.
     the grouped home page, batches and the batch picker, Home layout,
     Vehicles and the private-detail Show buttons (lists, records, the private
     sheet). Worst first, exact words, screenshots; include a 320px phone pass.
-41. **Update Corey's one-hour test** (`workbench/drafts/corey_test/`) for
+41. **Update User 1's one-hour test** (`workbench/drafts/user1_test/`) for
     batches, Home layout, Vehicles and the private Show steps; keep it to 60
     minutes.
 42. **Documents, final promotion pass.** Done differently: Lane A switched Documents on (decision 0062). Check it instead as part of item 40.
@@ -389,7 +389,7 @@ asked (0059). Work down this list, one pull request per item, as before.
 
 ### Batch 13: the Agent API, expanded (M2)
 
-Corey wants AI helpers to be able to use the dashboard. Lane A is building
+User 1 wants AI helpers to be able to use the dashboard. Lane A is building
 the skeleton from `docs/plans/agent-api-v1.md` (decisions 0066 to 0069 will
 record it). Lane B checks for new work every 6 hours: start these as soon as
 you see them; items 48 to 51 need only the plan, the rest are easier once the
@@ -445,7 +445,7 @@ land.
     Home inventory: what each still needs from core (privacy, links, actions)
     now that 0072 and 0075 exist; update each NOTES.md and say which one is
     ready first.
-59. **Corey's one-hour test, refreshed.** Fold Things lent out, stocktake,
+59. **User 1's one-hour test, refreshed.** Fold Things lent out, stocktake,
     Garden and (once merged) making a helper key into the solo script; keep
     it to 60 minutes and give paste-ready feedback rows.
 60. **Helper quick-start for a household.** One page a non-technical person
@@ -466,7 +466,7 @@ spreadsheet (0080), the mode badge (0082), the AI-assistant connector (0083)
 with its "is this really Dashboard" check (0086), the published API
 description (0084), the Review cap (0085), one key per form (0087) and your
 batch 14 fixes (0088). Household sharing is designed (0081) and waits for
-Corey's choice; don't build it.
+User 1's choice; don't build it.
 
 63. **Connector acceptance run.** Run `MCP_ACCEPTANCE.md` against the shipped
     connector (`python -m dashboard.connector`), worst first, with exact steps.
@@ -485,11 +485,11 @@ Corey's choice; don't build it.
     replies and Review words; note what failed or felt slow.
 68. **Sharing option A, ready-checked.** Read `docs/plans/household-sharing.md`
     option A and list what still needs deciding before it could be built, with
-    acceptance checks. Design only; Corey has not chosen yet.
+    acceptance checks. Design only; User 1 has not chosen yet.
 
 ### Batch 16: household sync, designed (M3) — do this first
 
-Corey (19 November) wants sync "similar to Anki's sync or maybe even like
+User 1 (19 November) wants sync "similar to Anki's sync or maybe even like
 git": push and pull, with merge requests; his copy is "main" (or a home server
 later); his partner pulls from main from anywhere, as long as main is running.
 USB/file bundles are the offline option for households that want nothing
@@ -501,7 +501,7 @@ gets a separate "household member" key kind, not a helper key; a push arrives
 on main's Review as one change request with per-row accept/reject and
 side-by-side conflicts; the mode badge (0082) shows "Syncing with … · last
 synced …". Work in `workbench/drafts/sync/`. Design only; no code. Lane A
-turns it into decision 0089 for Corey's OK.
+turns it into decision 0089 for User 1's OK.
 
 69. **Household sync design.** Read `docs/plans/household-sharing.md` and
     decisions 0055, 0066–0069, 0074, 0079–0083, 0086–0088 first. Cover:
@@ -521,12 +521,12 @@ turns it into decision 0089 for Corey's OK.
     encrypted with the pairing secret); threat model (stolen laptop, lost
     key, a member's mistakes, someone else on the private network); badge,
     Settings, Review and error words; a staged build plan with sizes and
-    acceptance checks; short questions for Corey. Cite sources with dates and
+    acceptance checks; short questions for User 1. Cite sources with dates and
     mark anything unsure.
 
 ### Batch 17: sync v1 details, macOS and phones (M3)
 
-Corey chose the sync direction (decision 0089): one main, members push
+User 1 chose the sync direction (decision 0089): one main, members push
 requests to Review, Tailscale or WireGuard (pluggable, room for a third),
 **private details never travel in v1**, two computers first, home server
 later. He also wants **macOS** and **Android and iOS apps** in the near
@@ -548,7 +548,7 @@ pipeline, integrated as sync members. Work in `workbench/drafts/sync/` and new
     offline use, storage, key pairing and the private network on a phone,
     store rules, costs; a recommendation and the first screens a phone needs
     (Needs attention, Stock in and out, Count this batch, Review).
-74. **"Not a vault" wording.** Corey: the app captures the mess and shows it
+74. **"Not a vault" wording.** User 1: the app captures the mess and shows it
     cleanly; "it's not a Fort Knox vault for your passwords, ID documents and
     gold bars." Exact help and setup words that say so where people might
     type sensitive things (Important documents, Home layout codes, People
@@ -581,14 +581,14 @@ security review (your item 71 brief).
 80. **Utilities promotion pass.** Link meters to Home layout, add the fault
     phone to its sheet now that linked phones print (0072), and bring it to
     promotion standard with acceptance checks.
-81. **Corey's one-hour test, refreshed again.** Add Mark done, Copies also
+81. **User 1's one-hour test, refreshed again.** Add Mark done, Copies also
     kept and Make a new key; keep it to 60 minutes.
 
 ### Batch 19: helpers on receipts, the Mac preview, sync stage 1 checks (M2, M3)
 
 Built on 20 November: Wine (0095), the unsigned Mac preview app (0096), receipt
 lines and grouped suggestions on Review (0097), and your batch 18 findings
-(0098). Corey still has to answer whether a pet's microchip number travels to
+(0098). User 1 still has to answer whether a pet's microchip number travels to
 members (your item 78 note); assume it does until he says otherwise.
 
 82. **Receipt to Review, again.** Re-run your connector receipt example with
@@ -601,7 +601,7 @@ members (your item 78 note); assume it does until he says otherwise.
 84. **Mac preview, read-through.** Read the Mac app's README section and
     decision 0096 as a household would; list every step that would confuse
     a non-technical person, with replacement words. Note what only a real
-    Mac test by Corey can confirm.
+    Mac test by User 1 can confirm.
 85. **Sync stage 1, acceptance checks refined.** Turn your STAGE1.md checks
     into exact test descriptions Lane A can write, including the People
     `detail` kind rule and the upgrade of an existing household.
@@ -611,16 +611,16 @@ members (your item 78 note); assume it does until he says otherwise.
     and out, Count this batch and Review on a phone member: what each shows,
     exact labels, and what is left out compared with a computer.
 
-### Batch 20: after Corey's first real helper move (M2)
+### Batch 20: after User 1's first real helper move (M2)
 
-Corey had an assistant move an old household tracker into Dashboard Plus
+User 1 had an assistant move an old household tracker into Dashboard Plus
 through the connector. Household stock moved across well. Lane A is now
 building: Review speed-ups (Accept all from one send, tick boxes, keyboard
 keys, buttons that never move) and "Allow 200 more today" (0101); a starting
 message for the assistant and a Stock item sent with its starting amount as
 one suggestion (0102); and a "Set up my home" page with rooms, storage spots
 and connections between rooms (0103). The gaps below had nowhere to live.
-Use made-up data only; never copy anything from Corey's real household.
+Use made-up data only; never copy anything from User 1's real household.
 
 88. **Bills and insurance, drafted.** A module for regular bills and
     policies (car, home and contents, health, pet): provider from People,
@@ -631,7 +631,7 @@ Use made-up data only; never copy anything from Corey's real household.
 89. **Pet feeding log, drafted.** Daily bowl and food events for a pet and
     a daily total, entered fast from a phone and by a helper. What is
     logged, what Home shows, what a sheet shows, and how big it can grow in a
-    year (Corey's old tracker held about 700 events).
+    year (User 1's old tracker held about 700 events).
 90. **Medicine doses, drafted.** Individual doses given (who, what, when,
     by whom) beside Medical readiness's summary per medicine: whether it
     belongs in Medical, what is private, what travels to a member, and the
@@ -643,7 +643,7 @@ Use made-up data only; never copy anything from Corey's real household.
     lives in notes. How Stock in could carry price and shop so a household
     can ask "what is preparing costing us", with the exact Review and form
     words. Check against 0097's receipt lines.
-93. **Simple exit map, researched.** Corey's later idea: a household draws a
+93. **Simple exit map, researched.** User 1's later idea: a household draws a
     rough exit plan at "lego level" from the rooms and connections in "Set
     up my home" (0103). Research what fire services recommend a home
     escape plan shows (cite and date), and sketch in words the least a
@@ -653,7 +653,7 @@ Use made-up data only; never copy anything from Corey's real household.
     the new starting message (0102) once it is built and list every place a
     first-time assistant would still go wrong.
 
-95. **"Think it through" drills, written (Corey's priority).** Corey wants
+95. **"Think it through" drills, written (User 1's priority).** User 1 wants
     calm, ahead-of-time walk-throughs of real situations, each a short run of
     questions that point at the household's own records. Write our own
     wording (see INFLUENCES.md: credit the general idea only, never a book's
@@ -665,7 +665,7 @@ Use made-up data only; never copy anything from Corey's real household.
     your meeting place); a kitchen fire at dinner time; someone breaking in
     at 2am; a car breakdown 150 km from home; a 72-hour power cut; a state
     warning that tap water is unsafe across the whole region (for example
-    South East Queensland); a cyclone or hurricane forecast to track near
+    a region such as South East Queensland); a cyclone or hurricane forecast to track near
     your suburb. For each: the questions, which record each answer comes
     from (Home layout shut-offs and ways out, Set up my home rooms and
     outside doors (0103), smoke alarms, stock such as torches, batteries and
@@ -674,7 +674,7 @@ Use made-up data only; never copy anything from Corey's real household.
     your water shut-off is"), what is saved (their own answers, a date
     practised), a review date, and which country or region it applies to.
     Never give medical or legal advice; say when to call 000/911/999 first.
-96. **Routine checklists, designed for the engine.** Corey wants checklists
+96. **Routine checklists, designed for the engine.** User 1 wants checklists
     "for making sure today's tasks are done, the weekly, the monthly and the
     annual". Reconcile your seasonal_checklists draft with Home care repeats
     (0091), Garden jobs and Needs attention: what a Today, This week, This
@@ -701,12 +701,12 @@ the first two charts (0109) from your batch 20 drafts.
 99. **Drills, checked.** Once 0108 is on `main`, run three drills end to
     end; check every missing-record sentence, the 000 line, private answers
     staying off Home, sheets, export and helpers. Worst first.
-100. **Readiness: when should a question come back?** Corey worries that any
+100. **Readiness: when should a question come back?** User 1 worries that any
     edit to a linked record (a kit's last-checked date, water used from a
     batch) brings a question back. For each of the eight record-backed
     questions, say which field changes should ask again and which should
     not, with the household words.
-101. **Queensland pack, sourced.** Corey lives in South East Queensland.
+101. **Queensland pack, sourced.** User 1 lives in Australia.
     Find the Queensland and Australian public sources (Queensland Fire
     Department, SES, Bureau of Meteorology, Queensland Health water notices,
     Energex outage guidance) that fit our readiness questions and drills;
@@ -731,7 +731,7 @@ the first two charts (0109) from your batch 20 drafts.
 
 > You are Lane B, the checker and drafter. You have full internet access for
 > research. Read these first: `AGENTS.md`, this page, [`BACKLOG.md`](BACKLOG.md)
-> (Corey's own feedback), [`VISION.md`](VISION.md), [`DESIGN.md`](DESIGN.md)
+> (User 1's own feedback), [`VISION.md`](VISION.md), [`DESIGN.md`](DESIGN.md)
 > sections 5 and 6 (the file contracts: `watch`, `gaps`, `adjusts`, sheets,
 > labels including `empty`), [`MODULES.md`](MODULES.md), the shipped modules in
 > `modules/` (People, Household stock, Pets) as the standard to match,
@@ -739,16 +739,16 @@ the first two charts (0109) from your batch 20 drafts.
 > `workbench/research/`, and [`EXAMPLES.md`](EXAMPLES.md) to see the screens.
 >
 > Edit **only `workbench/`**. Follow the Definition of done; one pull request
-> per numbered task, each explained in plain words for Corey. Use made-up data
+> per numbered task, each explained in plain words for User 1. Use made-up data
 > only (fiction-reserved phone numbers, `example.com` emails). Cite a source
 > and the date checked for every fact a household might rely on. Where a task
 > needs something the core cannot do yet, do not work around it: write what is
 > needed in the draft's `NOTES.md` (what the household sees, then what the core
 > would have to do), and Lane A builds it. Pets is shipped now; leave it alone.
 >
-> **Corey's priorities (do these first, in this order):**
+> **User 1's priorities (do these first, in this order):**
 >
-> 1. **A list of common goods to pick from (the catalogue).** When Corey does a
+> 1. **A list of common goods to pick from (the catalogue).** When User 1 does a
 >    stocktake he wants to type "kid…", pick **Kidney beans** from a list, and
 >    only type a new name when it is missing. Draft
 >    `workbench/drafts/catalogue/`:
@@ -762,8 +762,8 @@ the first two charts (0109) from your batch 20 drafts.
 >      `shelf_life_source`, `notes`.
 >    - Work in rounds. **Round 1:** the 150 goods most households keep (pantry
 >      staples, water, first aid, cleaning, toiletries, batteries and power,
->      pet food, basic hardware). Open the pull request so Corey can react, then
->      **round 2** to about 400 and **round 3** towards 800, adding what Corey
+>      pet food, basic hardware). Open the pull request so User 1 can react, then
+>      **round 2** to about 400 and **round 3** towards 800, adding what User 1
 >      and the example households show is missing.
 >    - **Water needs care**, because only drinking water counts towards days
 >      of water: drinking water (bottled or stored tap), filtered, boiled,
@@ -777,7 +777,7 @@ the first two charts (0109) from your batch 20 drafts.
 >    - In `NOTES.md`, describe how picking should feel (type-ahead, best
 >      matches first, regional names, "Add 'xyz' as a new item"), and what a
 >      household's own additions should do (kept locally, offered next time).
-> 2. **Home layout (a new module).** Corey wants to record where things are as
+> 2. **Home layout (a new module).** User 1 wants to record where things are as
 >    **Kitchen › Pantry › Shelf 3**. Draft `workbench/drafts/home_layout/`:
 >    - Places that nest: area or room (Kitchen, Garage), storage inside it
 >      (Pantry, Grey shelves), and a spot (Shelf 3, Top drawer). Compare one
@@ -791,7 +791,7 @@ the first two charts (0109) from your batch 20 drafts.
 >      "Our home" sheet: the shut-offs, exits and where the safety things are.
 >    - Say in `NOTES.md` how Household stock's existing `places` should move
 >      into this (Lane A will migrate it).
-> 3. **Layered use-by dates (lots).** Corey has 3 tins of beans that expire in
+> 3. **Layered use-by dates (lots).** User 1 has 3 tins of beans that expire in
 >    a month and 10 that expire in six months, and wants that recorded
 >    gracefully. Draft the design in `workbench/drafts/stock_lots/`:
 >    - Tables: an item (Kidney beans, keep at least 6) and its lots (3 tins,
@@ -884,4 +884,4 @@ the first two charts (0109) from your batch 20 drafts.
 >    Write nothing you cannot cite. Follow `docs/decisions/0025-*.md`.
 >
 > One pull request per numbered task. Use made-up data only. Explain each pull
-> request in plain language for Corey.
+> request in plain language for User 1.

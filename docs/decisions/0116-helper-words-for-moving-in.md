@@ -2,7 +2,7 @@
 
 - **Status:** Accepted
 - **Date:** 2026-11-22
-- **Decided by:** Claude (technical decision delegated by Corey)
+- **Decided by:** Claude (technical decision delegated by User 1)
 
 ## In plain words
 When a household moves an old tracker in with an assistant, the assistant is now told that a number like "Rice:

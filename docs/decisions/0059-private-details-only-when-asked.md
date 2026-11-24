@@ -2,7 +2,7 @@
 
 - **Status:** Accepted
 - **Date:** 2026-11-17
-- **Decided by:** Claude (technical decision delegated by Corey), from Lane B's sensitive-detail audit
+- **Decided by:** Claude (technical decision delegated by User 1), from Lane B's sensitive-detail audit
 
 ## In plain words
 Details marked private, such as allergies, conditions or a number plate, used

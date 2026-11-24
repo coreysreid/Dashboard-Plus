@@ -2,11 +2,11 @@
 
 - **Status:** Accepted
 - **Date:** 2026-11-22
-- **Decided by:** Claude (technical decision delegated by Corey)
+- **Decided by:** Claude (technical decision delegated by User 1)
 
 ## In plain words
 Windows does not come with the world's time zone list that Python needs, so
-the Pet feeding log could put a bowl filled at 7am Brisbane time on the wrong
+the Pet feeding log could put a bowl filled at 7am household time on the wrong
 day. We now ship that list (the `tzdata` package) inside Dashboard Plus, so
 "today" is the household's own day on every computer.
 

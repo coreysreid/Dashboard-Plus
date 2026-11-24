@@ -28,7 +28,7 @@ Deferred: updates/deletes of existing records, amend/undo, change-then-accept, p
 - Checking suggestions: full dry run. New `Records.check_create(entries, actor)`: BEGIN IMMEDIATE, call `_create` for each entry in order, collect ValidationError per entry, ALWAYS ROLLBACK. Derived columns (`_derived`) refused explicitly: "is worked out from its batches; suggest a Stock in instead". Store RAW submitted values (never cleaned — money would double-scale). Accept re-runs create on raw values; if the world changed, row stays pending with reason. Batches all-or-nothing on submit.
 - Accept: in one db.transaction, first mark it accepted only if still pending (one UPDATE … WHERE status = 'pending'; a second click or window gets "already been decided", decision 0074), then `store.create_in(name, raw_values, actor=f"agent:{slug}", review_status="confirmed", batch_id=batch.id)`; set edited_by_person = 1 on the new row; mark proposal accepted with record_id; audit actor='person', action='accept', table_name='core__proposals'. Reject: status='rejected' the same way (only if still pending), audit action='reject'. Retry with same request_key returns the original batch (rejected never comes back). Proposals for a switched-off module: show "This is for <module>, which is switched off", Reject only. Proposals from a turned-off helper still shown: "This helper's access is off. Its earlier suggestions still need your decision."
 - Audit rows: helper_add (person, core__helpers/id), helper_off (person), propose (agent:<slug>, core__proposals/id, after={"table","batch"}, no values), accept (person), reject (person). Reads not audited. last_used_at updated at most once a minute.
-- NOTE: the /api/v1 exemption from the page token is a security-rule change; Corey must OK it before merge (Lane A handles that).
+- NOTE: the /api/v1 exemption from the page token is a security-rule change; User 1 must OK it before merge (Lane A handles that).
 
 ## 3. Data model — src/dashboard/core/migrations/0003_helpers.sql (core migration; add INDEX row)
 ```sql
@@ -130,7 +130,7 @@ Update/delete suggestions (amend/undo, stale before-values, edited_by_person loc
 
 ## 9. Decision records
 0066 Helpers get a key from Settings: shown once, kept only as a fingerprint outside the database.
-0067 The Agent API v1: local, bearer-only, module-scoped, and never private details. (Needs Corey's plain-words OK — security rule change.)
+0067 The Agent API v1: local, bearer-only, module-scoped, and never private details. (Needs User 1's plain-words OK — security rule change.)
 0068 Helpers' suggestions wait in their own place until a person accepts them. (Changes DESIGN 3 and 8.)
 0069 A module may not be called "core" or use double underscores in its name. (Refines 0055.)
 0074 Agent API hardening: hidden links, one 404 for parts not given, text screening, 120 requests a minute, one decision per suggestion.

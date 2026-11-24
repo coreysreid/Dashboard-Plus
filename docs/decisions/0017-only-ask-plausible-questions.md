@@ -2,7 +2,7 @@
 
 - **Status:** Accepted
 - **Date:** 2026-11-06
-- **Decided by:** Claude (direction from Corey; technical shape chosen by Claude)
+- **Decided by:** Claude (direction from User 1; technical shape chosen by Claude)
 
 ## In plain words
 The program only wonders aloud about things that could reasonably be linked, so tyre wear is never connected to the garden hose.
@@ -11,7 +11,7 @@ The program only wonders aloud about things that could reasonably be linked, so 
 Add a plausibility gate to the question loop: measures and events carry declared topics, a watch lists which topics may explain it, and a candidate must pass both plausibility and time closeness. Add a "That doesn't make sense" answer that stops that pairing for good, a weekly question budget, and a clearly labelled Explore mode for deliberate any-to-any comparison.
 
 ## Why we chose it
-- Corey asked for "ask, don't assert" without dumb questions.
+- User 1 asked for "ask, don't assert" without dumb questions.
 - Time closeness alone produces false leads, because many unrelated things drift together.
 - Asking about fewer pairs reduces the multiple-comparison penalty, so real findings are easier to detect.
 - Household feedback ("doesn't make sense") teaches the program which declarations are wrong.

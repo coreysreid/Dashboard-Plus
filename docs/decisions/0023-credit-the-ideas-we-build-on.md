@@ -2,7 +2,7 @@
 
 - **Status:** Accepted
 - **Date:** 2026-11-06
-- **Decided by:** Claude (direction from Corey)
+- **Decided by:** Claude (direction from User 1)
 
 ## In plain words
 We name the books that shaped the product, say what we took from them in our

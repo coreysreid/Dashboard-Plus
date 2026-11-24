@@ -2,7 +2,7 @@
 
 - **Status:** Accepted
 - **Date:** 2026-11-21
-- **Decided by:** Claude (technical decision delegated by Corey)
+- **Decided by:** Claude (technical decision delegated by User 1)
 - **Refines:** 0068 (suggestions wait until a person accepts), 0080 and 0094 (Import), 0097 (receipt lines and groups), 0101 (Accept all by group), 0102 (the helper guide)
 - **Answers:** Lane B's batch 19 items 82, 83 and 86: `workbench/reports/2026-11-21-receipt-group-review.md`, `workbench/drafts/receipt_entry/UNMATCHED_LINES.md` and `DUPLICATE_RECEIPT.md`
 

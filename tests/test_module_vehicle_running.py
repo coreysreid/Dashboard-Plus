@@ -207,7 +207,7 @@ class AcceptanceTests(RunningTestCase):
             self.assertNotIn(private, reply)
         log = sync.changes(self.conn, 0, limit=100000)
         created = next(e for e in log if e["table_name"] == ESTIMATES and e["action"] == "create")
-        # Corey, 24 November: quote amounts and scope travel to the household's other computers; notes stay here.
+        # User 1, 24 November: quote amounts and scope travel to the household's other computers; notes stay here.
         self.assertEqual(sorted(created["withheld"]), ["notes"])
         self.assertIn(SCOPE, str(log))
         self.assertNotIn(NOTE, str(log))

@@ -2,7 +2,7 @@
 
 - **Status:** Accepted
 - **Date:** 2026-11-20
-- **Decided by:** Claude (technical decision delegated by Corey)
+- **Decided by:** Claude (technical decision delegated by User 1)
 
 ## In plain words
 A household can now keep a small wine list: each wine, how many bottles it has

@@ -2,7 +2,7 @@
 
 - **Status:** Accepted
 - **Date:** 2026-11-19
-- **Decided by:** Claude (technical decision delegated by Corey), from Lane B's batch 14 checks (items 55 and 56)
+- **Decided by:** Claude (technical decision delegated by User 1), from Lane B's batch 14 checks (items 55 and 56)
 
 ## In plain words
 Three small fixes from Lane B's checks. A helper sending two requests at the

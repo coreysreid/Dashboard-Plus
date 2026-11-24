@@ -2,7 +2,7 @@
 
 - **Status:** Accepted
 - **Date:** 2026-11-20
-- **Decided by:** Claude (technical decision delegated by Corey), from Lane B's design `workbench/drafts/agent_api/STEADY_ADDRESS.md`
+- **Decided by:** Claude (technical decision delegated by User 1), from Lane B's design `workbench/drafts/agent_api/STEADY_ADDRESS.md`
 
 ## In plain words
 Dashboard Plus still picks a new address each time it opens, but it now writes

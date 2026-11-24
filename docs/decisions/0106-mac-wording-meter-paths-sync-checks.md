@@ -2,7 +2,7 @@
 
 - **Status:** Accepted (that Utilities needs Home layout is replaced by [0115](0115-optional-links-between-modules.md))
 - **Date:** 2026-11-21
-- **Decided by:** Claude (technical decision delegated by Corey)
+- **Decided by:** Claude (technical decision delegated by User 1)
 - **Builds on:** 0096 (Mac preview), 0099 (Utilities), 0100 (sync stage 1), 0103 (Set up my home), `workbench/reports/2026-11-21-mac-preview-readthrough.md`, `workbench/drafts/sync/STAGE1_ACCEPTANCE.md`
 
 ## In plain words

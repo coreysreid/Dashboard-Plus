@@ -2,7 +2,7 @@
 
 - **Status:** Accepted
 - **Date:** 2026-11-20
-- **Decided by:** Claude (technical decision delegated by Corey)
+- **Decided by:** Claude (technical decision delegated by User 1)
 - **Refines:** decision 0080 (the "read the household's way without asking" and "every row adds a new record"
   downsides); acts on `workbench/reports/2026-11-20-restore-export-import-ux.md`
 
