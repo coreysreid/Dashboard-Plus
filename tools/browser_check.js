@@ -583,10 +583,31 @@ function expect(condition, message) { if (!condition) throw new Failed(message);
       expect((await html()).includes(d.secret), 'Show details on the dose history should show the medicine.');
       const pwide = await page.evaluate(() => document.documentElement.scrollWidth);
       expect(pwide <= 320, `At 320px the dose history is ${pwide}px wide; it should not scroll sideways.`);
+      // Dose calendar and private list (decision 0121): ● and a count until Show, never a link that opens it.
+      await goto(personUrl);
+      const cal = page.locator('section.cal-wrap[id^="cal-medicine_doses__doses-"]');
+      expect(await cal.count() === 1, `${d.person}'s page should show this month's Dose calendar.`);
+      expect(/\d+ doses recorded/.test(await cal.locator('.cal-summary').innerText()), 'The Dose calendar should say how many doses were recorded this month.');
+      expect(await cal.locator('td[aria-current="date"] .cal-chip.cal-recorded').count() === 1, "Today's cell should show the ● mark for today's doses.");
+      expect(!(await html()).includes(d.secret), `${d.person}'s Dose calendar sent the medicine before Show was pressed.`);
+      const cwide = await page.evaluate(() => document.documentElement.scrollWidth);
+      expect(cwide <= 320, `At 320px ${d.person}'s page with the Dose calendar is ${cwide}px wide; it should not scroll sideways.`);
+      await submit('button[data-show-calendar]');
+      expect((await html()).includes(d.secret), 'Show on the Dose calendar should list each day\'s medicine.');
+      const shwide = await page.evaluate(() => document.documentElement.scrollWidth);
+      expect(shwide <= 320, `At 320px the shown Dose calendar is ${shwide}px wide; it should not scroll sideways.`);
+      await goto('/t/medicine_doses__doses?show=1');
+      const listed = await text('main');
+      expect(listed.includes('Private history — press Show to see it.'), 'The list of every dose should say "Private history — press Show to see it." before Show.');
+      expect(!listed.includes(d.person) && !(await html()).includes(d.secret), 'The list of every dose named who or what before Show was pressed.');
+      await submit('button[data-show-list]');
+      expect((await text('main')).includes(d.person), 'Show on the list of every dose should list who was given each dose.');
+      const lwide = await page.evaluate(() => document.documentElement.scrollWidth);
+      expect(lwide <= 320, `At 320px the shown dose list is ${lwide}px wide; it should not scroll sideways.`);
       await goto('/');
       const home = await text('main');
       expect(!home.includes('Medicine doses') && !home.includes('Medicine given'), 'Home should never list medicine doses.');
-      ok(`medicine doses at 320px: recorded from ${d.person}'s page, medicine only on Show, a repeat asked first, not on Home`);
+      ok(`medicine doses at 320px: recorded from ${d.person}'s page, medicine only on Show, a repeat asked first, not on Home; Dose calendar and list show counts until Show (0121)`);
     } finally {
       await page.setViewportSize({ width: 1280, height: 720 });
     }

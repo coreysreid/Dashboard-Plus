@@ -9,7 +9,18 @@
   <a class="button" href="/t/{{ info.name }}/new">Add</a>
   <span class="muted">{{ total }} record{{ "" if total == 1 else "s" }}</span>
 </div>
+{% if private and not private.show %}{# private history (decision 0121): only how many, until a pressed Show #}
 {% if total %}
+<p data-private-words><strong>{{ private.words }}</strong></p>
+<form method="post" action="/t/{{ info.name }}/show" class="actions">
+  <input type="hidden" name="_csrf" value="{{ csrf_token }}">
+  <button type="submit" class="quiet" data-show-list>Show</button> <span class="muted">Shows the latest entries, on this page only.</span>
+</form>
+{% else %}
+<div class="card"><p>Nothing here yet.</p></div>
+{% endif %}
+{% elif total %}
+{% if private %}<p class="actions"><a class="button quiet" href="/t/{{ info.name }}" data-hide-details>Hide details</a> <span class="muted">Showing {{ private.range }}, latest first.</span></p>{% endif %}
 <div class="scroll">
 <table class="grid">
   <thead><tr>
@@ -21,6 +32,12 @@
   <tbody id="rows">{% include "rows.html" %}</tbody>
 </table>
 </div>
+{% if private %}
+{% if private.next %}<form method="post" action="/t/{{ info.name }}/show" class="actions">
+  <input type="hidden" name="_csrf" value="{{ csrf_token }}"><input type="hidden" name="offset" value="{{ private.next }}">
+  <button type="submit" class="quiet">Show the next entries</button>
+</form>{% endif %}
+{% else %}
 <p id="more-wrap" class="actions" {% if next_offset is none %}hidden{% endif %}>
   <button class="quiet" id="more" type="button" data-offset="{{ next_offset or '' }}">Show more</button>
 </p>
@@ -60,6 +77,7 @@
     }
   })();
 </script>
+{% endif %}
 {% else %}
 <div class="card"><p>Nothing here yet. <a href="/t/{{ info.name }}/new">Add the first one</a>.</p></div>
 {% endif %}

@@ -64,7 +64,8 @@ def group_words(store: records.Records, info: records.TableInfo, group_id, show:
 
 
 def line(store, info: records.TableInfo, row: dict, formatter: display.Formatter, show: bool) -> str:
-    """"8:00 am · dose · Given by: Maria Garcia"; after Show also the medicine and the amount entered."""
+    """"8:00 am · dose"; after Show also the medicine, the amount entered and who gave it (decision 0121: before
+    Show the line says only when, so no giver's name is on the page either)."""
     from dashboard.web.daily_pages import amount_text, clock_text
     rule = info.table.daily
     parts = [clock_text(row["_local"]), rule["entry"][0]]
@@ -72,7 +73,7 @@ def line(store, info: records.TableInfo, row: dict, formatter: display.Formatter
         if rule.get("group"):
             parts.append(group_words(store, info, row[rule["group"]], True))
         parts.append(amount_text(rule, row) or "no amount entered")
-    for column in _links(info):
+    for column in _links(info) if show else []:
         name = formatter.text(info, column, row.get(column.name)) if row.get(column.name) not in (None, "") else ""
         parts.append(f"{display.column_label(info, column).rstrip('?')}: {name or 'not known'}")
     return " · ".join(parts)
@@ -154,4 +155,6 @@ def view(store: records.Records, info: records.TableInfo, subject_id: int, day: 
             "add": add_link(store, info, subject_id), "first_add": first_add(store, info, subject_id),
             "picks": [], "sheet": None, "list": f"/t/{info.name}",
             "subject_href": f"/t/{subject_info.name}/{subject_id}",
-            "entry_one": rule["entry"][0], "entry_many": rule["entry"][1]}
+            "entry_one": rule["entry"][0], "entry_many": rule["entry"][1],
+            "calendar": (f"/calendar/{info.name}?" + urlencode({"subject": subject_id, "month": day[:7]})
+                         if info.table.calendar else None)}  # the month around this day, counts only (0121)

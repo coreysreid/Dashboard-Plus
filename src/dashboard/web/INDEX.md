@@ -3,7 +3,7 @@
 |---|---|---|
 | __init__.py | Web layer: pages, forms, the Review screen and the helper API. | adding a screen or route |
 | app.py | Build the Flask web application and its local-only protections. | changing sign-in, protections or reports |
-| pages.py | Pages built from module declarations: the record grid, add and edit forms, and history. | changing the grid or forms |
+| pages.py | Pages built from module declarations: the record grid, add and edit forms, and history. | changing the grid or forms, or what a private list or record shows before Show (0121) |
 | setup.py | The first-run wizard and the settings page: who lives here, the home, modules and backups. | changing setup questions or settings |
 | home_setup.py | Set up my home: rooms and areas, the storage spots inside them, and which rooms connect, on one page. | changing the Set up my home page |
 | action_form.py | An action's small form, such as Mark done: open it, save it once as one operation, and Undo it (decision 0091). | changing Mark done or Undo screens |
@@ -27,7 +27,7 @@
 | export_page.py | Settings, Export my records: a page and a button that downloads a zip of spreadsheet files. | changing the Export page |
 | chart*.py | Charts drawn on the server as SVG, labelled bars and dated dots (charts), and the pages showing today's drinking water and one pet's recorded weights (chart_pages, decision 0109) | changing a chart or its empty words |
 | daily_pages.py | Daily totals pages (decision 0110): one subject's day, a dated sheet, the Home lines, the record panel and Review's repeat note. | changing the feeding log pages, its sheet or its Home card |
-| calendar_pages.py | Month calendars (decision 0119): a colour-coded grid with a symbol for every state, a legend and the same days in words. | changing a calendar page, its words, the Things to do Calendar tab or the record panel |
+| calendar_pages.py | Month calendars (decision 0119): a colour-coded grid with a symbol for every state, a legend and the same days in words. | changing a calendar page, its words, the Things to do Calendar tab, the record panel or a private calendar's Show (0121) |
 | private_daily.py | Private daily history (decision 0120), such as medicine doses: counts and times until Show, per-medicine totals after it. | changing the dose panel, Record a dose or Show details on Dose history |
 | restore.py | Settings, Backups: the list of backups, a preview of one, putting it back, and Undo restore. | changing the restore pages |
 | openapi-v1.json | The published OpenAPI 3.1 description of the helper API, served at GET /api/v1/openapi.json. | changing a helper route, reply or error code (edit it too) |

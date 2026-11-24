@@ -1013,6 +1013,13 @@ def _check_calendar(file: str, module: str, table: Table, tables: dict[str, Tabl
         if not expiring or expiring.get("wording") != "due":
             problems.append(f"{where}: 'due = true' shows the open due date of the record '{raw.get('per')}' points "
                             f"at, so that table must be in this module and have a reminder with wording = \"due\".")
+    if table.private:  # decision 0121: a private calendar shows one plain mark and a count, never a state or due
+        for key in ("state", "due"):
+            if key in raw and raw[key] not in (False, None):
+                problems.append(f"{where}: a private table's calendar can't use '{key}': it shows only a mark and "
+                                f"how many each day, never what kind or whether something is due.")
+        if raw.get("look", "recorded") != "recorded":
+            problems.append(f"{where}: a private table's calendar uses the look \"recorded\" only.")
     if len(problems) > before:
         return {}
     return {"when": raw["when"], "per": raw["per"], "show": raw["show"], "title": raw["title"].strip(),

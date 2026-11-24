@@ -172,6 +172,7 @@ One record per decision, from `TEMPLATE.md`. Never deleted; reversed ones are ma
 | [0118](0118-exit-sketch.md) | Our way-out sketch from Set up my home: a floor, sleeping and checked-window flag per room and a confirmed destination per door out (stock migration 0007), meeting place, help and building-plan answers in Settings; rooms as boxes and connections as lines drawn on the server in a steady grid, a complete text version with the same IDs, a sheet with legend and warnings on numbered continuation pages; only recorded possibilities and gaps, never a safe or independent route; no notes, codes or People details | Accepted |
 | [0119](0119-calendars-and-trends.md) | Colour-coded month calendars from a generic `calendar` declaration (when, per, show one or all, a state's choices mapped to five fixed looks with symbol, colour and pattern, optional `due = true` from the linked reminder) by the household's own day; an HTML table with day names, today, hidden words, a legend and an equal day list; a blank day is never missed; Pet feeding per pet and a Things to do Calendar tab for Routines; dots charts gain range presets, change since the reading before and the range's start in words, an optional line broken across long gaps, and a fitted scale only when declared and labelled (pet weights keep zero) | Accepted |
 | [0120](0120-medicine-doses.md) | Medicine doses from Lane B's draft, people only: one private entry per dose (who, which of their own medication details, when, who gave it, optional private amount); a generic `link_rule` (same person, kind = medication) checked on every save, restore and change to the linked detail; a generic `private = true` table kept off Home, sheets, export and helpers (needs `suggestions = false`); `daily` gains per-medicine `group` and a form repeat question (two hours); Show details is a pressed button; every column travels (0089); no missed-dose words; a calendar hook | Accepted |
+| [0121](0121-dose-calendar-and-private-lists.md) | Every `private = true` list and record says only how many and "Private history — press Show to see it." until a pressed Show (a POST, never a link); no sort, scroll or suggestion addresses; a private record's name is its list and number; questions treat it as private; Medicine doses declares a per-person Dose calendar of ● and counts, with each day's lines only after Show, and a private calendar may not use a state, due dates or another look; the dose panel names the giver only after Show | Accepted |
 | [TEMPLATE](TEMPLATE.md) | Blank record to copy for a new decision | recording a decision |
 
 ## docs/plans/  (summary: build plans for larger pieces of work, written before building)
@@ -388,7 +389,7 @@ Generate the next one with: python tools/make_migration.py medical --name <what_
 | Entry | What it is | Open it when |
 |---|---|---|
 | module.toml | Name, version, description; requires People | changing the module's details |
-| tables.toml | Medicine doses: a private table (no helpers, imports, Home or sheets), the medicine limited to the person's own medication details by `link_rule`, every column travels; `daily` totals per medicine and the two-hour repeat question | adding a field or changing the daily words |
+| tables.toml | Medicine doses: a private table (no helpers, imports, Home or sheets), the medicine limited to the person's own medication details by `link_rule`, every column travels; `daily` totals per medicine the two-hour repeat question and a private month `calendar` per person (0121) | adding a field or changing the daily words |
 | labels.toml | Friendly labels, help text (check the pack; the amount is never copied), "I do not know" for the giver, form and list order | changing wording or order |
 | migrations/ | Numbered database changes | after changing tables.toml |
 
@@ -653,7 +654,7 @@ Add a new file with the next number instead of changing an old one.
 |---|---|---|
 | __init__.py | Web layer: pages, forms, the Review screen and the helper API. | adding a screen or route |
 | app.py | Build the Flask web application and its local-only protections. | changing sign-in, protections or reports |
-| pages.py | Pages built from module declarations: the record grid, add and edit forms, and history. | changing the grid or forms |
+| pages.py | Pages built from module declarations: the record grid, add and edit forms, and history. | changing the grid or forms, or what a private list or record shows before Show (0121) |
 | setup.py | The first-run wizard and the settings page: who lives here, the home, modules and backups. | changing setup questions or settings |
 | home_setup.py | Set up my home: rooms and areas, the storage spots inside them, and which rooms connect, on one page. | changing the Set up my home page |
 | action_form.py | An action's small form, such as Mark done: open it, save it once as one operation, and Undo it (decision 0091). | changing Mark done or Undo screens |
@@ -677,7 +678,7 @@ Add a new file with the next number instead of changing an old one.
 | export_page.py | Settings, Export my records: a page and a button that downloads a zip of spreadsheet files. | changing the Export page |
 | chart*.py | Charts drawn on the server as SVG, labelled bars and dated dots (charts), and the pages showing today's drinking water and one pet's recorded weights (chart_pages, decision 0109) | changing a chart or its empty words |
 | daily_pages.py | Daily totals pages (decision 0110): one subject's day, a dated sheet, the Home lines, the record panel and Review's repeat note. | changing the feeding log pages, its sheet or its Home card |
-| calendar_pages.py | Month calendars (decision 0119): a colour-coded grid with a symbol for every state, a legend and the same days in words. | changing a calendar page, its words, the Things to do Calendar tab or the record panel |
+| calendar_pages.py | Month calendars (decision 0119): a colour-coded grid with a symbol for every state, a legend and the same days in words. | changing a calendar page, its words, the Things to do Calendar tab, the record panel or a private calendar's Show (0121) |
 | private_daily.py | Private daily history (decision 0120), such as medicine doses: counts and times until Show, per-medicine totals after it. | changing the dose panel, Record a dose or Show details on Dose history |
 | restore.py | Settings, Backups: the list of backups, a preview of one, putting it back, and Undo restore. | changing the restore pages |
 | openapi-v1.json | The published OpenAPI 3.1 description of the helper API, served at GET /api/v1/openapi.json. | changing a helper route, reply or error code (edit it too) |
@@ -693,7 +694,8 @@ Add a new file with the next number instead of changing an old one.
 | attention.html | Running low, expiring soon, days of cover with the working shown, and gaps worth filling in | changing the attention page |
 | count.html | Count this batch: the count, its review and what was saved | changing the stocktake wording |
 | import.html | Import from a spreadsheet: choose a list and file, match columns, see which rows are ready, send to Review | changing the import wording |
-| grid.html | A table's records, a page at a time, sortable | changing the list of records |
+| grid.html | A table's records, a page at a time, sortable; a private table's only a count until a pressed Show (0121) | changing the list of records |
+| private_record.html | One record of a private table (0121), such as a medicine dose, before Show: its number, "Private history — press Show to see it." and the Show button | changing what a private record shows before Show |
 | rows.html | One page of grid rows (also loaded as you scroll) | changing a row |
 | form.html | Add and edit forms, delete and restore, and history | changing the form |
 | action_form.html | An action's small form, such as Mark done: what it asks, the next-date choice, Save once | changing the Mark done wording |
@@ -745,6 +747,7 @@ How to run them is in AGENTS.md.
 | test_watch.py | Tests for running low, expiring soon and days of cover, and for checking `watch` sections. | changing watch rules |
 | test_charts.py | Tests for the first charts (decision 0109): the drinking-water breakdown, one pet's weigh-ins and the SVG drawing. | changing a chart |
 | test_calendars_and_trends.py | Tests for month calendars and trends on the dots chart (decision 0119): declarations, the household's day, looks, words, ranges, changes, structure and modules switched off. | changing a calendar, range presets, change words or the line |
+| test_private_lists_and_dose_calendar.py | Tests for private lists and the dose calendar (decision 0121): nothing of a private table before a pressed Show, and doses as ● and a count by day. | changing what a private list, record or calendar shows before Show |
 | test_module_vehicle_running.py | Tests for the Vehicle running log: odometer readings and service estimates beside Vehicles (decision 0111). | changing readings, estimates, gentle checks or listed-under sections |
 | test_gaps.py | Tests for gaps: details worth filling in, declared in a table's `watch.gaps` and asked as questions. | changing gaps |
 | test_examples.py | Tests for the example households: each loads cleanly and shows exactly what it was written to show. | changing an example household |

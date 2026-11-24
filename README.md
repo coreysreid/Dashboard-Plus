@@ -95,7 +95,12 @@ is new: keep a copy of anything important somewhere else too. See
   medicine for the same person within two hours asks first, with **Keep this
   as another dose**. Doses are never on Home, a printed sheet, the
   spreadsheet export or visible to a helper, and nothing ever says a dose was
-  missed. People only: pets keep their treatments in Pets.
+  missed. People only: pets keep their treatments in Pets. A **Dose
+  calendar** on the person's page shows the month with ● and how many doses
+  on each day, never which medicine or how much; **Show** on the calendar
+  lists each day's doses. The list of every dose and each dose's own page say
+  only "Private history — press Show to see it." until **Show** is pressed
+  (a button, never a link), and so does any list marked private.
 - **Vehicle running log:** what each vehicle's odometer showed and when, as
   dots on the vehicle's page ("Last recorded: 48,500 km on 20/11/26"), in the
   km or miles you choose in Settings and never converted. A reading lower than

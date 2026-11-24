@@ -65,9 +65,31 @@ def _rows(store, info, offset, sort, desc):
     return out
 
 
+PRIVATE_WORDS = "Private history — press Show to see it."
+
+
+def _private_grid(info, store, show: bool):
+    """A private table's list (decision 0121): before Show only how many and the private words; after a pressed
+    Show (a POST with the session check, never a link, as in decision 0071) one page of rows, unsorted, with the
+    next page behind another pressed button. The rows are never fetched by an address."""
+    total = store.count(info.name)
+    offset = max(0, request.form.get("offset", 0, type=int)) if show else 0
+    rows = _rows(store, info, offset, "id", True) if show else []
+    columns = [{"name": c.name, "label": display.column_label(info, c), "sortable": False}
+               for c in display.list_columns(info)] if show else []
+    after = offset + len(rows)
+    return render_template("grid.html", info=info, title=display.table_title(info), columns=columns, rows=rows,
+                           total=total, next_offset=None, sort="id", desc=True, moves_choice=None, moves_review=None,
+                           private={"show": show, "words": PRIVATE_WORDS, "offset": offset,
+                                    "next": after if show and after < total else None,
+                                    "range": f"{offset + 1} to {after}" if rows else None})
+
+
 @pages.get("/t/<table>")
 def grid(table):
     info, store = _info(table), _store()
+    if info.table.private:
+        return _private_grid(info, store, show=False)
     sort, desc = _sorting(info)
     total = store.count(table)
     rows = _rows(store, info, 0, sort, desc)
@@ -81,10 +103,21 @@ def grid(table):
                            moves_review=moves_pages.review_link(store, info))
 
 
+@pages.post("/t/<table>/show")
+def show_private_grid(table):
+    """Show on a private table's list (decision 0121): only a pressed button opens its rows. Others have no Show."""
+    info = _info(table)
+    if not info.table.private:
+        abort(404)
+    return _private_grid(info, _store(), show=True)
+
+
 @pages.get("/t/<table>/rows")
 def more_rows(table):
-    """The next page of rows, loaded by the grid as you scroll."""
+    """The next page of rows, loaded by the grid as you scroll. A private table's rows never come from an address."""
     info, store = _info(table), _store()
+    if info.table.private:
+        abort(404)
     sort, desc = _sorting(info)
     offset = max(0, request.args.get("offset", 0, type=int))
     rows = _rows(store, info, offset, sort, desc)
@@ -98,6 +131,8 @@ def suggest_names(table):
     """What to offer while someone types a name: their own records first, then the module's list."""
     info = _info(table)
     column = request.args.get("column", "")
+    if info.table.private:  # private history is never offered while typing (decision 0121)
+        abort(404)
     if column not in info.table.columns or info.table.columns[column].type != "text" or \
             info.table.columns[column].sensitive:  # private details are never offered as suggestions
         abort(404)
@@ -125,7 +160,7 @@ def _under(store, info, record) -> list[dict]:
     formatter = display.Formatter(store)
     for other in store.registry.values():
         rule = display.labels_for(other).get("under")
-        if not rule or schema.target_table(other.module.name, other.table.columns[rule["link"]]) != info.name:
+        if not rule or other.table.private or schema.target_table(other.module.name, other.table.columns[rule["link"]]) != info.name:
             continue
         columns = [other.table.columns[c] for c in rule["columns"]]
         order = rule.get("order", "id")
@@ -378,9 +413,25 @@ def edit_record(table, record_id):
         record = store.get(table, record_id, include_deleted=True)
     except records.RecordNotFound:
         abort(404)
+    if info.table.private:  # decision 0121: nothing of a private record is in the page until a pressed Show
+        return render_template("private_record.html", info=info, title=display.table_title(info), record=record,
+                               words=PRIVATE_WORDS, saved=request.args.get("saved")), 200
     return _render_form(info, store, record, {}, False, record=record, saved=request.args.get("saved"),
                         done=display.done_words(info, request.args.get("done")),
                         notice=action_form.done_notice(store, info, record_id, request.args.get("op")))
+
+
+@pages.post("/t/<table>/<int:record_id>/show")
+def show_private_record(table, record_id):
+    """Show on a private record's page (decision 0121): the whole record, its form and its history, this time only."""
+    info, store = _info(table), _store()
+    if not info.table.private:
+        abort(404)
+    try:
+        record = store.get(table, record_id, include_deleted=True)
+    except records.RecordNotFound:
+        abort(404)
+    return _render_form(info, store, record, {}, False, record=record)
 
 
 @pages.post("/t/<table>/<int:record_id>")
