@@ -33,6 +33,11 @@ is new: keep a copy of anything important somewhere else too. See
   on Home and in Settings, to add your rooms and areas, the storage spots inside
   them (Kitchen › Pantry › Shelf 3), and which rooms connect, through a door,
   an open doorway, stairs or a door to outside.
+- **Our way-out sketch:** your rooms drawn as boxes, floor by floor, with lines
+  for the ways between them, doors to outside and your outside meeting place,
+  plus the same facts as a list. It marks what still needs checking, prints on
+  as many numbered pages as it needs, and always says it is a practice aid, not
+  a certified or safe route. Codes and private details never appear on it.
 - **Household stock:** what you have, where it is kept, how many to keep at
   least, and when it expires. Record what comes in and goes out (bought, used,
   expired, thrown away, given away) and the count updates itself.

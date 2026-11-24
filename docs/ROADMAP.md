@@ -88,10 +88,9 @@ data in every screenshot that is shared.
 
 ## Later ideas, not planned yet
 
-- **A simple map of the way out, drawn by the household** ("lego level accuracy", Corey,
-  21 November 2026). Set up my home already records rooms and areas, which rooms connect and
-  how, and which doors lead outside (decision 0103), so a map can start from rooms as boxes,
-  connections as lines and doors to outside as exits. Nothing is drawn yet.
+- **A simple map of the way out** ("lego level accuracy", Corey, 21 November 2026): started.
+  **Our way-out sketch** draws Set up my home's rooms as boxes and connections as lines, with a
+  text version and a printable sheet (decision 0118). Arranging the boxes by hand is a later idea.
 
 ## Workstreams beside the code
 

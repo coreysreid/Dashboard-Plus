@@ -5,6 +5,18 @@ parent = "inside"
 columns.name = { type = "text", required = true }
 columns.inside = { type = "link", to = "places", on_delete = "restrict" }
 columns.notes = { type = "text" }
+# For the way-out sketch (decision 0118), rooms and areas only: the floor it is on (or left off the sketch),
+# whether someone sleeps there, and a possible window exit the household added after checking it locally.
+columns.floor = { type = "choice", choices = [
+  { key = "below", label = "Below street level" },
+  { key = "street", label = "Street level" },
+  { key = "up1", label = "One floor up" },
+  { key = "up2", label = "Two floors up" },
+  { key = "up3", label = "Three or more floors up" },
+  { key = "off", label = "Leave off the sketch" },
+] }
+columns.sleeping = { type = "boolean" }
+columns.window_exit = { type = "boolean" }
 
 [tables.items]
 title = "Stock items"
@@ -113,6 +125,12 @@ columns.kind = { type = "choice", required = true, default = "door", choices = [
   "other",
 ] }
 columns.notes = { type = "text" }
+# For the way-out sketch (decision 0118): where a door to outside really leads, as the household confirmed it.
+columns.destination = { type = "choice", choices = [
+  "outside",
+  { key = "shared", label = "Shared building area" },
+  { key = "check", label = "Needs checking" },
+] }
 # A place is never joined to itself, and two places are joined once, either way round (decision 0103).
 # "Connects to" may be left blank only for a door straight outside.
 pair = { columns = ["place", "connects_to"], blank_when = { kind = "outside_door" } }

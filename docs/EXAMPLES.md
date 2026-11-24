@@ -98,6 +98,18 @@ One card per room or area: the storage spots inside it, what it connects to, and
 
 ![Set up my home](screenshots/smith/11b-set-up-my-home.png)
 
+### Our way-out sketch
+
+Rooms as boxes floor by floor, the recorded ways between them, doors to outside and what still needs checking, with the same facts as text.
+
+![Our way-out sketch](screenshots/smith/11c-way-out-sketch.png)
+
+### Way-out sketch sheet
+
+As it prints: warnings, meeting place, the drawing, legend and Check together, on numbered pages.
+
+![Way-out sketch sheet](screenshots/smith/11d-way-out-sheet.png)
+
 ### Stock items
 
 What the household has, how much, and how much to keep.
@@ -470,6 +482,18 @@ One card per room or area: the storage spots inside it, what it connects to, and
 
 ![Set up my home](screenshots/garcia/11b-set-up-my-home.png)
 
+### Our way-out sketch
+
+Rooms as boxes floor by floor, the recorded ways between them, doors to outside and what still needs checking, with the same facts as text.
+
+![Our way-out sketch](screenshots/garcia/11c-way-out-sketch.png)
+
+### Way-out sketch sheet
+
+As it prints: warnings, meeting place, the drawing, legend and Check together, on numbered pages.
+
+![Way-out sketch sheet](screenshots/garcia/11d-way-out-sheet.png)
+
 ### Stock items
 
 What the household has, how much, and how much to keep.
@@ -829,6 +853,18 @@ Where things are kept.
 One card per room or area: the storage spots inside it, what it connects to, and doors to outside.
 
 ![Set up my home](screenshots/taylor/11b-set-up-my-home.png)
+
+### Our way-out sketch
+
+Rooms as boxes floor by floor, the recorded ways between them, doors to outside and what still needs checking, with the same facts as text.
+
+![Our way-out sketch](screenshots/taylor/11c-way-out-sketch.png)
+
+### Way-out sketch sheet
+
+As it prints: warnings, meeting place, the drawing, legend and Check together, on numbered pages.
+
+![Way-out sketch sheet](screenshots/taylor/11d-way-out-sheet.png)
 
 ### Stock items
 

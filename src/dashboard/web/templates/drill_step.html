@@ -22,12 +22,14 @@
     {% endfor %}
     <label style="font-weight:400;display:block;margin:.4rem 0"><input type="radio" name="record" value="" {% if not (values.record or (not values and saved and saved.record)) %}checked{% endif %}> None of these</label>
     {% if step.caution %}<p class="help">{{ step.caution }}</p>{% endif %}
+    {% if sketch %}<p><a href="/exit-sketch">See your way-out sketch</a> <span class="muted">(rooms and the ways between them, as you recorded them)</span></p>{% endif %}
     {% elif supply %}
     <p style="margin-top:0">{{ supply.working }}</p>
     <p class="help">An estimate from your last counts, not a promise. Your local authority's advice comes first.</p>
     {% else %}
     <p class="missing" style="margin-top:0">{{ step.missing }}</p>
     {% if add %}<p><a href="{{ add.href }}">Add it now</a> <span class="muted">(opens {{ add.title }}; come back to this step afterwards)</span></p>{% endif %}
+    {% if sketch %}<p><a href="/exit-sketch">See your way-out sketch</a> <span class="muted">(rooms and the ways between them, as you recorded them)</span></p>{% endif %}
     {% endif %}
   </fieldset>
 

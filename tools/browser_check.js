@@ -449,6 +449,38 @@ function expect(condition, message) { if (!condition) throw new Failed(message);
     }
   }
 
+  async function checkExitSketch() {  // the way-out sketch (decision 0118): drawn on the server, same facts as text, 320px
+    const e = plan.exit;
+    await page.setViewportSize({ width: 320, height: 800 });
+    try {
+      await goto('/set-up-home');
+      await Promise.all([page.waitForNavigation(), page.click('#way-out a[href="/exit-sketch"]')]);
+      const wide = await page.evaluate(() => document.documentElement.scrollWidth);
+      expect(wide <= 320, `At 320px the way-out sketch page is ${wide}px wide; only the drawing should scroll sideways.`);
+      const scrolls = await page.$eval('.sketch-scroll', (d) => d.scrollWidth > d.clientWidth);
+      expect(scrolls, 'At 320px the drawing should scroll inside its own labelled box.');
+      const ids = async (scope, what) => [...new Set(await page.$$eval(`${scope} [data-${what}]`, (els, w) => els.map((x) => x.dataset[w]), what))].sort().join(',');
+      const drawnRooms = await ids('.sketch-scroll', 'room');
+      const textRooms = await ids('#as-text', 'room');
+      expect(drawnRooms && drawnRooms === textRooms, `The drawing's rooms (${drawnRooms}) and the text version's (${textRooms}) should be the same.`);
+      const drawnLinks = await ids('.sketch-scroll', 'connection');
+      const textLinks = await ids('#as-text', 'connection');
+      expect(drawnLinks === textLinks, `The drawing's connections (${drawnLinks}) and the text version's (${textLinks}) should be the same.`);
+      expect((await text('#as-text')).includes(e.room), `The text version should list ${e.room}.`);
+      await page.focus('#read-as-text');
+      await page.keyboard.press('Enter');
+      expect(page.url().endsWith('#as-text'), `"Read the connections as text" should go to the text version; the page is at ${page.url()}.`);
+      for (const w of e.words) expect((await text('main')).includes(w), `The sketch page should say "${w}".`);
+      await Promise.all([page.waitForNavigation(), page.click('#print-a4')]);
+      expect((await text('main')).includes('Page 1 of'), 'The printable sketch should number its pages.');
+      const pwide = await page.evaluate(() => document.documentElement.scrollWidth);
+      expect(pwide <= 320, `At 320px the printable sketch is ${pwide}px wide; it should not scroll sideways.`);
+      ok(`way-out sketch at 320px: rooms ${drawnRooms} drawn and listed as text, keyboard reaches the text, sheet numbered`);
+    } finally {
+      await page.setViewportSize({ width: 1280, height: 720 });
+    }
+  }
+
   async function checkFeeding() {  // Pet feeding log (decision 0110): Add food at 320px, last choices shown, back to the pet
     const f = plan.feeding;
     await page.setViewportSize({ width: 320, height: 800 });
@@ -687,6 +719,7 @@ function expect(condition, message) { if (!condition) throw new Failed(message);
       if (plan.review) await checkReview();
       if (plan.questions) await checkQuestions();
       if (plan.charts) await checkCharts();
+      if (plan.exit) await checkExitSketch();
       if (plan.feeding) await checkFeeding();
       if (plan.running) await checkRunning();
       if (plan.drills) await checkDrills();

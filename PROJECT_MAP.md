@@ -169,6 +169,7 @@ One record per decision, from `TEMPLATE.md`. Never deleted; reversed ones are ma
 | [0115](0115-optional-links-between-modules.md) | Optional links between modules: `optional_requires` in module.toml; a link into an optional module is nullable, hidden with household words while that module is off, kept by exact ID (guarded writes refuse any set, change or clear), neutral on lists, sheets, exports and helpers, a gone record is repair never a same-name guess; Utilities now needs only People, so an internet-only household can switch it on alone; Bills not promoted | Accepted |
 | [0116](0116-helper-words-for-moving-in.md) | The helper's starting message, connector descriptions and OpenAPI no longer call an old tracker balance a purchase (it points to Count this batch), ask whether a receipt is already in the old count, say a Review-only price is not saved spending, and say when to refresh the guide and how to report sent, accepted, waiting and refused rows | Accepted |
 | [0117](0117-bills-and-insurance.md) | Bills and insurance switched on from Lane B's draft beside Utilities (needs only People; Vehicles and Stock optional): private amount, cover, reference and notes that never travel; due words per row (`what_when`); one reminder per vehicle policy: nothing moves until the household chooses Keep, Review and move (row by row, by ID, after a backup; the old record kept read-only) or Decide later; Transfer back; sheets say when they are not complete | Accepted (Corey to confirm the move choice) |
+| [0118](0118-exit-sketch.md) | Our way-out sketch from Set up my home: a floor, sleeping and checked-window flag per room and a confirmed destination per door out (stock migration 0007), meeting place, help and building-plan answers in Settings; rooms as boxes and connections as lines drawn on the server in a steady grid, a complete text version with the same IDs, a sheet with legend and warnings on numbered continuation pages; only recorded possibilities and gaps, never a safe or independent route; no notes, codes or People details | Accepted |
 | [TEMPLATE](TEMPLATE.md) | Blank record to copy for a new decision | recording a decision |
 
 ## docs/plans/  (summary: build plans for larger pieces of work, written before building)
@@ -463,7 +464,7 @@ Generate the next one with: python tools/make_migration.py routines --name <what
 | Entry | What it is | Open it when |
 |---|---|---|
 | module.toml | Name, version, description | changing the module's details |
-| tables.toml | Places, connections between them (Set up my home), stock items (running low, use-by, days of water) and stock in and out | adding a field, category or rule |
+| tables.toml | Places (with a floor for the way-out sketch), connections between them (Set up my home), stock items (running low, use-by, days of water) and stock in and out | adding a field, category or rule |
 | labels.toml | Friendly labels, help text, form and list order | changing wording or order |
 | sheets.toml | Emergency supplies checklist | changing what prints |
 | catalogue.csv | 800 common goods to pick from while typing (from Lane B's catalogue) | adding or correcting a good |
@@ -480,6 +481,7 @@ Generate the next one with: python tools/make_migration.py stock --name <what_ch
 | 0004_places_inside_places.sql | Places can sit inside other places ("Inside") | checking how nested places are stored |
 | 0003_drinking_water.sql | "Safe to drink" on items; existing water stays counted | checking how drinking water is stored |
 | 0006_connections_between_places.sql | Connections between places: which rooms lead into which, and doors to outside (decision 0103) | checking how connections are stored |
+| 0007_way_out_sketch_facts.sql | A floor, sleeping and checked-window flag on places, and a confirmed destination on doors to outside, for the way-out sketch (decision 0118) | checking how the sketch's facts are stored |
 | 0005_batches.sql | Batches: an item's stock split by use-by date and place; each existing item becomes one batch | checking how the tables are stored |
 
 ## modules/utilities/  (summary: the Utilities module, files only; built on Lane B's draft, linking to People and, optionally, Home layout)
@@ -589,6 +591,7 @@ Generate the next one with: python tools/make_migration.py wine --name <what_cha
 | records.py | Create, change, delete and read records, checking every value and keeping a history. | changing how records are saved or checked |
 | prompts.py | Read and check a module's prompts.toml: "Have you thought about…?" questions, their groups, exact record matches and "Think it through" drills. | changing what prompts.toml may say |
 | drills.py | Think it through: which drills fit the household, what each step may find in its records, and the practice runs kept with their dates. | changing how drills fit, cite sources, save runs or keep own words private |
+| exit_sketch.py | The way-out sketch's facts: rooms by floor, recorded connections and doors to outside, and what still needs checking. | changing what the way-out sketch reads, its route words or Check together |
 | questions.py | Which "Have you thought about…?" questions fit the household, what may already be recorded, and how many were looked at. | changing how questions fit, match records, come back or are counted |
 | settings.py | Read and write household settings kept in the database (core__settings). | storing a new setting |
 | schema.py | Turn a module's declared tables into SQL, and work out its next migration. | changing how tables are built |
@@ -641,6 +644,8 @@ Add a new file with the next number instead of changing an old one.
 | home.py | Group the home page by area: each module's main lists shown large, its other lists as one line of links. | changing how the home page is grouped or ordered |
 | questions.py | The "Have you thought about…?" screens: the questions by group, one question with its four answers, and Not now. | changing the question screens |
 | drills.py | The "Think it through" screens: the drills that fit, one drill's sources and steps, each step with its records, and saving a practice. | changing the drill screens |
+| exit_sketch.py | Our way-out sketch: the drawing with its text version, the few facts it asks for, and the printable sheet and text. | changing the way-out sketch pages or their forms |
+| exit_drawing.py | Draw the way-out sketch as SVG on the server: room boxes by floor, labelled lines, doors out and the meeting place, split into pages. | changing how the sketch is laid out, drawn or split into pages |
 | sheets.py | One-page printable sheets declared by modules, such as the emergency sheet. | changing printable sheets |
 | display.py | Turn declared tables and stored values into friendly labels, form fields and text. | changing how values look |
 | templates/ | The HTML pages | changing what a page looks like |
@@ -675,6 +680,7 @@ Add a new file with the next number instead of changing an old one.
 | question*.html | "Have you thought about…?": the questions by group with what was looked at (questions), and one question with Yes, Not relevant, Not yet and Tell me more (question) | changing the question wording |
 | drill*.html | "Think it through": the drills that fit (drills), one drill with its sources and earlier practice (drill), one step with its records or missing words (drill_step), a practice and Save this practice (drill_run), and the emergency-number box on each (drill_first) | changing the drill wording |
 | home_setup.html | Set up my home: add rooms and storage spots, rename, move or delete them, and connect rooms; no scripts needed | changing the Set up my home wording |
+| exit_*.html | Our way-out sketch: the page with drawing, text version and forms (exit_sketch), the numbered printable sheet (exit_sheet) and Print as text (exit_text); _exit_parts holds the warnings, legend, Check together and text list they share | changing the way-out sketch wording or print |
 | setup.html | First-run wizard and Settings (one form, two modes) | changing setup questions |
 | *sheet.html | A printable sheet styled to fit one page (sheet), and the step before one with private details (private_sheet) | changing how sheets print |
 | start.html | Shown to a browser that was not opened by the shortcut | changing that message |
@@ -728,6 +734,7 @@ How to run them is in AGENTS.md.
 | test_adjusts.py | Tests for records that change a linked quantity (stock in and out), and the checks on `adjusts`. | changing stock in and out |
 | test_sync_stage1.py | Tests for sync stage 1: permanent record IDs, revisions, the filtered change log and the travel rule (decision 0100). | changing record IDs, the change log or what may travel |
 | test_backups.py | Tests for automatic backups: daily, on close, in two places, and keeping only recent ones. | changing backups |
+| test_exit_sketch.py | Tests for the way-out sketch (decision 0118): Lane B's exit map checks, steady layout, continuation pages and privacy. | changing the way-out sketch |
 | test_home_setup.py | Tests for Set up my home: rooms, storage spots inside them and the connections between rooms (decision 0103). | changing Set up my home or connections between places |
 | test_setup.py | Tests for the first-run wizard and the settings page. | changing setup or settings |
 | test_sheets.py | Tests for printable sheets: checking sheets.toml and printing the emergency sheet. | changing sheets |
@@ -776,6 +783,6 @@ How to run them is in AGENTS.md.
 | load_example.py | Load a made-up example household into an empty data folder, for demos, screenshots and testing. | demonstrating or testing with realistic data |
 | make_screenshots.py | Make the example screenshots: run each example household through every stage of using the dashboard. | the screens changed and the gallery needs remaking |
 | screenshots.js | Browser steps for make_screenshots.py (Node and Playwright) | changing how screenshots are taken |
-| browser_check.py | Click through the real dashboard in Chromium (setup, Set up my home, dates, stock in, stocktake, Mark returned, Mark done, Things to do, spreadsheet import, Review keys and buttons, readiness questions, Think it through drills, charts, pet feeding at 320px, vehicle running log, Bills and a moved car insurance reminder, Utilities with Our home off, private details, closing) and fail loudly. | a screen or its browser code changed |
+| browser_check.py | Click through the real dashboard in Chromium (setup, Set up my home, dates, stock in, stocktake, Mark returned, Mark done, Things to do, spreadsheet import, Review keys and buttons, readiness questions, Think it through drills, charts, the way-out sketch, pet feeding at 320px, vehicle running log, Bills and a moved car insurance reminder, Utilities with Our home off, private details, closing) and fail loudly. | a screen or its browser code changed |
 | browser_check.js | Browser steps for browser_check.py (Node and Playwright): what is clicked and checked | changing what the browser check clicks |
 | make_project_map.py | Build PROJECT_MAP.md from every INDEX.md in the repository. | changing the map format |

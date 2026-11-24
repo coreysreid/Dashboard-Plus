@@ -1,0 +1,110 @@
+{# Pieces of the way-out sketch shared by its page, its sheet and its text version (decision 0118). #}
+{% macro warnings(sketch, f) %}
+<div class="sk-warn" role="note">
+  <p><strong>{{ f.PRACTICE }}</strong></p>
+  <p>{{ f.TWO_WAYS }}</p>
+  <p><strong>{{ sketch.fire_words }}</strong></p>
+</div>
+{% if sketch.shared_building %}<p class="sk-flat"><strong>{{ f.FLAT_BANNER }}</strong></p>{% endif %}
+{% endmacro %}
+
+{% macro status(sketch, reviewed_words) %}
+{% if sketch.ready %}<p class="sk-status"><strong>Ready to print for practice.</strong> Reviewed by household on {{ reviewed_words }}. This is a check that the facts were entered, not a safety check.</p>
+{% elif sketch.changed_since_review %}<p class="sk-status"><strong>Draft home sketch.</strong> Changed since the household's review on {{ reviewed_words }}. Review it again.</p>
+{% elif reviewed_words %}<p class="sk-status"><strong>Draft home sketch.</strong> Reviewed by household on {{ reviewed_words }}; some facts still need checking.</p>
+{% else %}<p class="sk-status"><strong>Draft home sketch.</strong> Not reviewed yet.</p>{% endif %}
+{% endmacro %}
+
+{% macro facts_box(sketch, f) %}
+<dl class="sk-facts">
+  <dt>Outside meeting place</dt><dd>{{ sketch.meeting or "Not recorded" }}</dd>
+  <dt>Help to leave</dt><dd>{{ f.HELP.get(sketch.help, "Needs discussion") }}</dd>
+  <dt>Building's own fire plan</dt><dd>{% if sketch.building == "checked" %}Checked{% elif sketch.building == "not_shared" %}Not a shared building{% elif sketch.shared_building or not sketch.home_type or sketch.building == "check" %}Needs checking{% else %}Not a shared building{% endif %}</dd>
+</dl>
+{% endmacro %}
+
+{% macro legend() %}
+<table class="sk-legend">
+  <caption>What the marks mean</caption>
+  <thead><tr><th scope="col">Mark</th><th scope="col">Meaning</th></tr></thead>
+  <tbody>
+    <tr><td data-label="Mark"><svg class="sk-icon" width="44" height="18" aria-hidden="true"><rect class="sk-box" x="2" y="2" width="40" height="14" rx="3" stroke-width="2"/></svg> Box with a room name</td><td data-label="Meaning">A recorded room or area, not a measured floor plan.</td></tr>
+    <tr><td data-label="Mark"><svg class="sk-icon" width="44" height="18" aria-hidden="true"><path class="sk-line" d="M2 9 H42" stroke-width="2"/></svg> Solid line labelled Door, Open doorway or Stairs</td><td data-label="Meaning">A connection the household recorded; its width, access and usability are unverified.</td></tr>
+    <tr><td data-label="Mark"><svg class="sk-icon" width="44" height="18" aria-hidden="true"><path class="sk-line" d="M2 9 H30" stroke-width="2"/><path class="sk-head" d="M30 5 l8 4 l-8 4 z"/></svg> Arrow labelled Possible way outside · check in person</td><td data-label="Meaning">A recorded door to outside whose destination the household marked Outside; the program does not validate it.</td></tr>
+    <tr><td data-label="Mark"><svg class="sk-icon" width="44" height="18" aria-hidden="true"><path class="sk-line" d="M2 9 H42" stroke-width="2" stroke-dasharray="6 4"/></svg> Dashed line or ? with Needs checking</td><td data-label="Meaning">A connection or destination not confirmed. It must not be counted as a second route.</td></tr>
+    <tr><td data-label="Mark">Possible window exit · check locally</td><td data-label="Meaning">A marker the household added itself; never worked out from a room or treated as a safe jump.</td></tr>
+    <tr><td data-label="Mark">No way out recorded</td><td data-label="Meaning">The household has not entered a connection for that room; it does not prove no way exists.</td></tr>
+    <tr><td data-label="Mark">Only one way out recorded</td><td data-label="Meaning">Check for another possible way with your household.</td></tr>
+    <tr><td data-label="Mark">May share one exit</td><td data-label="Meaning">These ways may share the same exit. Check them in person.</td></tr>
+  </tbody>
+</table>
+{% endmacro %}
+
+{% macro checks(sketch) %}
+<ul class="sk-checks">
+  {% for c in sketch.checks %}<li data-check="{{ c.key }}"><strong>{{ "Recorded" if c.recorded else "Needs checking" }}:</strong> {{ c.title }}. <span class="muted">{{ c.detail }}</span></li>{% endfor %}
+</ul>
+{% endmacro %}
+
+{% macro as_text(sketch, f, links=True) %}
+{% for key, words, rooms in sketch.floors %}
+<h3>{{ words }}</h3>
+<ol class="sk-text">
+  {% for room in rooms %}
+  <li data-room="{{ room.id }}">{% if links %}<a href="/t/{{ f.PLACES }}/{{ room.id }}">{{ room.name }}</a>{% else %}{{ room.name }}{% endif %}{% if room.sleeping %} (sleeping room){% endif %}
+    <ul>
+      {% for l in room.links %}<li data-connection="{{ l.id }}">{% if links %}<a href="/t/{{ f.CONNECTIONS }}/{{ l.id }}">{{ l.words }}</a>{% else %}{{ l.words }}{% endif %}.</li>{% endfor %}
+      {% if room.window %}<li>{{ f.WINDOW }}.</li>{% endif %}
+      {% for n in room.notes %}<li>{{ n }}</li>{% endfor %}
+    </ul>
+  </li>
+  {% endfor %}
+</ol>
+{% else %}
+<p>No rooms on the sketch yet. Add rooms and connections in Set up my home.</p>
+{% endfor %}
+{% if sketch.left_off %}<p>Left off the sketch by the household: {% for p in sketch.left_off %}{{ p.name }}{{ ", " if not loop.last else "." }}{% endfor %}</p>{% endif %}
+<p>Outside meeting place: {{ sketch.meeting or "Not recorded" }}. Help to leave: {{ f.HELP.get(sketch.help, "Needs discussion") }}.</p>
+{% endmacro %}
+
+{% macro styles() %}
+<style>
+  .sk-warn { border: 2px solid var(--fg); border-radius: 6px; padding: .5rem .8rem; margin: .8rem 0; }
+  .sk-warn p { margin: .2rem 0; }
+  .sk-flat { border-left: 4px solid var(--fg); padding-left: .6rem; }
+  .sk-facts { display: grid; grid-template-columns: max-content 1fr; gap: .2rem 1rem; margin: .6rem 0; }
+  .sk-facts dt { font-weight: 600; } .sk-facts dd { margin: 0; overflow-wrap: anywhere; }
+  .sk-legend { width: 100%; border-collapse: collapse; margin: .6rem 0; }
+  .sk-legend caption { text-align: left; font-weight: 600; padding: .2rem 0; }
+  .sk-legend th, .sk-legend td { text-align: left; vertical-align: top; padding: .25rem .4rem; border-bottom: 1px solid var(--line); }
+  .sk-legend svg { vertical-align: middle; }
+  .sk-checks { padding-left: 1.1rem; } .sk-checks li { margin: .2rem 0; }
+  .sk-text li { overflow-wrap: anywhere; }
+  .sketch-svg { display: block; max-width: none; height: auto; margin: 0 0 .6rem; }
+  .sketch-svg text { fill: var(--fg); }
+  .sketch-svg .sk-box, .sk-icon .sk-box { fill: var(--card); stroke: var(--fg); }
+  .sketch-svg .sk-line, .sk-icon .sk-line { stroke: var(--fg); fill: none; }
+  .sketch-svg .sk-head, .sk-icon .sk-head { fill: var(--fg); }
+  .sketch-svg .sk-label-bg { fill: var(--card); stroke: var(--line); }
+  .sketch-svg .sk-meet { fill: none; stroke: var(--fg); }
+  .sketch-svg a:focus { outline: none; } .sketch-svg a:focus .sk-box { stroke-width: 4; }
+  .sketch-svg a:focus text { text-decoration: underline; }
+  @media (max-width: 40rem) {
+    .sk-facts { grid-template-columns: 1fr; } .sk-facts dd { margin-bottom: .3rem; }
+    .sk-legend thead { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); }
+    .sk-legend, .sk-legend tbody, .sk-legend tr, .sk-legend td { display: block; width: 100%; }
+  }
+  @media (forced-colors: active) {
+    .sketch-svg text, .sketch-svg .sk-head, .sk-icon .sk-head { fill: CanvasText; }
+    .sketch-svg .sk-box, .sketch-svg .sk-label-bg, .sk-icon .sk-box { fill: Canvas; stroke: CanvasText; }
+    .sketch-svg .sk-line, .sketch-svg .sk-meet, .sk-icon .sk-line { stroke: CanvasText; }
+  }
+  @media print {
+    .sketch-svg text, .sketch-svg .sk-head, .sk-icon .sk-head { fill: #000; }
+    .sketch-svg .sk-box, .sketch-svg .sk-label-bg, .sk-icon .sk-box { fill: #fff; stroke: #000; }
+    .sketch-svg .sk-line, .sketch-svg .sk-meet, .sk-icon .sk-line { stroke: #000; }
+    .sk-warn, .sk-flat { border-color: #000; }
+    .sk-legend th, .sk-legend td { border-bottom: 1px solid #999; padding: 1pt 3pt; }
+  }
+</style>
+{% endmacro %}
