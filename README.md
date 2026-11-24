@@ -306,7 +306,7 @@ Start with the documents in `docs/`:
 
 Dashboard Plus is free software: you can share it and change it under the
 terms of the GNU Affero General Public License, version 3 or (at your choice)
-any later version. See [`LICENSE`](LICENSE). Copyright (C) 2026 Corey Reid.
+any later version. See [`LICENSE`](LICENSE). Copyright (C) 2026 the Dashboard Plus contributors.
 
 In plain words: use it at home freely. If you share a changed copy, or run a
 changed copy for other people over a network, you must share your changes

@@ -2,7 +2,9 @@
 
 - **Status:** Accepted
 - **Date:** 2026-11-18
-- **Decided by:** Corey Reid
+- **Decided by:** User 1 (the project owner)
+- **Amended 2026-11-24 by User 1:** the copyright line names "the Dashboard Plus contributors" instead of a
+  person, so the public project is not tied to the owner by name. The licence itself is unchanged.
 - **Replaces:** decision 0014 (MIT)
 
 ## In plain words
@@ -16,7 +18,7 @@ will be added once User 1 has one.
 ## What we chose
 - `LICENSE` holds the official AGPL v3 text (from the SPDX licence list, which
   reproduces the Free Software Foundation's text). The README carries the
-  copyright line, "Copyright (C) 2026 Corey Reid", and the plain-words summary.
+  copyright line, "Copyright (C) 2026 the Dashboard Plus contributors", and the plain-words summary.
 - "Or later": if the Free Software Foundation publishes a version 4, people may
   choose it; this avoids needing every contributor's agreement to move.
 - Contributions, and modules (including files-only modules), are shared under

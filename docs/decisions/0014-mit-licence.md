@@ -8,7 +8,7 @@
 Anyone can use, change and share the program for free.
 
 ## What we chose
-MIT, with 'Copyright (c) 2026 Corey Reid' kept in `LICENSE` and the README.
+MIT, with 'Copyright (c) 2026 the Dashboard Plus contributors' kept in `LICENSE` and the README.
 
 ## Why we chose it
 - Specified in the brief; simple, well understood and permissive, which encourages module authors.
