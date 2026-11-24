@@ -68,7 +68,10 @@ columns.day = { type = "date", required = true, default = "today" }
 columns.weight = { type = "decimal", required = true, min = 0, unit = "kg" }
 columns.notes = { type = "text" }
 # One pet's recorded weights as dots on its page: never joined, averaged or mixed with another pet (decision 0109).
-chart = { kind = "dots", x = "day", y = "weight", per = "pet", what = ["weight", "weights"], entry = ["weigh-in", "weigh-ins"], subject = "pet" }
+# Trends (decision 0119): the last 3 months, a year or all dates; the change since the last reading and since the start
+# of the range in words; a line between readings, broken where they are more than a year apart. The scale still
+# starts at zero, so a small change is not made to look large.
+chart = { kind = "dots", x = "day", y = "weight", per = "pet", what = ["weight", "weights"], entry = ["weigh-in", "weigh-ins"], subject = "pet", ranges = ["3m", "1y", "all"], change = true, line = { gap_days = 365 } }
 
 [tables.vet_visits]
 title = "Vet visits"

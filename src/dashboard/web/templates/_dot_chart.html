@@ -1,14 +1,20 @@
 {# One subject's recorded readings (decision 0109): the plain sentence, the dots and the equal table. Needs `view`. #}
 <section class="chart-page" aria-labelledby="{{ view.chart_id }}-heading">
+{% if view.presets %}
+<nav class="chart-ranges" aria-label="Choose the dates shown"><ul>
+  {% for r in view.presets %}<li><a href="{{ r.href }}"{% if r.current %} aria-current="page"{% endif %}>{{ r.words }}</a></li>{% endfor %}
+</ul></nav>
+{% endif %}
 {% if view.empty %}
 <p class="chart-empty" role="status" id="{{ view.chart_id }}-heading"><strong>{{ view.empty }}</strong></p>
 {% else %}
 <p class="chart-headline" id="{{ view.chart_id }}-heading"><strong>{{ view.summary }}</strong></p>
+{% if view.changes %}<ul class="chart-changes">{% for c in view.changes %}<li>{{ c }}</li>{% endfor %}</ul>{% endif %}
 {% if view.note %}<p class="muted">{{ view.note }}</p>{% endif %}
 <p class="muted">{{ view.caveat }}</p>
 <figure class="chart">
   {{ view.chart }}
-  <figcaption class="muted">The dots are not joined: nothing was measured between them. Choose a dot to go to its row.</figcaption>
+  <figcaption class="muted">{{ view.caption }}</figcaption>
 </figure>
 <h3>{{ view.heading }}</h3>
 <table class="grid chart-table">

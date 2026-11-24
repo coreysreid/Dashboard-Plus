@@ -27,3 +27,12 @@ add = "Add food"
 sheet = "Pet feeding log"
 caveat = "Food put out, not necessarily eaten. Check for entries made elsewhere."
 repeat = { minutes = 30, same = ["food", "amount", "unit"] }
+
+# A month calendar of one pet's feedings by the household's own day (decision 0119): a day with an entry shows it
+# with a symbol and a colour; a blank day is only a day with no entry recorded, never a missed meal.
+[tables.servings.calendar]
+when = "given_at"
+per = "pet"
+show = "one"
+title = "Feeding calendar"
+entry = ["feeding", "feedings"]

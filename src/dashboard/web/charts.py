@@ -93,14 +93,37 @@ def bar_chart(chart_id: str, title: str, description: str, bars: list[Bar], axis
     return _svg(chart_id, axis + 2 * SMALL + 22, title, description, body)
 
 
+def fitted_steps(low: float, high: float, most: int = 5) -> tuple[float, float, float]:
+    """A value axis around the readings only, for a chart that asks for it (decision 0119): a round start below the
+    lowest reading, a round end above the highest and the step between labels. 4.4 to 4.8 -> (4.3, 4.8, 0.1)."""
+    if high <= low:
+        low, high = low - max(abs(low) * 0.1, 0.5), high + max(abs(high) * 0.1, 0.5)
+    span = high - low
+    power = 10 ** math.floor(math.log10(span / most))
+    for size in (1, 2, 2.5, 5, 10):
+        step = size * power
+        bottom = math.floor(low / step + 1e-9) * step
+        if bottom >= low - 1e-9:
+            bottom -= step  # the lowest dot sits above the axis, never on it
+        top = math.ceil(high / step - 1e-9) * step
+        if round((top - bottom) / step) <= most + 1:
+            return round(max(bottom, 0.0) if low >= 0 else bottom, 9), round(top, 9), step
+    return low, high, span
+
+
 def dot_chart(chart_id: str, title: str, description: str, dots: list[Dot], axis_label: str, unit: str,
-              show_date) -> Markup:
-    """Dots by date from the first reading to the last, never joined; the value axis starts at zero.
-    Readings on the same day sit side by side so each one can be seen and chosen."""
+              show_date, line: bool = False, gap_days: int | None = None, fitted: bool = False) -> Markup:
+    """Dots by date from the first reading to the last; the value axis starts at zero.
+    Readings on the same day sit side by side so each one can be seen and chosen. Only when the declaration allows
+    (decision 0119): a thin line between readings next to each other in time, broken where they are more than
+    `gap_days` apart, and a fitted scale whose start is written on the chart."""
     left, right, top_pad, bottom = 46, 18, 26, 52
     height = 240
     plot_w, plot_h = WIDTH - left - right, height - top_pad - bottom
     top, step = axis_steps(max((d.value for d in dots), default=0))
+    floor = 0.0
+    if fitted and dots:
+        floor, top, step = fitted_steps(min(d.value for d in dots), max(d.value for d in dots))
     first = min((d.day for d in dots), default=date.today())
     last = max((d.day for d in dots), default=first)
     days = max(1, (last - first).days)
@@ -110,17 +133,21 @@ def dot_chart(chart_id: str, title: str, description: str, dots: list[Dot], axis
         return left + plot_w / 2 if last == first else left + inset + (plot_w - 2 * inset) * (day - first).days / days
 
     def y_of(value: float) -> float:
-        return top_pad + plot_h * (1 - value / top)
+        return top_pad + plot_h * (1 - (value - floor) / (top - floor))
 
     body = []
-    for i in range(round(top / step) + 1):  # value axis: a labelled line at each round step from zero to the top
-        value = step * i
+    for i in range(round((top - floor) / step) + 1):  # value axis: a labelled line at each round step to the top
+        value = floor + step * i
         y = y_of(value)
         body.append(f'<line class="chart-grid" x1="{left}" x2="{left + plot_w}" y1="{y:.1f}" y2="{y:.1f}"/>'
                     f'<text x="{left - 6}" y="{y + 4:.1f}" font-size="{SMALL}" text-anchor="end">'
                     f'{number_text(value)}</text>')
     body.append(f'<text x="{left - 6}" y="{SMALL + 2}" font-size="{SMALL}" text-anchor="end" '
                 f'class="chart-axis-title">{escape(unit)}</text>')
+    if floor:  # a fitted scale says plainly that it does not start at zero
+        body.append(f'<text x="{left + plot_w}" y="{SMALL + 2}" font-size="{SMALL}" text-anchor="end" '
+                    f'class="chart-axis-title chart-fitted">Scale starts at {number_text(floor)}'
+                    f'{escape(" " + unit if unit else "")}, not 0</text>')
     base = top_pad + plot_h
     body.append(f'<line class="chart-axis" x1="{left}" x2="{left + plot_w}" y1="{base}" y2="{base}"/>')
     ticks = [first] if last == first else [first, last]
@@ -136,13 +163,28 @@ def dot_chart(chart_id: str, title: str, description: str, dots: list[Dot], axis
     for dot in dots:
         same_day[dot.day] = same_day.get(dot.day, 0) + 1
     placed: dict[date, int] = {}
+    spots = []
     for dot in dots:
         k, n = placed.get(dot.day, 0), same_day[dot.day]
         placed[dot.day] = k + 1
         centre, spread = x_of(dot.day), (n - 1) / 2 * 11
         centre = min(left + plot_w - spread, max(left + spread, centre))  # the whole day's group stays inside
         x = centre + (k - (n - 1) / 2) * 11
+        spots.append((dot.day, x, y_of(dot.value)))
         body.append(f'<a href="{escape(dot.href)}" class="chart-mark" aria-label="{escape(dot.text)}">'
                     f'<title>{escape(dot.text)}</title>'
                     f'<circle class="chart-dot" cx="{x:.1f}" cy="{y_of(dot.value):.1f}" r="5.5"/></a>')
+    if line and len(spots) > 1:  # drawn under the dots; a long gap between readings breaks it
+        ordered = sorted(spots, key=lambda spot: (spot[0], spot[1]))
+        runs, run = [], [ordered[0]]
+        for before, after in zip(ordered, ordered[1:]):
+            if gap_days is not None and (after[0] - before[0]).days > gap_days:
+                runs.append(run)
+                run = []
+            run.append(after)
+        runs.append(run)
+        lines = ['<polyline class="chart-line" aria-hidden="true" fill="none" points="'
+                 + " ".join(f"{x:.1f},{y:.1f}" for _, x, y in r) + '"/>' for r in runs if len(r) > 1]
+        first_mark = next(i for i, part in enumerate(body) if part.startswith("<a "))
+        body[first_mark:first_mark] = lines
     return _svg(chart_id, height, title, description, body)

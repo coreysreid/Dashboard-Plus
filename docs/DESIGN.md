@@ -653,6 +653,28 @@ copy = { vehicle = "vehicle", name = "name", next_due = "renew_by" }  # never a 
 - Export adds a "Reminder" column; sync's snapshot lists the moves by permanent IDs. Words: labels.toml
   `takes_over`. Any sheet section over 200 rows now says it is not complete.
 
+### 5.12 Month calendars and trends on a dots chart (decision 0119)
+
+```toml
+[tables.times.calendar]
+when = "done_on"            # a required date or date-and-time column; placed on the household's own day
+per = "routine"             # a required link: whose mark it is
+show = "all"                # "one": one record's month with a chooser; "all": every record together
+title = "Routines calendar"
+entry = ["time", "times"]
+state = "outcome"           # optional choice column; without it, every record has `look` (default "recorded")
+looks = { done = "done", skipped = "skipped" }  # each choice: "done", "recorded" or "skipped"
+due = true                  # optional: the linked record's one open date, from its own `watch.expiring` "due"
+
+# A dots chart (decision 0109) may add:
+chart = { ..., ranges = ["3m", "1y", "all"], change = true, line = { gap_days = 365 }, scale = "zero" }
+```
+
+- Looks are fixed (✓ done, ● recorded, – skipped, ○ due, ◇ planned), each with a symbol, a colour and, where
+  colours could be confused, a pattern or dashed edge. A blank day is never called missed; a due date is shown
+  once, on its own date. Each calendar has a legend and the same days listed in words.
+- `line` is a guide under the dots, broken across longer gaps; `scale = "fitted"` writes where the scale starts.
+
 ## 6. Modules
 
 A module is a folder:

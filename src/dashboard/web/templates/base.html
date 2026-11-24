@@ -70,6 +70,7 @@
     .chart-svg .chart-bar, .chart-svg .chart-dot { fill: var(--accent); stroke: var(--fg); stroke-width: .75; }
     .chart-svg .chart-axis { stroke: var(--fg); }
     .chart-svg .chart-grid { stroke: var(--line); }
+    .chart-svg .chart-line { stroke: var(--muted); stroke-width: 1.5; }  /* only where a chart allows it (0119) */
     .chart-svg a:focus { outline: none; }
     .chart-svg a:focus .chart-bar, .chart-svg a:focus .chart-dot, .chart-svg a:hover .chart-dot { stroke-width: 3; }
     .chart-svg a:focus text { text-decoration: underline; }
@@ -79,6 +80,10 @@
     .chart-footer dt { font-weight: 600; } .chart-footer dd { margin: 0; }
     .chart-choose { display: flex; flex-wrap: wrap; gap: .8rem; align-items: end; }
     .chart-choose label { font-weight: 600; display: block; }
+    .chart-ranges ul { list-style: none; padding: 0; margin: .5rem 0; display: flex; flex-wrap: wrap; gap: .3rem .5rem; }
+    .chart-ranges a { display: inline-block; border: 1px solid var(--line); border-radius: 999px; padding: .2rem .75rem; text-decoration: none; }
+    .chart-ranges a[aria-current] { background: var(--accent); color: var(--bg); border-color: var(--accent); }
+    .chart-changes { margin: .3rem 0; padding-left: 1.2rem; }
     @media (max-width: 40rem) {  /* on a phone each row of a chart's table is a card, in the same order */
       .chart-table thead { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); }
       .chart-table, .chart-table tbody, .chart-table tr, .chart-table td { display: block; width: 100%; }
@@ -87,12 +92,55 @@
     }
     @media (forced-colors: active) {
       .chart-svg text { fill: CanvasText; } .chart-svg .chart-axis { stroke: CanvasText; }
-      .chart-svg .chart-bar, .chart-svg .chart-dot { fill: CanvasText; stroke: Canvas; }
+      .chart-svg .chart-bar, .chart-svg .chart-dot { fill: CanvasText; stroke: Canvas; } .chart-svg .chart-line { stroke: CanvasText; }
     }
     @media print {
       .chart-svg { max-width: 15cm; } .chart-svg text { fill: #000; } .chart-svg .chart-axis { stroke: #000; }
-      .chart-svg .chart-bar, .chart-svg .chart-dot { fill: #555; stroke: #000; }
-      .chart-table tr { break-inside: avoid; } .chart-choose { display: none; }
+      .chart-svg .chart-bar, .chart-svg .chart-dot { fill: #555; stroke: #000; } .chart-svg .chart-line { stroke: #000; }
+      .chart-table tr { break-inside: avoid; } .chart-choose, .chart-ranges { display: none; }
+    }
+    /* Month calendars (decision 0119): a small fixed palette, and every look also has its own symbol, and a
+       pattern or a dashed edge where colours could be confused, so nothing is told apart by colour alone. */
+    .vh { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+    :root { --cal-done: #d3ecdd; --cal-done-edge: #1b6b45; --cal-recorded: #d8e6f5; --cal-recorded-edge: #1d5a9e;
+            --cal-skipped: #ebebe8; --cal-skipped-edge: #5c645e; --cal-due: #fbe1bf; --cal-due-edge: #8a4b00;
+            --cal-planned-edge: #5c645e; }
+    @media (prefers-color-scheme: dark) {
+      :root { --cal-done: #1d3a2a; --cal-done-edge: #7cc4a0; --cal-recorded: #1c3350; --cal-recorded-edge: #8bb8e8;
+              --cal-skipped: #2c302d; --cal-skipped-edge: #a3aba5; --cal-due: #4a3115; --cal-due-edge: #f0b46a;
+              --cal-planned-edge: #a3aba5; }
+    }
+    .cal-nav { display: flex; flex-wrap: wrap; gap: .3rem 1rem; margin: .4rem 0; }
+    table.cal { width: 100%; max-width: 34rem; table-layout: fixed; border-collapse: collapse; background: var(--card); }
+    .cal caption { text-align: left; font-weight: 600; padding: .3rem 0; }
+    .cal th { font-size: .8rem; font-weight: 600; padding: .2rem 0; text-align: center; }
+    .cal td { border: 1px solid var(--line); vertical-align: top; height: 3.4rem; padding: .15rem; overflow: hidden; }
+    .cal td.cal-blank { background: var(--bg); }
+    .cal td.cal-today { outline: 3px solid var(--fg); outline-offset: -3px; }
+    .cal .cal-num { display: block; font-size: .8rem; line-height: 1.2; color: var(--fg); }
+    .cal a.cal-num { color: var(--accent); font-weight: 700; }
+    .cal-chip { display: inline-block; min-width: 1.15rem; line-height: 1.1rem; margin: 1px 1px 0 0; padding: 0 .15rem;
+                border: 1.5px solid; border-radius: 4px; text-align: center; font-size: .8rem; color: var(--fg);
+                -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+    .cal-chip .cal-n { font-size: .7rem; font-weight: 700; margin-left: 1px; }
+    .cal-done { background: var(--cal-done); border-color: var(--cal-done-edge); }
+    .cal-recorded { background: var(--cal-recorded); border-color: var(--cal-recorded-edge); }
+    .cal-skipped { border-style: dotted; border-color: var(--cal-skipped-edge);
+                   background: repeating-linear-gradient(135deg, var(--cal-skipped) 0 3px, var(--card) 3px 6px); }
+    .cal-due { background: var(--cal-due); border-color: var(--cal-due-edge); border-style: dashed; }
+    .cal-planned { background: var(--card); border-color: var(--cal-planned-edge); border-style: dashed; }
+    .cal-empty { background: var(--card); border-color: var(--line); }
+    .cal-legend { list-style: none; padding: 0; margin: .6rem 0; display: grid; gap: .3rem; font-size: .95rem; }
+    .cal-list ol { padding-left: 1.2rem; } .cal-list ul { list-style: none; padding-left: .2rem; }
+    .cal-list li { overflow-wrap: anywhere; margin: .2rem 0; }
+    .cal-list summary { cursor: pointer; color: var(--accent); }
+    .cal-list li:target { outline: 3px solid var(--accent); outline-offset: 2px; }
+    .cal-who ul { list-style: none; padding: 0; display: flex; flex-wrap: wrap; gap: .3rem 1rem; }
+    @media (max-width: 24rem) { .cal td { height: 3rem; padding: 1px; } .cal-chip { min-width: 0; padding: 0 1px; } }
+    @media (forced-colors: active) { .cal-chip { border-color: CanvasText; } .cal td.cal-today { outline-color: Highlight; } }
+    @media print {
+      .cal-nav { display: none; } .cal-list[open] summary { list-style: none; color: #000; }
+      .cal td { border-color: #000; } .cal-chip { color: #000; } table.cal { max-width: none; }
     }
     footer { color: var(--muted); font-size: .85rem; max-width: var(--wide); margin: 0 auto; padding: 0 1rem 2rem; }
   </style>

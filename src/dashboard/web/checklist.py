@@ -12,7 +12,8 @@ from dashboard.web.action_form import done_notice
 checklist_pages = Blueprint("checklist", __name__)
 # Address, tab words and the words when nothing is in the view. Empty words never say all work is done.
 TABS = [("today", "/to-do", "Today"), ("week", "/to-do/week", "This week"), ("month", "/to-do/month", "This month"),
-        ("year", "/to-do/year", "This year"), ("undated", "/to-do/no-date", "No date yet")]
+        ("year", "/to-do/year", "This year"), ("undated", "/to-do/no-date", "No date yet"),
+        ("calendar", "/to-do/calendar", "Calendar")]  # only while a list keeps a calendar of due dates (0119)
 EMPTY = {"today": "Nothing is due or late from the dates you recorded. This does not mean every household task "
                   "is done.",
          "week": "Nothing is due or late this week from the dates you recorded. This does not mean every household "
@@ -25,6 +26,12 @@ DAYS = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"]
 SHORT_MONTHS = [m[:3] for m in dates.MONTHS]
 # A reminder's `what` that adds nothing to "Due" for a task's own name ("job", "routine").
 GENERIC_WHAT = ("job", "routine", "")
+
+
+def visible_tabs(registry) -> list[tuple[str, str, str]]:
+    """The tabs to show: Calendar only while a switched-on list keeps a calendar with due dates (decision 0119)."""
+    from dashboard.web.calendar_pages import todo_calendar_tables
+    return [t for t in TABS if t[0] != "calendar" or todo_calendar_tables(registry)]
 
 
 def _registry():
@@ -148,7 +155,7 @@ def _view(window: str):
         heading = dates.long(today, style)
     else:
         heading = "Tasks in lists that keep a due date, with no date recorded yet"
-    return render_template("checklist.html", window=window, tabs=TABS, path=path, groups=groups, rows=rows,
+    return render_template("checklist.html", window=window, tabs=visible_tabs(registry), path=path, groups=groups, rows=rows,
                            finished=finished, months=months, notice=notice, heading=heading, empty=EMPTY[window],
                            open_count=open_count, only=only,
                            filters=[{"name": s.info.name, "title": _source_word(s, all_sources)} for s in all_sources],

@@ -107,6 +107,10 @@
 {% include "_daily_panel.html" %}
 <p><a href="{{ view.href }}">See {{ view.rule.sheet | lower }}</a> · <a href="{{ view.sheet }}">Print the last 14 days</a></p>
 {% endfor %}
+{% for cal in month_calendars %}
+<h2>{{ cal.title }}</h2>
+{% with open_list = false %}{% include "_calendar.html" %}{% endwith %}
+{% endfor %}
 {% for u in under %}{# another list's records that point here, like a service's quotes (labels.toml `under`, 0111) #}
 <section class="under" id="under-{{ u.table }}" aria-labelledby="under-{{ u.table }}-heading">
 <h2 id="under-{{ u.table }}-heading">{{ u.title }}</h2>
