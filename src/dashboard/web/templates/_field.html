@@ -33,6 +33,10 @@
           <option value=""{% if f.blank_follows %} data-blank-follows="{{ f.blank_follows }}" data-blank-words="{{ f.blank_words | tojson | forceescape }}"{% endif %}>{% if f.column.required %}Choose…{% else %}{{ f.blank or "(none)" }}{% endif %}</option>
           {% for value, label in f.options %}<option value="{{ value }}"{% if f.owners and value in f.owners %} data-owner="{{ f.owners[value] }}"{% endif %} {% if value == (f.value | string) %}selected{% endif %}>{{ label }}</option>{% endfor %}
         </select>
+        {% if f.reveal_link %}{# the chosen record's private words, fetched only on Show (decision 0120) #}
+        <p style="margin:.35rem 0 0"><button type="button" class="quiet" data-reveal-link="{{ f.reveal_link }}" data-for="{{ fid }}">Show the chosen {{ f.label | lower }}</button></p>
+        <p class="help" id="{{ fid }}-shown" aria-live="polite" hidden></p>
+        {% endif %}
         {% if f.follows %}<p class="help" data-follows-note="{{ fid }}" data-things="{{ f.things }}" hidden></p>
         {% elif f.kind == "link" and not f.options %}{% if f.add_first %}<p class="help">No {{ f.add_first[1] }} yet. <a href="{{ f.add_first[0] }}" target="_blank" rel="noopener">Add one in a new tab</a>, then reload this page; what you typed here stays.</p>{% else %}<p class="help">There is nothing to choose yet.</p>{% endif %}{% endif %}
       {% elif f.kind == "links" %}

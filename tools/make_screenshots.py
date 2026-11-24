@@ -169,6 +169,10 @@ STAGES = [
      "totals by unit, and \"Food put out, not necessarily eaten\"; notes are left off.",
      {"goto": "/daily/pet_feeding__servings/sheet?subject={id:pets__pets:pet}", "media": "print",
       "module": "pet_feeding"}),
+    ("18zd-doses", "Medicine given, one person's day", "Medicine doses: how many doses and when, with who gave "
+     "them; the medicine and amounts stay hidden until Show details, and nothing says a dose was missed.",
+     {"goto": "/daily/medicine_doses__doses?subject={id:people__people:person}&day={yesterday}",
+      "module": "medicine_doses", "width": PHONE_WIDTH}),
     ("19-needs-attention", "Needs attention", "Days of water with the working shown, running low, use-by "
      "and due dates, and details worth filling in.", {"goto": "/attention"}),
     ("19b-drinking-water", "Drinking water counted today", "Each water item behind Home's days of water, as a "

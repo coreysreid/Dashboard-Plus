@@ -1,0 +1,28 @@
+{# One person's private day (decision 0120), such as medicine doses: how many and when until Show; never a missed dose. #}
+<div class="daily" data-daily data-private-daily>
+  <p class="daily-summary"><strong>{{ view.summary }}</strong></p>
+  <p class="muted daily-note">{{ view.rule.caveat }}</p>
+  {% if view.rows %}
+  <ul class="daily-rows">
+    {% for r in view.rows %}<li><a href="{{ r.href }}">{{ r.line }}</a></li>{% endfor %}
+  </ul>
+  {% endif %}
+  {% if view.groups %}
+  <h3 style="margin:.6rem 0 .2rem">{{ view.group_title }}</h3>
+  <ul class="daily-rows" data-groups>
+    {% for g in view.groups %}<li><strong>{{ g.name }}</strong>: {{ g.words }}</li>{% endfor %}
+  </ul>
+  {% endif %}
+  {% if view.first_add %}
+  <p class="muted">There is nothing to choose yet. First add it to {{ view.name }}'s {{ view.first_add.title | lower }}: <a href="{{ view.first_add.href }}">add one</a>.</p>
+  {% else %}
+  <div class="actions daily-add">
+    <a class="button" href="{{ view.add }}" data-add-entry>{{ view.rule.add }}</a>
+  </div>
+  {% endif %}
+</div>
+<style>
+  .daily-rows { padding-left: 1.1rem; }
+  .daily-rows li { margin: .25rem 0; overflow-wrap: anywhere; }
+  .daily-add .button { min-height: 2.75rem; }
+</style>

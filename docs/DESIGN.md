@@ -966,6 +966,16 @@ number and the core can load both for a transition period.
   Home's card, the subject's page, `/daily/<table>` and `/daily/<table>/sheet`
   (complete or refused: at most 92 days and 1,000 rows). Review marks a
   suggestion matching another within `minutes` as a possible repeat.
+- **Medicine doses** (declarative; requires People; shipped, decision 0120).
+  One table, Medicine doses: who received it, which of their own medication
+  details, when, who gave it, and an optional private amount and unit. Three
+  core additions: a table may say `private = true` (with `suggestions = false`):
+  never on Home, a sheet, the export or to a helper; a link may say
+  `link_rule = { where, same, shows }`, checked by the record service on every
+  save, restore and change to the linked record; and `daily` may say
+  `group` (separate totals per linked record) and `repeat.form`/`repeat.keep`
+  (asked on the form before saving). A private daily table shows counts and
+  times until a pressed **Show details**. Every column travels (decision 0089).
 - **Graphing** (module). Charts over any table or measure or daily-fact view.
   Chart configurations are saved as records. Annotations and events are drawn on
   charts. **Started (decision 0109):** the first two charts are drawn as SVG on

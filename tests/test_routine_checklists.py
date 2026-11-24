@@ -451,7 +451,9 @@ class ExampleHouseholds(TempDirTestCase):
         found = set()
         for name, info in registry.items():
             for column in info.table.columns.values():
-                if column.sensitive and column.type != "links":
+                # A private choice (a dose's unit, 0120) holds the module's own word, such as "tablet", which ordinary
+                # names may contain too ("Kidney support tablets"); only words the household typed are checked here.
+                if column.sensitive and column.type not in ("links", "choice"):
                     found |= {str(v[0]) for v in conn.execute(f"SELECT {column.name} FROM {name} WHERE "
                                                                f"{column.name} IS NOT NULL AND {column.name} != ''")
                               if len(str(v[0])) >= 4}

@@ -1,0 +1,10 @@
+[tables.doses]
+empty = "Open a person's page and choose Record a dose. Add their medication under Important details first."
+form = ["recipient", "medication", "given_at", "given_by", "amount", "unit"]
+list = ["given_at", "recipient", "medication", "given_by", "amount", "unit"]
+columns.recipient = { label = "Given to", help = "The person who received the medicine." }
+columns.medication = { label = "Medicine", help = "One of this person's own medication details from Important details. Press Show to read it. Check the pack or care instructions before recording: Dashboard does not tell you what to give.", mismatch = "must be one of this person's own medication details. Choose one listed for them, or add it under their Important details." }
+columns.given_at = { label = "When was it given?", help = "Your household's local time. Change it if the dose was given earlier." }
+columns.given_by = { label = "Who gave it?", help = "Leave it as I do not know if you are not sure.", blank = "I do not know" }
+columns.amount = { label = "Amount given (optional)", help = "Copy it from the pack or label if you want it recorded. It is not filled in from an earlier dose." }
+columns.unit = { label = "Unit", help = "Choose one if you entered an amount. Different units are never added together." }

@@ -11,6 +11,7 @@ numbered migrations. See docs/DESIGN.md section 6 for the module contract.
 | home_layout/ | Ways out, shut-offs, smoke alarms and safety equipment, meters, each at one of your places; an Our home sheet | changing home layout records |
 | lent_out/ | Things lent out: what, to whom (one of your People), lent on, due back and returned on; a Things still lent out sheet | changing loans |
 | medical/ | First aid kits and where they are, kit checks, first aid training renewals; a first aid sheet | changing first aid records |
+| medicine_doses/ | Medicine doses: each dose given to a person, chosen from their own medication details, who gave it and an optional private amount; counts and times until Show, never on Home, a sheet, a helper or the export | changing dose records |
 | people/ | Who lives here, who to call, important details, emergency sheets | changing people, contacts or the emergency sheet |
 | pet_feeding/ | Pet feeding log: each bowl, refill or treat as food put out (not eaten), honest daily totals by the household's day in matching units, fast Add food, a 14-day sheet | changing feeding records |
 | pets/ | Pets, their vet, treatments and medicine with due dates, weigh-ins, vet visits; a pet details sheet | changing pets |

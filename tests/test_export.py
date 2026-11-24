@@ -49,14 +49,16 @@ class ExportTests(TempDirTestCase):
 
     def test_every_table_gets_a_file_with_every_record(self):
         files = self.export()
-        self.assertEqual(set(files), {"README.txt", "manifest.json"} | {f"{n}.csv" for n in self.registry})
+        shared = [n for n, i in self.registry.items() if not i.table.private]  # private history is left out (0120)
+        self.assertEqual(set(files), {"README.txt", "manifest.json"} | {f"{n}.csv" for n in shared})
         manifest = json.loads(files["manifest.json"])
+        self.assertEqual(manifest["private_tables_left_out"], ["Medicine doses"])
         self.assertEqual(manifest["app_version"], __version__)
         self.assertEqual(manifest["created"], "2026-11-18T09:30:00+00:00")
         self.assertEqual({m["name"] for m in manifest["modules"]}, {i.module.name for i in self.registry.values()})
         self.assertTrue(all("version" in m for m in manifest["modules"]))
-        self.assertEqual({t["file"] for t in manifest["tables"]}, {f"{n}.csv" for n in self.registry})
-        for name in self.registry:
+        self.assertEqual({t["file"] for t in manifest["tables"]}, {f"{n}.csv" for n in shared})
+        for name in shared:
             header, rows = self.table(files, name)
             live = self.conn.execute(f"SELECT COUNT(*) FROM {name} WHERE deleted_at IS NULL").fetchone()[0]
             self.assertEqual(len(rows), live, name)

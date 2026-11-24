@@ -200,7 +200,9 @@ def _parts() -> list[dict]:
     """The modules a helper could be allowed to use: the ones switched on."""
     conn = current_app.config["CONNECT"]()
     on = settings.enabled_modules(conn)
-    return [{"name": m.name, "title": m.title} for m in current_app.config["LOADED"] if m.name in on]
+    # A module whose every list is private (decision 0120), such as Medicine doses, has nothing a helper may use.
+    return [{"name": m.name, "title": m.title} for m in current_app.config["LOADED"]
+            if m.name in on and not all(t.private for t in m.tables.values())]
 
 
 def _recent(text: str | None) -> bool:
