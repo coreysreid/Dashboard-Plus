@@ -128,7 +128,7 @@ the "Requests" table of docs/WORKSTREAMS.md.
 | Batch 21 item 102: optional module links | promoted by Lane A to core `optional_requires`; Utilities now only optionally needs Home layout (decision 0115) | lane-b/batch21-item102 | Household words, dependency contract and the checks that apply before Bills are automated; Bills still waits for item 105; the draft folder is in git history. |
 | Batch 21 item 103: exit sketch on paper | ready for PR | lane-b/batch21-item103 | One-page layout, printed legend, complete text alternative, overflow rule and eight paper checks. |
 | Batch 21 item 104: helper starting words | built by Lane A (decision 0116); draft kept for the remaining core gates | lane-b/batch21-item104 | Four ranked exact guide/connector replacements after decision 0112, with invented checks. |
-| Batch 21 item 105: one insurance renewal | ready for PR | lane-b/batch21-item105 | Household choice, exact old-ID mapping, one watch owner, reverse transfer and nine checks. |
+| Batch 21 item 105: one insurance renewal | promoted by Lane A with item 88 as Bills and insurance (decision 0117): core `takes_over`, household choice, move by ID after a backup, Transfer back | lane-b/batch21-item105 | Household choice, exact old-ID mapping, one watch owner, reverse transfer and nine checks; both drafts' 18 checks are automated and the draft folder is in git history. |
 
 ## Messages to Lane A
 

@@ -17,7 +17,7 @@ home_type = "apartment"
 storeys = 1
 mobility_needs = false
 hazards = ["flood", "snow", "storm"]
-modules = ["documents", "garden", "home_care", "home_layout", "lent_out", "medical", "people", "readiness", "routines", "stock", "utilities", "vehicle_running", "vehicles", "wine"]
+modules = ["bills_insurance", "documents", "garden", "home_care", "home_layout", "lent_out", "medical", "people", "readiness", "routines", "stock", "utilities", "vehicle_running", "vehicles", "wine"]
 
 # ---- People -----------------------------------------------------------------
 
@@ -422,6 +422,20 @@ provider = "Example Water UK"
 fault_contact = "Example Water Faults UK"
 account_number = "DEMO-UK-ACCOUNT-01"
 meter = "Flat water meter"
+
+# ---- Bills and insurance ------------------------------------------------------
+# Sam keeps the car insurance here; Vehicles has no insurance record, so there is one reminder (decision 0117).
+
+[[bills_insurance.commitments]]
+name = "Family car insurance"
+kind = "policy"
+category = "vehicle"
+amount = 185
+frequency = "yearly"
+next_due = "today+18"
+vehicle = "Small car"
+covers = "Example vehicle cover description; check the policy for exclusions"
+reference = "DEMO-TAYLOR-CAR"
 
 # ---- Readiness ----------------------------------------------------------------
 # Answers to "Have you thought about…?" questions (modules/readiness/prompts.toml). Not yet answers say

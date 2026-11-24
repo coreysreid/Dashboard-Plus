@@ -268,6 +268,8 @@ def create_app(shutdown_token: str, on_shutdown: Callable[[], None], report=None
     app.register_blueprint(helper_api)
     app.register_blueprint(question_pages)
     app.register_blueprint(checklist_pages)
+    from dashboard.web.moves_pages import moves_pages  # one reminder per policy (decision 0117)
+    app.register_blueprint(moves_pages)
     from dashboard.web.chart_pages import chart_pages
     app.register_blueprint(chart_pages)
     from dashboard.web.daily_pages import daily_pages

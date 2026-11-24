@@ -35,7 +35,15 @@ MODULE_KEYS = ("name", "title", "version", "description", "core_api", "kind", "r
                "outbound_hosts")
 MODULE_REQUIRED = ("name", "title", "version", "description", "core_api", "kind")
 TABLE_KEYS = ("title", "description", "columns", "watch", "adjusts", "parent", "total", "record_name", "actions",
-              "pair", "suggestions", "chart", "daily", "confirm")
+              "pair", "suggestions", "chart", "daily", "confirm", "takes_over")
+# One reminder per policy (decision 0117): records of an older list in another module (Vehicle insurance) that
+# the household may choose, one by one, to have reminded from this table instead. `where` is what such a record
+# is here (a vehicle policy), `copy` which of this table's columns take which of the other's, the date included.
+TAKES_OVER_KEYS = ("from", "where", "copy")
+# The household's words around that choice (labels.toml `takes_over`); each has a plain default in the core.
+TAKES_OVER_WORDS = ("title", "intro", "keep", "review", "later", "warning", "question", "no_date", "moved",
+                    "source_kept", "source_moved", "target_moved", "target_off", "returned", "needs_choice",
+                    "duplicate", "duplicate_source", "back")
 # A chart of one subject's dated readings, such as one pet's weigh-ins as dots (decision 0109); `unit`, `latest`
 # and `caveat` let readings carry their own unit, as an odometer's km or mi, and say what they are (decision 0111).
 CHART_KEYS = ("kind", "x", "y", "per", "what", "entry", "subject", "unit", "latest", "caveat")
@@ -77,7 +85,8 @@ WATCH_KEYS = ("running_low", "expiring", "supply", "gaps")
 GAP_KEYS = ("missing", "none", "where", "message")
 COLUMN_KEYS = ("type", "required", "required_when", "default", "min", "max", "unit", "choices", "help", "sensitive",
                "to", "on_delete", "not_before", "travels", "travels_when", "with_place", "default_from")
-LABEL_TABLE_KEYS = ("title", "columns", "form", "list", "empty", "home", "actions", "add_button", "under")
+LABEL_TABLE_KEYS = ("title", "columns", "form", "list", "empty", "home", "actions", "add_button", "under",
+                    "takes_over")
 # A table's records listed on the page of the record they link to, like a service's quotes (decision 0111).
 UNDER_KEYS = ("link", "title", "intro", "columns", "order", "reveal")
 LABEL_ACTION_KEYS = ("label", "done", "title", "intro", "undo")  # new words for an action's button, form, notice
@@ -151,6 +160,7 @@ class Table:
     chart: dict = field(default_factory=dict)  # checked `chart`: one subject's dated readings drawn as dots (0109)
     daily: dict = field(default_factory=dict)  # checked `daily`: totals by the household's own day (0110)
     confirm: list = field(default_factory=list)  # checked gentle checks before a form saves (decision 0111)
+    takes_over: dict = field(default_factory=dict)  # checked `takes_over`: one reminder per policy (0117)
 
 
 @dataclass
@@ -423,7 +433,8 @@ def _check_watch(file: str, table: str, raw, columns: dict[str, Column], problem
             problems.append(f"{where}, expiring: write it like {{ date = \"expires\", warn_days = 30 }}.")
         else:
             problems.extend(_unknown_keys(f"{where}, expiring", expiring,
-                                          ("date", "warn_days", "wording", "what", "only_positive", "where")))
+                                          ("date", "warn_days", "wording", "what", "only_positive", "where",
+                                           "what_when")))
             days = expiring.get("warn_days", 30)
             wording = expiring.get("wording", "expires")
             what = expiring.get("what", "")
@@ -445,6 +456,11 @@ def _check_watch(file: str, table: str, raw, columns: dict[str, Column], problem
                     watch["expiring"]["only_positive"] = expiring["only_positive"]
                 if "where" in expiring:
                     watch["expiring"]["where"] = dict(expiring["where"])
+                if "what_when" in expiring:  # words for some rows, like "bill check" (decision 0117)
+                    found = _check_what_when(f"{where}, expiring, what_when", expiring["what_when"], columns,
+                                             problems)
+                    if found:
+                        watch["expiring"]["what_when"] = found
 
     supply = raw.get("supply")
     if supply is not None:
@@ -507,6 +523,76 @@ def _check_watch(file: str, table: str, raw, columns: dict[str, Column], problem
                                    "unit_from": supply.get("unit_from"),
                                    "unit_words": [str(w).lower() for w in supply.get("unit_words", [])]}
     return watch
+
+
+def _check_what_when(where: str, raw, columns: dict[str, Column], problems: list[str]) -> list[dict]:
+    """`what_when`: other words for the rows matching each filter, the first match winning, like
+    [{ where = { kind = "bill" }, what = "bill check" }] (decision 0117). Rows matching none keep `what`."""
+    if not isinstance(raw, list) or not raw:
+        problems.append(f"{where}: write it as a list like [{{ where = {{ kind = \"bill\" }}, what = \"bill check\" }}].")
+        return []
+    found = []
+    for number, entry in enumerate(raw, start=1):
+        here = f"{where}, entry {number}"
+        if not isinstance(entry, dict):
+            problems.append(f"{here}: write it like {{ where = {{ kind = \"bill\" }}, what = \"bill check\" }}.")
+            continue
+        problems.extend(_unknown_keys(here, entry, ("where", "what")))
+        what = entry.get("what")
+        if not isinstance(what, str) or not what.strip():
+            problems.append(f"{here}: 'what' must be a few words, like \"bill check\".")
+            continue
+        if _check_where(f"{here}, where", entry.get("where"), columns, problems):
+            found.append({"where": dict(entry["where"]), "what": what})
+    return found
+
+
+def _check_takes_over(file: str, table: Table, raw, requires: list[str], optional: list[str],
+                      problems: list[str]) -> dict:
+    """Check `takes_over` (decision 0117) as far as this module alone can; the other module's side is checked
+    once it is loaded (`_takes_over_problems`)."""
+    where = f"In {file}, table '{table.name}', takes_over"
+    if not isinstance(raw, dict):
+        problems.append(f"{where}: write it like {{ from = \"vehicles.insurance\", where = {{ ... }}, "
+                        f"copy = {{ ... }} }}.")
+        return {}
+    problems.extend(_unknown_keys(where, raw, TAKES_OVER_KEYS))
+    source = raw.get("from")
+    other, _, other_table = source.partition(".") if isinstance(source, str) else ("", "", "")
+    ok = True
+    if not other or not NAME.match(other_table) or other not in (*requires, *optional):
+        problems.append(f"{where}: 'from' names a table of another module listed under requires or "
+                        f"optional_requires, like \"vehicles.insurance\".")
+        ok = False
+    ok = _check_where(f"{where}, where", raw.get("where"), table.columns, problems) and ok
+    rule = table.watch.get("expiring") if isinstance(table.watch, dict) else None
+    if not rule or rule.get("wording") != "due":
+        problems.append(f"{where}: this table needs a watch.expiring with wording = \"due\": the reminder it "
+                        f"takes over.")
+        ok = False
+    copy = raw.get("copy")
+    if not isinstance(copy, dict) or not copy or not all(isinstance(v, str) for v in copy.values()):
+        problems.append(f"{where}: 'copy' names this table's columns and the other table's, like "
+                        f"{{ name = \"name\", next_due = \"renew_by\" }}.")
+        return {}
+    for name in copy:
+        column = table.columns.get(name)
+        if column is None:
+            problems.append(f"{where}, copy: there is no column '{name}'.{_suggest(name, list(table.columns))}")
+            ok = False
+        elif column.sensitive or column.type in ("links", "file"):
+            problems.append(f"{where}, copy: '{name}' can't be copied into: only ordinary, non-private columns "
+                            f"are, so nothing private moves between lists.")
+            ok = False
+    if rule and rule.get("date") not in copy:
+        problems.append(f"{where}, copy: it must copy the reminder's date, '{rule.get('date')}'.")
+        ok = False
+    if isinstance(raw.get("where"), dict) and set(copy) & set(raw["where"]):
+        problems.append(f"{where}: a column can't be both in 'where' and in 'copy'.")
+        ok = False
+    if not ok:
+        return {}
+    return {"from": source, "where": dict(raw["where"]), "copy": dict(copy)}
 
 
 def _check_adjusts(file: str, table: Table, tables: dict[str, Table], problems: list[str]) -> dict:
@@ -899,6 +985,9 @@ def _check_tables(module: str, data: dict, requires: list[str], problems: list[s
                 tables[tname].daily = _check_daily(file, tables[tname], raw["daily"], problems)
             if "confirm" in raw:
                 tables[tname].confirm = _check_confirm(file, tables[tname], raw["confirm"], problems)
+            if "takes_over" in raw:
+                tables[tname].takes_over = _check_takes_over(file, tables[tname], raw["takes_over"], requires,
+                                                             list(optional), problems)
     for table in tables.values():
         for column in table.columns.values():
             if column.type in ("link", "links") and column.to:
@@ -1440,6 +1529,15 @@ def _check_labels(data: dict, tables: dict[str, Table], problems: list[str]) -> 
                         if col is None or col.type != "choice" or value not in [c.key for c in col.choices]:
                             problems.append(f"{where}, column '{cname}': show_when must name a choice column of "
                                             f"this table and one of its choices.")
+        if "takes_over" in raw:  # the household's words around moving a reminder (decision 0117)
+            words = raw["takes_over"]
+            if not tables[tname].takes_over:
+                problems.append(f"{where}: 'takes_over' words only apply to a table whose tables.toml declares "
+                                f"takes_over.")
+            elif not isinstance(words, dict) or set(words) - set(TAKES_OVER_WORDS) or \
+                    any(not isinstance(v, str) or not v.strip() for v in words.values()):
+                problems.append(f"{where}: takes_over gives the household's words, each a short sentence, using "
+                                f"only {', '.join(TAKES_OVER_WORDS)}.")
         if "add_button" in raw and (not isinstance(raw["add_button"], str) or not raw["add_button"].strip()):
             problems.append(f"{where}: 'add_button' must be a few words, like \"Add a reading\".")
         if "under" in raw:
@@ -1794,6 +1892,48 @@ def _optional_target_problems(module: Module, by_name: dict[str, Module]) -> lis
     return problems
 
 
+def _takes_over_problems(module: Module, by_name: dict[str, Module]) -> list[str]:
+    """`takes_over` (decision 0117) once the other module is loaded: its table exists, reminds by the date that is
+    copied, and every copied column of it is ordinary (never private) and of the same kind, links to the same
+    list. A module that is not installed is simply off: nothing can be moved from it."""
+    problems = []
+    for table in module.tables.values():
+        rule = table.takes_over
+        if not rule:
+            continue
+        where = f"In tables.toml, table '{table.name}', takes_over"
+        other, _, other_table = rule["from"].partition(".")
+        if other not in by_name:
+            continue
+        source = by_name[other].tables.get(other_table)
+        if source is None:
+            problems.append(f"{where}: the '{other}' module has no table '{other_table}'."
+                            f"{_suggest(other_table, list(by_name[other].tables))}")
+            continue
+        watched = source.watch.get("expiring") if isinstance(source.watch, dict) else None
+        date_column = table.watch["expiring"]["date"]
+        if not watched or rule["copy"].get(date_column) != watched["date"]:
+            problems.append(f"{where}: '{rule['from']}' must remind by the date copied into '{date_column}'.")
+        for mine, theirs in rule["copy"].items():
+            column, given = table.columns[mine], source.columns.get(theirs)
+            if given is None:
+                problems.append(f"{where}, copy: '{rule['from']}' has no column '{theirs}'."
+                                f"{_suggest(theirs, list(source.columns))}")
+            elif given.sensitive or given.type in ("links", "file"):
+                problems.append(f"{where}, copy: '{theirs}' is private or not a single value in '{rule['from']}', "
+                                f"so it is never copied.")
+            elif given.type != column.type or (column.type == "link" and _linked_name(module.name, column) !=
+                                               _linked_name(other, given)):
+                problems.append(f"{where}, copy: '{mine}' and '{rule['from']}' '{theirs}' are not the same kind of "
+                                f"value.")
+    return problems
+
+
+def _linked_name(module: str, column: Column) -> str:
+    """The module and table a link points at, as "vehicles.vehicles"."""
+    return column.to if "." in column.to else f"{module}.{column.to}"
+
+
 def dependency_order(modules: list[Module], failures: dict[str, list[str]]) -> list[Module]:
     """Order modules so each comes after the ones it requires; drop any whose requirements fail."""
     by_name = {m.name: m for m in modules}
@@ -1829,6 +1969,7 @@ def dependency_order(modules: list[Module], failures: dict[str, list[str]]) -> l
             state[module.name] = "failed"
             return False
         problems = _cross_module_gap_problems(module, by_name) + _cross_module_sheet_problems(module, by_name)
+        problems += _takes_over_problems(module, {n: m for n, m in by_name.items() if state.get(n) == "done"})
         if module.prompts is not None:
             problems += prompt_files.cross_module_problems(module.prompts, by_name)
         if problems:

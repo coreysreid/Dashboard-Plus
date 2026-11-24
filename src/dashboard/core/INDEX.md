@@ -32,5 +32,6 @@
 | move_in.py | Move-in checks on helper suggestions: a starting amount counted twice, a link sent as a name, private details copied into text. | changing the double-count warning, name matches in refusals or the private-copy warning on Review |
 | export.py | Export my records: one zip with a spreadsheet file for every table, a manifest and a plain-words README. | changing what the export contains |
 | optional_links.py | Links into an optional module (decision 0115): kept by exact ID while it is off, shown in neutral words, never guessed. | changing what an optional link shows when its module is off or its record is gone |
+| reminder_moves.py | One reminder per policy: a household chooses, row by row and by exact ID, to move an older list's reminder into a newer one, and can move it back (0117). | changing takes_over, Move, Keep, Transfer back or which record reminds |
 | sync.py | Permanent record IDs, revisions and the filtered change log (sync stage 1): nothing leaves this computer. | changing record IDs, the change log or what may travel to another computer |
 | csv_import.py | Read a spreadsheet saved as CSV, match its columns to a table's fields, and check every row before it goes to Review. | changing how spreadsheets are read or matched |

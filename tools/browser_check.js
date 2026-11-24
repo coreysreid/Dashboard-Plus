@@ -544,6 +544,37 @@ function expect(condition, message) { if (!condition) throw new Failed(message);
     ok(`drills: "${d.scenario}" names ${d.number}, Continue later is not practised, "${d.record}" offered not chosen, saved with own words behind Show, fits 320 pixels`);
   }
 
+  async function checkBills() {  // Bills and insurance (decision 0117): nothing moves until chosen; Move, then Transfer back
+    const b = plan.bills;
+    await goto('/t/bills_insurance__commitments');
+    expect((await text('#moves-choice')).includes(b.title), `The Bills list should say "${b.title}" before anything moves.`);
+    let attention = (await (await page.goto(base + '/attention')).text());
+    expect(attention.includes(b.earlier), `Before a choice, Needs attention should still remind about "${b.earlier}" from Vehicles.`);
+    await goto('/t/bills_insurance__commitments');
+    await submit('#moves-review');
+    await page.setViewportSize({ width: 320, height: 800 });
+    try {
+      const wide = await page.evaluate(() => document.documentElement.scrollWidth);
+      expect(wide <= 320, `At 320px Review and move is ${wide}px wide; it should not scroll sideways.`);
+      expect((await text('main')).includes('permanent ID'), 'Review and move should show each record\'s permanent ID.');
+      await submit('button[data-move]');
+      expect((await text('#moves-done')).includes(b.done), `After Move the page should say "${b.done}".`);
+    } finally {
+      await page.setViewportSize({ width: 1280, height: 720 });
+    }
+    attention = await (await page.goto(base + '/attention')).text();
+    expect(!attention.includes(b.earlier), `After Move, Needs attention still reminds about "${b.earlier}" from Vehicles.`);
+    expect(attention.includes(b.name), `After Move, Needs attention should remind about "${b.name}" from Bills.`);
+    await goto('/t/vehicles__insurance');
+    await Promise.all([page.waitForNavigation(), page.click(`a[aria-label="Open ${b.earlier}"]`)]);
+    expect((await text('[data-reminder="source_moved"]')).includes('Insurance reminder is in Bills and insurance'),
+      'The earlier Vehicle insurance record should say its reminder is in Bills and insurance.');
+    await submit('[data-reminder="source_moved"] button[data-reminder-button]');
+    attention = await (await page.goto(base + '/attention')).text();
+    expect(attention.includes(b.earlier), `After Transfer back, Needs attention should remind about "${b.earlier}" from Vehicles again.`);
+    ok(`bills: "${b.earlier}" stays in Vehicles until chosen, moves to Bills with one reminder, fits 320px, and Transfer back returns it`);
+  }
+
   async function switchModule(name, on) {  // Settings: tick or untick one module, then Save settings
     await goto('/settings');
     await page.setChecked(`input[name=modules][value=${name}]`, on);
@@ -659,6 +690,7 @@ function expect(condition, message) { if (!condition) throw new Failed(message);
       if (plan.feeding) await checkFeeding();
       if (plan.running) await checkRunning();
       if (plan.drills) await checkDrills();
+      if (plan.bills) await checkBills();
       if (plan.optional) await checkOptionalLink();
       if (plan.private) { await checkPrivateDetail(); await checkPrivateSheet(); }
       await checkClose();

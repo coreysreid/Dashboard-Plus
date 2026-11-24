@@ -17,6 +17,14 @@
   </form>{% endif %}
 </div>
 {% endif %}
+{% for m in moves %}{# where this record's reminder is: one reminder per policy (decision 0117) #}
+<div class="notice" role="status" data-reminder="{{ m.key }}">{{ m.words }}{% if m.earlier %} <a href="{{ m.earlier.href }}">{{ m.earlier.label }}</a>.{% endif %}
+  {% for f in m.forms %}{% if f.action %}<form method="post" action="{{ f.action }}" style="display:inline;margin-left:.5rem" data-once>
+    <input type="hidden" name="_csrf" value="{{ csrf_token }}">
+    <button type="submit" class="quiet" data-reminder-button>{{ f.label }}</button>
+  </form>{% else %} <a href="{{ f.href }}">{{ f.label }}</a>{% endif %}{% endfor %}
+</div>
+{% endfor %}
 {% if errors and errors._form %}<p class="problem" role="alert">{{ errors._form }}</p>
 {% elif errors %}
 <div class="problem" role="alert" id="error-summary" tabindex="-1">

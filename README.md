@@ -78,6 +78,16 @@ is new: keep a copy of anything important somewhere else too. See
   their dates; the amounts and what each covers stay private behind **Show
   estimated cost and scope**. They are estimates, not a bill or a
   recommendation, and the service date you typed stays the only reminder.
+- **Bills and insurance:** each bill or policy with who provides it (from
+  People), how often it comes and the next date you want to check it, and
+  optionally a vehicle or a place. Thirty days before, Needs attention and
+  Things to do say "bill check due", "policy check due" or "vehicle insurance
+  review or renewal due"; nothing works out the next date and nothing says a
+  bill was paid or cover is active. The amount, what it covers, the reference
+  and notes stay private on this computer. If Vehicles already reminds you
+  about car insurance, nothing moves until you choose **Keep reminders in
+  Vehicles** or **Review and move to Bills**, one policy at a time, with
+  **Transfer back** to undo; each policy keeps one reminder.
 - **Have you thought about…?** (Readiness) 49 calm questions about fire,
   flood, storms, heat, power cuts, medical needs and leaving home quickly, each
   with the official page it came from and the date that page was checked. Only

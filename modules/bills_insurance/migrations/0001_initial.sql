@@ -19,8 +19,8 @@ CREATE TABLE bills_insurance__commitments (
     frequency TEXT,
     next_due TEXT,
     covers TEXT,
-    vehicle INTEGER REFERENCES vehicles__vehicles(id) ON DELETE SET NULL,
-    place INTEGER REFERENCES stock__places(id) ON DELETE SET NULL,
+    vehicle INTEGER,
+    place INTEGER,
     reference TEXT,
     notes TEXT
 );

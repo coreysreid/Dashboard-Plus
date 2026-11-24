@@ -480,7 +480,10 @@ def actor_text(actor: str) -> str:
 
 ACTION_TEXT = {"create": "added this", "update": "changed", "delete": "deleted this", "restore": "restored this",
                "accept": "accepted a helper's suggestion", "reject": "rejected a helper's suggestion",
-               "action": "used a button", "undo": "undid a button"}
+               "action": "used a button", "undo": "undid a button",
+               # one reminder per policy (decision 0117)
+               "reminder_moved": "moved this reminder between lists", "reminder_returned": "moved this reminder back",
+               "reminder_kept": "chose to keep this reminder here", "reminder_later": "chose to decide later"}
 
 
 def action_words(info: TableInfo, action: dict) -> tuple[str, str]:

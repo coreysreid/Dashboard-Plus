@@ -11,7 +11,7 @@ from datetime import datetime, timezone
 from decimal import Decimal
 from typing import Callable
 
-from dashboard.core import optional_links
+from dashboard.core import optional_links, reminder_moves
 from dashboard.core.records import Records, TableInfo
 from dashboard.core.schema import join_table_name, target_table
 from dashboard.web import display
@@ -55,6 +55,10 @@ How the columns are written
 - A link into a list that is switched off keeps its "... (id)" so nothing is lost, and
   its name column only says that a link is saved. Switch that list on and export again
   to see the name. A link whose record is no longer there says so, with its old ID.
+- A "Reminder" column appears where a reminder was moved between lists (for example
+  from Vehicle insurance to Bills and insurance). It says which record reminds and
+  gives the other record's ID. An earlier record that says "it does not remind" is
+  kept with its history; it is not a second reminder.
 - Dates are written year-month-day, like 2027-05-20, and times like 2027-05-20T14:35.
 - Money is in whole units with two decimals, like 12.50 (not cents).
 - Yes or no answers are written Yes or No.
@@ -206,6 +210,16 @@ def _table_file(snap: _Snapshot, info: TableInfo, include_deleted: bool) -> tupl
             cols.append(Col(f"{label} ({column.unit})" if measured else label, column.name,
                             lambda r, c=column: _value(c, r[c.name]), column.unit if measured else None,
                             {c.key: c.label for c in column.choices} if column.type == "choice" else None))
+    moves = {}  # one reminder per policy (decision 0117): say which record reminds, by ID
+    for move in reminder_moves.all_moves(snap.conn):
+        if move["source_table"] == info.name:
+            moves[move["source_id"]] = move
+        elif move["target_table"] == info.name and move["target_id"] is not None:
+            moves[move["target_id"]] = move
+    if moves:
+        titles = {name: display.table_title(other) for name, other in snap.registry.items()}
+        cols.append(Col("Reminder", "reminder_move", lambda r: _guard(reminder_moves.export_words(
+            moves[r["id"]], info.name, titles)) if r["id"] in moves else ""))
     cols += [Col("Created", "created_at", lambda r: r["created_at"]),
              Col("Last changed", "updated_at", lambda r: r["updated_at"])]
     if include_deleted:

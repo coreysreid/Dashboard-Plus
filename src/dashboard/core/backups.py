@@ -13,7 +13,7 @@ from pathlib import Path
 from dashboard.core import db
 
 log = logging.getLogger("dashboard.backups")
-KEEP = {"daily": 14, "close": 10, "before-update": 5}
+KEEP = {"daily": 14, "close": 10, "before-update": 5, "before-move": 5}
 STATUS_FILE = "status.json"  # in the data folder's backups folder: how the last backup went
 
 
@@ -133,6 +133,11 @@ def daily(data_dir: Path, extra_dir: Path | None = None, today: date | None = No
 def on_close(data_dir: Path, extra_dir: Path | None = None) -> list[Path]:
     """Back up as the program closes safely."""
     return _write(data_dir, extra_dir, f"close-{datetime.now():%Y%m%d-%H%M%S}.db")
+
+
+def before_move(data_dir: Path, extra_dir: Path | None = None) -> list[Path]:
+    """Back up just before a reminder is moved between lists or moved back (decision 0117)."""
+    return _write(data_dir, extra_dir, f"before-move-{datetime.now():%Y%m%d-%H%M%S}.db")
 
 
 def prune(folder: Path) -> None:

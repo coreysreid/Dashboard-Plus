@@ -168,6 +168,7 @@ One record per decision, from `TEMPLATE.md`. Never deleted; reversed ones are ma
 | [0114](0114-bundle-time-zone-data.md) | Ship `tzdata` (pinned and locked) so household days follow the household's time zone on Windows too; the CI Windows run had put pet feedings on the computer's day | Accepted |
 | [0115](0115-optional-links-between-modules.md) | Optional links between modules: `optional_requires` in module.toml; a link into an optional module is nullable, hidden with household words while that module is off, kept by exact ID (guarded writes refuse any set, change or clear), neutral on lists, sheets, exports and helpers, a gone record is repair never a same-name guess; Utilities now needs only People, so an internet-only household can switch it on alone; Bills not promoted | Accepted |
 | [0116](0116-helper-words-for-moving-in.md) | The helper's starting message, connector descriptions and OpenAPI no longer call an old tracker balance a purchase (it points to Count this batch), ask whether a receipt is already in the old count, say a Review-only price is not saved spending, and say when to refresh the guide and how to report sent, accepted, waiting and refused rows | Accepted |
+| [0117](0117-bills-and-insurance.md) | Bills and insurance switched on from Lane B's draft beside Utilities (needs only People; Vehicles and Stock optional): private amount, cover, reference and notes that never travel; due words per row (`what_when`); one reminder per vehicle policy: nothing moves until the household chooses Keep, Review and move (row by row, by ID, after a backup; the old record kept read-only) or Decide later; Transfer back; sheets say when they are not complete | Accepted (Corey to confirm the move choice) |
 | [TEMPLATE](TEMPLATE.md) | Blank record to copy for a new decision | recording a decision |
 
 ## docs/plans/  (summary: build plans for larger pieces of work, written before building)
@@ -245,6 +246,7 @@ numbered migrations. See docs/DESIGN.md section 6 for the module contract.
 
 | Entry | What it is | Open it when |
 |---|---|---|
+| bills_insurance/ | Bills and insurance: dated bills and policies beside Utilities, provider from People, optional vehicle or place, private amount and cover; one reminder per vehicle policy by the household's choice; a dates sheet | changing bills or policies |
 | documents/ | Where important papers are kept, whose they are and the review or renewal dates you choose; a review dates sheet | changing document records |
 | garden/ | Vegetable garden: beds at your places, crops, plantings, harvests and jobs with a due date; a Garden plan sheet | changing garden records |
 | home_care/ | Jobs around the home, where each is, who usually does it, last done and do again by; work done; a Home care sheet | changing home care jobs |
@@ -261,6 +263,22 @@ numbered migrations. See docs/DESIGN.md section 6 for the module contract.
 | vehicle_running/ | Vehicle running log: dated odometer readings per vehicle and dealer or independent estimates for a Vehicles service, amounts private | changing readings or estimates |
 | vehicles/ | Each vehicle, who to call if it breaks down, registration, insurance and service dates; a Vehicles sheet | changing vehicle records |
 | wine/ | Wine collection: wines, bottle counts you type, a free-text place, tasting notes; a Wine collection sheet | changing wine records |
+
+## modules/bills_insurance/  (summary: the Bills and insurance module, files only; built on Lane B's draft, beside Utilities)
+| Entry | What it is | Open it when |
+|---|---|---|
+| module.toml | Name, version, description; requires People (provider); Vehicles and Household stock only optionally (decisions 0115, 0117) | changing the module's details |
+| tables.toml | Bills and policies with private amount, cover, reference and notes that never travel; due words per kind; `takes_over` of Vehicle insurance | adding a field or changing the reminder |
+| labels.toml | Friendly labels and help, the optional vehicle and place words, and the household's words for moving a Vehicle insurance reminder | changing wording or order |
+| sheets.toml | Bills and policies to check: names, kinds, providers and dates, nothing private | changing what prints |
+| migrations/ | Numbered database changes | after changing tables.toml |
+
+## modules/bills_insurance/migrations/  (summary: this module's numbered database changes; never edit a released one)
+Generate the next one with: python tools/make_migration.py bills_insurance --name <what_changed>
+
+| Entry | What it is | Open it when |
+|---|---|---|
+| 0001_initial.sql | The commitments table and its link and date indexes, generated from tables.toml (optional links without a database rule) | checking how bills and policies are stored |
 
 ## modules/documents/  (summary: the Important documents module, files only; built on Lane B's draft, linking to People and Household stock)
 | Entry | What it is | Open it when |
@@ -588,6 +606,7 @@ Generate the next one with: python tools/make_migration.py wine --name <what_cha
 | move_in.py | Move-in checks on helper suggestions: a starting amount counted twice, a link sent as a name, private details copied into text. | changing the double-count warning, name matches in refusals or the private-copy warning on Review |
 | export.py | Export my records: one zip with a spreadsheet file for every table, a manifest and a plain-words README. | changing what the export contains |
 | optional_links.py | Links into an optional module (decision 0115): kept by exact ID while it is off, shown in neutral words, never guessed. | changing what an optional link shows when its module is off or its record is gone |
+| reminder_moves.py | One reminder per policy: a household chooses, row by row and by exact ID, to move an older list's reminder into a newer one, and can move it back (0117). | changing takes_over, Move, Keep, Transfer back or which record reminds |
 | sync.py | Permanent record IDs, revisions and the filtered change log (sync stage 1): nothing leaves this computer. | changing record IDs, the change log or what may travel to another computer |
 | csv_import.py | Read a spreadsheet saved as CSV, match its columns to a table's fields, and check every row before it goes to Review. | changing how spreadsheets are read or matched |
 
@@ -605,6 +624,7 @@ Add a new file with the next number instead of changing an old one.
 | 0007_sync_identity.sql | Sync stage 1: the household ID and epochs, the change log, and values held after a kind change (decision 0100) | checking how permanent IDs and the change log are stored |
 | 0008_helper_daily_allowance.sql | "Allow 200 more today": each press adds to one helper's daily limit for that day only, with who and when (decision 0101) | checking how a raised daily limit is stored |
 | 0009_receipt_lines_and_repeats.sql | Receipt lines a helper could not match wait on Review as their own kind; a batch can be one receipt, stay open until finished, and be kept as another purchase (decision 0105) | checking how receipt lines and repeat receipts are stored |
+| 0010_reminder_moves.sql | One reminder per policy: which older records (Vehicle insurance) were moved to a newer list (Bills and insurance), by exact IDs and a state, never names or dates (decision 0117) | checking how a moved reminder is stored |
 
 ## src/dashboard/web/  (summary: the screens: pages, forms and their protections)
 | Entry | What it is | Open it when |
@@ -616,6 +636,7 @@ Add a new file with the next number instead of changing an old one.
 | home_setup.py | Set up my home: rooms and areas, the storage spots inside them, and which rooms connect, on one page. | changing the Set up my home page |
 | action_form.py | An action's small form, such as Mark done: open it, save it once as one operation, and Undo it (decision 0091). | changing Mark done or Undo screens |
 | checklist.py | Things to do: the Today, This week, This month, This year and No date yet pages, each row with its record's own action. | changing the Things to do pages or the Home card |
+| moves_pages.py | One reminder per policy (decision 0117): the household's choice screen, Review and move row by row, Transfer back, and the notices on each record's page. | changing the Vehicle insurance choice or move screens |
 | count.py | Count this batch: a stocktake of one batch, reviewed and then saved as one stocktake correction. | changing the stocktake screens |
 | home.py | Group the home page by area: each module's main lists shown large, its other lists as one line of links. | changing how the home page is grouped or ordered |
 | questions.py | The "Have you thought about…?" screens: the questions by group, one question with its four answers, and Not now. | changing the question screens |
@@ -668,6 +689,7 @@ Add a new file with the next number instead of changing an old one.
 | review_line.html | Choose item for a receipt line the helper could not match: pick or make the item, confirm amount and date | changing the Choose item screens |
 | review_batch.html | Open earlier receipt: what became of each row of a receipt, read only | changing the earlier receipt page |
 | export.html | Settings, Export my records: what is in the export and the download button | changing the Export page |
+| moves*.html | One reminder per policy (0117): Review and move with each record's ID, and the Nothing was moved page | changing the reminder move screens |
 | restore_*.html | Settings, Backups: the list of backups, the check-and-compare page, the result, and the shared Undo restore box | changing the restore pages |
 
 ## tests/  (summary: automatic tests; synthetic data only)
@@ -684,6 +706,7 @@ How to run them is in AGENTS.md.
 | test_readiness_ask_again.py | Tests for decision 0113: a confirmed Readiness answer comes back only when a field its question lists changed. | changing when a question or drill step asks again |
 | test_example_garden.py | Exercise the garden example with a temporary database and synthetic harvest. | changing the garden example |
 | test_optional_links.py | Tests for optional links between modules (decision 0115): Utilities works without Our home and keeps an exact meter link while it is off. | changing optional_requires, a link into a switched-off module, or its words |
+| test_module_bills_insurance.py | Tests for Bills and insurance (decision 0117): dated bills and policies beside Utilities, private details that never travel, and one reminder per vehicle policy. | changing bills, takes_over, moving a reminder or Transfer back |
 | test_records.py | Tests for saving, checking, linking, deleting and restoring records, and their history. | changing how records are saved |
 | test_schema.py | Tests for turning declared tables into SQL and generating the next migration. | changing table building |
 | test_startup.py | Tests for preparing the database at start-up with the modules found. | changing start-up |
@@ -753,6 +776,6 @@ How to run them is in AGENTS.md.
 | load_example.py | Load a made-up example household into an empty data folder, for demos, screenshots and testing. | demonstrating or testing with realistic data |
 | make_screenshots.py | Make the example screenshots: run each example household through every stage of using the dashboard. | the screens changed and the gallery needs remaking |
 | screenshots.js | Browser steps for make_screenshots.py (Node and Playwright) | changing how screenshots are taken |
-| browser_check.py | Click through the real dashboard in Chromium (setup, Set up my home, dates, stock in, stocktake, Mark returned, Mark done, Things to do, spreadsheet import, Review keys and buttons, readiness questions, Think it through drills, charts, pet feeding at 320px, vehicle running log, Utilities with Our home off, private details, closing) and fail loudly. | a screen or its browser code changed |
+| browser_check.py | Click through the real dashboard in Chromium (setup, Set up my home, dates, stock in, stocktake, Mark returned, Mark done, Things to do, spreadsheet import, Review keys and buttons, readiness questions, Think it through drills, charts, pet feeding at 320px, vehicle running log, Bills and a moved car insurance reminder, Utilities with Our home off, private details, closing) and fail loudly. | a screen or its browser code changed |
 | browser_check.js | Browser steps for browser_check.py (Node and Playwright): what is clicked and checked | changing what the browser check clicks |
 | make_project_map.py | Build PROJECT_MAP.md from every INDEX.md in the repository. | changing the map format |

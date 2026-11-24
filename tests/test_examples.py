@@ -32,7 +32,7 @@ class ExampleHouseholdTests(TempDirTestCase):
                                          "Tinned tomatoes"])
         self.assertEqual(result["expiring"], ["Muesli bars", "Put the bins out", "Water the pot plants", "Monthly flea and tick chew", "Cordless drill", "Check bed ties", "Long-life milk",
                                               "Upstairs hall smoke alarm", "Family car: Routine service", "Clean the gutters",
-                                              "Sunscreen SPF 50", "Rex", "Adrenaline auto-injector (Emily)",
+                                              "Sunscreen SPF 50", "Rex", "Home electricity", "Adrenaline auto-injector (Emily)",
                                               "Home insurance policy", "Kidney beans"])  # the 3 tins on Shelf 3, not the 10 in the garage
         beans = result["conn"].execute("SELECT quantity FROM stock__items WHERE name = 'Kidney beans'").fetchone()
         self.assertEqual(beans[0], 13)
@@ -46,6 +46,7 @@ class ExampleHouseholdTests(TempDirTestCase):
         self.assertTrue(details["Family car: Routine service"].startswith("service or check due"), details)
         self.assertTrue(details["Home insurance policy"].startswith("review or renewal due"), details)
         self.assertTrue(details["Clean the gutters"].startswith("job due"), details)  # Home care, their own date
+        self.assertTrue(details["Home electricity"].startswith("bill check due"), details)  # Bills (decision 0117)
         self.assertNotIn("Hot water system service", details)  # due in 65 days: not yet worth a reminder
         self.assertEqual(details["Cordless drill, lent to Dave Wilson"], "return due 05/06/26 (in 4 days)")
         self.assertNotIn("Garden trowel, lent to Dave Wilson", details)  # returned: never overdue (decision 0073)
@@ -72,7 +73,8 @@ class ExampleHouseholdTests(TempDirTestCase):
         # Home layout asks about the rest; nobody to call for the car yet; one paper's place; where the radiators are
         # bled; how to reach Chris about the bike pump
         self.assertEqual(result["gaps"], 10)
-        self.assertEqual(result["expiring"], ["Spare bike pump", "Water the windowsill herbs", "Check windowsill pot", "Oat milk", "Small car: MOT test"])
+        self.assertEqual(result["expiring"], ["Spare bike pump", "Water the windowsill herbs", "Check windowsill pot", "Oat milk",
+                                              "Family car insurance", "Small car: MOT test"])  # Bills (decision 0117)
         gaps = [g.message for g in watch.gaps(result["conn"], result["registry"])]
         for question in ("Where is the water shut-off? It is not written down yet.",
                          "Where is the power board (switchboard or fuse box)? It is not written down yet.",

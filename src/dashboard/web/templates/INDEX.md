@@ -31,4 +31,5 @@
 | review_line.html | Choose item for a receipt line the helper could not match: pick or make the item, confirm amount and date | changing the Choose item screens |
 | review_batch.html | Open earlier receipt: what became of each row of a receipt, read only | changing the earlier receipt page |
 | export.html | Settings, Export my records: what is in the export and the download button | changing the Export page |
+| moves*.html | One reminder per policy (0117): Review and move with each record's ID, and the Nothing was moved page | changing the reminder move screens |
 | restore_*.html | Settings, Backups: the list of backups, the check-and-compare page, the result, and the shared Undo restore box | changing the restore pages |

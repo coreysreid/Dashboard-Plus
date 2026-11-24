@@ -266,6 +266,18 @@ Each quote with who gave it and its dates; the amount and what it covers stay hi
 
 ![A service's cost estimates](screenshots/smith/18sb-service-estimates.png)
 
+### Bills and insurance
+
+Each bill and policy with its provider and the date to check it; the amount, cover and reference stay hidden until Show. Car insurance already in Vehicles stays there until the household chooses.
+
+![Bills and insurance](screenshots/smith/18sc-bills.png)
+
+### Bills and policies to check sheet
+
+As it prints: names, kinds, providers and dates, with no amounts, cover or references.
+
+![Bills and policies to check sheet](screenshots/smith/18sd-bills-sheet.png)
+
 ### Have you thought about…?
 
 Readiness: the questions that fit the household, by group, with how many have been looked at, never a safety score.
@@ -614,6 +626,18 @@ Each quote with who gave it and its dates; the amount and what it covers stay hi
 
 ![A service's cost estimates](screenshots/garcia/18sb-service-estimates.png)
 
+### Bills and insurance
+
+Each bill and policy with its provider and the date to check it; the amount, cover and reference stay hidden until Show. Car insurance already in Vehicles stays there until the household chooses.
+
+![Bills and insurance](screenshots/garcia/18sc-bills.png)
+
+### Bills and policies to check sheet
+
+As it prints: names, kinds, providers and dates, with no amounts, cover or references.
+
+![Bills and policies to check sheet](screenshots/garcia/18sd-bills-sheet.png)
+
 ### Have you thought about…?
 
 Readiness: the questions that fit the household, by group, with how many have been looked at, never a safety score.
@@ -955,6 +979,18 @@ Last recorded, then each reading as a dot and a row in the unit it was saved in;
 Each quote with who gave it and its dates; the amount and what it covers stay hidden until Show. Estimates, not a bill.
 
 ![A service's cost estimates](screenshots/taylor/18sb-service-estimates.png)
+
+### Bills and insurance
+
+Each bill and policy with its provider and the date to check it; the amount, cover and reference stay hidden until Show. Car insurance already in Vehicles stays there until the household chooses.
+
+![Bills and insurance](screenshots/taylor/18sc-bills.png)
+
+### Bills and policies to check sheet
+
+As it prints: names, kinds, providers and dates, with no amounts, cover or references.
+
+![Bills and policies to check sheet](screenshots/taylor/18sd-bills-sheet.png)
 
 ### Have you thought about…?
 

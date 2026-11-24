@@ -1,0 +1,55 @@
+{% extends "base.html" %}
+{% block title %}{{ title }} · Dashboard Plus{% endblock %}
+{% block body %}
+<p class="muted"><a href="/">Home</a> · <a href="/t/{{ rule.target.name }}">{{ target_title }}</a></p>
+<h1>{{ title }}</h1>
+{% if done %}<p class="notice" role="status" id="moves-done">{{ done }}</p>{% endif %}
+<p>{{ intro }}</p>
+<p><strong>{{ warning }}</strong></p>
+{% if choice != "keep" %}
+<form method="post" action="/moves/{{ rule.target.name }}/choice" class="actions" data-once>
+  <input type="hidden" name="_csrf" value="{{ csrf_token }}">
+  <button type="submit" name="choice" value="keep" class="quiet">{{ keep }} for all not moved</button>
+</form>
+{% endif %}
+{% if rows %}
+<ul class="moves" style="list-style:none;padding:0">
+  {% for r in rows %}
+  <li class="card" data-move-row="{{ r.id }}">
+    <p style="margin:0"><strong><a href="{{ r.href }}">{{ r.title }}</a></strong></p>
+    <p style="margin:.2rem 0">{% if r.link %}{{ r.link }} · {% endif %}{{ r.name }} · {% if r.when %}Date recorded: {{ r.when }}{% else %}{{ no_date }}{% endif %}</p>
+    <p class="muted" style="margin:.2rem 0;overflow-wrap:anywhere">Record {{ r.id }}{% if r.global_id %} · permanent ID {{ r.global_id }}{% endif %}</p>
+    {% if r.state == "moved" %}
+    <p style="margin:.3rem 0">Moved. <a href="{{ r.target_href }}">Open it in {{ target_title }}</a>.</p>
+    <form method="post" action="/moves/{{ rule.target.name }}/{{ r.id }}/back" data-once>
+      <input type="hidden" name="_csrf" value="{{ csrf_token }}">
+      <button type="submit" class="quiet">{{ back }}</button>
+    </form>
+    {% else %}
+    <p style="margin:.3rem 0">{% if r.state == "kept" %}Kept in {{ source_module }}. {% elif r.state == "returned" %}Moved back to {{ source_module }}. {% endif %}{{ question }}</p>
+    <form method="post" action="/moves/{{ rule.target.name }}/{{ r.id }}/move" class="actions" data-once style="display:inline-flex">
+      <input type="hidden" name="_csrf" value="{{ csrf_token }}">
+      <input type="hidden" name="back" value="/moves/{{ rule.target.name }}">
+      <button type="submit" data-move="{{ r.id }}">Move</button>
+    </form>
+    {% if r.state != "kept" and r.state != "returned" %}
+    <form method="post" action="/moves/{{ rule.target.name }}/{{ r.id }}/keep" data-once style="display:inline">
+      <input type="hidden" name="_csrf" value="{{ csrf_token }}">
+      <button type="submit" class="quiet">Keep in {{ source_module }}</button>
+    </form>
+    {% endif %}
+    {% if r.state == "kept" %}
+    <form method="post" action="/moves/{{ rule.target.name }}/{{ r.id }}/later" data-once style="display:inline">
+      <input type="hidden" name="_csrf" value="{{ csrf_token }}">
+      <button type="submit" class="quiet">{{ later }}</button>
+    </form>
+    {% endif %}
+    {% endif %}
+  </li>
+  {% endfor %}
+</ul>
+{% else %}
+<p class="muted">There are no records to move.</p>
+{% endif %}
+<p><a href="/t/{{ rule.target.name }}">Back to {{ target_title }}</a></p>
+{% endblock %}

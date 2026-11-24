@@ -12,6 +12,7 @@ How to run them is in AGENTS.md.
 | test_readiness_ask_again.py | Tests for decision 0113: a confirmed Readiness answer comes back only when a field its question lists changed. | changing when a question or drill step asks again |
 | test_example_garden.py | Exercise the garden example with a temporary database and synthetic harvest. | changing the garden example |
 | test_optional_links.py | Tests for optional links between modules (decision 0115): Utilities works without Our home and keeps an exact meter link while it is off. | changing optional_requires, a link into a switched-off module, or its words |
+| test_module_bills_insurance.py | Tests for Bills and insurance (decision 0117): dated bills and policies beside Utilities, private details that never travel, and one reminder per vehicle policy. | changing bills, takes_over, moving a reminder or Transfer back |
 | test_records.py | Tests for saving, checking, linking, deleting and restoring records, and their history. | changing how records are saved |
 | test_schema.py | Tests for turning declared tables into SQL and generating the next migration. | changing table building |
 | test_startup.py | Tests for preparing the database at start-up with the modules found. | changing start-up |

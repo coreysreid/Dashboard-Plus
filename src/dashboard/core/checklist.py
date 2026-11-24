@@ -14,7 +14,7 @@ import sqlite3
 from dataclasses import dataclass, field
 from datetime import date, timedelta
 
-from dashboard.core import dates, settings, watch
+from dashboard.core import dates, reminder_moves, settings, watch
 from dashboard.core.records import TableInfo
 
 WINDOWS = ("today", "week", "month", "year")
@@ -32,6 +32,7 @@ class Source:
     what: str
     forms: list = field(default_factory=list)  # actions that add a record through a small form (Mark done)
     presses: list = field(default_factory=list)  # one-step buttons that end the reminder (Garden's Mark done)
+    what_when: list = field(default_factory=list)  # other words for some rows, like "bill check" (decision 0117)
 
 
 @dataclass
@@ -42,6 +43,7 @@ class Task:
     name: str
     due: date | None
     group: str  # "earlier" (before this year), "late", "today", "later" or "undated"
+    what: str = ""  # what is due for this row: the list's `what`, or a `what_when` match (decision 0117)
 
 
 @dataclass
@@ -69,7 +71,8 @@ def sources(registry: dict[str, TableInfo]) -> list[Source]:
         forms = [a for a in info.table.actions if a.get("adds")]
         presses = [a for a in info.table.actions if not a.get("adds")
                    and any(k in a["set"] and a["set"][k] != v for k, v in where.items())]
-        found.append(Source(info, rule["date"], where, rule.get("what") or "", forms, presses))
+        found.append(Source(info, rule["date"], where, rule.get("what") or "", forms, presses,
+                            list(rule.get("what_when") or [])))
     return found
 
 
@@ -99,6 +102,7 @@ def bounds(window: str, today: date, first_day: str = "monday") -> tuple[date, d
 
 def _rows(conn: sqlite3.Connection, source: Source, upto: date | None):
     clause, values = watch._where_sql(source.info, source.where)
+    clause += reminder_moves.silent_clause(source.info.name)  # moved to another list: reminded there (0117)
     col = source.date
     if upto is None:  # No date yet
         sql = f"SELECT * FROM {source.info.name} WHERE deleted_at IS NULL AND ({col} IS NULL OR {col} = ''){clause}"
@@ -135,7 +139,8 @@ def tasks(conn: sqlite3.Connection, registry: dict[str, TableInfo], window: str,
             else:
                 group = "later"
             name = watch._name(source.info, row, conn, registry, (source.date,))
-            found.append(Task(source, row, name, due, group))
+            what = watch.what_for({"what": source.what, "what_when": source.what_when}, row)
+            found.append(Task(source, row, name, due, group, what))
     found.sort(key=lambda t: (t.due or date.max, t.name.lower()))
     return found
 
@@ -212,6 +217,7 @@ def by_month(conn: sqlite3.Connection, registry: dict[str, TableInfo], year: int
         if only and source.info.name != only:
             continue
         clause, values = watch._where_sql(source.info, source.where)
+        clause += reminder_moves.silent_clause(source.info.name)
         col = source.date
         for row in conn.execute(
                 f"SELECT CAST(substr({col}, 6, 2) AS INTEGER) AS m, COUNT(*) AS n FROM {source.info.name} "

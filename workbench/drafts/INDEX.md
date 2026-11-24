@@ -29,7 +29,6 @@ and made-up example rows. Add a row here for each draft folder you create.
 | sync/ | Optional main/member household sync, conflicts, privacy and offline bundles | deciding sync |
 | macos/ | Researched app-bundle build, data location and release checks | preparing a Mac release |
 | phone/ | Android and iOS member app options, first screens and acceptance checks | designing mobile sync |
-| bills_insurance/ | Draft bills and policy reminders beside Utilities | reviewing financial reminders |
 | medicine_doses/ | Proposed human dose history linked to People's medication summaries | deciding safe medical scope |
 | purchase_history/ | Stock purchase lines, confirmed prices and receipt Review words | designing cost history |
 | exit_map/ | Fire-service research and a simple room-and-connection sketch | planning a home exit map |

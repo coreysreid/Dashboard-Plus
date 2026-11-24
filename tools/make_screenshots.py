@@ -120,6 +120,12 @@ STAGES = [
     ("18sb-service-estimates", "A service's cost estimates", "Each quote with who gave it and its dates; the "
      "amount and what it covers stay hidden until Show. Estimates, not a bill.",
      {"goto": "/t/vehicles__services/{id:vehicles__services:service}", "module": "vehicle_running"}),
+    ("18sc-bills", "Bills and insurance", "Each bill and policy with its provider and the date to check it; the "
+     "amount, cover and reference stay hidden until Show. Car insurance already in Vehicles stays there until the "
+     "household chooses.", {"goto": "/t/bills_insurance__commitments", "module": "bills_insurance"}),
+    ("18sd-bills-sheet", "Bills and policies to check sheet", "As it prints: names, kinds, providers and dates, "
+     "with no amounts, cover or references.",
+     {"goto": "/sheet/bills_insurance/upcoming_bills_and_policies", "media": "print", "module": "bills_insurance"}),
     ("18t-questions", "Have you thought about…?", "Readiness: the questions that fit the household, by group, with "
      "how many have been looked at, never a safety score.", {"goto": "/questions/readiness", "module": "readiness"}),
     ("18u-question", "One question", "Why it may matter, its official source and the date checked, a record that may "
