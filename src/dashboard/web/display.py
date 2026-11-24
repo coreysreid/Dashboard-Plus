@@ -239,6 +239,9 @@ class Field:
     only_when_blank: str | None = None  # shown only while this link field (Which batch) is left blank
 
     kept_private: bool = False  # a saved private value, not sent until the person chooses Show
+    # A link with `shows` in its link_rule (decision 0120): where to fetch the chosen record's private detail when
+    # the person presses Show ("{id}" is replaced by the chosen record), never sent with the page.
+    reveal_link: str | None = None
     add_first: tuple[str, str] | None = None  # for an empty link list: (where to add one, what they are called)
     # An optional link (decision 0115): `hidden_link` when its module is off, so there is no picker and the saved
     # value is kept as it is; `note` is the household's sentence beside it, such as the repair words.
@@ -369,6 +372,10 @@ def build_fields(records: Records, info: TableInfo, values: dict, errors: dict, 
             rows = records.page(target.name, limit=OPTION_LIMIT, order_by=name_col.name if name_col else "id")
             if target.table.total:  # a used-up batch is history, not something to choose
                 rows = [r for r in rows if r[target.table.total["amount"]] or str(r["id"]) == str(values.get(column.name))]
+            link_rule = column.link_rule
+            if link_rule:  # only the records its link_rule allows (decision 0120); the record service checks on save
+                rows = [r for r in rows if all(r[k] == v for k, v in link_rule["where"].items())
+                        or str(r["id"]) == str(values.get(column.name))]
             current = values.get(column.name)
             if current not in (None, "") and str(current).isdecimal() and str(current).isascii() and \
                     int(current) not in {r["id"] for r in rows}:  # always offer the record already chosen
@@ -388,12 +395,23 @@ def build_fields(records: Records, info: TableInfo, values: dict, errors: dict, 
             elif column.with_place:
                 shown = Formatter(records)
                 options = [(str(r["id"]), shown.link_with_place(info, column, r["id"])) for r in rows]
+            elif link_rule and name_column(target) is None and link_rule["where"]:
+                # A record named only by private words (a medication detail): its choice and number, never its text.
+                words = " ".join(next((c.label for c in target.table.columns[k].choices if c.key == v), v)
+                                 for k, v in link_rule["where"].items())
+                options = [(str(r["id"]), f"{words} #{r['id']}") for r in rows]
             else:
                 options = [(str(r["id"]), display_name(target, r, records)) for r in rows]
             related = owner_field(records, info, column, on_form)
             if related:  # batches: the form shows only those of the item chosen
                 follows = related[0]
                 owners = {str(r["id"]): str(r[related[1]]) for r in rows if r[related[1]] is not None}
+            elif link_rule and link_rule["same"] and column.type == "link":
+                # Only the chosen person's own medication details are listed, and the list follows that person.
+                theirs, mine = next(iter(link_rule["same"].items()))
+                if mine in {c.name for c in on_form}:
+                    follows = mine
+                    owners = {str(r["id"]): str(r[theirs]) for r in rows if r[theirs] is not None}
         raw = values.get(column.name)
         value = raw if from_form else input_value(column, raw)
         help_text = column_help(info, column)
@@ -426,7 +444,14 @@ def build_fields(records: Records, info: TableInfo, values: dict, errors: dict, 
             target = formatter.target(info, column)
             field.add_first = (f"/t/{target.name}/new", table_title(target).lower())
         if follows:
-            field.things = table_title(formatter.target(info, column)).lower()
+            field.things = table_title(formatter.target(info, column)).lower() if not column.link_rule \
+                else column_label(info, column).lower()
+        if column.type == "link" and column.link_rule.get("shows"):
+            field.reveal_link = (f"/t/{formatter.target(info, column).name}/{{id}}/reveal?column="
+                                 f"{column.link_rule['shows']}")
+        own_blank = _labels(info).get("columns", {}).get(column.name, {}).get("blank")
+        if isinstance(own_blank, str):  # "I do not know" for an optional link (decision 0120)
+            field.blank = own_blank
         words = blank_choice(records, info, column, on_form, editing)
         if words:
             field.blank_follows, field.blank_words = words

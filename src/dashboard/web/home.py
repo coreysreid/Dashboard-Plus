@@ -31,6 +31,8 @@ def home_groups(registry: dict, count, sheets: list[dict]) -> list[dict]:
     """
     groups: dict[str, dict] = {}
     for name, info in registry.items():
+        if info.table.private:  # private history, such as medicine doses, is never on Home (decision 0120)
+            continue
         module = info.module
         group = groups.get(module.name)
         if group is None:

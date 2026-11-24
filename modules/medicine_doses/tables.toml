@@ -1,0 +1,32 @@
+# One row is one dose a person says was given: a record, never advice, a schedule or a missed-dose claim (decision 0120).
+# The whole table is private medical history: never on Home, a sheet, a helper or the spreadsheet export, and only a
+# person adds to it, on this program's own form. Under decision 0089 medical safety details travel to the household's
+# other computers, so every column says travels = "always" (the amount too, which stays hidden until Show).
+[tables.doses]
+title = "Medicine doses"
+description = "Each dose of medicine given to a person, chosen from that person's own medication details."
+private = true
+suggestions = false
+columns.recipient = { type = "link", to = "people.people", required = true, on_delete = "restrict", travels = "always" }
+# Must be a People "Important details" row of kind Medication for the same person; checked on every save.
+columns.medication = { type = "link", to = "people.important_info", required = true, on_delete = "restrict", travels = "always", link_rule = { where = { kind = "medication" }, same = { person = "recipient" }, shows = "detail" } }
+columns.given_at = { type = "datetime", required = true, default = "now", travels = "always" }
+columns.given_by = { type = "link", to = "people.people", on_delete = "restrict", travels = "always" }
+columns.amount = { type = "decimal", min = 0.01, sensitive = true, travels = "always" }
+columns.unit = { type = "choice", sensitive = true, travels = "always", choices = ["tablet", "capsule", "ml", "mg", "drop", "puff", "patch", "spoonful", "dose"] }
+
+# By the household's own day (decision 0110), each medicine on its own. A dose of the same medicine for the same
+# person within two hours of one already recorded asks before saving; a real second dose can still be kept.
+[tables.doses.daily]
+when = "given_at"
+per = "recipient"
+group = "medication"
+amount = "amount"
+unit = "unit"
+entry = ["dose", "doses"]
+what = "Medicine given"
+verb = "given"
+add = "Record a dose"
+sheet = "Dose history"
+caveat = "A record of doses entered here, not a schedule or advice. It never says a dose was missed: check the pack or care instructions."
+repeat = { minutes = 120, same = ["medication"], form = "A dose of this medicine is already recorded for this person near this time. Check both before saving.", keep = "Keep this as another dose" }

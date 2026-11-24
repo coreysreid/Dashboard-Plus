@@ -75,6 +75,17 @@ is new: keep a copy of anything important somewhere else too. See
   like an entry already there, or like another waiting, is marked **Possible
   repeat feeding entry** on Review with **Accept as another feeding** and
   **Reject this copy**.
+- **Medicine doses:** each dose of medicine given to a person, from **Record a
+  dose** on their page: the medicine is chosen from that person's own
+  medication details (People → Important details), with the time now and, for
+  you to check, the last medicine and who gave it filled in; an amount is
+  optional and never copied from an earlier dose. The person's page says "1
+  dose entry recorded today" and the times, nothing more; **Dose history**
+  shows each medicine and amount only after **Show details**. The same
+  medicine for the same person within two hours asks first, with **Keep this
+  as another dose**. Doses are never on Home, a printed sheet, the
+  spreadsheet export or visible to a helper, and nothing ever says a dose was
+  missed. People only: pets keep their treatments in Pets.
 - **Vehicle running log:** what each vehicle's odometer showed and when, as
   dots on the vehicle's page ("Last recorded: 48,500 km on 20/11/26"), in the
   km or miles you choose in Settings and never converted. A reading lower than

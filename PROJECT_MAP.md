@@ -170,6 +170,7 @@ One record per decision, from `TEMPLATE.md`. Never deleted; reversed ones are ma
 | [0116](0116-helper-words-for-moving-in.md) | The helper's starting message, connector descriptions and OpenAPI no longer call an old tracker balance a purchase (it points to Count this batch), ask whether a receipt is already in the old count, say a Review-only price is not saved spending, and say when to refresh the guide and how to report sent, accepted, waiting and refused rows | Accepted |
 | [0117](0117-bills-and-insurance.md) | Bills and insurance switched on from Lane B's draft beside Utilities (needs only People; Vehicles and Stock optional): private amount, cover, reference and notes that never travel; due words per row (`what_when`); one reminder per vehicle policy: nothing moves until the household chooses Keep, Review and move (row by row, by ID, after a backup; the old record kept read-only) or Decide later; Transfer back; sheets say when they are not complete | Accepted (User 1 to confirm the move choice) |
 | [0118](0118-exit-sketch.md) | Our way-out sketch from Set up my home: a floor, sleeping and checked-window flag per room and a confirmed destination per door out (stock migration 0007), meeting place, help and building-plan answers in Settings; rooms as boxes and connections as lines drawn on the server in a steady grid, a complete text version with the same IDs, a sheet with legend and warnings on numbered continuation pages; only recorded possibilities and gaps, never a safe or independent route; no notes, codes or People details | Accepted |
+| [0120](0120-medicine-doses.md) | Medicine doses from Lane B's draft, people only: one private entry per dose (who, which of their own medication details, when, who gave it, optional private amount); a generic `link_rule` (same person, kind = medication) checked on every save, restore and change to the linked detail; a generic `private = true` table kept off Home, sheets, export and helpers (needs `suggestions = false`); `daily` gains per-medicine `group` and a form repeat question (two hours); Show details is a pressed button; every column travels (0089); no missed-dose words; a calendar hook | Accepted |
 | [TEMPLATE](TEMPLATE.md) | Blank record to copy for a new decision | recording a decision |
 
 ## docs/plans/  (summary: build plans for larger pieces of work, written before building)
@@ -238,7 +239,7 @@ Load one with: `python tools/load_example.py smith --data <an empty folder>`.
 | Entry | What it is | Open it when |
 |---|---|---|
 | smith.toml | The Smith family: two parents, two children, a dog and a cat; Australia | showing a busy family |
-| garcia.toml | The Garcia household: three generations, care needs and medication, a cat; United States | showing care needs |
+| garcia.toml | The Garcia household: three generations, care needs, medication with two recorded doses, a cat; United States | showing care needs |
 | taylor.toml | Sam Taylor: one person just starting, with gaps to fill; United Kingdom | showing a first week |
 
 ## modules/  (summary: optional features; each folder is one module, made of files only)
@@ -254,6 +255,7 @@ numbered migrations. See docs/DESIGN.md section 6 for the module contract.
 | home_layout/ | Ways out, shut-offs, smoke alarms and safety equipment, meters, each at one of your places; an Our home sheet | changing home layout records |
 | lent_out/ | Things lent out: what, to whom (one of your People), lent on, due back and returned on; a Things still lent out sheet | changing loans |
 | medical/ | First aid kits and where they are, kit checks, first aid training renewals; a first aid sheet | changing first aid records |
+| medicine_doses/ | Medicine doses: each dose given to a person, chosen from their own medication details, who gave it and an optional private amount; counts and times until Show, never on Home, a sheet, a helper or the export | changing dose records |
 | people/ | Who lives here, who to call, important details, emergency sheets | changing people, contacts or the emergency sheet |
 | pet_feeding/ | Pet feeding log: each bowl, refill or treat as food put out (not eaten), honest daily totals by the household's day in matching units, fast Add food, a 14-day sheet | changing feeding records |
 | pets/ | Pets, their vet, treatments and medicine with due dates, weigh-ins, vet visits; a pet details sheet | changing pets |
@@ -380,6 +382,21 @@ Generate the next one with: python tools/make_migration.py medical --name <what_
 |---|---|---|
 | 0001_first_tables.sql | The module's first tables, generated from tables.toml | checking how the tables are stored |
 | 0002_where_kits_are_kept.sql | Adds whether each kit is kept at home, in a vehicle or somewhere else | checking how the tables are stored |
+
+## modules/medicine_doses/  (summary: Medicine doses, files only; built on Lane B's draft, linking to People)
+| Entry | What it is | Open it when |
+|---|---|---|
+| module.toml | Name, version, description; requires People | changing the module's details |
+| tables.toml | Medicine doses: a private table (no helpers, imports, Home or sheets), the medicine limited to the person's own medication details by `link_rule`, every column travels; `daily` totals per medicine and the two-hour repeat question | adding a field or changing the daily words |
+| labels.toml | Friendly labels, help text (check the pack; the amount is never copied), "I do not know" for the giver, form and list order | changing wording or order |
+| migrations/ | Numbered database changes | after changing tables.toml |
+
+## modules/medicine_doses/migrations/  (summary: this module's numbered database changes; never edit a released one)
+Generate the next one with: python tools/make_migration.py medicine_doses --name <what_changed>
+
+| Entry | What it is | Open it when |
+|---|---|---|
+| 0001_initial.sql | The Medicine doses table with person, medicine, time and giver indexes, generated from tables.toml | checking how doses are stored |
 
 ## modules/people/  (summary: the People module, files only)
 | Entry | What it is | Open it when |
@@ -658,6 +675,7 @@ Add a new file with the next number instead of changing an old one.
 | export_page.py | Settings, Export my records: a page and a button that downloads a zip of spreadsheet files. | changing the Export page |
 | chart*.py | Charts drawn on the server as SVG, labelled bars and dated dots (charts), and the pages showing today's drinking water and one pet's recorded weights (chart_pages, decision 0109) | changing a chart or its empty words |
 | daily_pages.py | Daily totals pages (decision 0110): one subject's day, a dated sheet, the Home lines, the record panel and Review's repeat note. | changing the feeding log pages, its sheet or its Home card |
+| private_daily.py | Private daily history (decision 0120), such as medicine doses: counts and times until Show, per-medicine totals after it. | changing the dose panel, Record a dose or Show details on Dose history |
 | restore.py | Settings, Backups: the list of backups, a preview of one, putting it back, and Undo restore. | changing the restore pages |
 | openapi-v1.json | The published OpenAPI 3.1 description of the helper API, served at GET /api/v1/openapi.json. | changing a helper route, reply or error code (edit it too) |
 
@@ -666,7 +684,7 @@ Add a new file with the next number instead of changing an old one.
 |---|---|---|
 | base.html | Shared layout, colours (light and dark), header and footer | changing the overall look |
 | *chart.html | Charts with their equal tables: today's drinking water by item (supply_chart), one pet's recorded weights with a pet and date picker (dot_chart) and the piece shared with the pet's page (_dot_chart) | changing a chart page's wording |
-| *daily*.html | The feeding log: one pet's day with Add food (daily), the piece shared with the pet's page (_daily_panel) and the dated sheet that prints every entry or refuses (daily_sheet) | changing the feeding log's wording |
+| *daily*.html | The feeding log: one pet's day with Add food (daily), the piece shared with the pet's page (_daily_panel) and the dated sheet that prints every entry or refuses (daily_sheet); medicine doses' private panel with counts until Show (_daily_private_panel, decision 0120) | changing the feeding log's or dose panel's wording |
 | home.html | Home page: days of cover, needs attention, tables with counts, backup and data file status | changing the home screen |
 | attention.html | Running low, expiring soon, days of cover with the working shown, and gaps worth filling in | changing the attention page |
 | count.html | Count this batch: the count, its review and what was saved | changing the stocktake wording |
@@ -783,6 +801,6 @@ How to run them is in AGENTS.md.
 | load_example.py | Load a made-up example household into an empty data folder, for demos, screenshots and testing. | demonstrating or testing with realistic data |
 | make_screenshots.py | Make the example screenshots: run each example household through every stage of using the dashboard. | the screens changed and the gallery needs remaking |
 | screenshots.js | Browser steps for make_screenshots.py (Node and Playwright) | changing how screenshots are taken |
-| browser_check.py | Click through the real dashboard in Chromium (setup, Set up my home, dates, stock in, stocktake, Mark returned, Mark done, Things to do, spreadsheet import, Review keys and buttons, readiness questions, Think it through drills, charts, the way-out sketch, pet feeding at 320px, vehicle running log, Bills and a moved car insurance reminder, Utilities with Our home off, private details, closing) and fail loudly. | a screen or its browser code changed |
+| browser_check.py | Click through the real dashboard in Chromium (setup, Set up my home, dates, stock in, stocktake, Mark returned, Mark done, Things to do, spreadsheet import, Review keys and buttons, readiness questions, Think it through drills, charts, the way-out sketch, pet feeding at 320px, vehicle running log, Bills and a moved car insurance reminder, Utilities with Our home off, medicine doses at 320px, private details, closing) and fail loudly. | a screen or its browser code changed |
 | browser_check.js | Browser steps for browser_check.py (Node and Playwright): what is clicked and checked | changing what the browser check clicks |
 | make_project_map.py | Build PROJECT_MAP.md from every INDEX.md in the repository. | changing the map format |

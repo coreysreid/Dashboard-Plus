@@ -16,7 +16,7 @@ home_type = "apartment"
 storeys = 1
 mobility_needs = true
 hazards = ["earthquake", "heat", "power"]
-modules = ["bills_insurance", "documents", "garden", "home_care", "home_layout", "lent_out", "medical", "people", "pet_feeding", "pets", "readiness", "routines", "stock", "utilities", "vehicle_running", "vehicles"]
+modules = ["bills_insurance", "documents", "garden", "home_care", "home_layout", "lent_out", "medical", "medicine_doses", "people", "pet_feeding", "pets", "readiness", "routines", "stock", "utilities", "vehicle_running", "vehicles"]
 
 # ---- People -----------------------------------------------------------------
 
@@ -199,6 +199,24 @@ detail = "Vegetarian."
 person = "Mei Chen"
 kind = "access"
 detail = "Spare apartment key. The building's front door code is with the building manager."
+
+# ---- Medicine doses (decision 0120) ---------------------------------------------
+# A shape example only: not a claim that a dose was given, a prescription or a recommended time. The medicine is
+# chosen from Rosa's own medication detail above; the amount stays hidden until Show.
+
+[[medicine_doses.doses]]
+recipient = "Rosa Garcia"
+medication = { person = "Rosa Garcia", kind = "medication" }
+given_at = "today-1T08:00"
+given_by = "Maria Garcia"
+amount = 1
+unit = "tablet"
+
+[[medicine_doses.doses]]
+recipient = "Rosa Garcia"
+medication = { person = "Rosa Garcia", kind = "medication" }
+given_at = "today-1T18:30"
+# Who gave it was not written down, and no amount was entered.
 
 # ---- Pets -------------------------------------------------------------------
 

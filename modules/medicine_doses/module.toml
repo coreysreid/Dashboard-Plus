@@ -1,0 +1,8 @@
+name = "medicine_doses"
+title = "Medicine doses"
+version = "1.0.0"
+description = "Write down each dose of medicine given to someone, from their own medication details, kept private until Show."
+core_api = "1"
+kind = "declarative"
+requires = ["people"]
+outbound_hosts = []

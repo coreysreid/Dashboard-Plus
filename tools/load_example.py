@@ -93,6 +93,23 @@ def _find(conn: sqlite3.Connection, info, name: str) -> int | None:
     return row["id"] if row else None
 
 
+def _find_by(conn: sqlite3.Connection, registry: dict, info, spec: dict) -> int | None:
+    """The first record whose columns match `spec`, such as { person = "Rosa Garcia", kind = "medication" }, for a
+    record with no name of its own (a private detail); links in `spec` name their record (decision 0120)."""
+    clauses, params = ["deleted_at IS NULL"], []
+    for column, value in spec.items():
+        col = info.table.columns.get(column)
+        if col is None:
+            raise ExampleError(f"{info.name}: there is no column '{column}' to match.")
+        if col.type == "link":
+            value = _find(conn, registry[target_table(info.module.name, col)], value)
+        clauses.append(f"{column} = ?")
+        params.append(value)
+    row = conn.execute(f"SELECT id FROM {info.name} WHERE {' AND '.join(clauses)} ORDER BY id LIMIT 1",
+                       params).fetchone()
+    return row["id"] if row else None
+
+
 def apply_setup(conn: sqlite3.Connection, registry: dict, module_names: list[str], setup: dict) -> None:
     """Save the setup answers the way the first-run wizard does, without a browser."""
     store = records.Records(conn, registry)
@@ -173,7 +190,8 @@ def load_records(conn: sqlite3.Connection, registry: dict, data: dict, today: da
                     raise ExampleError(f"{name}: there is no column '{column}'.")
                 if col.type == "link":
                     target = registry[target_table(info.module.name, col)]
-                    found = _find(conn, target, value)
+                    found = _find_by(conn, registry, target, value) if isinstance(value, dict) else \
+                        _find(conn, target, value)
                     if found is None:
                         raise ExampleError(f"{name}: '{value}' must be added before it is linked to.")
                     value = found

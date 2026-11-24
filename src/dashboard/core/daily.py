@@ -270,3 +270,33 @@ def possible_repeats(conn: sqlite3.Connection, info, values: dict, zone: tzinfo 
             found.append({"kind": "waiting", "proposal": proposal["id"], "batch": proposal["batch_id"],
                           "values": other})
     return found
+
+
+def count_words(rule: dict, result: Day, when: str = "today") -> str:
+    """For a private table (decision 0120), the day said without amounts or what was given: "2 dose entries
+    recorded today", or "No dose entry recorded today". It never says that anything was missed."""
+    one, many = rule["entry"]
+    n = len(result.entries)
+    if not n:
+        return f"No {one} entry recorded {when}"
+    return f"1 {one} entry recorded {when}" if n == 1 else f"{n} {one} entries recorded {when}"
+
+
+def by_group(rule: dict, result: Day) -> list[tuple[object, Day]]:
+    """One day's entries split by the `group` link (such as each medicine), each with its own totals by unit, in
+    the order each first appears. Different medicines are never added together."""
+    groups: dict[object, list[dict]] = {}
+    for entry in result.entries:
+        groups.setdefault(entry.get(rule["group"]), []).append(entry)
+    return [(key, add_up(rule, result.day, rows)) for key, rows in groups.items()]
+
+
+def form_repeats(conn: sqlite3.Connection, info, values: dict, zone: tzinfo | None,
+                 record_id: int | None = None) -> list[dict]:
+    """For a table whose `repeat` asks on the household's own form (decision 0120): accepted entries for the same
+    subject and `same` values close in time to the one being saved, other than itself. Only ever a question."""
+    rule = info.table.daily
+    if not rule or not rule.get("repeat", {}).get("form"):
+        return []
+    return [m for m in possible_repeats(conn, info, values, zone)
+            if m["kind"] == "record" and m["row"]["id"] != record_id]

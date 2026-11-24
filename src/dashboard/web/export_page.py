@@ -12,10 +12,12 @@ export_pages = Blueprint("export_pages", __name__)
 
 
 def _tables() -> list[dict]:
-    """The lists that would be exported: every table of a module that is switched on."""
+    """The lists that would be exported: every table of a module that is switched on, except private history
+    such as medicine doses, which is never exported (decision 0120)."""
     from dashboard.web.display import table_title
     registry = current_app.config["REGISTRY_FOR_REQUEST"]()
-    return [{"title": table_title(info), "module": info.module.title} for info in registry.values()]
+    return [{"title": table_title(info), "module": info.module.title} for info in registry.values()
+            if not info.table.private]
 
 
 @export_pages.get("/settings/export")

@@ -21,6 +21,7 @@ class Warning:
     column: str  # the field the sentence is about, so the form can take the person back to it
     message: str
     token: str  # what was checked; Save as entered carries it, so a changed value is checked again
+    keep: str | None = None  # the household's words for Save as entered, such as "Keep this as another dose" (0120)
 
 
 def _neighbour(conn: sqlite3.Connection, info: TableInfo, rule: dict, record: dict, record_id: int | None,

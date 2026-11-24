@@ -1,4 +1,4 @@
-"""Click through the real dashboard in Chromium (setup, Set up my home, dates, stock in, stocktake, Mark returned, Mark done, Things to do, spreadsheet import, Review keys and buttons, readiness questions, Think it through drills, charts, the way-out sketch, pet feeding at 320px, vehicle running log, Bills and a moved car insurance reminder, Utilities with Our home off, private details, closing) and fail loudly."""
+"""Click through the real dashboard in Chromium (setup, Set up my home, dates, stock in, stocktake, Mark returned, Mark done, Things to do, spreadsheet import, Review keys and buttons, readiness questions, Think it through drills, charts, the way-out sketch, pet feeding at 320px, vehicle running log, Bills and a moved car insurance reminder, Utilities with Our home off, medicine doses at 320px, private details, closing) and fail loudly."""
 from __future__ import annotations
 
 import argparse
@@ -65,7 +65,11 @@ US = {"household": "garcia", "locale": "en-US", "timezone": "America/Los_Angeles
       "optional": {"service": "Apartment electricity", "meter": "Apartment electricity meter",
                    "kept": "Meter link saved; switch on Our home to see it.",
                    "keptHelp": "A meter link is saved. Switch on Our home to see or change it.",
-                   "offHelp": "Meter places are available if you switch on Our home. You can save this service without one."}}
+                   "offHelp": "Meter places are available if you switch on Our home. You can save this service without one."},
+      # Medicine doses (decision 0120): Rosa's one medication detail, hidden until Show; a second dose asks first.
+      "doses": {"person": "Rosa Garcia", "secret": "Metformin",
+                "repeat": "A dose of this medicine is already recorded for this person near this time.",
+                "keep": "Keep this as another dose"}}
 
 
 class CheckFailed(Exception):
@@ -199,7 +203,7 @@ def run_us(work: Path, executable: str | None) -> list[str]:
     try:
         done = drive({"base": base, "launch": launch, "locale": US["locale"], "timezone": US["timezone"],
                       "executablePath": executable, "dates": US["dates"], "optional": US["optional"],
-                      "bills": US["bills"]}, work, "main")
+                      "bills": US["bills"], "doses": US["doses"]}, work, "main")
         closed = True
     finally:
         stop_server(process, closed)

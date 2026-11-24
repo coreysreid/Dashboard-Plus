@@ -722,6 +722,12 @@ As it prints: every entry of the last 14 days with each day's totals by unit, an
 
 ![Pet feeding log sheet](screenshots/garcia/18zc-feeding-sheet.png)
 
+### Medicine given, one person's day
+
+Medicine doses: how many doses and when, with who gave them; the medicine and amounts stay hidden until Show details, and nothing says a dose was missed.
+
+![Medicine given, one person's day](screenshots/garcia/18zd-doses.png)
+
 ### Needs attention
 
 Days of water with the working shown, running low, use-by and due dates, and details worth filling in.

@@ -112,7 +112,7 @@ the "Requests" table of docs/WORKSTREAMS.md.
 | Batch 19 item 87: phone first screens | ready for PR | lane-b/batch19-item87 | Four member screens with exact labels, pending versus accepted states, omissions, seven checks and core gaps. |
 | Batch 20 item 88: bills and insurance draft | ready for PR | lane-b/batch20-item88 | Loadable commitments draft, three invented examples, local-only financial details, nine checks and overlap decision. |
 | Batch 20 item 89: pet feeding log | ready for PR | lane-b/batch20-item89 | Loadable event draft, phone/helper and daily total words, 700-row scale, eight checks and core gaps. |
-| Batch 20 item 90: medicine doses | ready for PR | lane-b/batch20-item90 | Dose data, privacy and member-travel design; no loadable schema until the private medication picker is safe. |
+| Batch 20 item 90: medicine doses | promoted by Lane A to modules/medicine_doses (decision 0120; people only, link_rule and private tables in the core); draft folder removed | lane-b/batch20-item90 | Dose data, privacy and member-travel design; no loadable schema until the private medication picker is safe. |
 | Batch 20 item 91: vehicle running log | ready for PR | lane-b/batch20-item91 | Loadable reading/estimate draft, three invented examples, careful due wording and eight checks. |
 | Batch 20 item 92: purchase and price history | ready for PR | lane-b/batch20-item92 | Stock purchase contract, exact form and Review words, cost coverage rule and eleven checks. |
 | Batch 20 item 94: moving in with a helper | acted on by Lane A (decision 0112): traps 1 to 6, 10 and 11 in the guide or core; draft kept | lane-b/batch20-item94 | Invented end-to-end checklist, 13 ranked remaining traps and nine checks after reading the generated guide. |
