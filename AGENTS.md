@@ -10,6 +10,9 @@ and the files you may edit before changing anything.
 ## Rules that never bend
 - The repository is public. Never commit real names, personal data, tokens,
   database files, a real `config.toml`, or personal paths. Use synthetic data.
+- Never name the project owner or their household in files, commit messages,
+  pull requests or comments. Write **User 1** for the owner and **User 2** for
+  their partner, and leave out their home town, region and real belongings.
 - Every technical decision needs a record in `docs/decisions/` (copy
   `TEMPLATE.md`): what was chosen, why, the downsides, and how to undo it.
 - Every folder has a short `INDEX.md` (25 lines or fewer, one row per entry).
