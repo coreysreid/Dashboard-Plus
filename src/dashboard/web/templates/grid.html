@@ -3,6 +3,8 @@
 {% block body %}
 <p class="muted"><a href="/">Home</a> · {{ info.module.title }}</p>
 <h1>{{ title }}</h1>
+{% if moves_choice %}{% with box=moves_choice %}{% include "_moves_choice.html" %}{% endwith %}{% endif %}
+{% if moves_review %}<p class="muted"><a href="{{ moves_review.href }}">{{ moves_review.label }}</a></p>{% endif %}
 <div class="actions">
   <a class="button" href="/t/{{ info.name }}/new">Add</a>
   <span class="muted">{{ total }} record{{ "" if total == 1 else "s" }}</span>

@@ -626,6 +626,33 @@ under = { link = "service", title = "Cost estimates", intro = "…", columns = [
   the latest 50 are read. `under` lists the latest 50, then links to the list;
   private columns are Show buttons and `reveal` presses all of them.
 
+### 5.11 One reminder per policy (decision 0117)
+
+```toml
+[tables.commitments.watch.expiring]
+date = "next_due"
+wording = "due"
+what = "bill or policy check"
+[[tables.commitments.watch.expiring.what_when]]   # first match wins; others keep `what`
+where = { kind = "bill" }
+what = "bill check"
+
+[tables.commitments.takes_over]                    # records of another module this table may take over
+from = "vehicles.insurance"                        # under requires or optional_requires; reminds by a date
+where = { kind = "policy", category = "vehicle" }  # what such a record is here
+copy = { vehicle = "vehicle", name = "name", next_due = "renew_by" }  # never a private column; the date included
+```
+
+- Nothing moves on its own. The newer list shows the household's choice (Keep, Review and move, Decide
+  later); until Keep or Review, a new record of the `where` kind is refused while the older list still reminds.
+- Moving one record is one core transaction after a `before-move` backup: a new record with the copied
+  columns, one row in `core__reminder_moves` (both IDs and permanent IDs, a state), a history line on each.
+  The older record is not changed; it becomes read-only and cannot be deleted on its own.
+- Needs attention, Things to do, the helper's attention list and every sheet leave out the record that no
+  longer reminds, from that table alone, whichever modules are on. Transfer back copies the current date back.
+- Export adds a "Reminder" column; sync's snapshot lists the moves by permanent IDs. Words: labels.toml
+  `takes_over`. Any sheet section over 200 rows now says it is not complete.
+
 ## 6. Modules
 
 A module is a folder:
@@ -1817,6 +1844,7 @@ Open a module's own INDEX.md before its files.
 | garden/ | Vegetable garden; the worked example module (files only) | learning to build a module |
 | stock/ | Pantry, emergency water, tools and hardware, receipts (files only) | changing stock, reorder or supply-cover behaviour |
 | wine/ | Wine collection (files only; compact module; shipped, decision 0095) | changing wine tables |
+| bills_insurance/ | Bills and insurance (files only; links People, and Vehicles and Household stock optionally; takes over Vehicle insurance reminders by choice; shipped, decision 0117) | changing bills or policies |
 | utilities/ | Utilities and accounts (files only; links People, and Home layout optionally; shipped, decisions 0099 and 0115) | changing utility records |
 | graphing/ | Charts over any table | changing chart behaviour |
 | analysis/ | Statistics and the question loop | changing how findings are made |

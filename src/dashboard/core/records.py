@@ -98,6 +98,7 @@ class Records:
         self.conn = conn
         self.registry = registry
         self.clock = clock
+        self.moving = False  # True only while a reminder is moved or moved back (decision 0117)
 
     # ----- looking things up -------------------------------------------------
     def info(self, name: str) -> TableInfo:
@@ -560,6 +561,7 @@ class Records:
         self._check_date_order(info, cleaned)
         self._check_nesting(info, None, cleaned)
         self._check_pair(info, None, cleaned)
+        self._check_moves(info, None, None, cleaned)
         self._choose_batch(info, cleaned, None, actor, review_status, batch_id)
         stored = {k: v for k, v in cleaned.items() if info.table.columns[k].type != "links"}
         now = self.clock()
@@ -843,6 +845,8 @@ class Records:
         self._check_pair(info, record_id, dict(current, **cleaned))
         self._choose_batch(info, cleaned, current, actor)
         changed = {k: v for k, v in cleaned.items() if current.get(k) != v}
+        if changed:
+            self._check_moves(info, record_id, current, changed)
         total = info.table.total
         if total and total["link"] in changed and self._has_movements(info, record_id):
             raise ValidationError({total["link"]: "can't change once stock in or out is recorded for this "
@@ -878,6 +882,11 @@ class Records:
                 self._retotal(info, changed[link], actor)
         return {k: [current.get(k), v] for k, v in changed.items()}
 
+    def _check_moves(self, info: TableInfo, record_id: int | None, current: dict | None, changed: dict) -> None:
+        """One reminder per policy (decision 0117): no second reminder, and no edit of a record that no longer reminds."""
+        from dashboard.core import reminder_moves
+        reminder_moves.check_write(self, info, record_id, current, changed)
+
     def _dependents(self, info: TableInfo):
         """Yield (other table info, column) for every link column that points at `info`."""
         for other in self.registry.values():
@@ -905,6 +914,8 @@ class Records:
             return
         seen.add((info.name, record_id))
         row = self._row(info, record_id)
+        from dashboard.core import reminder_moves  # the earlier record of a moved reminder is kept (0117)
+        reminder_moves.check_delete(self, info, record_id, direct=root == f"{info.name}:{record_id}")
         blocking = []
         for other, column in self._dependents(info):
             ids = [r[0] for r in self.conn.execute(

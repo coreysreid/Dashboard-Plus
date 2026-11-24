@@ -1,0 +1,39 @@
+[tables.commitments]
+empty = "Add a bill or policy and the next date you want to check it."
+form = ["name", "kind", "category", "provider", "amount", "frequency", "next_due", "covers", "vehicle", "place", "reference", "notes"]
+list = ["name", "kind", "category", "provider", "frequency", "next_due", "vehicle", "place"]
+columns.name = { label = "Name", help = "Use a broad name you recognise, such as Home electricity or Car insurance. This name can appear in reminders and exports; leave account and policy numbers out." }
+columns.kind = { label = "Bill or policy" }
+columns.category = { label = "What it is for" }
+columns.provider = { label = "Provider", help = "Choose a People contact. Keep its current phone number in People." }
+columns.amount = { label = "Amount last quoted or billed", help = "Optional and private on this computer. Enter the amount from your own bill or policy; this is not an amount due calculated by Dashboard." }
+columns.frequency = { label = "How often", help = "For your reference only. This does not work out another date or create a payment." }
+columns.next_due = { label = "Check or pay by", help = "Type the date from your own bill, renewal notice or household plan. Dashboard reminds you 30 days before; it does not check whether a payment was made or cover is active." }
+columns.covers = { label = "What it covers", help = "Optional and private on this computer. Keep this a short summary; check the policy itself for exclusions, limits and current cover." }
+# Decision 0115: Vehicles and Household stock are optional. These are the words while one is off, or a saved record is gone.
+columns.vehicle = { label = "Vehicle, if any", help = "Choose an existing vehicle. Leave blank for a household bill or non-vehicle policy.", optional = { off_help = "Vehicles are available if you switch on Vehicles. You can save this without one.", kept_help = "A vehicle link is saved. Switch on Vehicles to see or change it.", kept = "Vehicle link saved; switch on Vehicles to see it.", none = "No vehicle linked.", gone = "The linked vehicle is no longer there.", missing = "The linked vehicle is no longer there. Choose another, or leave it blank." } }
+columns.place = { label = "Place, if any", help = "Choose an existing Place. Leave blank if the commitment applies to the whole household.", optional = { off_help = "Places are available if you switch on Household stock. You can save this without one.", kept_help = "A place link is saved. Switch on Household stock to see or change it.", kept = "Place link saved; switch on Household stock to see it.", none = "No place linked.", gone = "The linked place is no longer there.", missing = "The linked place is no longer there. Choose another, or leave it blank." } }
+columns.reference = { label = "Account or policy reference", help = "Optional and private on this computer. Do not enter a password or payment card number." }
+columns.notes = { label = "Private notes", help = "Optional and private on this computer. Do not enter passwords, codes or card details." }
+
+# One reminder per policy (decision 0117): the words around keeping Vehicle insurance reminders in Vehicles or
+# moving them here, from Lane B's RENEWAL.md (batch 21 item 105, now in git history).
+[tables.commitments.takes_over]
+title = "Vehicle insurance already in Vehicles"
+intro = "You have {count} vehicle insurance record(s) in Vehicles. Keep their reminders in Vehicles, or move these records' renewal dates into Bills and insurance. Each policy will have one reminder. We will show the name, vehicle and date before you choose; we will not copy notes, policy numbers or cover details. You can decide later."
+keep = "Keep reminders in Vehicles"
+review = "Review and move to Bills"
+later = "Decide later"
+warning = "Check your policy for the actual date and cover. The date shown is the one you recorded. Notes in Vehicles stay there and keep their current sharing and export rules; review them for details you meant to keep private."
+question = "Move this renewal date to Bills? Vehicles will stop reminding you for this policy. Its earlier record and history stay in Vehicles."
+no_date = "No renewal date recorded. Check your policy and add the date you want to be reminded."
+moved = "Moved {name} to Bills and insurance. One reminder is active there; the Vehicles reminder is off."
+source_kept = "Insurance reminder is kept in Vehicles. Renew by {date}. Check your policy for the actual date."
+source_moved = "Insurance reminder is in Bills and insurance. Open {name}."
+target_moved = "Vehicle insurance review or renewal due {date}. This is your reminder to check the policy, not proof it is active."
+target_off = "Vehicle insurance reminders are in Bills and insurance, which is off. Switch it on to see them, or choose Transfer back."
+returned = "This policy's reminder is back in Vehicles. One reminder is active there; this Bills record no longer reminds."
+needs_choice = "Choose first where vehicle insurance reminders are kept: open Bills and policies and choose “Keep reminders in Vehicles” or “Review and move to Bills”. Each policy should have one reminder."
+duplicate = "{link} already has an insurance reminder in Vehicles ({name}). Saving this makes a second reminder for the same cover unless it is a different policy. To move that one instead, use Review and move to Bills."
+duplicate_source = "{link} already has a vehicle insurance reminder in Bills and insurance ({name}). Saving this makes a second reminder for the same cover unless it is a different policy."
+back = "Transfer back"

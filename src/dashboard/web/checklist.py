@@ -90,7 +90,7 @@ def _when(task, style: str) -> str:
     """"Due since 18/11/26", "Due today" or "Due 25/11/26", naming what is due when the list says ("Kit check due")."""
     if task.due is None:
         return "No date yet"
-    what = task.source.what
+    what = task.what or task.source.what
     due = f"{what[:1].upper()}{what[1:]} due" if what and what not in GENERIC_WHAT else "Due"
     if task.group in ("late", "earlier"):
         return f"{due} since {dates.show(task.due, style)}"

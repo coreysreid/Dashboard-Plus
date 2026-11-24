@@ -45,6 +45,7 @@
     <thead><tr>{% for h in section.headings %}<th>{{ h }}</th>{% endfor %}</tr></thead>
     <tbody>{% for row in section.rows %}<tr>{% for cell in row %}<td data-label="{{ section.headings[loop.index0] }}">{{ cell }}</td>{% endfor %}</tr>{% endfor %}</tbody>
   </table>
+  {% if section.more %}<p><strong>Not complete:</strong> only the first {{ section.rows | length }} of {{ section.total }} are printed here. Open the list in Dashboard Plus for the rest.</p>{% endif %}
   {% else %}
   <p class="empty">Nothing recorded yet.</p>
   {% endif %}

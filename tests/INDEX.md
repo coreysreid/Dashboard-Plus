@@ -12,6 +12,7 @@ How to run them is in AGENTS.md.
 | test_readiness_ask_again.py | Tests for decision 0113: a confirmed Readiness answer comes back only when a field its question lists changed. | changing when a question or drill step asks again |
 | test_example_garden.py | Exercise the garden example with a temporary database and synthetic harvest. | changing the garden example |
 | test_optional_links.py | Tests for optional links between modules (decision 0115): Utilities works without Our home and keeps an exact meter link while it is off. | changing optional_requires, a link into a switched-off module, or its words |
+| test_module_bills_insurance.py | Tests for Bills and insurance (decision 0117): dated bills and policies beside Utilities, private details that never travel, and one reminder per vehicle policy. | changing bills, takes_over, moving a reminder or Transfer back |
 | test_records.py | Tests for saving, checking, linking, deleting and restoring records, and their history. | changing how records are saved |
 | test_schema.py | Tests for turning declared tables into SQL and generating the next migration. | changing table building |
 | test_startup.py | Tests for preparing the database at start-up with the modules found. | changing start-up |
@@ -33,6 +34,7 @@ How to run them is in AGENTS.md.
 | test_adjusts.py | Tests for records that change a linked quantity (stock in and out), and the checks on `adjusts`. | changing stock in and out |
 | test_sync_stage1.py | Tests for sync stage 1: permanent record IDs, revisions, the filtered change log and the travel rule (decision 0100). | changing record IDs, the change log or what may travel |
 | test_backups.py | Tests for automatic backups: daily, on close, in two places, and keeping only recent ones. | changing backups |
+| test_exit_sketch.py | Tests for the way-out sketch (decision 0118): Lane B's exit map checks, steady layout, continuation pages and privacy. | changing the way-out sketch |
 | test_home_setup.py | Tests for Set up my home: rooms, storage spots inside them and the connections between rooms (decision 0103). | changing Set up my home or connections between places |
 | test_setup.py | Tests for the first-run wizard and the settings page. | changing setup or settings |
 | test_sheets.py | Tests for printable sheets: checking sheets.toml and printing the emergency sheet. | changing sheets |

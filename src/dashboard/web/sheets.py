@@ -5,7 +5,7 @@ from datetime import date
 
 from flask import Blueprint, abort, current_app, render_template, request
 
-from dashboard.core import records
+from dashboard.core import records, reminder_moves
 from dashboard.core.schema import join_table_name, table_name, target_table
 from dashboard.web import display
 
@@ -67,6 +67,9 @@ def show_sheet(module, name):
                 clause += f" AND {c} = ?"
         if info.table.total:  # a used-up batch is history, not something to find in an emergency
             clause += f" AND {info.table.total['amount']} > 0"
+        clause += reminder_moves.silent_clause(info.name)  # one date per reminder: never its earlier record (0117)
+        params = [_where_value(v) for v in section["where"].values()]
+        total = conn.execute(f"SELECT COUNT(*) FROM {info.name} WHERE deleted_at IS NULL{clause}", params).fetchone()[0]
         rows = conn.execute(
             f"SELECT * FROM {info.name} WHERE deleted_at IS NULL{clause} "
             f"ORDER BY {section['order_by']} IS NULL, {section['order_by']}, id LIMIT {ROW_LIMIT}",  # blanks last
@@ -93,7 +96,9 @@ def show_sheet(module, name):
             return formatter.text(owner, column, dict(target_row).get(field_name))
 
         sections.append({"title": section["title"], "headings": [c[0] for c in columns],
-                         "rows": [[value(dict(r), c) for c in columns] for r in rows]})
+                         "rows": [[value(dict(r), c) for c in columns] for r in rows],
+                         # never silently cut short: say how many are not printed (decision 0117)
+                         "more": max(0, total - len(rows)), "total": total})
     if private and request.method != "POST":
         # A sheet with private details opens only by choice (decision 0071): the button POSTs, so no
         # address, bookmark or shared link can open it, and ?show=1 does nothing.

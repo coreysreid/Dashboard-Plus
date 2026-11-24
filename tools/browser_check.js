@@ -449,6 +449,38 @@ function expect(condition, message) { if (!condition) throw new Failed(message);
     }
   }
 
+  async function checkExitSketch() {  // the way-out sketch (decision 0118): drawn on the server, same facts as text, 320px
+    const e = plan.exit;
+    await page.setViewportSize({ width: 320, height: 800 });
+    try {
+      await goto('/set-up-home');
+      await Promise.all([page.waitForNavigation(), page.click('#way-out a[href="/exit-sketch"]')]);
+      const wide = await page.evaluate(() => document.documentElement.scrollWidth);
+      expect(wide <= 320, `At 320px the way-out sketch page is ${wide}px wide; only the drawing should scroll sideways.`);
+      const scrolls = await page.$eval('.sketch-scroll', (d) => d.scrollWidth > d.clientWidth);
+      expect(scrolls, 'At 320px the drawing should scroll inside its own labelled box.');
+      const ids = async (scope, what) => [...new Set(await page.$$eval(`${scope} [data-${what}]`, (els, w) => els.map((x) => x.dataset[w]), what))].sort().join(',');
+      const drawnRooms = await ids('.sketch-scroll', 'room');
+      const textRooms = await ids('#as-text', 'room');
+      expect(drawnRooms && drawnRooms === textRooms, `The drawing's rooms (${drawnRooms}) and the text version's (${textRooms}) should be the same.`);
+      const drawnLinks = await ids('.sketch-scroll', 'connection');
+      const textLinks = await ids('#as-text', 'connection');
+      expect(drawnLinks === textLinks, `The drawing's connections (${drawnLinks}) and the text version's (${textLinks}) should be the same.`);
+      expect((await text('#as-text')).includes(e.room), `The text version should list ${e.room}.`);
+      await page.focus('#read-as-text');
+      await page.keyboard.press('Enter');
+      expect(page.url().endsWith('#as-text'), `"Read the connections as text" should go to the text version; the page is at ${page.url()}.`);
+      for (const w of e.words) expect((await text('main')).includes(w), `The sketch page should say "${w}".`);
+      await Promise.all([page.waitForNavigation(), page.click('#print-a4')]);
+      expect((await text('main')).includes('Page 1 of'), 'The printable sketch should number its pages.');
+      const pwide = await page.evaluate(() => document.documentElement.scrollWidth);
+      expect(pwide <= 320, `At 320px the printable sketch is ${pwide}px wide; it should not scroll sideways.`);
+      ok(`way-out sketch at 320px: rooms ${drawnRooms} drawn and listed as text, keyboard reaches the text, sheet numbered`);
+    } finally {
+      await page.setViewportSize({ width: 1280, height: 720 });
+    }
+  }
+
   async function checkFeeding() {  // Pet feeding log (decision 0110): Add food at 320px, last choices shown, back to the pet
     const f = plan.feeding;
     await page.setViewportSize({ width: 320, height: 800 });
@@ -542,6 +574,37 @@ function expect(condition, message) { if (!condition) throw new Failed(message);
     await page.locator('span', { hasText: d.words }).waitFor({ timeout: 5000 }).catch(() => {});
     expect((await text('main')).includes(d.words), 'Pressing Show did not show the household\'s own words.');
     ok(`drills: "${d.scenario}" names ${d.number}, Continue later is not practised, "${d.record}" offered not chosen, saved with own words behind Show, fits 320 pixels`);
+  }
+
+  async function checkBills() {  // Bills and insurance (decision 0117): nothing moves until chosen; Move, then Transfer back
+    const b = plan.bills;
+    await goto('/t/bills_insurance__commitments');
+    expect((await text('#moves-choice')).includes(b.title), `The Bills list should say "${b.title}" before anything moves.`);
+    let attention = (await (await page.goto(base + '/attention')).text());
+    expect(attention.includes(b.earlier), `Before a choice, Needs attention should still remind about "${b.earlier}" from Vehicles.`);
+    await goto('/t/bills_insurance__commitments');
+    await submit('#moves-review');
+    await page.setViewportSize({ width: 320, height: 800 });
+    try {
+      const wide = await page.evaluate(() => document.documentElement.scrollWidth);
+      expect(wide <= 320, `At 320px Review and move is ${wide}px wide; it should not scroll sideways.`);
+      expect((await text('main')).includes('permanent ID'), 'Review and move should show each record\'s permanent ID.');
+      await submit('button[data-move]');
+      expect((await text('#moves-done')).includes(b.done), `After Move the page should say "${b.done}".`);
+    } finally {
+      await page.setViewportSize({ width: 1280, height: 720 });
+    }
+    attention = await (await page.goto(base + '/attention')).text();
+    expect(!attention.includes(b.earlier), `After Move, Needs attention still reminds about "${b.earlier}" from Vehicles.`);
+    expect(attention.includes(b.name), `After Move, Needs attention should remind about "${b.name}" from Bills.`);
+    await goto('/t/vehicles__insurance');
+    await Promise.all([page.waitForNavigation(), page.click(`a[aria-label="Open ${b.earlier}"]`)]);
+    expect((await text('[data-reminder="source_moved"]')).includes('Insurance reminder is in Bills and insurance'),
+      'The earlier Vehicle insurance record should say its reminder is in Bills and insurance.');
+    await submit('[data-reminder="source_moved"] button[data-reminder-button]');
+    attention = await (await page.goto(base + '/attention')).text();
+    expect(attention.includes(b.earlier), `After Transfer back, Needs attention should remind about "${b.earlier}" from Vehicles again.`);
+    ok(`bills: "${b.earlier}" stays in Vehicles until chosen, moves to Bills with one reminder, fits 320px, and Transfer back returns it`);
   }
 
   async function switchModule(name, on) {  // Settings: tick or untick one module, then Save settings
@@ -656,9 +719,11 @@ function expect(condition, message) { if (!condition) throw new Failed(message);
       if (plan.review) await checkReview();
       if (plan.questions) await checkQuestions();
       if (plan.charts) await checkCharts();
+      if (plan.exit) await checkExitSketch();
       if (plan.feeding) await checkFeeding();
       if (plan.running) await checkRunning();
       if (plan.drills) await checkDrills();
+      if (plan.bills) await checkBills();
       if (plan.optional) await checkOptionalLink();
       if (plan.private) { await checkPrivateDetail(); await checkPrivateSheet(); }
       await checkClose();

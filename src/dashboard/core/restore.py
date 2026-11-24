@@ -17,9 +17,10 @@ from dashboard.errors import PlainError
 
 log = logging.getLogger("dashboard.restore")
 JOURNAL_FILE = "restore.json"  # in the data folder: the last restore, so Undo works after a restart
-NAME = re.compile(r"^(daily|close|before-update|before-restore|before-undo)-[0-9][0-9-]*\.db$")
+NAME = re.compile(r"^(daily|close|before-update|before-restore|before-undo|before-move)-[0-9][0-9-]*\.db$")
 KINDS = {"daily": "Daily", "close": "When the dashboard was closed", "before-update": "Before an update",
-         "before-restore": "Before a restore", "before-undo": "Before an undo"}
+         "before-restore": "Before a restore", "before-undo": "Before an undo",
+         "before-move": "Before a reminder was moved"}  # decision 0117
 PLACES = {"data": "Data folder", "computer": "This computer"}
 NOTHING_CHANGED = "Nothing was changed."
 SQLITE_HEADER = b"SQLite format 3\x00"

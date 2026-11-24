@@ -16,7 +16,7 @@ home_type = "house"
 storeys = 2
 mobility_needs = false
 hazards = ["bushfire", "heat", "storm"]
-modules = ["documents", "garden", "home_care", "home_layout", "lent_out", "medical", "people", "pet_feeding", "pets", "readiness", "routines", "stock", "utilities", "vehicle_running", "vehicles", "wine"]
+modules = ["bills_insurance", "documents", "garden", "home_care", "home_layout", "lent_out", "medical", "people", "pet_feeding", "pets", "readiness", "routines", "stock", "utilities", "vehicle_running", "vehicles", "wine"]
 
 # ---- People -----------------------------------------------------------------
 
@@ -281,21 +281,27 @@ unit = "g"
 
 [[stock.places]]
 name = "Kitchen"
+floor = "street"
 
 [[stock.places]]
 name = "Laundry"
+floor = "street"
 
 [[stock.places]]
 name = "Garage"
+floor = "street"
 
 [[stock.places]]
 name = "Bathroom"
+floor = "up1"
 
 [[stock.places]]
 name = "Car"
+floor = "off"
 
 [[stock.places]]
 name = "Backyard"
+floor = "off"
 
 [[stock.places]]
 name = "Pantry"
@@ -331,18 +337,27 @@ notes = "Top shelf is 1."
 
 [[stock.places]]
 name = "Front hall"
+floor = "street"
 
 [[stock.places]]
 name = "Upstairs hall"
+floor = "up1"
 
 [[stock.places]]
 name = "Study"
+floor = "up1"
 notes = "The small room off the upstairs hall."
+
+[[stock.places]]
+name = "Main bedroom"
+floor = "up1"
+sleeping = true
 
 # Which rooms lead into which (Set up my home, decision 0103).
 [[stock.connections]]
 place = "Front hall"
 kind = "outside_door"
+destination = "outside"
 notes = "Front door."
 
 [[stock.connections]]
@@ -367,6 +382,11 @@ kind = "outside_door"
 [[stock.connections]]
 place = "Front hall"
 connects_to = "Garage"
+
+# The way-out sketch (decision 0118): the bedroom's only recorded way is the upstairs hall and its stairs.
+[[stock.connections]]
+place = "Upstairs hall"
+connects_to = "Main bedroom"
 
 [[stock.connections]]
 place = "Upstairs hall"
@@ -964,6 +984,22 @@ provider = "Example Energy AU"
 fault_contact = "Example Energy Faults AU"
 account_number = "DEMO-AU-ACCOUNT-01"
 meter = "Electricity meter"
+
+# ---- Bills and insurance ------------------------------------------------------
+# A dated bill beside Utilities (decision 0117). The amount, cover summary and reference are private and stay on
+# this computer. The family car's insurance is still in Vehicles, so Bills asks where its reminder should be.
+
+[[bills_insurance.commitments]]
+name = "Home electricity"
+kind = "bill"
+category = "electricity"
+provider = "Example Energy AU"
+amount = 96
+frequency = "monthly"
+next_due = "today+24"
+place = "Kitchen"
+covers = "Example household electricity service"
+reference = "DEMO-SMITH-POWER"
 
 # ---- Readiness ----------------------------------------------------------------
 # Answers to "Have you thought about…?" questions (modules/readiness/prompts.toml). Not yet answers say

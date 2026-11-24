@@ -17,6 +17,7 @@
 | question*.html | "Have you thought about…?": the questions by group with what was looked at (questions), and one question with Yes, Not relevant, Not yet and Tell me more (question) | changing the question wording |
 | drill*.html | "Think it through": the drills that fit (drills), one drill with its sources and earlier practice (drill), one step with its records or missing words (drill_step), a practice and Save this practice (drill_run), and the emergency-number box on each (drill_first) | changing the drill wording |
 | home_setup.html | Set up my home: add rooms and storage spots, rename, move or delete them, and connect rooms; no scripts needed | changing the Set up my home wording |
+| exit_*.html | Our way-out sketch: the page with drawing, text version and forms (exit_sketch), the numbered printable sheet (exit_sheet) and Print as text (exit_text); _exit_parts holds the warnings, legend, Check together and text list they share | changing the way-out sketch wording or print |
 | setup.html | First-run wizard and Settings (one form, two modes) | changing setup questions |
 | *sheet.html | A printable sheet styled to fit one page (sheet), and the step before one with private details (private_sheet) | changing how sheets print |
 | start.html | Shown to a browser that was not opened by the shortcut | changing that message |
@@ -31,4 +32,5 @@
 | review_line.html | Choose item for a receipt line the helper could not match: pick or make the item, confirm amount and date | changing the Choose item screens |
 | review_batch.html | Open earlier receipt: what became of each row of a receipt, read only | changing the earlier receipt page |
 | export.html | Settings, Export my records: what is in the export and the download button | changing the Export page |
+| moves*.html | One reminder per policy (0117): Review and move with each record's ID, and the Nothing was moved page | changing the reminder move screens |
 | restore_*.html | Settings, Backups: the list of backups, the check-and-compare page, the result, and the shared Undo restore box | changing the restore pages |

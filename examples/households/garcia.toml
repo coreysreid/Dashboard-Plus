@@ -16,7 +16,7 @@ home_type = "apartment"
 storeys = 1
 mobility_needs = true
 hazards = ["earthquake", "heat", "power"]
-modules = ["documents", "garden", "home_care", "home_layout", "lent_out", "medical", "people", "pet_feeding", "pets", "readiness", "routines", "stock", "utilities", "vehicle_running", "vehicles"]
+modules = ["bills_insurance", "documents", "garden", "home_care", "home_layout", "lent_out", "medical", "people", "pet_feeding", "pets", "readiness", "routines", "stock", "utilities", "vehicle_running", "vehicles"]
 
 # ---- People -----------------------------------------------------------------
 
@@ -837,6 +837,20 @@ provider = "Example Power US"
 fault_contact = "Example Power Faults US"
 account_number = "DEMO-US-ACCOUNT-01"
 meter = "Apartment electricity meter"
+
+# ---- Bills and insurance ------------------------------------------------------
+# A household-wide policy with no vehicle or place (decision 0117). The auto insurance is still in Vehicles, so
+# Bills asks where its reminder should be.
+
+[[bills_insurance.commitments]]
+name = "Contents insurance"
+kind = "policy"
+category = "contents"
+amount = 210
+frequency = "yearly"
+next_due = "today+42"
+covers = "Broad example contents description; check the policy for limits"
+reference = "DEMO-GARCIA-CONTENTS"
 
 # ---- Readiness ----------------------------------------------------------------
 # Answers to "Have you thought about…?" questions (modules/readiness/prompts.toml). Not yet answers say

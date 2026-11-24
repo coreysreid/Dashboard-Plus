@@ -1,0 +1,72 @@
+{% extends "base.html" %}
+{% import "_exit_parts.html" as parts %}
+{% block title %}{{ f.PRINT_TITLE }} · Dashboard Plus{% endblock %}
+{% block body %}
+{{ parts.styles() }}
+<style>
+  .sheet-page { border: 1px solid var(--line); border-radius: 6px; padding: .8rem; margin: 0 0 1rem; background: var(--card); overflow-x: auto; }
+  .sheet-page h1 { font-size: 1.4rem; margin: 0 0 .2rem; }
+  .sheet-page .draft { font-weight: 700; margin: 0 0 .3rem; }
+  .sheet-page .page-no { float: right; font-weight: 600; }
+  .sheet-page .foot { border-top: 1px solid var(--line); margin-top: .6rem; padding-top: .3rem; font-size: .9rem; }
+  .sheet-two { display: grid; grid-template-columns: 1fr 1fr; gap: 0 1rem; }
+  @media (max-width: 40rem) { .sheet-two { grid-template-columns: 1fr; } }
+  @page { size: {{ papers[paper] }}; margin: 12mm; }
+  @media print {
+    header, footer, .no-print { display: none !important; }
+    body { background: #fff; color: #000; font-size: 9.5pt; line-height: 1.25; }
+    main { padding: 0; max-width: none; }
+    .sheet-page { border: 0; padding: 0; margin: 0; overflow: visible; background: #fff; break-after: page; }
+    .sheet-page:last-child { break-after: auto; }
+    .sheet-page h1 { font-size: 14pt; }
+    .sheet-page h2 { font-size: 10.5pt; margin: 4pt 0 2pt; }
+    .sheet-page p, .sk-checks li { margin: 1.5pt 0; }
+    .sketch-svg { width: 170mm; max-width: 100%; break-inside: avoid; }
+    .sheet-page .foot { font-size: 8.5pt; margin-top: 3pt; }
+    .sk-warn { padding: 3pt 6pt; margin: 4pt 0; }
+    .sk-legend, .sk-checks { font-size: 8.5pt; line-height: 1.2; }
+    .sheet-two { grid-template-columns: 1fr; }
+    .sk-legend thead { display: none; }
+    .sk-legend tbody { display: grid; grid-template-columns: 1fr 1fr; column-gap: 10pt; }
+    .sk-legend tr { display: block; break-inside: avoid; padding: 1pt 0; border-bottom: 1px solid #ccc; }
+    .sk-legend td { display: inline; border: 0; padding: 0; }
+    .sk-legend td:first-child { font-weight: 700; }
+    .sk-legend td:first-child::after { content: ": "; }
+    .sk-legend caption, .sheet-two h2 { font-size: 9.5pt; margin: 2pt 0; }
+    a { color: #000; text-decoration: none; }
+  }
+</style>
+<div class="no-print">
+  <p class="muted"><a href="/">Home</a> · <a href="/exit-sketch">Our way-out sketch</a></p>
+  <p><strong>{{ f.LAYOUT_WARNING }}</strong></p>
+  {% if pages > 1 %}<p id="pages-needed">This sketch needs {{ pages }} pages to show every recorded place and connection. Print all pages or choose the text version.</p>{% endif %}
+  <div class="actions">
+    <button type="button" onclick="window.print()">Print</button>
+    {% for key, words in papers.items() %}{% if key != paper %}<a href="/exit-sketch/print?paper={{ key }}">Use {{ words }} paper</a>{% else %}<span class="muted">{{ words }} paper</span>{% endif %}{% endfor %}
+    <a href="/exit-sketch/text">Print as text</a>
+  </div>
+</div>
+{% for blocks_here in by_page %}
+{% set n = loop.index %}
+<section class="sheet-page" aria-label="Page {{ n }} of {{ pages }}" data-page="{{ n }}">
+  <p class="draft"><span class="page-no">Page {{ n }} of {{ pages }}</span>{{ f.DRAFT_MARK }}</p>
+  {% if n == 1 %}
+  <h1>{{ f.PRINT_TITLE }}</h1>
+  {% if reviewed_words %}<p>Reviewed by household on {{ reviewed_words }}{% if sketch.changed_since_review %}; changed since then, so review it again{% endif %}.</p>{% else %}<p>Not reviewed yet.</p>{% endif %}
+  <p>{% if sketch.ready %}Ready to print for practice.{% else %}Draft: some facts need checking.{% endif %} Printed {{ printed }}.</p>
+  {{ parts.warnings(sketch, f) }}
+  {{ parts.facts_box(sketch, f) }}
+  {% else %}
+  <p><strong>{{ f.PRINT_TITLE }}</strong> · {% for b in blocks_here %}{{ b.floor }}{% if b.continued %} (continued){% endif %}{{ ", " if not loop.last }}{% endfor %}</p>
+  {% endif %}
+  {% for b in blocks_here %}{{ b.svg }}{% endfor %}
+  {% if n == 1 %}
+  <div class="sheet-two">
+    <div>{{ parts.legend() }}</div>
+    <div><h2>Check together</h2>{{ parts.checks(sketch) }}</div>
+  </div>
+  {% endif %}
+  <p class="foot">{{ f.FOOTER }} {{ sketch.fire_words }}</p>
+</section>
+{% endfor %}
+{% endblock %}

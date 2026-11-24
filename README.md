@@ -33,6 +33,11 @@ is new: keep a copy of anything important somewhere else too. See
   on Home and in Settings, to add your rooms and areas, the storage spots inside
   them (Kitchen › Pantry › Shelf 3), and which rooms connect, through a door,
   an open doorway, stairs or a door to outside.
+- **Our way-out sketch:** your rooms drawn as boxes, floor by floor, with lines
+  for the ways between them, doors to outside and your outside meeting place,
+  plus the same facts as a list. It marks what still needs checking, prints on
+  as many numbered pages as it needs, and always says it is a practice aid, not
+  a certified or safe route. Codes and private details never appear on it.
 - **Household stock:** what you have, where it is kept, how many to keep at
   least, and when it expires. Record what comes in and goes out (bought, used,
   expired, thrown away, given away) and the count updates itself.
@@ -78,6 +83,16 @@ is new: keep a copy of anything important somewhere else too. See
   their dates; the amounts and what each covers stay private behind **Show
   estimated cost and scope**. They are estimates, not a bill or a
   recommendation, and the service date you typed stays the only reminder.
+- **Bills and insurance:** each bill or policy with who provides it (from
+  People), how often it comes and the next date you want to check it, and
+  optionally a vehicle or a place. Thirty days before, Needs attention and
+  Things to do say "bill check due", "policy check due" or "vehicle insurance
+  review or renewal due"; nothing works out the next date and nothing says a
+  bill was paid or cover is active. The amount, what it covers, the reference
+  and notes stay private on this computer. If Vehicles already reminds you
+  about car insurance, nothing moves until you choose **Keep reminders in
+  Vehicles** or **Review and move to Bills**, one policy at a time, with
+  **Transfer back** to undo; each policy keeps one reminder.
 - **Have you thought about…?** (Readiness) 49 calm questions about fire,
   flood, storms, heat, power cuts, medical needs and leaving home quickly, each
   with the official page it came from and the date that page was checked. Only

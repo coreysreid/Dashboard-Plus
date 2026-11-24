@@ -57,6 +57,11 @@ STAGES = [
     ("11-places", "Places", "Where things are kept.", {"goto": "/t/stock__places"}),
     ("11b-set-up-my-home", "Set up my home", "One card per room or area: the storage spots inside it, what it "
      "connects to, and doors to outside.", {"goto": "/set-up-home"}),
+    ("11c-way-out-sketch", "Our way-out sketch", "Rooms as boxes floor by floor, the recorded ways between them, "
+     "doors to outside and what still needs checking, with the same facts as text.", {"goto": "/exit-sketch"}),
+    ("11d-way-out-sheet", "Way-out sketch sheet", "As it prints: warnings, meeting place, the drawing, legend and "
+     "Check together, on numbered pages.", {"goto": "/exit-sketch/print?paper=a4", "media": "print",
+                                             "continues": True}),
     ("12-stock", "Stock items", "What the household has, how much, and how much to keep.",
      {"goto": "/t/stock__items"}),
     ("12b-adding-stock", "Adding a stock item", "Start typing and pick from 800 common goods; picking one fills "
@@ -120,6 +125,12 @@ STAGES = [
     ("18sb-service-estimates", "A service's cost estimates", "Each quote with who gave it and its dates; the "
      "amount and what it covers stay hidden until Show. Estimates, not a bill.",
      {"goto": "/t/vehicles__services/{id:vehicles__services:service}", "module": "vehicle_running"}),
+    ("18sc-bills", "Bills and insurance", "Each bill and policy with its provider and the date to check it; the "
+     "amount, cover and reference stay hidden until Show. Car insurance already in Vehicles stays there until the "
+     "household chooses.", {"goto": "/t/bills_insurance__commitments", "module": "bills_insurance"}),
+    ("18sd-bills-sheet", "Bills and policies to check sheet", "As it prints: names, kinds, providers and dates, "
+     "with no amounts, cover or references.",
+     {"goto": "/sheet/bills_insurance/upcoming_bills_and_policies", "media": "print", "module": "bills_insurance"}),
     ("18t-questions", "Have you thought about…?", "Readiness: the questions that fit the household, by group, with "
      "how many have been looked at, never a safety score.", {"goto": "/questions/readiness", "module": "readiness"}),
     ("18u-question", "One question", "Why it may matter, its official source and the date checked, a record that may "
@@ -288,8 +299,8 @@ def make(household: str, work: Path, executable: str | None) -> list[tuple[str, 
                 steps.append({"media": action.get("media", "screen")})
                 steps.append({"viewport": action.get("width", WIDTH)})
                 steps.append({"goto": target})
-                if action.get("media") == "print":
-                    steps.append({"pages": target})
+                if action.get("media") == "print" and not action.get("continues"):
+                    steps.append({"pages": target})  # a sheet that continues on numbered pages (0118) is not counted
             if "type" in action:
                 steps.append({"type": action["type"][0], "value": action["type"][1]})
             if "submit" in action:

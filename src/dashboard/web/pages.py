@@ -74,9 +74,11 @@ def grid(table):
     off = store.off_links(info)  # a link into a list that is switched off is not sorted by (decision 0115)
     columns = [{"name": c.name, "label": display.column_label(info, c), "sortable": c.name not in off}
                for c in display.list_columns(info)]
+    from dashboard.web import moves_pages  # one reminder per policy: the household's choice (decision 0117)
     return render_template("grid.html", info=info, title=display.table_title(info), columns=columns, rows=rows,
                            total=total, next_offset=len(rows) if len(rows) < total else None,
-                           sort=sort, desc=desc)
+                           sort=sort, desc=desc, moves_choice=moves_pages.choice_box(store, info),
+                           moves_review=moves_pages.review_link(store, info))
 
 
 @pages.get("/t/<table>/rows")
@@ -221,8 +223,14 @@ def _render_form(info, store, values, errors, from_form, record=None, status=200
                            feeding=feeding,
                            related=related, back=back, batches=batches, count_href=count_href,
                            under=_under(store, info, record) if record and not record.get("deleted_at") else [],
-                           confirm=confirm_warnings or [], then=then,
+                           confirm=confirm_warnings or [], then=then, moves=_moves(store, info, record),
                            actions=display.actions_for(info, record), done=done, notice=notice), status
+
+
+def _moves(store, info, record) -> list[dict]:
+    """Where this record's reminder is, if it was moved or could be (decision 0117)."""
+    from dashboard.web import moves_pages
+    return moves_pages.record_notices(store, info, record, moved=request.args.get("moved") == "1")
 
 
 def _default_text(column) -> str:
@@ -299,13 +307,16 @@ def new_record(table):
 
 def _held(info, store, values: dict, record: dict | None) -> list:
     """The gentle checks (tables.toml `confirm`, decision 0111) that Save as entered has not answered yet."""
-    if not info.table.confirm:
-        return []
+    from dashboard.core import reminder_moves
     cleaned = store.clean(info, values, creating=record is None)
     whole = {**(record or {}), **cleaned}
     formatter = display.Formatter(store)
     found = confirm.warnings(store.conn, info, whole, record["id"] if record else None,
-                             lambda column, value: formatter.text(info, column, value))
+                             lambda column, value: formatter.text(info, column, value)) if info.table.confirm else []
+    # The same vehicle already has this kind of reminder in the other list: say so before a second (0117).
+    changed = record is None or any(record.get(k) != v for k, v in cleaned.items())
+    if changed:
+        found += reminder_moves.warnings(store, info, whole, record["id"] if record else None)
     return confirm.unconfirmed(found, request.form.getlist("_confirm"))
 
 

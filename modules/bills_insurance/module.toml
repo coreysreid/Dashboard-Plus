@@ -1,8 +1,10 @@
 name = "bills_insurance"
 title = "Bills and insurance"
-version = "0.1.0"
+version = "1.0.0"
 description = "Dates you choose for regular bills and policy renewals, with broad links to a vehicle or place."
 core_api = "1"
 kind = "declarative"
-requires = ["people", "stock", "vehicles"]
+requires = ["people"]
+# The vehicle and place links only (decisions 0115 and 0117): a bill makes sense without either.
+optional_requires = ["stock", "vehicles"]
 outbound_hosts = []

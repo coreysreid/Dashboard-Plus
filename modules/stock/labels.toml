@@ -3,6 +3,9 @@ columns.name = { help = "Start typing to pick a room, cupboard or shelf, or type
 form = ["name", "inside", "notes"]
 list = ["name", "inside", "notes"]
 columns.inside = { label = "Inside", help = "Leave blank for a room or area. For a shelf, choose the cupboard it's in: the full path, like Kitchen › Pantry › Shelf 3, then shows everywhere." }
+columns.floor = { label = "Floor on the way-out sketch", help = "Rooms and areas only. Choose Leave off the sketch for a place that is not part of the home, like the car." }
+columns.sleeping = { label = "Someone sleeps here" }
+columns.window_exit = { label = "Possible window exit, checked locally", help = "Tick only after your household has checked this window with local fire guidance. It is never worked out for you." }
 
 [tables.items]
 home = "main"
@@ -36,8 +39,9 @@ columns.place = { label = "Where you put it", help = "For the new batch.", show_
 
 [tables.connections]
 home = "more"
-form = ["place", "connects_to", "kind", "notes"]
+form = ["place", "connects_to", "kind", "destination", "notes"]
 list = ["place", "connects_to", "kind", "notes"]
 columns.place = { label = "From" }
 columns.connects_to = { label = "Connects to", help = "Leave blank for a door straight outside." }
 columns.kind = { label = "Through", help = "Choose “Door to outside” for any door that takes you out of the home, even into a yard you have listed as a place." }
+columns.destination = { label = "Where it leads", help = "Leave blank or choose Needs checking until you know. Choose Outside only once your household has checked that it reaches open air away from the building. A balcony, an enclosed yard or a shared corridor is not outside.", show_when = { kind = "outside_door" } }

@@ -412,7 +412,14 @@ def snapshot(conn, registry) -> dict:
             for pair in conn.execute(f"SELECT from_id, to_id FROM {join} ORDER BY from_id, to_id").fetchall():
                 pairs.append({"table": join, "from": ids.get(pair[0]), "to": _id_of(conn, target, pair[1], False)})
     return {"exchange_schema": EXCHANGE_SCHEMA, "household_id": state.get("household_id"),
-            "epoch": state.get("epoch"), "records": records, "pairs": pairs}
+            "epoch": state.get("epoch"), "records": records, "pairs": pairs,
+            # which records were moved to remind from another list, by permanent IDs only (decision 0117)
+            "reminder_moves": _reminder_moves(conn)}
+
+
+def _reminder_moves(conn) -> list[dict]:
+    from dashboard.core import reminder_moves  # imported here: it builds on the record service
+    return reminder_moves.snapshot(conn)
 
 
 def check(conn, registry) -> list[str]:

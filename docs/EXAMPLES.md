@@ -98,6 +98,18 @@ One card per room or area: the storage spots inside it, what it connects to, and
 
 ![Set up my home](screenshots/smith/11b-set-up-my-home.png)
 
+### Our way-out sketch
+
+Rooms as boxes floor by floor, the recorded ways between them, doors to outside and what still needs checking, with the same facts as text.
+
+![Our way-out sketch](screenshots/smith/11c-way-out-sketch.png)
+
+### Way-out sketch sheet
+
+As it prints: warnings, meeting place, the drawing, legend and Check together, on numbered pages.
+
+![Way-out sketch sheet](screenshots/smith/11d-way-out-sheet.png)
+
 ### Stock items
 
 What the household has, how much, and how much to keep.
@@ -265,6 +277,18 @@ Last recorded, then each reading as a dot and a row in the unit it was saved in;
 Each quote with who gave it and its dates; the amount and what it covers stay hidden until Show. Estimates, not a bill.
 
 ![A service's cost estimates](screenshots/smith/18sb-service-estimates.png)
+
+### Bills and insurance
+
+Each bill and policy with its provider and the date to check it; the amount, cover and reference stay hidden until Show. Car insurance already in Vehicles stays there until the household chooses.
+
+![Bills and insurance](screenshots/smith/18sc-bills.png)
+
+### Bills and policies to check sheet
+
+As it prints: names, kinds, providers and dates, with no amounts, cover or references.
+
+![Bills and policies to check sheet](screenshots/smith/18sd-bills-sheet.png)
 
 ### Have you thought about…?
 
@@ -458,6 +482,18 @@ One card per room or area: the storage spots inside it, what it connects to, and
 
 ![Set up my home](screenshots/garcia/11b-set-up-my-home.png)
 
+### Our way-out sketch
+
+Rooms as boxes floor by floor, the recorded ways between them, doors to outside and what still needs checking, with the same facts as text.
+
+![Our way-out sketch](screenshots/garcia/11c-way-out-sketch.png)
+
+### Way-out sketch sheet
+
+As it prints: warnings, meeting place, the drawing, legend and Check together, on numbered pages.
+
+![Way-out sketch sheet](screenshots/garcia/11d-way-out-sheet.png)
+
 ### Stock items
 
 What the household has, how much, and how much to keep.
@@ -613,6 +649,18 @@ Last recorded, then each reading as a dot and a row in the unit it was saved in;
 Each quote with who gave it and its dates; the amount and what it covers stay hidden until Show. Estimates, not a bill.
 
 ![A service's cost estimates](screenshots/garcia/18sb-service-estimates.png)
+
+### Bills and insurance
+
+Each bill and policy with its provider and the date to check it; the amount, cover and reference stay hidden until Show. Car insurance already in Vehicles stays there until the household chooses.
+
+![Bills and insurance](screenshots/garcia/18sc-bills.png)
+
+### Bills and policies to check sheet
+
+As it prints: names, kinds, providers and dates, with no amounts, cover or references.
+
+![Bills and policies to check sheet](screenshots/garcia/18sd-bills-sheet.png)
 
 ### Have you thought about…?
 
@@ -806,6 +854,18 @@ One card per room or area: the storage spots inside it, what it connects to, and
 
 ![Set up my home](screenshots/taylor/11b-set-up-my-home.png)
 
+### Our way-out sketch
+
+Rooms as boxes floor by floor, the recorded ways between them, doors to outside and what still needs checking, with the same facts as text.
+
+![Our way-out sketch](screenshots/taylor/11c-way-out-sketch.png)
+
+### Way-out sketch sheet
+
+As it prints: warnings, meeting place, the drawing, legend and Check together, on numbered pages.
+
+![Way-out sketch sheet](screenshots/taylor/11d-way-out-sheet.png)
+
 ### Stock items
 
 What the household has, how much, and how much to keep.
@@ -955,6 +1015,18 @@ Last recorded, then each reading as a dot and a row in the unit it was saved in;
 Each quote with who gave it and its dates; the amount and what it covers stay hidden until Show. Estimates, not a bill.
 
 ![A service's cost estimates](screenshots/taylor/18sb-service-estimates.png)
+
+### Bills and insurance
+
+Each bill and policy with its provider and the date to check it; the amount, cover and reference stay hidden until Show. Car insurance already in Vehicles stays there until the household chooses.
+
+![Bills and insurance](screenshots/taylor/18sc-bills.png)
+
+### Bills and policies to check sheet
+
+As it prints: names, kinds, providers and dates, with no amounts, cover or references.
+
+![Bills and policies to check sheet](screenshots/taylor/18sd-bills-sheet.png)
 
 ### Have you thought about…?
 

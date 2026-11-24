@@ -101,8 +101,9 @@ class ExportTests(TempDirTestCase):
         self.assertNotIn("1", {r["Is this water safe to drink now?"] for r in waters})
 
     def test_money_is_written_in_whole_units(self):
-        info = next(i for i in self.registry.values() if any(c.type == "money" for c in i.table.columns.values()))
-        column = next(c for c in info.table.columns.values() if c.type == "money")
+        info = next(i for i in self.registry.values() if any(c.type == "money" and not c.sensitive
+                                                             for c in i.table.columns.values()))
+        column = next(c for c in info.table.columns.values() if c.type == "money" and not c.sensitive)
         self.conn.execute(f"UPDATE {info.name} SET {column.name} = 123456 WHERE id = (SELECT MIN(id) FROM {info.name})")
         _, rows = self.table(self.export(), info.name)
         self.assertIn("1234.56", {v for r in rows for v in r.values()})

@@ -8,10 +8,13 @@
 | home_setup.py | Set up my home: rooms and areas, the storage spots inside them, and which rooms connect, on one page. | changing the Set up my home page |
 | action_form.py | An action's small form, such as Mark done: open it, save it once as one operation, and Undo it (decision 0091). | changing Mark done or Undo screens |
 | checklist.py | Things to do: the Today, This week, This month, This year and No date yet pages, each row with its record's own action. | changing the Things to do pages or the Home card |
+| moves_pages.py | One reminder per policy (decision 0117): the household's choice screen, Review and move row by row, Transfer back, and the notices on each record's page. | changing the Vehicle insurance choice or move screens |
 | count.py | Count this batch: a stocktake of one batch, reviewed and then saved as one stocktake correction. | changing the stocktake screens |
 | home.py | Group the home page by area: each module's main lists shown large, its other lists as one line of links. | changing how the home page is grouped or ordered |
 | questions.py | The "Have you thought about…?" screens: the questions by group, one question with its four answers, and Not now. | changing the question screens |
 | drills.py | The "Think it through" screens: the drills that fit, one drill's sources and steps, each step with its records, and saving a practice. | changing the drill screens |
+| exit_sketch.py | Our way-out sketch: the drawing with its text version, the few facts it asks for, and the printable sheet and text. | changing the way-out sketch pages or their forms |
+| exit_drawing.py | Draw the way-out sketch as SVG on the server: room boxes by floor, labelled lines, doors out and the meeting place, split into pages. | changing how the sketch is laid out, drawn or split into pages |
 | sheets.py | One-page printable sheets declared by modules, such as the emergency sheet. | changing printable sheets |
 | display.py | Turn declared tables and stored values into friendly labels, form fields and text. | changing how values look |
 | templates/ | The HTML pages | changing what a page looks like |

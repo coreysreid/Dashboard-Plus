@@ -8,7 +8,7 @@ from dataclasses import dataclass, field
 from datetime import date
 from urllib.parse import urlencode
 
-from dashboard.core import dates, naming, schema, settings
+from dashboard.core import dates, naming, reminder_moves, schema, settings
 from dashboard.core.records import TableInfo
 
 PEOPLE_TABLE = "people__people"
@@ -106,6 +106,7 @@ def expiring(conn: sqlite3.Connection, registry: dict[str, TableInfo], today: da
         col, warn = rule["date"], rule["warn_days"]
         positive = f" AND {rule['only_positive']} > 0" if rule.get("only_positive") else ""  # used up: no warning
         clause, values = _where_sql(info, rule.get("where", {}))  # e.g. only loans still out (decision 0072)
+        clause += reminder_moves.silent_clause(info.name)  # a reminder moved to another list (decision 0117)
         rows = conn.execute(f"SELECT * FROM {info.name} WHERE deleted_at IS NULL AND {col} IS NOT NULL "
                             f"AND {col} != ''{positive}{clause}", values)
         for row in rows:
@@ -116,9 +117,17 @@ def expiring(conn: sqlite3.Connection, registry: dict[str, TableInfo], today: da
             days = (when - today).days
             if days > warn:
                 continue
-            detail = _due_words(rule.get("wording", "expires"), rule.get("what", ""), when, days, style)
+            detail = _due_words(rule.get("wording", "expires"), what_for(rule, row), when, days, style)
             items.append(WatchItem(info.name, row["id"], _name(info, row, conn, registry, (col,)), detail, days))
     return sorted(items, key=lambda i: (i.sort_key, i.name))
+
+
+def what_for(rule: dict, row) -> str:
+    """What a due date is about for this row: the first `what_when` whose filter it matches, else `what` (0117)."""
+    for option in rule.get("what_when", ()):
+        if all(row[k] == v for k, v in option["where"].items()):
+            return option["what"]
+    return rule.get("what", "")
 
 
 def _where_sql(info: TableInfo, filters: dict) -> tuple[str, list]:
