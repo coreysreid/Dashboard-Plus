@@ -1,0 +1,40 @@
+{# One month calendar (decision 0119): the summary, the grid, the legend and the same days in words. Needs `cal`; `open_list` shows the words open. #}
+<section class="cal-wrap" id="{{ cal.id }}" aria-labelledby="{{ cal.id }}-heading">
+<p class="cal-summary" id="{{ cal.id }}-heading"><strong>{{ cal.summary }}</strong></p>
+{% if cal.prev or cal.next %}
+<nav class="cal-nav" aria-label="Choose the month: {{ cal.title }}">
+  {% if cal.prev %}<a href="{{ cal.prev }}" rel="prev">Previous month<span class="vh">: {{ cal.prev_words }}</span></a>{% endif %}
+  {% if cal.this_month %}<a href="{{ cal.this_month }}">This month</a>{% endif %}
+  {% if cal.next %}<a href="{{ cal.next }}" rel="next">Next month<span class="vh">: {{ cal.next_words }}</span></a>{% endif %}
+</nav>
+{% endif %}
+<table class="cal">
+  <caption>{{ cal.caption }}</caption>
+  <thead><tr>{% for h in cal.headers %}<th scope="col"><span aria-hidden="true">{{ h.short }}</span><span class="vh">{{ h.long }}</span></th>{% endfor %}</tr></thead>
+  <tbody>
+  {% for week in cal.weeks %}
+  <tr>{% for c in week %}{% if c %}<td class="cal-day{% if c.today %} cal-today{% endif %}"{% if c.today %} aria-current="date"{% endif %}>
+      {% if c.anchor %}<a class="cal-num" href="#{{ c.anchor }}"><span aria-hidden="true">{{ c.day }}</span><span class="vh">{{ c.label }}</span></a>{% else %}<span class="cal-num"><span aria-hidden="true">{{ c.day }}</span><span class="vh">{{ c.label }}</span></span>{% endif %}
+      {% for chip in c.chips %}<span class="cal-chip cal-{{ chip.look }}" title="{{ chip.words }}" aria-hidden="true">{{ chip.symbol }}{% if chip.count > 1 %}<span class="cal-n">{{ chip.count }}</span>{% endif %}</span>{% endfor %}
+    </td>{% else %}<td class="cal-blank"></td>{% endif %}{% endfor %}</tr>
+  {% endfor %}
+  </tbody>
+</table>
+<ul class="cal-legend" aria-label="What the marks mean">
+  {% for l in cal.legend %}<li><span class="cal-chip cal-{{ l.look }}" aria-hidden="true">{{ l.symbol }}</span> {{ l.words }}</li>{% endfor %}
+  <li><span class="cal-chip cal-empty" aria-hidden="true">&nbsp;</span> {{ cal.blank }}</li>
+</ul>
+<details class="cal-list"{% if open_list %} open{% endif %}>
+  <summary>{{ cal.heading }} in words, day by day</summary>
+  {% if cal.days %}
+  <ol>
+    {% for d in cal.days %}
+    <li id="{{ d.anchor }}"><strong>{{ d.day }}</strong>: {{ d.summary }}{% if d.day_href %} · <a href="{{ d.day_href }}">See this day</a>{% endif %}
+      <ul>{% for i in d.marks %}<li><span class="cal-chip cal-{{ i.look }}" aria-hidden="true">{{ i.symbol }}</span> <a href="{{ i.href }}">{{ i.words }}</a></li>{% endfor %}</ul>
+    </li>
+    {% endfor %}
+  </ol>
+  {% else %}<p>{{ cal.summary }}</p>{% endif %}
+</details>
+{% if cal.full %}<p><a href="{{ cal.full }}">Open the {{ cal.title | lower }}</a></p>{% endif %}
+</section>

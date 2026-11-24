@@ -35,7 +35,7 @@ MODULE_KEYS = ("name", "title", "version", "description", "core_api", "kind", "r
                "outbound_hosts")
 MODULE_REQUIRED = ("name", "title", "version", "description", "core_api", "kind")
 TABLE_KEYS = ("title", "description", "columns", "watch", "adjusts", "parent", "total", "record_name", "actions",
-              "pair", "suggestions", "chart", "daily", "confirm", "takes_over")
+              "pair", "suggestions", "chart", "daily", "confirm", "takes_over", "calendar")
 # One reminder per policy (decision 0117): records of an older list in another module (Vehicle insurance) that
 # the household may choose, one by one, to have reminded from this table instead. `where` is what such a record
 # is here (a vehicle policy), `copy` which of this table's columns take which of the other's, the date included.
@@ -46,7 +46,19 @@ TAKES_OVER_WORDS = ("title", "intro", "keep", "review", "later", "warning", "que
                     "duplicate", "duplicate_source", "back")
 # A chart of one subject's dated readings, such as one pet's weigh-ins as dots (decision 0109); `unit`, `latest`
 # and `caveat` let readings carry their own unit, as an odometer's km or mi, and say what they are (decision 0111).
-CHART_KEYS = ("kind", "x", "y", "per", "what", "entry", "subject", "unit", "latest", "caveat")
+CHART_KEYS = ("kind", "x", "y", "per", "what", "entry", "subject", "unit", "latest", "caveat", "ranges", "change",
+              "line", "scale")
+# Trends on a dots chart (decision 0119): date range presets, change since the last reading and since the start of
+# the range in words, a connecting line only where allowed (broken across long gaps), and a fitted value scale only
+# when asked for (with its start said on the axis); otherwise the scale starts at zero, as in 0109.
+CHART_RANGES = ("3m", "1y", "all")
+CHART_SCALES = ("zero", "fitted")
+# A month calendar of a table's dated or timed records by the household's own day (decision 0119). Each record has
+# one of a few fixed looks (colour, symbol and pattern together); a linked record's open due date is shown only when
+# the table says `due = true`, and an empty day is never called missed.
+CALENDAR_KEYS = ("when", "per", "show", "title", "entry", "state", "looks", "look", "due")
+CALENDAR_ENTRY_LOOKS = ("recorded", "done", "skipped")
+CALENDAR_SHOW = ("one", "all")
 # A gentle check before a form saves, such as an odometer reading lower than the last one: Go back, or Save as
 # entered. Never a block, and nothing is worked out from it (decision 0111).
 CONFIRM_KEYS = ("key", "when", "column", "per", "order", "among", "message", "later")
@@ -161,6 +173,7 @@ class Table:
     daily: dict = field(default_factory=dict)  # checked `daily`: totals by the household's own day (0110)
     confirm: list = field(default_factory=list)  # checked gentle checks before a form saves (decision 0111)
     takes_over: dict = field(default_factory=dict)  # checked `takes_over`: one reminder per policy (0117)
+    calendar: dict = field(default_factory=dict)  # checked `calendar`: a month grid by the household's day (0119)
 
 
 @dataclass
@@ -781,11 +794,32 @@ def _check_chart(file: str, table: Table, raw, problems: list[str]) -> dict:
     for key in ("latest", "caveat"):
         if key in raw and not (isinstance(raw[key], str) and raw[key].strip()):
             problems.append(f"{where}: '{key}' must be a few words, like \"Last recorded\".")
+    ranges = raw.get("ranges", [])
+    if not (isinstance(ranges, list) and ranges and all(isinstance(r, str) and r in CHART_RANGES for r in ranges)
+            and len(set(ranges)) == len(ranges)) and "ranges" in raw:
+        problems.append(f"{where}: 'ranges' must list some of \"3m\", \"1y\" and \"all\", each once, like "
+                        f"ranges = [\"3m\", \"1y\", \"all\"].")
+        ranges = []
+    if "change" in raw and not isinstance(raw["change"], bool):
+        problems.append(f"{where}: 'change' must be true or false.")
+    line, gap = raw.get("line", False), None
+    if isinstance(line, dict):
+        gap = line.get("gap_days")
+        if set(line) - {"gap_days"} or isinstance(gap, bool) or not isinstance(gap, int) or not 1 <= gap <= 3650:
+            problems.append(f"{where}: 'line' must be true, false or {{ gap_days = 365 }}: a whole number of days, "
+                            f"from 1 to 3650, after which the line is broken.")
+    elif not isinstance(line, bool):
+        problems.append(f"{where}: 'line' must be true, false or {{ gap_days = 365 }}.")
+    scale = raw.get("scale", "zero")
+    if scale not in CHART_SCALES:
+        problems.append(f"{where}: 'scale' must be \"zero\" (the scale starts at 0) or \"fitted\" (it starts near "
+                        f"the lowest reading and says so on the axis), not {scale!r}.")
     if len(problems) > before:
         return {}
     return {"kind": raw["kind"], "x": raw["x"], "y": raw["y"], "per": raw["per"], "what": list(raw["what"]),
             "entry": list(raw["entry"]), "subject": raw["subject"].strip(), "unit": raw.get("unit"),
-            "latest": raw.get("latest"), "caveat": raw.get("caveat")}
+            "latest": raw.get("latest"), "caveat": raw.get("caveat"), "ranges": list(ranges),
+            "change": bool(raw.get("change", False)), "line": bool(line), "gap_days": gap, "scale": scale}
 
 
 def _check_confirm(file: str, table: Table, raw, problems: list[str]) -> list[dict]:
@@ -882,6 +916,66 @@ def _check_daily(file: str, table: Table, raw, problems: list[str]) -> dict:
     rule["entry"] = [w.strip() for w in raw["entry"]]
     rule["repeat"] = {"minutes": minutes, "same": list(same)} if repeat else {}
     return rule
+
+
+def _check_calendar(file: str, module: str, table: Table, tables: dict[str, Table], raw,
+                    problems: list[str]) -> dict:
+    """Check `calendar`: a month grid of this table's dated or timed records by the household's own day, like a
+    pet's feedings or each time a routine was done or skipped (decision 0119). Looks are a fixed set, so every state
+    has a colour, a symbol and a pattern; `due = true` also shows the linked record's own open due date."""
+    where = f"In {file}, table '{table.name}', calendar"
+    example = ('[tables.times.calendar] with when = "done_on", per = "routine", show = "all", title = "Routines '
+               'calendar", entry = ["time", "times"]')
+    if not isinstance(raw, dict):
+        problems.append(f"{where}: write it as {example}.")
+        return {}
+    problems.extend(_unknown_keys(where, raw, CALENDAR_KEYS))
+    before = len(problems)
+    when, per = (table.columns.get(raw.get(k)) if isinstance(raw.get(k), str) else None for k in ("when", "per"))
+    if when is None or when.type not in ("date", "datetime") or not when.required:
+        problems.append(f"{where}: 'when' must name a required date or date-and-time column of this table.")
+    if per is None or per.type != "link" or not per.required:
+        problems.append(f"{where}: 'per' must name a required link column, so each mark belongs to one record.")
+    if raw.get("show") not in CALENDAR_SHOW:
+        problems.append(f"{where}: 'show' must be \"one\" (one record's month at a time, like one pet) or \"all\" "
+                        f"(every record together, like all routines), not {raw.get('show')!r}.")
+    if not (isinstance(raw.get("title"), str) and raw["title"].strip()):
+        problems.append(f"{where}: 'title' must be the calendar's name, like \"Feeding calendar\".")
+    words = raw.get("entry")
+    if not (isinstance(words, list) and len(words) == 2 and all(isinstance(w, str) and w.strip() for w in words)):
+        problems.append(f"{where}: 'entry' must be two words, singular then plural, like [\"feeding\", \"feedings\"].")
+    looks = raw.get("looks")
+    if "state" in raw:
+        state = table.columns.get(raw["state"]) if isinstance(raw["state"], str) else None
+        if state is None or state.type != "choice" or not state.required or state.sensitive:
+            problems.append(f"{where}: 'state' must name a required choice column of this table that is not private.")
+        elif not isinstance(looks, dict) or set(looks) != {c.key for c in state.choices} \
+                or any(v not in CALENDAR_ENTRY_LOOKS for v in looks.values()):
+            keys = ", ".join(c.key for c in state.choices)
+            problems.append(f"{where}: 'looks' must give each choice of '{raw['state']}' ({keys}) one of the looks "
+                            f"\"recorded\", \"done\" or \"skipped\", like looks = {{ done = \"done\", skipped = "
+                            f"\"skipped\" }}.")
+        if "look" in raw:
+            problems.append(f"{where}: use 'looks' for each choice of 'state', not 'look'.")
+    elif looks is not None:
+        problems.append(f"{where}: 'looks' needs 'state', the choice column whose choices it gives a look.")
+    if "look" in raw and raw["look"] not in CALENDAR_ENTRY_LOOKS:
+        problems.append(f"{where}: 'look' must be \"recorded\", \"done\" or \"skipped\", not {raw['look']!r}.")
+    due = raw.get("due", False)
+    if not isinstance(due, bool):
+        problems.append(f"{where}: 'due' must be true or false.")
+    elif due and per is not None and per.type == "link" and per.to:
+        other, _, name = per.to.partition(".") if "." in per.to else (module, ".", per.to)
+        target = tables.get(name) if other == module else None
+        expiring = (target.watch or {}).get("expiring") if target is not None else None
+        if not expiring or expiring.get("wording") != "due":
+            problems.append(f"{where}: 'due = true' shows the open due date of the record '{raw.get('per')}' points "
+                            f"at, so that table must be in this module and have a reminder with wording = \"due\".")
+    if len(problems) > before:
+        return {}
+    return {"when": raw["when"], "per": raw["per"], "show": raw["show"], "title": raw["title"].strip(),
+            "entry": [w.strip() for w in raw["entry"]], "state": raw.get("state"), "looks": dict(looks or {}),
+            "look": raw.get("look", "recorded"), "due": due}
 
 
 def _check_record_name(file: str, table: Table, tables: dict[str, Table], template, problems: list[str]) -> str | None:
@@ -983,6 +1077,9 @@ def _check_tables(module: str, data: dict, requires: list[str], problems: list[s
                 tables[tname].chart = _check_chart(file, tables[tname], raw["chart"], problems)
             if "daily" in raw:
                 tables[tname].daily = _check_daily(file, tables[tname], raw["daily"], problems)
+            if "calendar" in raw:
+                tables[tname].calendar = _check_calendar(file, module, tables[tname], tables, raw["calendar"],
+                                                         problems)
             if "confirm" in raw:
                 tables[tname].confirm = _check_confirm(file, tables[tname], raw["confirm"], problems)
             if "takes_over" in raw:

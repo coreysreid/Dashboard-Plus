@@ -1,0 +1,19 @@
+{% extends "base.html" %}
+{% block title %}{{ title }}{% if view %} · {{ view.heading }}{% endif %} · Dashboard Plus{% endblock %}
+{% block body %}
+<p class="muted"><a href="/">Home</a> · <a href="/t/{{ table }}">List of every entry</a></p>
+<h1>{{ title }}</h1>
+{% if no_subject %}
+<p role="status"><strong>{{ no_subject }}</strong></p>
+<p><a class="button" href="{{ add_subject }}">Add one</a></p>
+{% else %}
+{% if not show_all and subjects | length > 1 %}
+<nav aria-label="Choose whose calendar" class="cal-who"><ul>
+  {% for s in subjects %}<li>{% if s.id == chosen.id %}<strong aria-current="page">{{ s.name }}</strong>{% else %}<a href="/calendar/{{ table }}?subject={{ s.id }}&amp;month={{ month }}">{{ s.name }}</a>{% endif %}</li>{% endfor %}
+</ul></nav>
+{% endif %}
+{% if chosen %}<h2>{{ chosen.name }} · {{ view.heading }}</h2>{% else %}<h2>{{ view.heading }}</h2>{% endif %}
+{% with cal = view, open_list = true %}{% include "_calendar.html" %}{% endwith %}
+{% if subject_href %}<p><a href="{{ subject_href }}">{{ chosen.name }}'s page</a></p>{% endif %}
+{% endif %}
+{% endblock %}

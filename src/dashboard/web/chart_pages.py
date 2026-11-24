@@ -1,7 +1,9 @@
 """The first charts (decision 0109): what makes up today's days of drinking water, and one pet's recorded weights."""
 from __future__ import annotations
 
-from datetime import date, datetime
+from datetime import date, datetime, timedelta
+from decimal import Decimal
+from urllib.parse import urlencode
 
 from flask import Blueprint, abort, current_app, render_template, request
 
@@ -210,16 +212,42 @@ def _changed(store: records.Records, info: records.TableInfo, ids: list[int], wa
 
 
 DOTS_CAVEAT = "These are the values written down, not a health check. Nothing here says why a value changed."
+# Date range presets a chart may offer (decision 0119), in the order the page lists them.
+RANGE_WORDS = {"3m": "Last 3 months", "1y": "Last year", "all": "All dates"}
+
+
+def range_start(key: str, today: date) -> str | None:
+    """The first day of a preset range ending today: 3 months or a year back on the same day of the month (the
+    month's last day when it has no such day, so 31 May gives 28 or 29 February), or None for all dates."""
+    if key not in ("3m", "1y"):
+        return None
+    back = 3 if key == "3m" else 12
+    index = today.year * 12 + today.month - 1 - back
+    year, month = index // 12, index % 12 + 1
+    last = (date(year + (month == 12), month % 12 + 1, 1) - timedelta(days=1)).day
+    return date(year, month, min(today.day, last)).isoformat()
+
+
+def change_words(column, before: dict, after: dict, unit: str) -> str:
+    """"up 0.3 kg, from 4.4 kg to 4.7 kg", "down 1,200 km ...", "no change (4.7 kg both times)": a difference in
+    the recorded values, in words with the unit. It says nothing about why, or whether it matters."""
+    old, new = Decimal(str(before["value"])), Decimal(str(after["value"]))
+    if old == new:
+        return f"no change ({_value_text(column, after['value'], unit)} both times)"
+    gap = abs(new - old)
+    return (f"{'up' if new > old else 'down'} {_value_text(column, gap, unit)}, from "
+            f"{_value_text(column, before['value'], unit)} to {_value_text(column, after['value'], unit)}")
 
 
 def _value_text(column, value, unit: str) -> str:
     """"48,500 km" for a whole-number reading, "12.4 kg" for a decimal one."""
-    number = f"{int(value):,}" if column.type == "integer" else charts.number_text(value)
+    number = f"{int(value):,}" if column.type == "integer" else charts.number_text(float(value))
     return f"{number}{' ' + unit if unit else ''}"
 
 
 def dots_view(store: records.Records, info: records.TableInfo, subject_id: int, start: str | None = None,
-              end: str | None = None, chosen_period: bool = False, latest_only: int | None = None) -> dict:
+              end: str | None = None, chosen_period: bool = False, latest_only: int | None = None,
+              preset: str | None = None) -> dict:
     """One subject's readings in a date range: the plain sentence, the dots and the equal table.
 
     `latest_only` keeps a record's own page short: only that many latest readings are read, the count is of all
@@ -285,7 +313,10 @@ def dots_view(store: records.Records, info: records.TableInfo, subject_id: int, 
         span = f"{first} to {last}" if first != last else f"on {first}"
     else:
         span = ""
-    if chosen_period and (start or end):
+    if preset in ("3m", "1y") and start:
+        period = (f"{dates.show(start, style)} to {dates.show(end, style) if end else 'today'} "
+                  f"(the {RANGE_WORDS[preset].lower()})")
+    elif chosen_period and (start or end):
         period = (f"{dates.show(start, style) if start else 'the first reading'} to "
                   f"{dates.show(end, style) if end else 'the latest reading'}")
     else:
@@ -311,20 +342,51 @@ def dots_view(store: records.Records, info: records.TableInfo, subject_id: int, 
         else:
             summary = f"{name} · {latest} · {said}" + (f" from {period}" if chosen_period and (start or end) else "")
     chart = None
+    line = bool(rule.get("line")) and len(dots) > 1
+    gap = rule.get("gap_days")
+    joined = ("A line joins readings next to each other in time" + (
+        f", broken where they are more than {gap} days apart" if gap else "") +
+        "; it does not show values between them." if line else
+        "The dots are not joined: nothing was measured between them.")
+    floor = 0.0
+    if rule.get("scale") == "fitted" and dots:
+        floor = charts.fitted_steps(min(d.value for d in dots), max(d.value for d in dots))[0]
+    scale = (f"on a scale starting at {charts.number_text(floor)} {unit}, not 0" if floor else
+             "on a scale starting at 0")
     if dots:
         left_out = len(found) - len(drawn)
         description = (f"One dot for each recorded {what_one} of {name}, {span}, in {unit or 'the recorded unit'}, "
-                       f"on a scale starting at 0. The dots are not joined. The table lists the same values"
+                       f"{scale}. {joined} The table lists the same values"
                        + (f", and {left_out} in another unit that is not drawn." if left_out else "."))
         chart = charts.dot_chart(chart_id, f"{name}'s recorded {what_many}", description, dots,
-                                 display.column_label(info, x), unit, lambda d: dates.show(d, style))
+                                 display.column_label(info, x), unit, lambda d: dates.show(d, style),
+                                 line=line, gap_days=gap, fitted=rule.get("scale") == "fitted")
+    changes = []  # the change since the reading before and since the start of the range, in words (0119)
+    shown = [r for r in found if r["id"] in drawn]
+    if rule.get("change") and len(shown) > 1:
+        last, before, first = shown[-1], shown[-2], shown[0]
+        changes.append(f"Since the reading before, on {dates.show(before['day'], style)}: "
+                       f"{change_words(y, before, last, unit)}.")
+        if first is not before:
+            where = ("the start of this period" if (chosen_period and (start or end)) or preset in ("3m", "1y")
+                     else f"the first of these {len(shown)}" if latest_only and recorded > len(found)
+                     else "the first reading")
+            changes.append(f"Since {where}, on {dates.show(first['day'], style)}: "
+                           f"{change_words(y, first, last, unit)}.")
+        if len(shown) < len(found):
+            changes.append("Readings in another unit are left out of these changes; nothing is converted.")
+    presets = [{"key": key, "words": RANGE_WORDS[key], "current": key == (preset or ("all" if not chosen_period
+                                                                                     and not latest_only else None)),
+                "href": f"/charts/{info.name}?" + urlencode({"subject": subject_id, "range": key})}
+               for key in rule.get("ranges") or []]
     fixed = "" if unit_column is not None else (y.unit or "")
     return {"name": name, "subject_id": subject_id, "table": info.name, "chart": chart, "chart_id": chart_id,
             "rows": rows, "empty": empty, "note": note, "summary": summary, "period": period,
             "caveat": rule.get("caveat") or DOTS_CAVEAT,
             "heading": f"{name}'s recorded {what_many} · {period}", "x_label": display.column_label(info, x),
             "y_label": display.column_label(info, y) + (f" ({fixed})" if fixed else ""),
-            "entry_one": entry_one, "add": f"/t/{info.name}/new?{per.name}={subject_id}"}
+            "entry_one": entry_one, "add": f"/t/{info.name}/new?{per.name}={subject_id}",
+            "changes": changes, "presets": presets, "caption": joined + " Choose a dot to go to its row."}
 
 
 @chart_pages.get("/charts/<table>")
@@ -348,6 +410,7 @@ def dots_page(table):
     wanted = request.args.get("subject", type=int)
     chosen = next((s for s in subjects if s["id"] == wanted), subjects[0])
     typed = {"from": request.args.get("from", "").strip(), "to": request.args.get("to", "").strip()}
+    preset = request.args.get("range") if request.args.get("range") in (rule.get("ranges") or []) else None
     bounds, problems = {}, []
     for key, words in (("from", "From"), ("to", "To")):
         if typed[key]:
@@ -359,7 +422,12 @@ def dots_page(table):
         problems.append("From must not be after To.")
     if problems:
         bounds = {}  # the page says it shows all dates instead
-    view = dots_view(store, info, chosen["id"], bounds.get("from"), bounds.get("to"), chosen_period=bool(bounds))
+    if bounds or problems:
+        preset = None  # dates typed in win over a preset
+    elif preset in ("3m", "1y"):
+        bounds = {"from": range_start(preset, current_app.config["TODAY"]())}
+    view = dots_view(store, info, chosen["id"], bounds.get("from"), bounds.get("to"), chosen_period=bool(bounds),
+                     preset=preset)
     return render_template("dot_chart.html", title=title, subjects=subjects, chosen=chosen, view=view,
                            problems=problems, no_subject=None, table=table, typed=typed, style=style,
                            subject_word=rule["subject"], hint=dates.SHORT[style])

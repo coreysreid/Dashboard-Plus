@@ -1,4 +1,4 @@
-"""Click through the real dashboard in Chromium (setup, Set up my home, dates, stock in, stocktake, Mark returned, Mark done, Things to do, spreadsheet import, Review keys and buttons, readiness questions, Think it through drills, charts, the way-out sketch, pet feeding at 320px, vehicle running log, Bills and a moved car insurance reminder, Utilities with Our home off, private details, closing) and fail loudly."""
+"""Click through the real dashboard in Chromium (setup, Set up my home, dates, stock in, stocktake, Mark returned, Mark done, Things to do, spreadsheet import, Review keys and buttons, readiness questions, Think it through drills, charts, the way-out sketch, pet feeding at 320px, calendars and weight trends at 320px, vehicle running log, Bills and a moved car insurance reminder, Utilities with Our home off, private details, closing) and fail loudly."""
 from __future__ import annotations
 
 import argparse
@@ -44,6 +44,8 @@ AU = {"household": "smith", "locale": "en-AU", "timezone": "Australia/Sydney",
       "exit": {"room": "Main bedroom", "words": ["Practice aid only.", "call 000", "Only one way out recorded"]},
       # Pet feeding log (decision 0110): Rex's last bowl was 120 g yesterday, so Add food shows 120 g to check.
       "feeding": {"pet": "Rex", "amount": "120", "unit": "g", "after": "Recorded today: 120 g put out"},
+      # Calendars and trends (decision 0119): after Add food, today's cell says it in words, at 320px.
+      "calendar": {"pet": "Rex", "today": "today: 1 feeding recorded"},
       # Vehicle running log (decision 0111): the Family car's two readings in km, a lower one asks first.
       "running": {"vehicle": "Family car", "service": "Family car: Routine service", "last": "48,500 km",
                   "lower": "48000", "amount": "410.00"},
@@ -181,7 +183,8 @@ def run_au(work: Path, executable: str | None) -> list[str]:
             conn.close()
         done += drive(dict(plan, dates=AU["dates"], stock=AU["stock"], private=AU["private"], loan=AU["loan"],
                            job=AU["job"], routine=AU["routine"], csv=AU["csv"], review=AU["review"], questions=AU["questions"],
-                           charts=AU["charts"], exit=AU["exit"], feeding=AU["feeding"], drills=AU["drills"],
+                           charts=AU["charts"], exit=AU["exit"], feeding=AU["feeding"], calendar=AU["calendar"],
+                           drills=AU["drills"],
                            running=dict(AU["running"], at=date.today().isoformat() + "T10:00")), work,
                            "main")
         closed = True

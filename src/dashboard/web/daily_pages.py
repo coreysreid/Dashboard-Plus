@@ -141,7 +141,9 @@ def day_view(store: records.Records, info: records.TableInfo, subject_id: int, d
                       for p in picks[1:]],  # the first is already Add food
             "sheet": f"/daily/{info.name}/sheet?{urlencode({'subject': subject_id})}",
             "list": f"/t/{info.name}", "subject_href": f"/t/{subject_info.name}/{subject_id}",
-            "entry_one": rule["entry"][0], "entry_many": rule["entry"][1]}
+            "entry_one": rule["entry"][0], "entry_many": rule["entry"][1],
+            "calendar": (f"/calendar/{info.name}?" + urlencode({"subject": subject_id, "month": day[:7]})
+                         if info.table.calendar else None)}  # the month around this day (decision 0119)
 
 
 def review_note(store: records.Records, item: dict) -> dict | None:

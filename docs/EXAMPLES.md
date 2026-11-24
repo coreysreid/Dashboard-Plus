@@ -152,6 +152,12 @@ Its details, its recorded weights as dots with the same values in a table, and b
 
 ![One pet's page](screenshots/smith/17-pet.png)
 
+### A pet's weights over the last year
+
+Last 3 months, Last year or All dates; the change since the reading before and since the start of the range in words; a line between readings that starts from a scale at zero.
+
+![A pet's weights over the last year](screenshots/smith/17b-pet-weights.png)
+
 ### Pet details sheet
 
 As it prints: for a sitter, a kennel or an evacuation centre.
@@ -314,6 +320,12 @@ The calendar month by week, from the dates the household recorded; a task with n
 
 ![Things to do, This month](screenshots/smith/18w-things-to-do-month.png)
 
+### Things to do, Calendar
+
+The routines' month: each Done or Skipped on the day it happened and each routine's next date once, every mark with its own symbol as well as a colour, a legend and the same days in words.
+
+![Things to do, Calendar](screenshots/smith/18wa-things-to-do-calendar.png)
+
 ### Routines
 
 The household's own repeating tasks: the repeat it chose, the next date and when each was last done.
@@ -343,6 +355,12 @@ Pet feeding log: one pet's entries on one day, totals only in matching units, en
 The same day at 320 pixels wide, for one-handed entry.
 
 ![Food put out, on a phone](screenshots/smith/18zb-feeding-phone.png)
+
+### Feeding calendar, on a phone
+
+One pet's month at 320 pixels wide: a day with feedings shows ● and how many; a blank day only means nothing was recorded, never a missed meal.
+
+![Feeding calendar, on a phone](screenshots/smith/18zbb-feeding-calendar-phone.png)
 
 ### Pet feeding log sheet
 
@@ -536,6 +554,12 @@ Its details, its recorded weights as dots with the same values in a table, and b
 
 ![One pet's page](screenshots/garcia/17-pet.png)
 
+### A pet's weights over the last year
+
+Last 3 months, Last year or All dates; the change since the reading before and since the start of the range in words; a line between readings that starts from a scale at zero.
+
+![A pet's weights over the last year](screenshots/garcia/17b-pet-weights.png)
+
 ### Pet details sheet
 
 As it prints: for a sitter, a kennel or an evacuation centre.
@@ -686,6 +710,12 @@ The calendar month by week, from the dates the household recorded; a task with n
 
 ![Things to do, This month](screenshots/garcia/18w-things-to-do-month.png)
 
+### Things to do, Calendar
+
+The routines' month: each Done or Skipped on the day it happened and each routine's next date once, every mark with its own symbol as well as a colour, a legend and the same days in words.
+
+![Things to do, Calendar](screenshots/garcia/18wa-things-to-do-calendar.png)
+
 ### Routines
 
 The household's own repeating tasks: the repeat it chose, the next date and when each was last done.
@@ -715,6 +745,12 @@ Pet feeding log: one pet's entries on one day, totals only in matching units, en
 The same day at 320 pixels wide, for one-handed entry.
 
 ![Food put out, on a phone](screenshots/garcia/18zb-feeding-phone.png)
+
+### Feeding calendar, on a phone
+
+One pet's month at 320 pixels wide: a day with feedings shows ● and how many; a blank day only means nothing was recorded, never a missed meal.
+
+![Feeding calendar, on a phone](screenshots/garcia/18zbb-feeding-calendar-phone.png)
 
 ### Pet feeding log sheet
 
@@ -1051,6 +1087,12 @@ What is due today and anything late, each shown once as Due since, with the butt
 The calendar month by week, from the dates the household recorded; a task with no date is under No date yet.
 
 ![Things to do, This month](screenshots/taylor/18w-things-to-do-month.png)
+
+### Things to do, Calendar
+
+The routines' month: each Done or Skipped on the day it happened and each routine's next date once, every mark with its own symbol as well as a colour, a legend and the same days in words.
+
+![Things to do, Calendar](screenshots/taylor/18wa-things-to-do-calendar.png)
 
 ### Routines
 

@@ -170,6 +170,7 @@ One record per decision, from `TEMPLATE.md`. Never deleted; reversed ones are ma
 | [0116](0116-helper-words-for-moving-in.md) | The helper's starting message, connector descriptions and OpenAPI no longer call an old tracker balance a purchase (it points to Count this batch), ask whether a receipt is already in the old count, say a Review-only price is not saved spending, and say when to refresh the guide and how to report sent, accepted, waiting and refused rows | Accepted |
 | [0117](0117-bills-and-insurance.md) | Bills and insurance switched on from Lane B's draft beside Utilities (needs only People; Vehicles and Stock optional): private amount, cover, reference and notes that never travel; due words per row (`what_when`); one reminder per vehicle policy: nothing moves until the household chooses Keep, Review and move (row by row, by ID, after a backup; the old record kept read-only) or Decide later; Transfer back; sheets say when they are not complete | Accepted (Corey to confirm the move choice) |
 | [0118](0118-exit-sketch.md) | Our way-out sketch from Set up my home: a floor, sleeping and checked-window flag per room and a confirmed destination per door out (stock migration 0007), meeting place, help and building-plan answers in Settings; rooms as boxes and connections as lines drawn on the server in a steady grid, a complete text version with the same IDs, a sheet with legend and warnings on numbered continuation pages; only recorded possibilities and gaps, never a safe or independent route; no notes, codes or People details | Accepted |
+| [0119](0119-calendars-and-trends.md) | Colour-coded month calendars from a generic `calendar` declaration (when, per, show one or all, a state's choices mapped to five fixed looks with symbol, colour and pattern, optional `due = true` from the linked reminder) by the household's own day; an HTML table with day names, today, hidden words, a legend and an equal day list; a blank day is never missed; Pet feeding per pet and a Things to do Calendar tab for Routines; dots charts gain range presets, change since the reading before and the range's start in words, an optional line broken across long gaps, and a fitted scale only when declared and labelled (pet weights keep zero) | Accepted |
 | [TEMPLATE](TEMPLATE.md) | Blank record to copy for a new decision | recording a decision |
 
 ## docs/plans/  (summary: build plans for larger pieces of work, written before building)
@@ -401,7 +402,7 @@ Generate the next one with: python tools/make_migration.py people --name <what_c
 | Entry | What it is | Open it when |
 |---|---|---|
 | module.toml | Name, version, description; requires Pets | changing the module's details |
-| tables.toml | Food given: one entry per bowl, refill or treat, food put out (not eaten); `daily` totals by the household's day and the possible-repeat rule | adding a field or changing the daily words |
+| tables.toml | Food given: one entry per bowl, refill or treat, food put out (not eaten); `daily` totals by the household's day, the possible-repeat rule and a month `calendar` per pet | adding a field or changing the daily words |
 | labels.toml | Friendly labels, help text (put out, not eaten; units never converted), form and list order | changing wording or order |
 | migrations/ | Numbered database changes | after changing tables.toml |
 
@@ -416,7 +417,7 @@ Generate the next one with: python tools/make_migration.py pet_feeding --name <w
 | Entry | What it is | Open it when |
 |---|---|---|
 | module.toml | Name, version, description; requires People (for vets and owners) | changing the module's details |
-| tables.toml | Pets, treatments and medicine with next due, treatments given, weigh-ins, vet visits; due dates and gaps | adding a field, a choice or a gap question |
+| tables.toml | Pets, treatments and medicine with next due, treatments given, weigh-ins (a dots chart with ranges, change words and a line), vet visits; due dates and gaps | adding a field, a choice or a gap question |
 | labels.toml | Friendly labels, help text, form and list order | changing wording or order |
 | sheets.toml | Pet details sheet for a sitter, kennel or evacuation | changing what prints |
 | migrations/ | Numbered database changes | after changing tables.toml |
@@ -449,7 +450,7 @@ Generate the next one with: python tools/make_migration.py readiness --name <wha
 | Entry | What it is | Open it when |
 |---|---|---|
 | module.toml | Name, version, description; requires People (who) and Household stock (places) | changing the module's details |
-| tables.toml | Routines with an optional repeat (days, weeks, months, years) and one next date; Done or skipped keeps the planned date; Mark this occurrence done and Skip this time | adding a field or changing the actions |
+| tables.toml | Routines with an optional repeat (days, weeks, months, years) and one next date; Done or skipped keeps the planned date; Mark this occurrence done and Skip this time; a month `calendar` of Done, Skipped and next dates | adding a field or changing the actions |
 | labels.toml | Friendly labels, help text, form and list order, routines main on home | changing wording or order |
 | migrations/ | Numbered database changes | after changing tables.toml |
 
@@ -600,6 +601,7 @@ Generate the next one with: python tools/make_migration.py wine --name <what_cha
 | watch.py | Work out what is running low, what expires soon, how many days of supplies are on hand, and what is worth filling in. | changing running low, expiring, days of cover or gaps |
 | checklist.py | Things to do: Today, This week, This month and This year over the due dates modules already keep (decision 0107). | changing which tasks show, their windows, week start or what counts as done |
 | daily.py | Daily totals by the household's own day: accepted entries only, amounts added only in matching units (decision 0110). | changing the household day, daily totals or the possible-repeat match |
+| calendars.py | Month calendars from a table's dated or timed records by the household's own day; an empty day is never called missed (decision 0119). | changing the calendar grid, its looks or which records and due dates it shows |
 | startup.py | Prepare the database at start-up: load modules, back up if needed, migrate, and give permanent record IDs. | changing what happens at start-up |
 | helper_address.py | The small address file a connector reads to find Dashboard after a restart: only the address and a run ID (0092). | changing how a connector finds Dashboard |
 | helpers.py | Helpers the household has given a key to: making a key, checking it, replacing it, and turning it off. | changing how helper keys work |
@@ -658,6 +660,7 @@ Add a new file with the next number instead of changing an old one.
 | export_page.py | Settings, Export my records: a page and a button that downloads a zip of spreadsheet files. | changing the Export page |
 | chart*.py | Charts drawn on the server as SVG, labelled bars and dated dots (charts), and the pages showing today's drinking water and one pet's recorded weights (chart_pages, decision 0109) | changing a chart or its empty words |
 | daily_pages.py | Daily totals pages (decision 0110): one subject's day, a dated sheet, the Home lines, the record panel and Review's repeat note. | changing the feeding log pages, its sheet or its Home card |
+| calendar_pages.py | Month calendars (decision 0119): a colour-coded grid with a symbol for every state, a legend and the same days in words. | changing a calendar page, its words, the Things to do Calendar tab or the record panel |
 | restore.py | Settings, Backups: the list of backups, a preview of one, putting it back, and Undo restore. | changing the restore pages |
 | openapi-v1.json | The published OpenAPI 3.1 description of the helper API, served at GET /api/v1/openapi.json. | changing a helper route, reply or error code (edit it too) |
 
@@ -667,6 +670,7 @@ Add a new file with the next number instead of changing an old one.
 | base.html | Shared layout, colours (light and dark), header and footer | changing the overall look |
 | *chart.html | Charts with their equal tables: today's drinking water by item (supply_chart), one pet's recorded weights with a pet and date picker (dot_chart) and the piece shared with the pet's page (_dot_chart) | changing a chart page's wording |
 | *daily*.html | The feeding log: one pet's day with Add food (daily), the piece shared with the pet's page (_daily_panel) and the dated sheet that prints every entry or refuses (daily_sheet) | changing the feeding log's wording |
+| *calendar.html | Month calendars (decision 0119): one calendar with its subject picker (calendar), the Things to do Calendar tab (todo_calendar) and the grid, legend and day list shared with record pages (_calendar) | changing a calendar's wording or layout |
 | home.html | Home page: days of cover, needs attention, tables with counts, backup and data file status | changing the home screen |
 | attention.html | Running low, expiring soon, days of cover with the working shown, and gaps worth filling in | changing the attention page |
 | count.html | Count this batch: the count, its review and what was saved | changing the stocktake wording |
@@ -722,6 +726,7 @@ How to run them is in AGENTS.md.
 | test_server.py | Tests for starting, protecting and safely closing the local web server. | changing startup or closing |
 | test_watch.py | Tests for running low, expiring soon and days of cover, and for checking `watch` sections. | changing watch rules |
 | test_charts.py | Tests for the first charts (decision 0109): the drinking-water breakdown, one pet's weigh-ins and the SVG drawing. | changing a chart |
+| test_calendars_and_trends.py | Tests for month calendars and trends on the dots chart (decision 0119): declarations, the household's day, looks, words, ranges, changes, structure and modules switched off. | changing a calendar, range presets, change words or the line |
 | test_module_vehicle_running.py | Tests for the Vehicle running log: odometer readings and service estimates beside Vehicles (decision 0111). | changing readings, estimates, gentle checks or listed-under sections |
 | test_gaps.py | Tests for gaps: details worth filling in, declared in a table's `watch.gaps` and asked as questions. | changing gaps |
 | test_examples.py | Tests for the example households: each loads cleanly and shows exactly what it was written to show. | changing an example household |
@@ -783,6 +788,6 @@ How to run them is in AGENTS.md.
 | load_example.py | Load a made-up example household into an empty data folder, for demos, screenshots and testing. | demonstrating or testing with realistic data |
 | make_screenshots.py | Make the example screenshots: run each example household through every stage of using the dashboard. | the screens changed and the gallery needs remaking |
 | screenshots.js | Browser steps for make_screenshots.py (Node and Playwright) | changing how screenshots are taken |
-| browser_check.py | Click through the real dashboard in Chromium (setup, Set up my home, dates, stock in, stocktake, Mark returned, Mark done, Things to do, spreadsheet import, Review keys and buttons, readiness questions, Think it through drills, charts, the way-out sketch, pet feeding at 320px, vehicle running log, Bills and a moved car insurance reminder, Utilities with Our home off, private details, closing) and fail loudly. | a screen or its browser code changed |
+| browser_check.py | Click through the real dashboard in Chromium (setup, Set up my home, dates, stock in, stocktake, Mark returned, Mark done, Things to do, spreadsheet import, Review keys and buttons, readiness questions, Think it through drills, charts, the way-out sketch, pet feeding at 320px, calendars and weight trends at 320px, vehicle running log, Bills and a moved car insurance reminder, Utilities with Our home off, private details, closing) and fail loudly. | a screen or its browser code changed |
 | browser_check.js | Browser steps for browser_check.py (Node and Playwright): what is clicked and checked | changing what the browser check clicks |
 | make_project_map.py | Build PROJECT_MAP.md from every INDEX.md in the repository. | changing the map format |
