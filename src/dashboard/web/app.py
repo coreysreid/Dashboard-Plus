@@ -274,6 +274,8 @@ def create_app(shutdown_token: str, on_shutdown: Callable[[], None], report=None
     app.register_blueprint(chart_pages)
     from dashboard.web.daily_pages import daily_pages
     app.register_blueprint(daily_pages)
+    from dashboard.web.calendar_pages import calendar_pages  # month calendars (decision 0119)
+    app.register_blueprint(calendar_pages)
     from dashboard.web.drills import drill_pages
     app.register_blueprint(drill_pages)
     from dashboard.web.exit_sketch import exit_pages

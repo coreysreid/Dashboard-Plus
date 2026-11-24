@@ -244,12 +244,15 @@ def build(conn: sqlite3.Connection, registry: dict[str, TableInfo], app_version:
     """The export as the bytes of one zip file, read from one consistent moment in the database."""
     made = (now or datetime.now(timezone.utc)).replace(microsecond=0)
     files: dict[str, bytes] = {}
-    tables, modules = [], {}
+    tables, modules, private_tables = [], {}, []
     conn.execute("BEGIN")  # one read transaction: every table is read as of the same instant
     try:
         snap = _Snapshot(conn, registry)
         for info in registry.values():
             modules[info.module.name] = info.module
+            if info.table.private:  # private history, such as medicine doses, is never written here (0120)
+                private_tables.append(display.table_title(info))
+                continue
             data, facts = _table_file(snap, info, include_deleted)
             files[f"{info.name}.csv"] = data
             tables.append({"file": f"{info.name}.csv", "module": info.module.name, "table": info.table.name,
@@ -262,6 +265,7 @@ def build(conn: sqlite3.Connection, registry: dict[str, TableInfo], app_version:
         "modules": [{"name": m.name, "title": m.title, "version": m.version} for m in modules.values()],
         "tables": tables,
         "private_columns": "Columns marked private are left out of every file; each table lists them above by label only.",
+        "private_tables_left_out": private_tables,
         "formula_guard": "A text cell starting with = + - @, a tab or a line return has an apostrophe added in front.",
     }
     listing = "".join(f"- {t['file']}: {t['title']} ({t['rows']} record{'' if t['rows'] == 1 else 's'})\n" for t in tables)
@@ -269,6 +273,9 @@ def build(conn: sqlite3.Connection, registry: dict[str, TableInfo], app_version:
     left_out = [(t["title"], t["left_out_as_private"]) for t in tables if t["left_out_as_private"]]
     notes = ("Left out because they are private:\n" + "".join(f"- {title}: {', '.join(labels)}\n" for title, labels in left_out)
              if left_out else "Nothing private was left out because no table has private columns.\n")
+    if private_tables:
+        notes += ("Whole lists left out because every record in them is private history: "
+                  + ", ".join(private_tables) + ". They stay in Dashboard Plus and in your backups.\n")
     deleted = ("Deleted records are included, with the date each was deleted in the \"Deleted on\" column.\n"
                if include_deleted else "Records you deleted are not included.\n")
     readme = README.format(made=f"{made.day} {made:%B %Y at %H:%M} UTC", version=app_version, files=listing,

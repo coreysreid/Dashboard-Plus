@@ -76,6 +76,10 @@ STAGES = [
     ("17-pet", "One pet's page", "Its details, its recorded weights as dots with the same values in a table, "
      "and buttons to add treatments, weigh-ins and vet visits.",
      {"goto": "/t/pets__pets/{id:pets__pets:pet}", "module": "pets"}),
+    ("17b-pet-weights", "A pet's weights over the last year", "Last 3 months, Last year or All dates; the change "
+     "since the reading before and since the start of the range in words; a line between readings that starts "
+     "from a scale at zero.", {"goto": "/charts/pets__weigh_ins?subject={id:pets__pets:pet}&range=1y",
+                               "module": "pets"}),
     ("18-pet-sheet", "Pet details sheet", "As it prints: for a sitter, a kennel or an evacuation centre.",
      {"goto": "/sheet/pets/pets", "media": "print", "module": "pets"}),
     ("18b-first-aid", "First aid kits", "Each kit, where it is kept and when it is next checked.",
@@ -141,6 +145,9 @@ STAGES = [
      {"goto": "/to-do", "module": "routines"}),
     ("18w-things-to-do-month", "Things to do, This month", "The calendar month by week, from the dates the household "
      "recorded; a task with no date is under No date yet.", {"goto": "/to-do/month", "module": "routines"}),
+    ("18wa-things-to-do-calendar", "Things to do, Calendar", "The routines' month: each Done or Skipped on the day "
+     "it happened and each routine's next date once, every mark with its own symbol as well as a colour, a legend "
+     "and the same days in words.", {"goto": "/to-do/calendar", "module": "routines"}),
     ("18x-routines", "Routines", "The household's own repeating tasks: the repeat it chose, the next date and when "
      "each was last done.", {"goto": "/t/routines__routines", "module": "routines"}),
     ("18y-drills", "Think it through", "Eight calm practice runs, the emergency number for the household's country "
@@ -154,10 +161,18 @@ STAGES = [
     ("18zb-feeding-phone", "Food put out, on a phone", "The same day at 320 pixels wide, for one-handed entry.",
      {"goto": "/daily/pet_feeding__servings?subject={id:pets__pets:pet}&day={yesterday}", "module": "pet_feeding",
       "width": PHONE_WIDTH}),
+    ("18zbb-feeding-calendar-phone", "Feeding calendar, on a phone", "One pet's month at 320 pixels wide: a day "
+     "with feedings shows ● and how many; a blank day only means nothing was recorded, never a missed meal.",
+     {"goto": "/calendar/pet_feeding__servings?subject={id:pets__pets:pet}", "module": "pet_feeding",
+      "width": PHONE_WIDTH}),
     ("18zc-feeding-sheet", "Pet feeding log sheet", "As it prints: every entry of the last 14 days with each day's "
      "totals by unit, and \"Food put out, not necessarily eaten\"; notes are left off.",
      {"goto": "/daily/pet_feeding__servings/sheet?subject={id:pets__pets:pet}", "media": "print",
       "module": "pet_feeding"}),
+    ("18zd-doses", "Medicine given, one person's day", "Medicine doses: how many doses and when, with who gave "
+     "them; the medicine and amounts stay hidden until Show details, and nothing says a dose was missed.",
+     {"goto": "/daily/medicine_doses__doses?subject={id:people__people:person}&day={yesterday}",
+      "module": "medicine_doses", "width": PHONE_WIDTH}),
     ("19-needs-attention", "Needs attention", "Days of water with the working shown, running low, use-by "
      "and due dates, and details worth filling in.", {"goto": "/attention"}),
     ("19b-drinking-water", "Drinking water counted today", "Each water item behind Home's days of water, as a "

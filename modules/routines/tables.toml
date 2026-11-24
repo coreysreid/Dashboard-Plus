@@ -67,3 +67,15 @@ columns.planned_for = { type = "date" }
 columns.done_on = { type = "date", required = true, default = "today" }
 columns.done_by = { type = "link", to = "people.people", on_delete = "clear" }
 columns.notes = { type = "longtext" }
+
+# A month calendar of every routine together (decision 0119): each Done or skipped on the day it happened, and each
+# routine's one next date from its reminder, shown once, never a row of missed days. Things to do has it as a tab.
+[tables.times.calendar]
+when = "done_on"
+per = "routine"
+show = "all"
+title = "Routines calendar"
+entry = ["time", "times"]
+state = "outcome"
+looks = { done = "done", skipped = "skipped" }
+due = true

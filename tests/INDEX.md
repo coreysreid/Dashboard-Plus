@@ -22,6 +22,7 @@ How to run them is in AGENTS.md.
 | test_server.py | Tests for starting, protecting and safely closing the local web server. | changing startup or closing |
 | test_watch.py | Tests for running low, expiring soon and days of cover, and for checking `watch` sections. | changing watch rules |
 | test_charts.py | Tests for the first charts (decision 0109): the drinking-water breakdown, one pet's weigh-ins and the SVG drawing. | changing a chart |
+| test_calendars_and_trends.py | Tests for month calendars and trends on the dots chart (decision 0119): declarations, the household's day, looks, words, ranges, changes, structure and modules switched off. | changing a calendar, range presets, change words or the line |
 | test_module_vehicle_running.py | Tests for the Vehicle running log: odometer readings and service estimates beside Vehicles (decision 0111). | changing readings, estimates, gentle checks or listed-under sections |
 | test_gaps.py | Tests for gaps: details worth filling in, declared in a table's `watch.gaps` and asked as questions. | changing gaps |
 | test_examples.py | Tests for the example households: each loads cleanly and shows exactly what it was written to show. | changing an example household |

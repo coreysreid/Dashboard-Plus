@@ -360,8 +360,8 @@ def _check_tables(helper: helpers.Helper, registry: dict, entries: list[tuple[st
     A table in a part it was not given is answered exactly like a table that does not exist. A link into such
     a part is refused the same way whatever ID is sent, so nothing is learned about records it cannot see."""
     for name, _values in entries:
-        if name not in registry or registry[name].module.name not in helper.modules:
-            raise ProposalError(404, "not_found", NOT_FOUND)
+        if name not in registry or registry[name].module.name not in helper.modules or registry[name].table.private:
+            raise ProposalError(404, "not_found", NOT_FOUND)  # a private table is not there for helpers (0120)
     hidden = sorted({field for name, values in entries for field in values
                      if field in {c.name for c in helpers.hidden_links(registry[name], helper, registry)}})
     if hidden:

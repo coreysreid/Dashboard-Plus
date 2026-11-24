@@ -511,6 +511,87 @@ function expect(condition, message) { if (!condition) throw new Failed(message);
     }
   }
 
+  async function checkCalendar() {  // Calendars and trends (decision 0119): month grids and range presets at 320px
+    const c = plan.calendar;
+    const fits = async (what) => {
+      const wide = await page.evaluate(() => document.documentElement.scrollWidth);
+      expect(wide <= 320, `At 320px ${what} is ${wide}px wide; it should not scroll sideways.`);
+    };
+    await page.setViewportSize({ width: 320, height: 800 });
+    try {
+      await goto('/t/pets__pets');
+      await Promise.all([page.waitForNavigation(), page.click(`a[aria-label="Open ${c.pet}"]`)]);
+      await fits(`${c.pet}'s page with its feeding calendar`);
+      await Promise.all([page.waitForNavigation(), page.click('a:has-text("Open the feeding calendar")')]);
+      await fits('the feeding calendar');
+      const heads = await page.locator('table.cal thead th').count();
+      expect(heads === 7, `The calendar should name 7 weekdays; it has ${heads}.`);
+      const today = page.locator('table.cal td[aria-current="date"]');
+      expect(await today.count() === 1, 'The calendar should mark today once.');
+      const said = await today.locator('.vh').innerText();
+      expect(said.includes(c.today), `Today's cell should say "${c.today}" in words; it says "${said}".`);
+      const symbol = await today.locator('.cal-chip').first().innerText();
+      expect(symbol.includes('●'), `A day with a feeding should show its symbol, not only a colour; it shows "${symbol}".`);
+      await page.focus('table.cal td[aria-current="date"] a.cal-num');
+      await page.keyboard.press('Enter');
+      expect(/-d-\d{4}-\d\d-\d\d$/.test(page.url()), `Choosing a day with the keyboard should go to its words; the page is at ${page.url()}.`);
+      await Promise.all([page.waitForNavigation(), page.click('a[rel=prev]')]);
+      expect((await text('main')).includes('A blank day has no feeding entry recorded'), 'The previous month should say what a blank day means.');
+      await goto('/to-do/calendar');
+      await fits('Things to do, Calendar');
+      const legend = await page.locator('.cal-legend li').count();
+      expect(legend === 5, `The routines legend should explain done, skipped, due, planned and a blank day; it has ${legend} lines.`);
+      await goto(`/charts/pets__weigh_ins`);
+      await Promise.all([page.waitForNavigation(), page.click('.chart-ranges a:has-text("Last year")')]);
+      await fits('the weights chart with a range chosen');
+      expect(await page.locator('.chart-ranges a[aria-current="page"]').innerText() === 'Last year', 'Last year should be marked as chosen.');
+      expect((await text('main')).includes('Since the reading before'), 'The weights page should say the change since the reading before.');
+      ok(`calendars at 320px: ${c.pet}'s feeding month with today in words and a symbol, keyboard reaches the day, routines legend of 5, weights for the last year with the change in words`);
+    } finally {
+      await page.setViewportSize({ width: 1280, height: 720 });
+    }
+  }
+
+  async function checkDoses() {  // Medicine doses (decision 0120): Record a dose at 320px, medicine behind Show, repeat asks
+    const d = plan.doses;
+    await page.setViewportSize({ width: 320, height: 800 });
+    try {
+      await goto('/t/people__people');
+      await Promise.all([page.waitForNavigation(), page.click(`a[aria-label="Open ${d.person}"]`)]);
+      const personUrl = new URL(page.url()).pathname;
+      expect((await text('main')).includes('Medicine given today'), `${d.person}'s page should show "Medicine given today".`);
+      expect(!(await html()).includes(d.secret), `${d.person}'s page sent the medication detail before Show was pressed.`);
+      await Promise.all([page.waitForNavigation(), page.click('a[data-add-entry]')]);
+      const wide = await page.evaluate(() => document.documentElement.scrollWidth);
+      expect(wide <= 320, `At 320px the Record a dose form is ${wide}px wide; it should not scroll sideways.`);
+      expect(!(await html()).includes(d.secret), 'The Record a dose form sent the medication detail before Show was pressed.');
+      expect(await page.inputValue('#f-amount') === '', 'Record a dose must not fill in an amount from an earlier dose.');
+      await page.click('[data-reveal-link]');
+      await page.locator('#f-medication-shown', { hasText: d.secret }).waitFor({ timeout: 5000 });
+      await submit('button[name=then][value=back]');
+      expect(new URL(page.url()).pathname === personUrl, `Saving a dose should come back to ${d.person}'s page.`);
+      expect((await text('main')).includes('1 dose entry recorded today'), 'After saving, the page should say "1 dose entry recorded today".');
+      await Promise.all([page.waitForNavigation(), page.click('a[data-add-entry]')]);
+      await Promise.all([page.waitForNavigation(), page.click('button[name=then][value=back]')]);
+      expect((await text('#confirm-box')).includes(d.repeat), `A second dose straight away should ask: "${d.repeat}".`);
+      expect((await text('#confirm-save')) === d.keep, `The repeat question's button should say "${d.keep}".`);
+      await submit('#confirm-save');
+      expect((await text('main')).includes('2 dose entries recorded today'), 'Keep this as another dose should save the second dose.');
+      await Promise.all([page.waitForNavigation(), page.click('text=Dose history')]);
+      expect(!(await html()).includes(d.secret), 'The dose history sent the medication detail before Show details was pressed.');
+      await submit('button[data-show-details]');
+      expect((await html()).includes(d.secret), 'Show details on the dose history should show the medicine.');
+      const pwide = await page.evaluate(() => document.documentElement.scrollWidth);
+      expect(pwide <= 320, `At 320px the dose history is ${pwide}px wide; it should not scroll sideways.`);
+      await goto('/');
+      const home = await text('main');
+      expect(!home.includes('Medicine doses') && !home.includes('Medicine given'), 'Home should never list medicine doses.');
+      ok(`medicine doses at 320px: recorded from ${d.person}'s page, medicine only on Show, a repeat asked first, not on Home`);
+    } finally {
+      await page.setViewportSize({ width: 1280, height: 720 });
+    }
+  }
+
   async function checkRunning() {  // Vehicle running log (decision 0111): a lower reading asks first, quotes behind Show
     const r = plan.running;
     await goto('/t/vehicles__vehicles');
@@ -721,6 +802,8 @@ function expect(condition, message) { if (!condition) throw new Failed(message);
       if (plan.charts) await checkCharts();
       if (plan.exit) await checkExitSketch();
       if (plan.feeding) await checkFeeding();
+      if (plan.calendar) await checkCalendar();
+      if (plan.doses) await checkDoses();
       if (plan.running) await checkRunning();
       if (plan.drills) await checkDrills();
       if (plan.bills) await checkBills();

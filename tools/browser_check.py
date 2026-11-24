@@ -1,4 +1,4 @@
-"""Click through the real dashboard in Chromium (setup, Set up my home, dates, stock in, stocktake, Mark returned, Mark done, Things to do, spreadsheet import, Review keys and buttons, readiness questions, Think it through drills, charts, the way-out sketch, pet feeding at 320px, vehicle running log, Bills and a moved car insurance reminder, Utilities with Our home off, private details, closing) and fail loudly."""
+"""Click through the real dashboard in Chromium (setup, Set up my home, dates, stock in, stocktake, Mark returned, Mark done, Things to do, spreadsheet import, Review keys and buttons, readiness questions, Think it through drills, charts, the way-out sketch, pet feeding at 320px, calendars and weight trends at 320px, medicine doses at 320px, vehicle running log, Bills and a moved car insurance reminder, Utilities with Our home off, private details, closing) and fail loudly."""
 from __future__ import annotations
 
 import argparse
@@ -44,6 +44,8 @@ AU = {"household": "smith", "locale": "en-AU", "timezone": "Australia/Sydney",
       "exit": {"room": "Main bedroom", "words": ["Practice aid only.", "call 000", "Only one way out recorded"]},
       # Pet feeding log (decision 0110): Rex's last bowl was 120 g yesterday, so Add food shows 120 g to check.
       "feeding": {"pet": "Rex", "amount": "120", "unit": "g", "after": "Recorded today: 120 g put out"},
+      # Calendars and trends (decision 0119): after Add food, today's cell says it in words, at 320px.
+      "calendar": {"pet": "Rex", "today": "today: 1 feeding recorded"},
       # Vehicle running log (decision 0111): the Family car's two readings in km, a lower one asks first.
       "running": {"vehicle": "Family car", "service": "Family car: Routine service", "last": "48,500 km",
                   "lower": "48000", "amount": "410.00"},
@@ -65,7 +67,11 @@ US = {"household": "garcia", "locale": "en-US", "timezone": "America/Los_Angeles
       "optional": {"service": "Apartment electricity", "meter": "Apartment electricity meter",
                    "kept": "Meter link saved; switch on Our home to see it.",
                    "keptHelp": "A meter link is saved. Switch on Our home to see or change it.",
-                   "offHelp": "Meter places are available if you switch on Our home. You can save this service without one."}}
+                   "offHelp": "Meter places are available if you switch on Our home. You can save this service without one."},
+      # Medicine doses (decision 0120): Rosa's one medication detail, hidden until Show; a second dose asks first.
+      "doses": {"person": "Rosa Garcia", "secret": "Metformin",
+                "repeat": "A dose of this medicine is already recorded for this person near this time.",
+                "keep": "Keep this as another dose"}}
 
 
 class CheckFailed(Exception):
@@ -181,7 +187,8 @@ def run_au(work: Path, executable: str | None) -> list[str]:
             conn.close()
         done += drive(dict(plan, dates=AU["dates"], stock=AU["stock"], private=AU["private"], loan=AU["loan"],
                            job=AU["job"], routine=AU["routine"], csv=AU["csv"], review=AU["review"], questions=AU["questions"],
-                           charts=AU["charts"], exit=AU["exit"], feeding=AU["feeding"], drills=AU["drills"],
+                           charts=AU["charts"], exit=AU["exit"], feeding=AU["feeding"], calendar=AU["calendar"],
+                           drills=AU["drills"],
                            running=dict(AU["running"], at=date.today().isoformat() + "T10:00")), work,
                            "main")
         closed = True
@@ -199,7 +206,7 @@ def run_us(work: Path, executable: str | None) -> list[str]:
     try:
         done = drive({"base": base, "launch": launch, "locale": US["locale"], "timezone": US["timezone"],
                       "executablePath": executable, "dates": US["dates"], "optional": US["optional"],
-                      "bills": US["bills"]}, work, "main")
+                      "bills": US["bills"], "doses": US["doses"]}, work, "main")
         closed = True
     finally:
         stop_server(process, closed)

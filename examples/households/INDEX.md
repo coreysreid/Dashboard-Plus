@@ -7,5 +7,5 @@ Load one with: `python tools/load_example.py smith --data <an empty folder>`.
 | Entry | What it is | Open it when |
 |---|---|---|
 | smith.toml | The Smith family: two parents, two children, a dog and a cat; Australia | showing a busy family |
-| garcia.toml | The Garcia household: three generations, care needs and medication, a cat; United States | showing care needs |
+| garcia.toml | The Garcia household: three generations, care needs, medication with two recorded doses, a cat; United States | showing care needs |
 | taylor.toml | Sam Taylor: one person just starting, with gaps to fill; United Kingdom | showing a first week |

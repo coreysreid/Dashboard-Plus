@@ -85,6 +85,23 @@
       input.addEventListener("blur", function () { setTimeout(close, 150); });
     });
   })();
+  // Show the chosen record's private words (a medication detail) only when asked; changing the choice hides them
+  // again. The words are fetched for that one record, never sent with the page (decision 0120).
+  (function () {
+    document.querySelectorAll("[data-reveal-link]").forEach(function (button) {
+      var select = document.getElementById(button.dataset.for), out = document.getElementById(button.dataset.for + "-shown");
+      if (!select || !out) return;
+      select.addEventListener("change", function () { out.textContent = ""; out.hidden = true; });
+      button.addEventListener("click", function () {
+        if (!select.value) { out.textContent = "Choose one first."; out.hidden = false; return; }
+        fetch(button.dataset.revealLink.replace("{id}", encodeURIComponent(select.value)), {credentials: "same-origin"})
+          .then(function (r) { return r.ok ? r.json() : null; }).then(function (found) {
+            out.textContent = found ? found.text : "This could not be shown. Open the person's page to check it.";
+            out.hidden = false;
+          });
+      });
+    });
+  })();
   // "Which batch" lists only the batches of the item chosen, and follows the item when it changes.
   // The server checks again when saving, so this is a convenience, not the safeguard.
   (function () {

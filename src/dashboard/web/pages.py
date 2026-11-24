@@ -201,6 +201,8 @@ def _render_form(info, store, values, errors, from_form, record=None, status=200
     related = []
     if record and not record.get("deleted_at"):
         for other, column in store._dependents(info):
+            if other.table.private:  # private history is added from its own panel, never offered here (0120)
+                continue
             # An action that adds these records may give this button clearer words (decision 0091).
             words = next((a["adds"]["add_button"] for a in info.table.actions if a.get("adds") and
                           a["adds"]["table"] == other.table.name and a["adds"]["link"] == column.name), None)
@@ -218,9 +220,13 @@ def _render_form(info, store, values, errors, from_form, record=None, status=200
     if record and not record.get("deleted_at"):
         from dashboard.web.daily_pages import record_panels
         feeding = record_panels(store, info, record)
+    month_calendars = []  # this month's calendar of what was recorded for this record (decision 0119)
+    if record and not record.get("deleted_at"):
+        from dashboard.web.calendar_pages import record_panels as calendar_panels
+        month_calendars = calendar_panels(store, info, record)
     return render_template("form.html", info=info, title=display.table_title(info), fields=fields, record=record,
                            record_name=record_name, errors=errors, history=history, saved=saved, charts=charts,
-                           feeding=feeding,
+                           feeding=feeding, month_calendars=month_calendars,
                            related=related, back=back, batches=batches, count_href=count_href,
                            under=_under(store, info, record) if record and not record.get("deleted_at") else [],
                            confirm=confirm_warnings or [], then=then, moves=_moves(store, info, record),
@@ -299,6 +305,9 @@ def new_record(table):
         column = info.table.columns[name]
         if column.type == "link" and value.isdecimal() and value.isascii():
             back = f"/t/{schema.target_table(info.module.name, column)}/{value}"
+    per = info.table.daily.get("per") if info.table.daily else None
+    if per and str(from_address.get(per, "")).isdecimal() and str(from_address[per]).isascii():  # back to the subject
+        back = f"/t/{schema.target_table(info.module.name, info.table.columns[per])}/{from_address[per]}"
     notice = None  # remembered choices are shown for checking, never saved unseen (decision 0110)
     if request.args.get("from") == "last" and info.table.daily:
         notice = {"words": "Filled in from a recent entry. Check each answer before you save."}
@@ -317,7 +326,28 @@ def _held(info, store, values: dict, record: dict | None) -> list:
     changed = record is None or any(record.get(k) != v for k, v in cleaned.items())
     if changed:
         found += reminder_moves.warnings(store, info, whole, record["id"] if record else None)
+    if changed and info.table.daily.get("repeat", {}).get("form"):
+        found += _repeat_warnings(store, info, whole, record["id"] if record else None)
     return confirm.unconfirmed(found, request.form.getlist("_confirm"))
+
+
+def _repeat_warnings(store, info, whole: dict, record_id: int | None) -> list:
+    """A possible repeat asked on the household's own form (decision 0120), such as a second dose of the same
+    medicine for the same person close in time: the time of the entry already saved, then Go back or Keep. A real
+    second entry stays possible, and a double press of Save is caught here instead of saving twice."""
+    import hashlib
+    from dashboard.core import daily
+    from dashboard.web.daily_pages import clock_text
+    rule = info.table.daily
+    found = daily.form_repeats(store.conn, info, whole, daily.household_zone(store.conn), record_id)
+    if not found:
+        return []
+    style = dates.household_style(store.conn)
+    times = ", ".join(f"{clock_text(m['row']['_local'])} on {dates.show(m['row']['_day'], style)}" for m in found[:3])
+    checked = "@".join(str(whole.get(c)) for c in [rule["per"], rule["when"], *rule["repeat"]["same"]])
+    token = f"repeat-{hashlib.sha256(checked.encode()).hexdigest()[:16]}"
+    return [confirm.Warning("repeat", rule["when"], f"{rule['repeat']['form']} Already recorded: {times}.", token,
+                            rule["repeat"]["keep"])]
 
 
 @pages.post("/t/<table>/new")

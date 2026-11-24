@@ -436,6 +436,71 @@ class Records:
         if problems:
             raise ValidationError(problems)
 
+    @staticmethod
+    def _fits(rule: dict, target: dict, record: dict) -> bool:
+        """True if the linked record `target` is one `record` may point at under a column's `link_rule` (0120)."""
+        if any(target.get(name) != value for name, value in rule["where"].items()):
+            return False
+        for name, local in rule["same"].items():
+            mine, theirs = record.get(local), target.get(name)
+            if mine in (None, "") or theirs in (None, "") or int(mine) != int(theirs):
+                return False
+        return True
+
+    def _rule_words(self, info: TableInfo, column: Column) -> str:
+        """Why a linked record does not fit a column's `link_rule`: labels.toml `mismatch`, or plain words."""
+        own = info.module.labels.get("tables", {}).get(info.table.name, {}).get("columns", {}) \
+            .get(column.name, {}).get("mismatch")
+        if own:
+            return own
+        target = self.registry.get(target_table(info.module.name, column))
+        parts = []
+        for name, value in column.link_rule["where"].items():
+            choice = target.table.columns[name].choices if target is not None else []
+            parts.append(f"a “{next((c.label for c in choice if c.key == value), value)}” one")
+        parts += [f"one for the same “{self._label(info, local)}”" for local in column.link_rule["same"].values()]
+        return "must be " + " and ".join(parts) + ". Choose one that fits."
+
+    def link_rule_problems(self, info: TableInfo, record: dict) -> dict[str, str]:
+        """Links that point at a record their `link_rule` does not allow (decision 0120), such as a dose's medicine
+        that is another person's, or an allergy rather than a medication. Checked on every save, never trusted to
+        the form's list: a crafted form, an old page or a changed record are all refused the same way."""
+        problems = {}
+        for column in info.table.columns.values():
+            value = record.get(column.name)
+            if not column.link_rule or value in (None, ""):
+                continue
+            target = self.registry.get(target_table(info.module.name, column))
+            row = self.conn.execute(f"SELECT * FROM {target.name} WHERE id = ?", (int(value),)).fetchone() \
+                if target is not None else None
+            if target is None:
+                problems[column.name] = "can't be checked while the list it links to is switched off."
+            elif row is None or not self._fits(column.link_rule, dict(row), record):
+                problems[column.name] = self._rule_words(info, column)
+        return problems
+
+    def _check_link_rules(self, info: TableInfo, record: dict) -> None:
+        problems = self.link_rule_problems(info, record)
+        if problems:
+            raise ValidationError(problems)
+
+    def _check_rule_dependents(self, info: TableInfo, record_id: int, current: dict, changed: dict) -> None:
+        """Refuse a change to a record that would leave records pointing at it outside their `link_rule`, such as
+        a medication detail moved to another person or turned into an allergy while doses point at it (0120)."""
+        for other, column in self._dependents(info):
+            rule = column.link_rule
+            watched = sorted((set(rule.get("where", {})) | set(rule.get("same", {}))) & set(changed)) if rule else []
+            if not watched:
+                continue
+            after = dict(current, **changed)
+            rows = [dict(r) for r in self.conn.execute(
+                f"SELECT * FROM {other.name} WHERE {column.name} = ? AND deleted_at IS NULL", (record_id,))]
+            bad = [r for r in rows if not self._fits(rule, after, r)]
+            if bad:
+                raise ValidationError({watched[0]: f"can't change while {len(bad)} {other.table.title.lower()} "
+                                                   f"record(s) point at it. Those entries keep it as it was; "
+                                                   f"add a new detail instead."})
+
     def _check_date_order(self, info: TableInfo, record: dict) -> None:
         """Refuse a date before the date it may not come before, like "Returned on" before "Lent on"."""
         problems = {}
@@ -561,6 +626,7 @@ class Records:
         self._check_date_order(info, cleaned)
         self._check_nesting(info, None, cleaned)
         self._check_pair(info, None, cleaned)
+        self._check_link_rules(info, cleaned)
         self._check_moves(info, None, None, cleaned)
         self._choose_batch(info, cleaned, None, actor, review_status, batch_id)
         stored = {k: v for k, v in cleaned.items() if info.table.columns[k].type != "links"}
@@ -843,10 +909,12 @@ class Records:
         self._check_date_order(info, dict(current, **cleaned))
         self._check_nesting(info, record_id, cleaned)
         self._check_pair(info, record_id, dict(current, **cleaned))
+        self._check_link_rules(info, dict(current, **cleaned))
         self._choose_batch(info, cleaned, current, actor)
         changed = {k: v for k, v in cleaned.items() if current.get(k) != v}
         if changed:
             self._check_moves(info, record_id, current, changed)
+            self._check_rule_dependents(info, record_id, current, changed)
         total = info.table.total
         if total and total["link"] in changed and self._has_movements(info, record_id):
             raise ValidationError({total["link"]: "can't change once stock in or out is recorded for this "
@@ -965,6 +1033,9 @@ class Records:
                         raise ValidationError({"restore": f"needs its “{self._label(info, column.name)}” back "
                                                f"first: restore that record in {target.table.title}, and this "
                                                f"one comes back with it."})
+            if self.link_rule_problems(info, row):  # its linked record changed since (decision 0120)
+                raise ValidationError({"restore": "can't be done: a record it links to has changed so that this "
+                                                  "entry no longer fits it. Add a new entry instead."})
             clash = self.pair_problems(info, record_id, row)
             if clash:  # the same two places were joined again since: keep that one (decision 0103)
                 raise ValidationError({"restore": "can't be done: these two are joined again already, by another "

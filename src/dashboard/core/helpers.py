@@ -307,8 +307,10 @@ def touch(conn, helper: Helper) -> None:
 
 
 def allowed_registry(registry: dict, helper: Helper) -> dict:
-    """The tables a helper may use: those of the modules switched on that the household ticked for it."""
-    return {name: info for name, info in registry.items() if info.module.name in helper.modules}
+    """The tables a helper may use: those of the modules switched on that the household ticked for it. A private
+    table (decision 0120), such as medicine doses, is never one of them: a helper cannot read or find it."""
+    return {name: info for name, info in registry.items()
+            if info.module.name in helper.modules and not info.table.private}
 
 
 def hidden_links(info, helper: Helper, registry: dict) -> list:

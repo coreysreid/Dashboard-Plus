@@ -14,8 +14,19 @@
 </ul></nav>
 {% endif %}
 <p class="daily-days"><a href="/daily/{{ table }}?subject={{ chosen.id }}&amp;day={{ view.before }}">Day before</a>{% if view.after %} · <a href="/daily/{{ table }}?subject={{ chosen.id }}&amp;day={{ view.after }}">Day after</a>{% endif %}{% if not view.is_today %} · <a href="/daily/{{ table }}?subject={{ chosen.id }}">Today</a>{% endif %}</p>
+{% if view.private %}{# private history (decision 0120): Show reveals the medicine and amounts, for this page only #}
+{% if view.rows %}{% if view.show %}<p><a class="button quiet" href="{{ view.hide_href }}" data-hide-details>Hide details</a></p>
+{% else %}<form method="post" action="/daily/{{ table }}" class="actions">{# a pressed button, never a link (decision 0071) #}
+  <input type="hidden" name="_csrf" value="{{ csrf_token }}">
+  <input type="hidden" name="subject" value="{{ view.subject_id }}"><input type="hidden" name="day" value="{{ view.day }}">
+  <button type="submit" class="quiet" data-show-details>Show details</button> <span class="muted">Shows what was given and how much, on this page only.</span>
+</form>{% endif %}{% endif %}
+{% include "_daily_private_panel.html" %}
+<p><a href="{{ view.subject_href }}">{{ view.name }}'s page</a></p>
+{% else %}
 {% include "_daily_panel.html" %}
-<p><a href="{{ view.sheet }}">Print: {{ view.rule.sheet }} (last 14 days, or dates you choose)</a> · <a href="{{ view.subject_href }}">{{ view.name }}'s page</a></p>
+<p>{% if view.calendar %}<a href="{{ view.calendar }}">See the month as a calendar</a> · {% endif %}<a href="{{ view.sheet }}">Print: {{ view.rule.sheet }} (last 14 days, or dates you choose)</a> · <a href="{{ view.subject_href }}">{{ view.name }}'s page</a></p>
+{% endif %}
 <style>
   .daily-who ul { list-style: none; padding: 0; display: flex; flex-wrap: wrap; gap: .3rem 1rem; }
 </style>

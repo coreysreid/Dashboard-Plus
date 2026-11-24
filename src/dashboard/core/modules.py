@@ -35,7 +35,7 @@ MODULE_KEYS = ("name", "title", "version", "description", "core_api", "kind", "r
                "outbound_hosts")
 MODULE_REQUIRED = ("name", "title", "version", "description", "core_api", "kind")
 TABLE_KEYS = ("title", "description", "columns", "watch", "adjusts", "parent", "total", "record_name", "actions",
-              "pair", "suggestions", "chart", "daily", "confirm", "takes_over")
+              "pair", "suggestions", "chart", "daily", "confirm", "takes_over", "calendar", "private")
 # One reminder per policy (decision 0117): records of an older list in another module (Vehicle insurance) that
 # the household may choose, one by one, to have reminded from this table instead. `where` is what such a record
 # is here (a vehicle policy), `copy` which of this table's columns take which of the other's, the date included.
@@ -46,14 +46,32 @@ TAKES_OVER_WORDS = ("title", "intro", "keep", "review", "later", "warning", "que
                     "duplicate", "duplicate_source", "back")
 # A chart of one subject's dated readings, such as one pet's weigh-ins as dots (decision 0109); `unit`, `latest`
 # and `caveat` let readings carry their own unit, as an odometer's km or mi, and say what they are (decision 0111).
-CHART_KEYS = ("kind", "x", "y", "per", "what", "entry", "subject", "unit", "latest", "caveat")
+CHART_KEYS = ("kind", "x", "y", "per", "what", "entry", "subject", "unit", "latest", "caveat", "ranges", "change",
+              "line", "scale")
+# Trends on a dots chart (decision 0119): date range presets, change since the last reading and since the start of
+# the range in words, a connecting line only where allowed (broken across long gaps), and a fitted value scale only
+# when asked for (with its start said on the axis); otherwise the scale starts at zero, as in 0109.
+CHART_RANGES = ("3m", "1y", "all")
+CHART_SCALES = ("zero", "fitted")
+# A month calendar of a table's dated or timed records by the household's own day (decision 0119). Each record has
+# one of a few fixed looks (colour, symbol and pattern together); a linked record's open due date is shown only when
+# the table says `due = true`, and an empty day is never called missed.
+CALENDAR_KEYS = ("when", "per", "show", "title", "entry", "state", "looks", "look", "due")
+CALENDAR_ENTRY_LOOKS = ("recorded", "done", "skipped")
+CALENDAR_SHOW = ("one", "all")
 # A gentle check before a form saves, such as an odometer reading lower than the last one: Go back, or Save as
 # entered. Never a block, and nothing is worked out from it (decision 0111).
 CONFIRM_KEYS = ("key", "when", "column", "per", "order", "among", "message", "later")
 CONFIRM_WHEN = ("lower", "different")
 CHART_KINDS = ("dots",)
 # Daily totals of one subject's timed entries by the household's own day, like a pet's feedings (decision 0110).
-DAILY_KEYS = ("when", "per", "amount", "unit", "entry", "what", "verb", "add", "sheet", "caveat", "repeat")
+DAILY_KEYS = ("when", "per", "amount", "unit", "entry", "what", "verb", "add", "sheet", "caveat", "repeat", "group")
+# `repeat` may also ask on the household's own form before saving (`form` is the sentence, `keep` the button that
+# saves anyway), for a table helpers never write to, such as medicine doses (decision 0120).
+REPEAT_KEYS_DAILY = ("minutes", "same", "form", "keep")
+# Which linked records a link may point at (decision 0120): `where` fixes choices of the linked record, `same` says
+# a link of the linked record must equal a link of this one, `shows` is its private column a person may Show.
+LINK_RULE_KEYS = ("where", "same", "shows")
 DAILY_WORDS = ("what", "verb", "add", "sheet", "caveat")
 # A record that joins two records of one table, like two rooms with a door between them (decision 0103).
 PAIR_KEYS = ("columns", "blank_when")
@@ -84,14 +102,15 @@ TOTAL_KEYS = ("link", "amount", "into", "earliest", "starts_from")
 WATCH_KEYS = ("running_low", "expiring", "supply", "gaps")
 GAP_KEYS = ("missing", "none", "where", "message")
 COLUMN_KEYS = ("type", "required", "required_when", "default", "min", "max", "unit", "choices", "help", "sensitive",
-               "to", "on_delete", "not_before", "travels", "travels_when", "with_place", "default_from")
+               "to", "on_delete", "not_before", "travels", "travels_when", "with_place", "default_from",
+               "link_rule")
 LABEL_TABLE_KEYS = ("title", "columns", "form", "list", "empty", "home", "actions", "add_button", "under",
                     "takes_over")
 # A table's records listed on the page of the record they link to, like a service's quotes (decision 0111).
 UNDER_KEYS = ("link", "title", "intro", "columns", "order", "reveal")
 LABEL_ACTION_KEYS = ("label", "done", "title", "intro", "undo")  # new words for an action's button, form, notice
 HOME_PLACES = ("main", "more")  # where a table sits on the home page: shown large, or in the line of links
-LABEL_COLUMN_KEYS = ("label", "help", "show_when", "suggest_from", "fills", "answers", "blank", "optional")
+LABEL_COLUMN_KEYS = ("label", "help", "show_when", "suggest_from", "fills", "answers", "blank", "optional", "mismatch")
 # The household words for a link into a module listed under optional_requires (decision 0115): the sentence
 # beside a hidden picker, a link kept while that module is off (on the form, and short for lists and sheets),
 # no link, and a saved link whose record is no longer there (short, and on the form with what to do).
@@ -139,6 +158,9 @@ class Column:
     # installed, so the link is hidden and kept as saved instead of being shown, changed or cleared.
     optional: bool = False
     default_from: str | None = None  # a household choice (HOUSEHOLD_CHOICES) that fills an empty form (0111)
+    # Decision 0120: which linked records may be chosen, checked on every save, like a medicine dose's medication,
+    # which must be a `kind = medication` detail of the same person: {"where": {...}, "same": {...}, "shows": ...}.
+    link_rule: dict = field(default_factory=dict)
 
 
 @dataclass
@@ -161,6 +183,10 @@ class Table:
     daily: dict = field(default_factory=dict)  # checked `daily`: totals by the household's own day (0110)
     confirm: list = field(default_factory=list)  # checked gentle checks before a form saves (decision 0111)
     takes_over: dict = field(default_factory=dict)  # checked `takes_over`: one reminder per policy (0117)
+    calendar: dict = field(default_factory=dict)  # checked `calendar`: a month grid by the household's day (0119)
+    # Decision 0120: every record is private history, such as medicine given. Never on Home, a sheet, a helper
+    # or the spreadsheet export; made only on this program's own screens (suggestions = false is required).
+    private: bool = False
 
 
 @dataclass
@@ -385,6 +411,18 @@ def _parse_column(file: str, table: str, name: str, raw, problems: list[str]) ->
         for key in ("to", "on_delete", "with_place"):
             if key in raw:
                 problems.append(f"{where}: '{key}' only applies to link columns.")
+    if "link_rule" in raw:
+        rule = raw["link_rule"]
+        parts = [rule.get(k, {}) for k in ("where", "same")] if isinstance(rule, dict) else []
+        if kind != "link" or not isinstance(rule, dict) or set(rule) - set(LINK_RULE_KEYS) \
+                or not all(isinstance(p, dict) and all(isinstance(v, str) and v for v in p.values()) for p in parts) \
+                or not any(parts) or ("shows" in rule and not isinstance(rule["shows"], str)):
+            problems.append(f"{where}: link_rule says which linked records may be chosen, like {{ where = {{ kind = "
+                            f"\"medication\" }}, same = {{ person = \"recipient\" }} }}, and only applies to a "
+                            f"single link.")
+        else:
+            column.link_rule = {"where": dict(rule.get("where", {})), "same": dict(rule.get("same", {})),
+                                "shows": rule.get("shows")}
     if "unit" in raw and kind not in ("measure", "decimal", "integer"):
         problems.append(f"{where}: 'unit' only applies to number columns.")
     return column
@@ -781,11 +819,32 @@ def _check_chart(file: str, table: Table, raw, problems: list[str]) -> dict:
     for key in ("latest", "caveat"):
         if key in raw and not (isinstance(raw[key], str) and raw[key].strip()):
             problems.append(f"{where}: '{key}' must be a few words, like \"Last recorded\".")
+    ranges = raw.get("ranges", [])
+    if not (isinstance(ranges, list) and ranges and all(isinstance(r, str) and r in CHART_RANGES for r in ranges)
+            and len(set(ranges)) == len(ranges)) and "ranges" in raw:
+        problems.append(f"{where}: 'ranges' must list some of \"3m\", \"1y\" and \"all\", each once, like "
+                        f"ranges = [\"3m\", \"1y\", \"all\"].")
+        ranges = []
+    if "change" in raw and not isinstance(raw["change"], bool):
+        problems.append(f"{where}: 'change' must be true or false.")
+    line, gap = raw.get("line", False), None
+    if isinstance(line, dict):
+        gap = line.get("gap_days")
+        if set(line) - {"gap_days"} or isinstance(gap, bool) or not isinstance(gap, int) or not 1 <= gap <= 3650:
+            problems.append(f"{where}: 'line' must be true, false or {{ gap_days = 365 }}: a whole number of days, "
+                            f"from 1 to 3650, after which the line is broken.")
+    elif not isinstance(line, bool):
+        problems.append(f"{where}: 'line' must be true, false or {{ gap_days = 365 }}.")
+    scale = raw.get("scale", "zero")
+    if scale not in CHART_SCALES:
+        problems.append(f"{where}: 'scale' must be \"zero\" (the scale starts at 0) or \"fitted\" (it starts near "
+                        f"the lowest reading and says so on the axis), not {scale!r}.")
     if len(problems) > before:
         return {}
     return {"kind": raw["kind"], "x": raw["x"], "y": raw["y"], "per": raw["per"], "what": list(raw["what"]),
             "entry": list(raw["entry"]), "subject": raw["subject"].strip(), "unit": raw.get("unit"),
-            "latest": raw.get("latest"), "caveat": raw.get("caveat")}
+            "latest": raw.get("latest"), "caveat": raw.get("caveat"), "ranges": list(ranges),
+            "change": bool(raw.get("change", False)), "line": bool(line), "gap_days": gap, "scale": scale}
 
 
 def _check_confirm(file: str, table: Table, raw, problems: list[str]) -> list[dict]:
@@ -854,10 +913,18 @@ def _check_daily(file: str, table: Table, raw, problems: list[str]) -> dict:
     if named["per"] is None or named["per"].type != "link" or not named["per"].required:
         problems.append(f"{where}: 'per' must name a required link column, so each total belongs to one subject.")
     amount, unit = named["amount"], named["unit"]
-    if amount is None or amount.type not in ("integer", "decimal", "measure") or amount.required or amount.sensitive:
+    private = table.private  # a private table's amounts are shown only after Show (decision 0120)
+    if amount is None or amount.type not in ("integer", "decimal", "measure") or amount.required or \
+            (amount.sensitive and not private):
         problems.append(f"{where}: 'amount' must name an optional number column that is not private.")
-    if unit is None or unit.type not in ("choice", "text") or unit.required or unit.sensitive:
+    if unit is None or unit.type not in ("choice", "text") or unit.required or (unit.sensitive and not private):
         problems.append(f"{where}: 'unit' must name an optional choice or text column that is not private.")
+    group = raw.get("group")
+    if group is not None and (not isinstance(group, str) or group not in table.columns
+                              or table.columns[group].type != "link" or not table.columns[group].required
+                              or group == raw.get("per")):
+        problems.append(f"{where}: 'group' must name another required link column, whose records each get their "
+                        f"own totals, like group = \"medication\".")
     words = raw.get("entry")
     if not (isinstance(words, list) and len(words) == 2 and all(isinstance(w, str) and w.strip() for w in words)):
         problems.append(f"{where}: 'entry' must be two words, singular then plural, like [\"feeding\", \"feedings\"].")
@@ -865,9 +932,15 @@ def _check_daily(file: str, table: Table, raw, problems: list[str]) -> dict:
         if not (isinstance(raw.get(key), str) and raw[key].strip()):
             problems.append(f"{where}: '{key}' must be the words to show, like {example}.")
     repeat = raw.get("repeat", {})
-    if not isinstance(repeat, dict) or set(repeat) - {"minutes", "same"}:
+    if not isinstance(repeat, dict) or set(repeat) - set(REPEAT_KEYS_DAILY):
         problems.append(f"{where}: 'repeat' must be like {{ minutes = 30, same = [\"food\", \"amount\"] }}.")
         repeat = {}
+    for key in ("form", "keep"):
+        if key in repeat and not (isinstance(repeat[key], str) and repeat[key].strip()):
+            problems.append(f"{where}: repeat '{key}' must be the words to show.")
+    if ("keep" in repeat) != ("form" in repeat):
+        problems.append(f"{where}: repeat 'form' (the sentence asked before saving) and 'keep' (the button that "
+                        f"saves anyway) go together.")
     minutes = repeat.get("minutes", 0)
     if repeat and (isinstance(minutes, bool) or not isinstance(minutes, int) or not 1 <= minutes <= 240):
         problems.append(f"{where}: repeat 'minutes' must be a whole number from 1 to 240.")
@@ -881,7 +954,70 @@ def _check_daily(file: str, table: Table, raw, problems: list[str]) -> dict:
     rule.update({k: raw[k].strip() for k in DAILY_WORDS})
     rule["entry"] = [w.strip() for w in raw["entry"]]
     rule["repeat"] = {"minutes": minutes, "same": list(same)} if repeat else {}
+    if repeat and "form" in repeat:
+        rule["repeat"].update(form=repeat["form"].strip(), keep=repeat["keep"].strip())
+    rule["group"] = group
     return rule
+
+
+def _check_calendar(file: str, module: str, table: Table, tables: dict[str, Table], raw,
+                    problems: list[str]) -> dict:
+    """Check `calendar`: a month grid of this table's dated or timed records by the household's own day, like a
+    pet's feedings or each time a routine was done or skipped (decision 0119). Looks are a fixed set, so every state
+    has a colour, a symbol and a pattern; `due = true` also shows the linked record's own open due date."""
+    where = f"In {file}, table '{table.name}', calendar"
+    example = ('[tables.times.calendar] with when = "done_on", per = "routine", show = "all", title = "Routines '
+               'calendar", entry = ["time", "times"]')
+    if not isinstance(raw, dict):
+        problems.append(f"{where}: write it as {example}.")
+        return {}
+    problems.extend(_unknown_keys(where, raw, CALENDAR_KEYS))
+    before = len(problems)
+    when, per = (table.columns.get(raw.get(k)) if isinstance(raw.get(k), str) else None for k in ("when", "per"))
+    if when is None or when.type not in ("date", "datetime") or not when.required:
+        problems.append(f"{where}: 'when' must name a required date or date-and-time column of this table.")
+    if per is None or per.type != "link" or not per.required:
+        problems.append(f"{where}: 'per' must name a required link column, so each mark belongs to one record.")
+    if raw.get("show") not in CALENDAR_SHOW:
+        problems.append(f"{where}: 'show' must be \"one\" (one record's month at a time, like one pet) or \"all\" "
+                        f"(every record together, like all routines), not {raw.get('show')!r}.")
+    if not (isinstance(raw.get("title"), str) and raw["title"].strip()):
+        problems.append(f"{where}: 'title' must be the calendar's name, like \"Feeding calendar\".")
+    words = raw.get("entry")
+    if not (isinstance(words, list) and len(words) == 2 and all(isinstance(w, str) and w.strip() for w in words)):
+        problems.append(f"{where}: 'entry' must be two words, singular then plural, like [\"feeding\", \"feedings\"].")
+    looks = raw.get("looks")
+    if "state" in raw:
+        state = table.columns.get(raw["state"]) if isinstance(raw["state"], str) else None
+        if state is None or state.type != "choice" or not state.required or state.sensitive:
+            problems.append(f"{where}: 'state' must name a required choice column of this table that is not private.")
+        elif not isinstance(looks, dict) or set(looks) != {c.key for c in state.choices} \
+                or any(v not in CALENDAR_ENTRY_LOOKS for v in looks.values()):
+            keys = ", ".join(c.key for c in state.choices)
+            problems.append(f"{where}: 'looks' must give each choice of '{raw['state']}' ({keys}) one of the looks "
+                            f"\"recorded\", \"done\" or \"skipped\", like looks = {{ done = \"done\", skipped = "
+                            f"\"skipped\" }}.")
+        if "look" in raw:
+            problems.append(f"{where}: use 'looks' for each choice of 'state', not 'look'.")
+    elif looks is not None:
+        problems.append(f"{where}: 'looks' needs 'state', the choice column whose choices it gives a look.")
+    if "look" in raw and raw["look"] not in CALENDAR_ENTRY_LOOKS:
+        problems.append(f"{where}: 'look' must be \"recorded\", \"done\" or \"skipped\", not {raw['look']!r}.")
+    due = raw.get("due", False)
+    if not isinstance(due, bool):
+        problems.append(f"{where}: 'due' must be true or false.")
+    elif due and per is not None and per.type == "link" and per.to:
+        other, _, name = per.to.partition(".") if "." in per.to else (module, ".", per.to)
+        target = tables.get(name) if other == module else None
+        expiring = (target.watch or {}).get("expiring") if target is not None else None
+        if not expiring or expiring.get("wording") != "due":
+            problems.append(f"{where}: 'due = true' shows the open due date of the record '{raw.get('per')}' points "
+                            f"at, so that table must be in this module and have a reminder with wording = \"due\".")
+    if len(problems) > before:
+        return {}
+    return {"when": raw["when"], "per": raw["per"], "show": raw["show"], "title": raw["title"].strip(),
+            "entry": [w.strip() for w in raw["entry"]], "state": raw.get("state"), "looks": dict(looks or {}),
+            "look": raw.get("look", "recorded"), "due": due}
 
 
 def _check_record_name(file: str, table: Table, tables: dict[str, Table], template, problems: list[str]) -> str | None:
@@ -950,6 +1086,18 @@ def _check_tables(module: str, data: dict, requires: list[str], problems: list[s
                 tables[tname].suggestions = raw["suggestions"]
             else:
                 problems.append(f"{where}: 'suggestions' must be true or false.")
+        if "private" in raw:  # decision 0120: the whole table is private history
+            if not isinstance(raw["private"], bool):
+                problems.append(f"{where}: 'private' must be true or false.")
+            elif raw["private"]:
+                tables[tname].private = True
+                if tables[tname].suggestions:
+                    problems.append(f"{where}: a private table must also say suggestions = false, so no helper or "
+                                    f"spreadsheet import can add to it.")
+                for key in ("watch", "chart", "actions", "takes_over"):
+                    if key in raw:
+                        problems.append(f"{where}: a private table can't use '{key}', which would show its records "
+                                        f"on other pages.")
     for table in tables.values():
         _check_travels_when(file, table, problems)
         for column in table.columns.values():
@@ -983,6 +1131,9 @@ def _check_tables(module: str, data: dict, requires: list[str], problems: list[s
                 tables[tname].chart = _check_chart(file, tables[tname], raw["chart"], problems)
             if "daily" in raw:
                 tables[tname].daily = _check_daily(file, tables[tname], raw["daily"], problems)
+            if "calendar" in raw:
+                tables[tname].calendar = _check_calendar(file, module, tables[tname], tables, raw["calendar"],
+                                                         problems)
             if "confirm" in raw:
                 tables[tname].confirm = _check_confirm(file, tables[tname], raw["confirm"], problems)
             if "takes_over" in raw:
@@ -1013,6 +1164,16 @@ def _check_tables(module: str, data: dict, requires: list[str], problems: list[s
                 elif column.to not in tables:
                     problems.append(f"{where}: it points at a table '{column.to}' that this module does not declare."
                                     f"{_suggest(column.to, list(tables))}")
+    for table in tables.values():
+        for column in table.columns.values():
+            for local in column.link_rule.get("same", {}).values():
+                other = table.columns.get(local)
+                if other is None or other is column or other.type != "link" or column.optional or other.optional:
+                    problems.append(f"In {file}, table '{table.name}', column '{column.name}': link_rule 'same' "
+                                    f"must name another link column of this table, like same = {{ person = "
+                                    f"\"recipient\" }}.")
+                    column.link_rule = {}
+                    break
     for table in tables.values():
         for column in table.columns.values():
             if column.not_before is not None:
@@ -1508,7 +1669,13 @@ def _check_labels(data: dict, tables: dict[str, Table], problems: list[str]) -> 
                 if "optional" in craw:
                     _check_optional_words(f"{where}, column '{cname}'", tables[tname].columns.get(cname),
                                           craw["optional"], problems)
-                if "blank" in craw:  # the words for leaving "Which batch" blank (DESIGN.md 5.7)
+                column = known[cname]
+                if "blank" in craw and isinstance(craw["blank"], str):  # "I do not know" for an optional link (0120)
+                    if not craw["blank"].strip() or column.type != "link" or column.required or \
+                            (tables[tname].adjusts or {}).get("link") == cname:
+                        problems.append(f"{where}, column '{cname}': blank as words, like blank = \"I do not know\", "
+                                        f"only applies to an optional single link.")
+                elif "blank" in craw:  # the words for leaving "Which batch" blank (DESIGN.md 5.7)
                     blank = craw["blank"]
                     rule = tables[tname].adjusts or {}
                     if not isinstance(blank, dict) or not blank or set(blank) - {"adds", "takes"} or \
@@ -1620,6 +1787,9 @@ def _check_sheets(data: dict, tables: dict[str, Table], problems: list[str]) -> 
             if table not in tables:
                 problems.append(f"{s_where}: 'table' names '{table}', which this module does not declare."
                                 f"{_suggest(table, list(tables))}")
+                continue
+            if tables[table].private:  # decision 0120: private history is never printed on an ordinary sheet
+                problems.append(f"{s_where}: '{table}' is a private table, so no sheet may print it.")
                 continue
             columns = tables[table].columns
             chosen = section.get("columns", [])
@@ -1929,6 +2099,41 @@ def _takes_over_problems(module: Module, by_name: dict[str, Module]) -> list[str
     return problems
 
 
+def _link_rule_problems(module: Module, by_name: dict[str, Module]) -> list[str]:
+    """`link_rule` once the linked module is loaded (decision 0120): `where` names choice columns of the linked table
+    and their choices, `same` links of it that point where this table's own link points, and `shows` one of its
+    private text columns. None of the compared columns may be private: the check must never read a secret."""
+    problems = []
+    for table in module.tables.values():
+        for column in table.columns.values():
+            rule = column.link_rule
+            if not rule:
+                continue
+            where = f"In tables.toml, table '{table.name}', column '{column.name}', link_rule"
+            other, _, other_table = _linked_name(module.name, column).partition(".")
+            target = by_name[other].tables.get(other_table) if other in by_name else None
+            if target is None:
+                problems.append(f"{where}: '{column.to}' could not be found.")
+                continue
+            for name, value in rule["where"].items():
+                found = target.columns.get(name)
+                if found is None or found.type != "choice" or found.sensitive or \
+                        value not in [c.key for c in found.choices]:
+                    problems.append(f"{where}: where '{name}' must be a choice column of '{column.to}' that is not "
+                                    f"private, and '{value}' one of its choices.")
+            for name, local in rule["same"].items():
+                found = target.columns.get(name)
+                if found is None or found.type != "link" or found.sensitive or \
+                        _linked_name(other, found) != _linked_name(module.name, table.columns[local]):
+                    problems.append(f"{where}: same '{name}' must be a link column of '{column.to}' that points "
+                                    f"where '{local}' points.")
+            shows = rule.get("shows")
+            if shows is not None and (shows not in target.columns or not target.columns[shows].sensitive
+                                      or target.columns[shows].type not in ("text", "longtext")):
+                problems.append(f"{where}: shows '{shows}' must be a private text column of '{column.to}'.")
+    return problems
+
+
 def _linked_name(module: str, column: Column) -> str:
     """The module and table a link points at, as "vehicles.vehicles"."""
     return column.to if "." in column.to else f"{module}.{column.to}"
@@ -1969,6 +2174,7 @@ def dependency_order(modules: list[Module], failures: dict[str, list[str]]) -> l
             state[module.name] = "failed"
             return False
         problems = _cross_module_gap_problems(module, by_name) + _cross_module_sheet_problems(module, by_name)
+        problems += _link_rule_problems(module, by_name)
         problems += _takes_over_problems(module, {n: m for n, m in by_name.items() if state.get(n) == "done"})
         if module.prompts is not None:
             problems += prompt_files.cross_module_problems(module.prompts, by_name)

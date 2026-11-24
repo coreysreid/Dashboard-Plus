@@ -653,6 +653,28 @@ copy = { vehicle = "vehicle", name = "name", next_due = "renew_by" }  # never a 
 - Export adds a "Reminder" column; sync's snapshot lists the moves by permanent IDs. Words: labels.toml
   `takes_over`. Any sheet section over 200 rows now says it is not complete.
 
+### 5.12 Month calendars and trends on a dots chart (decision 0119)
+
+```toml
+[tables.times.calendar]
+when = "done_on"            # a required date or date-and-time column; placed on the household's own day
+per = "routine"             # a required link: whose mark it is
+show = "all"                # "one": one record's month with a chooser; "all": every record together
+title = "Routines calendar"
+entry = ["time", "times"]
+state = "outcome"           # optional choice column; without it, every record has `look` (default "recorded")
+looks = { done = "done", skipped = "skipped" }  # each choice: "done", "recorded" or "skipped"
+due = true                  # optional: the linked record's one open date, from its own `watch.expiring` "due"
+
+# A dots chart (decision 0109) may add:
+chart = { ..., ranges = ["3m", "1y", "all"], change = true, line = { gap_days = 365 }, scale = "zero" }
+```
+
+- Looks are fixed (✓ done, ● recorded, – skipped, ○ due, ◇ planned), each with a symbol, a colour and, where
+  colours could be confused, a pattern or dashed edge. A blank day is never called missed; a due date is shown
+  once, on its own date. Each calendar has a legend and the same days listed in words.
+- `line` is a guide under the dots, broken across longer gaps; `scale = "fitted"` writes where the scale starts.
+
 ## 6. Modules
 
 A module is a folder:
@@ -944,6 +966,16 @@ number and the core can load both for a transition period.
   Home's card, the subject's page, `/daily/<table>` and `/daily/<table>/sheet`
   (complete or refused: at most 92 days and 1,000 rows). Review marks a
   suggestion matching another within `minutes` as a possible repeat.
+- **Medicine doses** (declarative; requires People; shipped, decision 0120).
+  One table, Medicine doses: who received it, which of their own medication
+  details, when, who gave it, and an optional private amount and unit. Three
+  core additions: a table may say `private = true` (with `suggestions = false`):
+  never on Home, a sheet, the export or to a helper; a link may say
+  `link_rule = { where, same, shows }`, checked by the record service on every
+  save, restore and change to the linked record; and `daily` may say
+  `group` (separate totals per linked record) and `repeat.form`/`repeat.keep`
+  (asked on the form before saving). A private daily table shows counts and
+  times until a pressed **Show details**. Every column travels (decision 0089).
 - **Graphing** (module). Charts over any table or measure or daily-fact view.
   Chart configurations are saved as records. Annotations and events are drawn on
   charts. **Started (decision 0109):** the first two charts are drawn as SVG on

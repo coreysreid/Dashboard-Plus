@@ -317,7 +317,9 @@ class WeightChartTests(ChartPagesTestCase):
         self.assertRegex(part, r"Luna · 3\.8 kg on \d\d/\d\d/\d\d · 2 weigh-ins recorded")
         for word in ("healthy", "trend", "diagnos", "because"):
             self.assertNotIn(word, part.lower())
-        self.assertEqual(svg.findall(f".//{SVG}path") + svg.findall(f".//{SVG}polyline"), [])
+        lines = svg.findall(f".//{SVG}polyline")  # Pets allows a line since decision 0119; it is only a guide
+        self.assertEqual([line.get("aria-hidden") for line in lines], ["true"])
+        self.assertEqual(svg.findall(f".//{SVG}path"), [])
 
     def test_check_6_same_day_readings_corrections_delete_and_restore_stay_in_step(self):
         luna = self.pet("Luna")
@@ -369,7 +371,9 @@ class WeightChartTests(ChartPagesTestCase):
             self.assertRegex(a.get("aria-label"), r"^\d\d/\d\d/\d\d: [\d.]+ kg")
             self.assertIn(a.get("href").rpartition("-row-")[2], rows)
         self.assertEqual(svg.find(f"{SVG}title").text, "Luna's recorded weights")
-        self.assertIn("The dots are not joined", svg.find(f"{SVG}desc").text)
+        self.assertIn("A line joins readings next to each other in time, broken where they are more than 365 days "
+                      "apart; it does not show values between them.", svg.find(f"{SVG}desc").text)
+        self.assertIn("on a scale starting at 0.", svg.find(f"{SVG}desc").text)
         self.assertIn("<h3>Luna&#39;s recorded weights · all dates", page)
 
     def test_check_9_a_period_with_no_weigh_ins_is_a_gap_not_zero(self):

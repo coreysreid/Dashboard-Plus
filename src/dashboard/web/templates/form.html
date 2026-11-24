@@ -61,7 +61,7 @@
   {% for w in confirm %}<p style="margin:.3rem 0 0" data-confirm="{{ w.key }}"><strong>{{ w.message }}</strong></p>{% endfor %}
   <div class="actions">
     <a class="button quiet" href="#f-{{ confirm[0].column }}" id="confirm-back">Go back</a>
-    <button type="submit" form="record-form" name="_confirm" value="{{ confirm | map(attribute='token') | join(' ') }}" id="confirm-save">Save as entered</button>
+    <button type="submit" form="record-form" name="_confirm" value="{{ confirm | map(attribute='token') | join(' ') }}" id="confirm-save">{{ (confirm | selectattr('keep') | map(attribute='keep') | first) or 'Save as entered' }}</button>
   </div>
 </div>
 {% endif %}
@@ -104,8 +104,17 @@
 {% endfor %}
 {% for view in feeding %}
 <h2>{{ view.rule.what }} today</h2>
+{% if view.private %}{# private history (decision 0120): no amounts or medicine until Show, and no sheet #}
+{% include "_daily_private_panel.html" %}
+<p><a href="{{ view.href }}">{{ view.rule.sheet }}</a></p>
+{% else %}
 {% include "_daily_panel.html" %}
 <p><a href="{{ view.href }}">See {{ view.rule.sheet | lower }}</a> · <a href="{{ view.sheet }}">Print the last 14 days</a></p>
+{% endif %}
+{% endfor %}
+{% for cal in month_calendars %}
+<h2>{{ cal.title }}</h2>
+{% with open_list = false %}{% include "_calendar.html" %}{% endwith %}
 {% endfor %}
 {% for u in under %}{# another list's records that point here, like a service's quotes (labels.toml `under`, 0111) #}
 <section class="under" id="under-{{ u.table }}" aria-labelledby="under-{{ u.table }}-heading">

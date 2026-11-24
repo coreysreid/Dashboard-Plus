@@ -75,6 +75,27 @@ is new: keep a copy of anything important somewhere else too. See
   like an entry already there, or like another waiting, is marked **Possible
   repeat feeding entry** on Review with **Accept as another feeding** and
   **Reject this copy**.
+- **Calendars and trends:** a pet's page shows a **Feeding calendar**: the
+  month as a grid where each day with a feeding shows ● and how many, and
+  Previous month and Next month. **Things to do** has a **Calendar** tab for
+  Routines: ✓ Done and – Skipped on the day it happened, and each routine's
+  next date once, ○ Due or ◇ Planned. Every mark has its own symbol as well
+  as a colour, there is a legend, and the same days are listed in words. A
+  blank day only means nothing was recorded; nothing is ever called missed.
+  A pet's weights can be shown for the last 3 months, the last year or all
+  dates, with "Since the reading before: up 0.3 kg, from 4.4 kg to 4.7 kg" in
+  words and a line between readings, on a scale that still starts at zero.
+- **Medicine doses:** each dose of medicine given to a person, from **Record a
+  dose** on their page: the medicine is chosen from that person's own
+  medication details (People → Important details), with the time now and, for
+  you to check, the last medicine and who gave it filled in; an amount is
+  optional and never copied from an earlier dose. The person's page says "1
+  dose entry recorded today" and the times, nothing more; **Dose history**
+  shows each medicine and amount only after **Show details**. The same
+  medicine for the same person within two hours asks first, with **Keep this
+  as another dose**. Doses are never on Home, a printed sheet, the
+  spreadsheet export or visible to a helper, and nothing ever says a dose was
+  missed. People only: pets keep their treatments in Pets.
 - **Vehicle running log:** what each vehicle's odometer showed and when, as
   dots on the vehicle's page ("Last recorded: 48,500 km on 20/11/26"), in the
   km or miles you choose in Settings and never converted. A reading lower than
