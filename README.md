@@ -101,6 +101,13 @@ is new: keep a copy of anything important somewhere else too. See
   words and the same values are in a table; a day, week or month with nothing
   written down says "nothing recorded", never "missed", and this week or month
   is striped and says "so far".
+- **What happened, newest first:** a pet's page and a person's page end with
+  one list of everything recorded for them, under month headings: each
+  weigh-in with the change since the one before ("up 0.3 kg since 2 Oct"),
+  each vet visit and treatment given, feedings as one line a day ("3 feedings
+  recorded on Tue 24 Nov · 240 g put out"), and doses as one line a day that
+  says only how many until **Show** names each medicine. Every kind has its
+  own symbol beside its words, and **Earlier** goes back a page.
 - **Medicine doses:** each dose of medicine given to a person, from **Record a
   dose** on their page: the medicine is chosen from that person's own
   medication details (People → Important details), with the time now and, for

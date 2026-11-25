@@ -153,6 +153,23 @@
       .cal-nav { display: none; } .cal-list[open] summary { list-style: none; color: #000; }
       .cal td { border-color: #000; } .cal-chip { color: #000; } table.cal { max-width: none; }
     }
+    /* One record's timeline (decision 0126): each kind has its own symbol beside its words, so a colour is only
+       a second hint; lines wrap at 320px and print without the links or the Show button. */
+    .tl-list { list-style: none; padding: 0; margin: .3rem 0 .8rem; }
+    .tl-item { display: flex; gap: .45rem; align-items: baseline; margin: .35rem 0; overflow-wrap: anywhere; }
+    .tl-text { min-width: 0; flex: 1; }
+    .tl-mark { flex: none; display: inline-block; min-width: 1.3rem; text-align: center; border: 1.5px solid;
+               border-radius: 4px; font-size: .85rem; line-height: 1.2rem; color: var(--fg);
+               -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+    .tl-recorded { background: var(--cal-recorded); border-color: var(--cal-recorded-edge); }
+    .tl-done { background: var(--cal-done); border-color: var(--cal-done-edge); }
+    .tl-measured { background: var(--cal-due); border-color: var(--cal-due-edge); }
+    .tl-visit { background: var(--card); border-color: var(--cal-planned-edge); border-style: dashed; }
+    .tl-entries { margin: .2rem 0 0; padding-left: 1.1rem; }
+    .tl-month { font-size: 1.05rem; margin: 1rem 0 .2rem; }
+    .tl-nav ul { list-style: none; padding: 0; display: flex; flex-wrap: wrap; gap: .3rem 1rem; }
+    @media (forced-colors: active) { .tl-mark { border-color: CanvasText; } }
+    @media print { .tl-nav, .timeline form { display: none; } .tl-mark { color: #000; } .tl-item { break-inside: avoid; } }
     footer { color: var(--muted); font-size: .85rem; max-width: var(--wide); margin: 0 auto; padding: 0 1rem 2rem; }
   </style>
 </head>

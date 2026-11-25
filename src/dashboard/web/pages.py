@@ -263,9 +263,14 @@ def _render_form(info, store, values, errors, from_form, record=None, status=200
     if record and not record.get("deleted_at"):
         from dashboard.web.bar_pages import record_panels as bar_panels
         period_bars = bar_panels(store, info, record)
+    what_happened = None  # every dated entry that links here, newest first (decision 0126)
+    if record and not record.get("deleted_at") and not info.table.private:
+        from dashboard.web.timeline_pages import record_panel
+        what_happened = record_panel(store, info, record)
     return render_template("form.html", info=info, title=display.table_title(info), fields=fields, record=record,
                            record_name=record_name, errors=errors, history=history, saved=saved, charts=charts,
                            feeding=feeding, month_calendars=month_calendars, period_bars=period_bars,
+                           what_happened=what_happened,
                            related=related, back=back, batches=batches, count_href=count_href,
                            under=_under(store, info, record) if record and not record.get("deleted_at") else [],
                            confirm=confirm_warnings or [], then=then, moves=_moves(store, info, record),

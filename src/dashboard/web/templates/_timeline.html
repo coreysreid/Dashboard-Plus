@@ -1,0 +1,35 @@
+{# One record's timeline (decision 0126): month headings, one line per entry or per day, newest first, each with a symbol and its words (never a colour alone), Earlier as a server link and a private table's counts until a pressed Show. Needs `tl`; `level` is the month headings' level. #}
+<section class="timeline" id="{{ tl.id }}" aria-labelledby="{{ tl.id }}-heading">
+{% if tl.empty %}
+<p class="chart-empty" role="status" id="{{ tl.id }}-heading"><strong>{{ tl.empty }}</strong></p>
+{% else %}
+<p class="muted" id="{{ tl.id }}-heading">{{ tl.caveat }}</p>
+{% for m in tl.months %}
+<h{{ level or 3 }} class="tl-month">{{ m.heading }}</h{{ level or 3 }}>
+<ol class="tl-list">
+  {% for line in m.lines %}
+  <li class="tl-item" id="{{ line.id }}"><span class="tl-mark tl-{{ line.look }}" aria-hidden="true">{{ line.symbol }}</span>
+    <span class="tl-text">{% if line.kind %}<strong>{{ line.kind }}</strong> · {{ line.when }}{% if line.words %} · {{ line.words }}{% endif %}{% else %}{{ line.words }}{% endif %}{% if line.change %}<span class="tl-change"> · {{ line.change }}</span>{% endif %}{% if line.href %} · <a href="{{ line.href }}" aria-label="{{ line.label }}">{{ line.link_words }}</a>{% endif %}</span>
+    {% if line.entries %}<ul class="tl-entries">{% for e in line.entries %}<li>{{ e }}</li>{% endfor %}</ul>{% endif %}
+  </li>
+  {% endfor %}
+</ol>
+{% endfor %}
+{% if tl.private %}{# private history (decisions 0121 and 0123): how many each day until a pressed Show, never a link #}
+{% if tl.show %}<p><a class="button quiet" href="{{ tl.hide }}" data-hide-details>Hide details</a></p>
+{% else %}<p class="muted" data-private-words>{{ tl.private_words }}</p>
+<form method="post" action="{{ tl.show_action }}" class="actions">
+  <input type="hidden" name="_csrf" value="{{ csrf_token }}">
+  {% if tl.before %}<input type="hidden" name="before" value="{{ tl.before }}">{% endif %}
+  <button type="submit" class="quiet" data-show-timeline>Show</button>
+</form>{% endif %}
+{% endif %}
+{% endif %}
+{% if tl.earlier or tl.newest or tl.full %}
+<nav class="tl-nav" aria-label="More of what happened"><ul>
+  {% if tl.earlier %}<li><a href="{{ tl.earlier }}" rel="prev">Earlier</a></li>{% endif %}
+  {% if tl.newest %}<li><a href="{{ tl.newest }}">Back to the newest</a></li>{% endif %}
+  {% if tl.full %}<li><a href="{{ tl.full }}">Open the whole timeline</a></li>{% endif %}
+</ul></nav>
+{% endif %}
+</section>
