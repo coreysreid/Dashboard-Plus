@@ -92,3 +92,12 @@ where = { outcome = "done" }
 by = ["month", "week"]
 entry = ["time done", "times done"]
 subject = "routine"
+
+# On the routine's own page (decision 0130): each time it was done or skipped, newest first. A skip is the
+# household's choice and is never called missed.
+[tables.times.timeline]
+when = "done_on"
+per = "routine"
+entry = ["routine outcome", "routine outcomes"]
+words = "{outcome} · {done_by}"
+look = "done"

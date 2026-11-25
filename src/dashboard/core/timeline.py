@@ -32,20 +32,24 @@ class Item:
         return self.day, clock, self.info.name, self.rows[-1]["id"]
 
 
-def subject_table(info, rule: dict) -> str | None:
+def subject_table(info, rule: dict, registry: dict | None = None) -> str | None:
     """The real table whose records this timeline belongs to: where `per` points, through one link if it says so
-    ("treatment.pet": the treatment's pet). None if the table it goes through is not there."""
+    ("treatment.pet": the treatment's pet; the linked table may be in another module). None if the table it goes
+    through is not there."""
     link = info.table.columns[rule["link"]]
     if not rule.get("through"):
         return target_table(info.module.name, link)
-    hop = info.module.tables.get(link.to.partition(".")[2] if "." in link.to else link.to)
-    return target_table(info.module.name, hop.columns[rule["through"]]) if hop is not None else None
+    hop = (registry or {}).get(target_table(info.module.name, link))
+    if hop is not None:
+        return target_table(hop.module.name, hop.table.columns[rule["through"]])
+    own = info.module.tables.get(link.to) if "." not in link.to else None
+    return target_table(info.module.name, own.columns[rule["through"]]) if own is not None else None
 
 
 def sources(registry: dict, subject) -> list[tuple]:
     """Every (table, rule) of a switched-on module whose timeline belongs to records of `subject`."""
     return [(info, info.table.timeline) for info in registry.values()
-            if info.table.timeline and subject_table(info, info.table.timeline) == subject.name]
+            if info.table.timeline and subject_table(info, info.table.timeline, registry) == subject.name]
 
 
 def entries(conn: sqlite3.Connection, info, rule: dict, subject_id: int, zone) -> list[dict]:

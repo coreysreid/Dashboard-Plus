@@ -46,3 +46,23 @@ columns.amount = { type = "money", min = 0, sensitive = true, travels = "always"
 columns.good_until = { type = "date", not_before = "quoted_on" }
 columns.scope = { type = "longtext", sensitive = true, travels = "always" }
 columns.notes = { type = "longtext", sensitive = true, travels = "never" }
+
+# On the vehicle's timeline (decision 0130): each reading with its change since the reading before, only when both
+# are in the same unit (km or mi), and each estimate with its kind, provider and service. An estimate's amount, what
+# it includes and its notes are private and never named here. No distance a month is worked out: the change is just
+# the difference between two readings someone wrote down.
+[tables.readings.timeline]
+when = "read_at"
+per = "vehicle"
+entry = ["odometer reading", "odometer readings"]
+words = "{distance} {unit}"
+look = "measured"
+change = "distance"
+change_unit = "unit"
+
+[tables.estimates.timeline]
+when = "quoted_on"
+per = "service.vehicle"
+entry = ["service estimate", "service estimates"]
+words = "{service} · {kind} · {provider}"
+look = "recorded"

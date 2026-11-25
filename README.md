@@ -108,6 +108,11 @@ is new: keep a copy of anything important somewhere else too. See
   recorded on Tue 24 Nov · 240 g put out"), and doses as one line a day that
   says only how many until **Show** names each medicine. Every kind has its
   own symbol beside its words, and **Earlier** goes back a page.
+  A vehicle's page lists its odometer readings ("up 1,240 km since 2 Oct",
+  only between readings in the same unit, never converted) and service
+  estimates (never an amount); a Home care job's page lists the work done; a
+  routine's page lists each time it was done or skipped. After **Show**, a
+  dose reads in the medicine's own words, with no id.
 - **Medicine doses:** each dose of medicine given to a person, from **Record a
   dose** on their page: the medicine is chosen from that person's own
   medication details (People → Important details), with the time now and, for
