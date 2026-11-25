@@ -114,6 +114,7 @@ class NotADoneDayTests(Case):
         self.assertNotIn(SECRET, text)
         self.assertIn('name="_csrf"', text)
         plain = re.sub(r"<[^>]+>", " ", text).replace("earlier times are never filled in as missed", "")
+        plain = plain.replace("does not mean anything was missed", "")  # the bars under the calendar (decision 0131)
         for word in ("missed", "Missed", "overdue"):
             self.assertNotIn(word, plain)
         together = self.page("/to-do/calendar?month=2026-09")
