@@ -181,7 +181,8 @@
 <ul class="history">
   {% for h in history %}
   <li><span class="muted">{{ h.at }}</span> · {{ h.who }} {{ h.action }}{% if h.changes %}:
-    {% for c in h.changes %}{{ c.label }} {% if c.sensitive %}(private){% else %}from "{{ c.before }}" to "{{ c.after }}"{% endif %}{% if not loop.last %}; {% endif %}{% endfor %}{% endif %}</li>
+    {% for c in h.changes %}{{ c.label }} {% if c.sensitive %}(private){% else %}from "{{ c.before }}" to "{{ c.after }}"{% endif %}{% if not loop.last %}; {% endif %}{% endfor %}{% endif %}{% if h.put_back %}{# Undo of "Not a done day" (decision 0132) #}
+    <form method="post" action="{{ h.put_back.href }}" style="display:inline;margin-left:.5rem"><input type="hidden" name="_csrf" value="{{ csrf_token }}"><input type="hidden" name="op" value="{{ h.put_back.op }}"><input type="hidden" name="back" value="record"><button type="submit" class="quiet">Put back on the calendar</button></form>{% endif %}</li>
   {% endfor %}
 </ul>
 {% endif %}

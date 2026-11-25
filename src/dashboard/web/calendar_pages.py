@@ -5,9 +5,9 @@ import re
 from datetime import date, datetime, timezone
 from urllib.parse import urlencode
 
-from flask import Blueprint, abort, current_app, render_template, request
+from flask import Blueprint, abort, current_app, redirect, render_template, request
 
-from dashboard.core import calendars, daily, dates, records, watch
+from dashboard.core import calendars, daily, dates, calendars_corrections, records, watch
 from dashboard.core.modules import CALENDAR_ENTRY_LOOKS
 from dashboard.core.checklist import week_start
 from dashboard.web import display
@@ -169,10 +169,12 @@ def _private_lines(store: records.Records, info, subject_id: int | None, first: 
 
 
 def month_view(store: records.Records, info, year: int, month: int, today: date, subject_id: int | None = None,
-               link=None, full_href: str | None = None, show: bool = False, show_action: str | None = None) -> dict:
+               link=None, full_href: str | None = None, show: bool = False, show_action: str | None = None,
+               corrections: bool = False) -> dict:
     """Everything one calendar shows for one month: the grid, the legend, the summary and the same days in words.
     `link(year, month)` makes the Previous month and Next month addresses. A private table (decision 0121) shows
-    only ● and how many each day until `show`, a person's pressed Show: no times, names, amounts or record links."""
+    only ● and how many each day until `show`, a person's pressed Show: no times, names, amounts or record links.
+    `corrections` gives each day read from history its "Not a done day" button (decision 0132)."""
     rule = info.table.calendar
     private = info.table.private
     words = Words(store, info)
@@ -219,6 +221,11 @@ def month_view(store: records.Records, info, year: int, month: int, today: date,
                              for m in cell.marks]
                 else:
                     marks = [words.item(m, today, style) for m in cell.marks]
+                    if corrections:  # a day read from history can be taken off; today's own date is edited instead
+                        for mark, shown in zip(cell.marks, marks):
+                            if mark.earlier:
+                                shown["remove"] = {"record": mark.record_id, "day": mark.day.isoformat(),
+                                                   "day_words": _short_day(mark.day, style)}
                 listed.append({"anchor": anchor, "day": _short_day(cell.day, style) + (" (today)" if cell.day == today
                                                                                        else ""),
                                "summary": said + (f" · {extra}" if extra else ""), "day_href": day_href,
@@ -255,6 +262,7 @@ def month_view(store: records.Records, info, year: int, month: int, today: date,
             "full": full_href, "private": private, "show": show, "private_words": PRIVATE_WORDS,
             "show_action": show_action if private else None, "subject_id": subject_id,
             "month": f"{year:04d}-{month:02d}",
+            "remove_action": f"/calendar/{info.name}/not-done" if corrections else None,
             "hide": link(year, month) if private and show and link else None,
             "name_hidden": bool(private and not show and name)}
 
@@ -336,13 +344,90 @@ def _calendar_page(table, show: bool):
         chosen = subjects[0]
     subject_id = chosen["id"] if chosen else None
     view = month_view(store, info, year, month, today, subject_id, link=_href(f"/calendar/{table}", subject=subject_id),
-                      show=show, show_action=f"/calendar/{table}")
+                      show=show, show_action=f"/calendar/{table}", corrections=_correctable(info))
     from dashboard.web.bar_pages import table_panels  # jobs done per month under the month (decision 0129)
     return render_template("calendar.html", title=rule["title"], view=view, subjects=subjects, chosen=chosen,
                            table=table, month=f"{year:04d}-{month:02d}", no_subject=None,
-                           show_all=rule["show"] == "all",
+                           show_all=rule["show"] == "all", fix_notice=_fix_notice(store, info),
                            table_bars=table_panels(store, info) if calendars.own(info) else [],
                            subject_href=f"/t/{subject_info.name}/{subject_id}" if subject_id else None)
+
+
+# ----- Not a done day (decision 0132) -------------------------------------------------------------------
+
+
+def _correctable(info) -> bool:
+    """A calendar whose days from history can be taken off: a table's own records with `history = true`. Never a
+    private table (a calendar without `per` cannot be private, decision 0123; checked again here)."""
+    return calendars.own(info) and bool(info.table.calendar.get("history")) and not info.table.private
+
+
+def _fix_notice(store: records.Records, info) -> dict | None:
+    """The notice after taking a day off or putting it back, with Undo while the day is still off."""
+    if not _correctable(info):
+        return None
+    if request.args.get("unchanged"):
+        return {"words": calendars_corrections.NOT_EARLIER, "undo": None}
+    op = request.args.get("removed") or request.args.get("put_back")
+    found = calendars_corrections.find(store.conn, info.name, op) if op else None
+    if found is None:
+        return None
+    row = store.conn.execute(f"SELECT * FROM {info.name} WHERE id = ?", (found["record_id"],)).fetchone()
+    name = display.display_name(info, dict(row), store) if row else "This record"
+    day = _short_day(found["day"], dates.household_style(store.conn))
+    if found["off"]:
+        return {"words": f"Taken off the calendar: {name}, {day}. Its history keeps this, and Undo puts it back.",
+                "undo": {"href": f"/calendar/{info.name}/put-back", "op": op}}
+    return {"words": f"Put back on the calendar: {name}, {day}.", "undo": None}
+
+
+def _correction_target(table):
+    store = _store()
+    info = store.registry.get(table)
+    if info is None or not _correctable(info) or info not in calendars.calendar_tables(store.registry):
+        abort(404)
+    return store, info
+
+
+def _month_arg() -> dict:
+    month = request.form.get("month") or ""
+    return {"month": month} if MONTH.match(month) else {}
+
+
+@calendar_pages.post("/calendar/<table>/not-done")
+def not_done_day(table):
+    """"Not a done day — remove from the calendar": a pressed button with the session check, like Mark done. It
+    adds one history entry for the record; nothing in the record or its earlier history is changed."""
+    store, info = _correction_target(table)
+    record_id = request.form.get("record", type=int)
+    try:
+        day = date.fromisoformat(request.form.get("day") or "")
+    except ValueError:
+        abort(404)
+    if record_id is None:
+        abort(404)
+    try:
+        op = calendars_corrections.take_off(store, info, record_id, day)
+    except records.ActionNotAvailable:
+        return redirect(f"/calendar/{table}?" + urlencode({**_month_arg(), "unchanged": 1}) + "#fix-notice")
+    return redirect(f"/calendar/{table}?" + urlencode({**_month_arg(), "removed": op}) + "#fix-notice")
+
+
+@calendar_pages.post("/calendar/<table>/put-back")
+def put_back_day(table):
+    """Undo of "Not a done day", from the calendar's notice or the record's history: one more history entry."""
+    store, info = _correction_target(table)
+    op = request.form.get("op") or ""
+    try:
+        found = calendars_corrections.put_back(store, info, op)
+    except records.RecordNotFound:
+        abort(404)
+    except records.ActionNotAvailable:
+        found = calendars_corrections.find(store.conn, info.name, op)
+    if request.form.get("back") == "record":
+        return redirect(f"/t/{table}/{found['record_id']}")
+    month = _month_arg() or {"month": f"{found['day'].year:04d}-{found['day'].month:02d}"}
+    return redirect(f"/calendar/{table}?" + urlencode({**month, "put_back": op}) + "#fix-notice")
 
 
 # Words for each look when several lists share one month (decision 0122); each line in words says its own.

@@ -33,6 +33,7 @@ How to run them is in AGENTS.md.
 | test_timeline_more.py | Tests for the timeline on a vehicle's, a home care job's and a routine's page, the dose wording after Show, and the declaration checks they needed (decision 0130). | changing the vehicle, job or routine timelines, change_unit or the dose words after Show |
 | test_calendars_more.py | Tests for Home care, Garden, Vehicles and Bills on calendars and one Things to do month with Show links (decision 0122). | changing a calendar of a table's own records, the combined Calendar tab or its Show links |
 | test_done_history.py | Tests for earlier done days from a record's own history, and Garden's done date and jobs done per month (decision 0129). | changing done days from history, Garden's Done on or bars of a whole table |
+| test_done_days_corrections.py | Tests for correcting earlier done days: Not a done day with Undo, a cleared date kept, and a press with its typed date counted once (decision 0132). | changing Not a done day, which cleared dates count or how a press and a typed date are joined |
 | test_module_vehicle_running.py | Tests for the Vehicle running log: odometer readings and service estimates beside Vehicles (decision 0111). | changing readings, estimates, gentle checks or listed-under sections |
 | test_gaps.py | Tests for gaps: details worth filling in, declared in a table's `watch.gaps` and asked as questions. | changing gaps |
 | test_examples.py | Tests for the example households: each loads cleanly and shows exactly what it was written to show. | changing an example household |

@@ -3,7 +3,7 @@ from __future__ import annotations
 
 from flask import Blueprint, abort, current_app, jsonify, make_response, redirect, render_template, request, url_for
 
-from dashboard.core import actions, confirm, dates, records, schema, settings, suggest
+from dashboard.core import actions, confirm, dates, calendars_corrections, records, schema, settings, suggest
 from dashboard.core.units import unit_for
 from dashboard.web import display
 
@@ -202,6 +202,7 @@ def _render_form(info, store, values, errors, from_form, record=None, status=200
     if record:
         formatter = display.Formatter(store)
         columns = info.table.columns
+        taken_off = set(calendars_corrections.removed(store.conn, info.name).values())  # still off the calendar (0132)
         for entry in reversed(store.history(info.name, record["id"])):
             changes = []
             for name, after in (entry["after"] or {}).items():
@@ -211,9 +212,13 @@ def _render_form(info, store, values, errors, from_form, record=None, status=200
                                     "before": formatter.text(info, columns[name], before),
                                     "after": formatter.text(info, columns[name], after),
                                     "sensitive": columns[name].sensitive})
+            op = (entry["after"] or {}).get("operation") if entry["action"] == calendars_corrections.OFF else None
             history.append({"at": entry["at"].replace("T", " ")[:16], "who": display.actor_text(entry["actor"]),
                             "action": display.operation_text(store, info, entry) or
-                            display.ACTION_TEXT.get(entry["action"], entry["action"]), "changes": changes})
+                            calendars_corrections.history_words(store.conn, entry) or
+                            display.ACTION_TEXT.get(entry["action"], entry["action"]), "changes": changes,
+                            "put_back": {"href": f"/calendar/{info.name}/put-back", "op": op}
+                            if op in taken_off else None})
     record_name = display.display_name(info, record, store) if record else None
     if record and info.table.parent:
         chain = store.ancestors(info, record["id"])

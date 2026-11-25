@@ -96,8 +96,13 @@ is new: keep a copy of anything important somewhere else too. See
   Earlier times show too: each earlier day a vehicle service, an alarm test,
   a return or a garden job was recorded as done stays on its day, read from
   the record's own history, marked "(an earlier time, from its history)". A
-  date typed back to fix it, cleared, or changed again the same day never
-  counts, and an undone Mark done never shows.
+  date typed back to fix it or changed again the same day never counts, and
+  an undone Mark done never shows. A date cleared a day or more after it was
+  typed (a thing lent again) stays as a done day, and an old Mark done with a
+  Done on typed later counts once, on the typed day. If one of these earlier
+  days is wrong, **Not a done day — remove from the calendar** under its line
+  takes it off (and off Jobs done per month), with **Undo**; the record's
+  history keeps a line for it, with **Put back on the calendar**.
 - **Bars over time:** a pet's page shows **Food put out per day** (or per
   week or month), in one unit at a time, such as grams or pouches, never added
   together or converted; a routine's page shows **Times done per month**; a

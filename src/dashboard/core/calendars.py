@@ -1,4 +1,4 @@
-"""Month calendars from a table's dated or timed records by the household's own day; an empty day is never called missed (decision 0119), earlier done days read from history (0129)."""
+"""Month calendars from a table's dated or timed records by the household's own day; an empty day is never called missed (decision 0119), earlier done days read from history (0129, corrected by 0132)."""
 from __future__ import annotations
 
 import json
@@ -6,7 +6,7 @@ import sqlite3
 from dataclasses import dataclass, field
 from datetime import date, timedelta, tzinfo
 
-from dashboard.core import checklist, daily, reminder_moves, watch
+from dashboard.core import checklist, daily, calendars_corrections, reminder_moves, watch
 from dashboard.core.schema import target_table
 
 # The fixed looks, in the order the legend and each day list them. Each has a colour (base.html, .cal-<look>),
@@ -238,48 +238,101 @@ def _as_day(value) -> date | None:
         return None
 
 
-def earlier_done(conn: sqlite3.Connection, info, column: str, zone: tzinfo | None) -> dict[int, set[date]]:
-    """For each record, the dates `column` held before it was moved on to a later date, read from history in the
-    order they were saved. A date counts only when the very next value saved is a later date, saved on a later day
-    of the household's than the date itself was saved. So a date typed back (a correction), a date cleared (by hand
-    or by Undo) and a date changed again the same day it was typed never count: they may have been mistakes."""
-    found: dict[int, list[tuple[date | None, str]]] = {}
-    for row in conn.execute("SELECT record_id, at, after FROM core__audit WHERE table_name = ? "
-                            "AND action IN ('create', 'update') AND json_type(after, ?) IS NOT NULL ORDER BY id",
-                            (info.name, f"$.{column}")):
+def _history(conn: sqlite3.Connection, info, column: str, zone: tzinfo | None
+             ) -> tuple[dict[int, set[date]], dict[str, tuple[int, date]]]:
+    """One pass over a table's history, in the order it was saved. Returns, for each record, the earlier dates
+    `column` held (see `earlier_done`), and each dateless press (a one-step Mark done that did not set `column`)
+    that a date typed afterwards belongs to, by its operation (decision 0132).
+
+    A press and the date typed after it are one completion when the date is the first one saved after the press,
+    while every field the press set still holds the value the press gave it (the job still shows done), and before
+    any other press of that record. A field the press set changed on the way (the job ticked not done again) starts
+    a new round, so a date typed then is its own completion and the press keeps its own day."""
+    values: dict[int, list[list]] = {}  # per record: [the date it held, the day it was saved, cleared by an Undo]
+    last: dict[int, int | None] = {}  # the value the record's previous history entry saved, if it saved one
+    waiting: dict[int, tuple[str, dict]] = {}  # a dateless press per record, until its date is typed
+    belongs: dict[str, tuple[int, date]] = {}
+    for row in conn.execute("SELECT record_id, at, action, after FROM core__audit WHERE table_name = ? "
+                            "AND action IN ('create', 'update', 'action', 'undo') ORDER BY id", (info.name,)):
+        record_id, action = row["record_id"], row["action"]
         try:
-            saved = daily.local_day(row["at"], zone)
-            value = json.loads(row["after"]).get(column)
-        except (TypeError, ValueError):
-            continue
-        found.setdefault(row["record_id"], []).append((_as_day(value), saved))
-    result: dict[int, set[date]] = {}
-    for record_id, values in found.items():
-        for (before, saved), (after, moved) in zip(values, values[1:]):
-            if before is not None and after is not None and after > before and moved > saved:
-                result.setdefault(record_id, set()).add(before)
-    return result
+            after = json.loads(row["after"]) if row["after"] else {}
+        except ValueError:
+            after = {}
+        after = after if isinstance(after, dict) else {}
+        saved_value = None
+        if action in ("create", "update"):
+            if column in after:
+                try:
+                    saved = daily.local_day(row["at"], zone)
+                except (TypeError, ValueError):
+                    saved = None
+                if saved is not None:
+                    values.setdefault(record_id, []).append([_as_day(after[column]), saved, False])
+                    saved_value = len(values[record_id]) - 1
+            press = waiting.get(record_id)
+            if press is not None:
+                if any(k in after and after[k] != v for k, v in press[1].items()):
+                    del waiting[record_id]  # a new round: the press and a later date are two completions
+                elif _as_day(after.get(column)) is not None:
+                    belongs[press[0]] = (record_id, _as_day(after[column]))
+                    del waiting[record_id]
+        elif action == "undo":
+            if last.get(record_id) is not None:  # Undo put the field back just before this line: never a done day
+                values[record_id][last[record_id]][2] = True
+            if record_id in waiting and waiting[record_id][0] == after.get("operation"):
+                del waiting[record_id]
+        else:  # a press
+            fields = after.get("after") if isinstance(after.get("after"), dict) else {}
+            if after.get("one_step") and column not in fields and after.get("operation"):
+                waiting[record_id] = (after["operation"], fields)
+            else:
+                waiting.pop(record_id, None)
+        last[record_id] = saved_value
+    earlier: dict[int, set[date]] = {}
+    for record_id, held in values.items():
+        for (before, saved, _), (after, moved, by_undo) in zip(held, held[1:]):
+            if before is None or moved <= saved:
+                continue  # nothing was there, or it was changed again the same day it was typed
+            if (after is None and not by_undo) or (after is not None and after > before):
+                earlier.setdefault(record_id, set()).add(before)
+    return earlier, belongs
+
+
+def earlier_done(conn: sqlite3.Connection, info, column: str, zone: tzinfo | None) -> dict[int, set[date]]:
+    """For each record, the dates `column` held before it was moved on, read from history in the order they were
+    saved. A date counts only when it stood until a later household day than the day it was saved, and then was
+    moved to a later date (decision 0129) or cleared by hand (decision 0132: a thing lent again, a job needing doing
+    again). So a date typed back (a correction), a date changed or cleared again the same day it was typed (a slip
+    fixed at once) and a date cleared by Undo never count: they may have been mistakes."""
+    return _history(conn, info, column, zone)[0]
 
 
 def done_days(conn: sqlite3.Connection, registry: dict, info, column: str, start: date, end: date) -> list[DoneDay]:
     """Every day from `start` to `end` that an accepted, undeleted record of `info` was done: the date `column`
     keeps now, each earlier date it was moved on from (see `earlier_done`), and each Mark done press that did not
     set `column` itself (pressed before the table kept the date), read the way Things to do reads presses, so an
-    undone press is left out. One record counts once a day. Nothing is stored, so an edit, delete or restore
-    shows at once."""
+    undone press is left out. A press whose date was typed afterwards counts once, on that date (see `_history`).
+    A day from history the household took off the calendar ("Not a done day", decision 0132) is left out until it
+    is put back; the date a record keeps now is never left out. One record counts once a day. Nothing is stored,
+    so an edit, delete or restore shows at once."""
     live = {row["id"]: _as_day(row["value"]) for row in conn.execute(
         f"SELECT id, {column} AS value FROM {info.name} WHERE deleted_at IS NULL AND review_status = 'confirmed'")}
     found: dict[tuple[int, date], str] = {}
     for record_id, day in live.items():
         if day is not None:
             found[(record_id, day)] = "now"
-    for record_id, before in earlier_done(conn, info, column, daily.household_zone(conn)).items():
+    earlier, belongs = _history(conn, info, column, daily.household_zone(conn))
+    for record_id, before in earlier.items():
         if record_id in live:
             for day in before:
                 found.setdefault((record_id, day), "earlier")
     if info.table.actions:
         for press in checklist.done(conn, registry, start, end, only=info.name):
-            if press.record_id in live and press.counts_as == "done" and column not in press.fields:
+            if press.record_id in live and press.counts_as == "done" and column not in press.fields \
+                    and belongs.get(press.operation) not in found:
                 found.setdefault((press.record_id, press.on), "press")
-    return sorted((DoneDay(r, d, k) for (r, d), k in found.items() if start <= d <= end),
+    taken_off = calendars_corrections.removed(conn, info.name)
+    return sorted((DoneDay(r, d, k) for (r, d), k in found.items()
+                   if start <= d <= end and (k == "now" or (r, d) not in taken_off)),
                   key=lambda d: (d.day, d.record_id))

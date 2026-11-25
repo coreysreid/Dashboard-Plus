@@ -328,7 +328,8 @@ def bars_view(store: records.Records, info, rule: dict, subject_id: int | None, 
     caveat = " ".join(c for c in (rule.get("caveat"), (
         "Each bar adds up the amounts written down, in one unit only; other units are never converted or added in."
         if is_sum else "Each bar counts the days each was recorded as done, earlier ones from each one's history; "
-                       "a date typed back or cleared is never counted." if rule.get("history")
+                       "a date typed back, a date cleared the day it was typed, an undone press and a day taken off "
+                       "the calendar are never counted." if rule.get("history")
         else "Each bar counts the entries written down.")
         + " A period with nothing recorded only means nothing was written down.") if c)
     groups = []

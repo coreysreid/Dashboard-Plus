@@ -17,7 +17,7 @@ import json
 import secrets
 from datetime import date
 
-from dashboard.core import dates, db
+from dashboard.core import dates, db, calendars_corrections
 from dashboard.core.modules import DEFAULT_MESSAGES
 from dashboard.core.records import (OPERATION, ActionNotAvailable, ActionStale, RecordNotFound, Records,
                                     TableInfo, ValidationError, resolve_word)
@@ -45,9 +45,10 @@ def added_table(store: Records, info: TableInfo, action: dict) -> TableInfo:
 
 
 def revision(store: Records, info: TableInfo, record_id: int) -> int:
-    """A number that goes up whenever the record changes: its newest history entry (0 when it has none)."""
-    row = store.conn.execute("SELECT MAX(id) FROM core__audit WHERE table_name = ? AND record_id = ?",
-                             (info.name, record_id)).fetchone()
+    """A number that goes up whenever the record changes: its newest history entry (0 when it has none). Taking a
+    day off the calendar or putting it back (decision 0132) changes nothing in the record, so it is not counted."""
+    row = store.conn.execute("SELECT MAX(id) FROM core__audit WHERE table_name = ? AND record_id = ? "
+                             "AND action NOT IN (?, ?)", (info.name, record_id, *calendars_corrections.KINDS)).fetchone()
     return row[0] or 0
 
 

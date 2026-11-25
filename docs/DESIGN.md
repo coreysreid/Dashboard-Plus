@@ -685,11 +685,23 @@ chart = { ..., ranges = ["3m", "1y", "all"], change = true, line = { gap_days = 
 - **Earlier done days** (decision 0129): an own calendar with `when` may add `history = true`. Then each earlier
   value of `when` that the record's saved history shows was later moved on to a later date, saved on a later day
   than it was typed, is also a ✓ day, said "(an earlier time, from its history)". A date typed back (a
-  correction), cleared (by hand or by Undo) or changed again the same day never counts; a deleted record has
+  correction), cleared by Undo, or changed or cleared again the same day never counts (0132); a deleted record has
   none; one record counts once a day. A Mark done press that did not set `when` itself (saved before the table
   kept the date) also counts on the day it was pressed, unless undone. Nothing is stored or backfilled
   (`done_days` in `core/calendars.py`). Vehicle services, Home layout's alarms, Things lent out and Garden
   jobs (`done_on`, set by Mark done) use it.
+- **Correcting done days** (decision 0132): three rules on top of 0129. (1) A date cleared on a later household
+  day than it was typed counts as an earlier done day (a thing lent again, a job needing doing again); a clear
+  the same day, and a clear made by Undo (the history line just before an `undo` entry), never do. (2) A one-step
+  press that did not set `when`, and the first `when` date saved after it while every field the press set still
+  holds the press's value and before another press, are one completion: only the typed date counts. (3) Each line
+  read from history (an earlier date or an old press, never the date the record keeps now) has a small POST form,
+  **Not a done day — remove from the calendar**, with the session token and no script. It adds one history entry
+  (`not_done_day`, after = `calendar_day` and `operation` only); **Undo** on the calendar's notice, or **Put back
+  on the calendar** on that history line, adds a `done_day_back` entry. Neither changes the record, its earlier
+  history or its revision (so a Mark done's Undo still works), and neither enters the sync change log. Offered
+  on every own calendar with `history = true`, never a private table; nothing more to declare. The bars count
+  the same days.
 - **Things to do, Calendar** puts every calendar with due dates in one month: one grid, one legend, a count per
   module, and each line in words starting with its module's name. **Show: All / one module** links keep one
   module's lists (`?only=<module>`, with the month kept). With only one such calendar it is shown as before.
