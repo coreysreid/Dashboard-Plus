@@ -4,7 +4,7 @@
 {% if cal.prev or cal.next %}
 <nav class="cal-nav" aria-label="Choose the month: {{ cal.title }}">
   {% if cal.prev %}<a href="{{ cal.prev }}" rel="prev">Previous month<span class="vh">: {{ cal.prev_words }}</span></a>{% endif %}
-  {% if cal.this_month %}<a href="{{ cal.this_month }}">This month</a>{% endif %}
+  {% if cal.this_month %}<a href="{{ cal.this_month }}">Go to the current month</a>{% endif %}
   {% if cal.next %}<a href="{{ cal.next }}" rel="next">Next month<span class="vh">: {{ cal.next_words }}</span></a>{% endif %}
 </nav>
 {% endif %}

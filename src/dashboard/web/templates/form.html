@@ -118,7 +118,13 @@
 {% endfor %}
 {% for bv in period_bars %}
 <h2>{{ bv.title }}</h2>
+{% if month_calendars %}{# a page with a calendar already says when; the bars fold under their own summary so the page stays short (decision 0131) #}
+<details class="panel-fold" data-print-open><summary>Show the bars: {{ bv.summary or bv.empty }}</summary>
 {% with level = 3 %}{% include "_bars.html" %}{% endwith %}
+</details>
+{% else %}
+{% with level = 3 %}{% include "_bars.html" %}{% endwith %}
+{% endif %}
 {% endfor %}
 {% if what_happened %}{# one timeline of every dated entry that links here (decision 0126) #}
 <h2>{{ what_happened.title }}</h2>

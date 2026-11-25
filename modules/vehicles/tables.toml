@@ -65,3 +65,14 @@ entry = ["service or check", "services or checks"]
 when = "last_done"
 history = true  # also each earlier date this was moved on from, from its history (decision 0129)
 due = true
+
+# Services done per month (decisions 0129 and 0131): every service together, one count for each day a service was done,
+# read the same way as the Vehicle services calendar (Last done, and each earlier date it was moved on from).
+[[tables.services.bars]]
+key = "done"
+title = "Services done"
+when = "last_done"
+history = true
+measure = "count"
+by = ["month", "week"]
+entry = ["service done", "services done"]

@@ -91,6 +91,7 @@
     .chart-svg .chart-none-text { fill: var(--muted); font-style: italic; }
     .chart-table tr.bars-empty td:nth-child(2) { font-style: italic; color: var(--muted); }
     .bars-table summary { cursor: pointer; color: var(--accent); margin: .4rem 0; }
+    .panel-fold > summary { cursor: pointer; color: var(--accent); margin: .4rem 0; }  /* a folded panel (0131) */
     @media (max-width: 40rem) {  /* on a phone each row of a chart's table is a card, in the same order */
       .chart-table thead { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); }
       .chart-table, .chart-table tbody, .chart-table tr, .chart-table td { display: block; width: 100%; }
@@ -213,6 +214,13 @@
       field.focus();
     });
   });
+  // A folded panel (decision 0131) is opened while printing so the paper has every part, then folded again.
+  var folded = [];
+  window.addEventListener("beforeprint", function () {
+    folded = Array.prototype.filter.call(document.querySelectorAll("details[data-print-open]"), function (d) { return !d.open; });
+    folded.forEach(function (d) { d.open = true; });
+  });
+  window.addEventListener("afterprint", function () { folded.forEach(function (d) { d.open = false; }); folded = []; });
 </script>
 </body>
 </html>

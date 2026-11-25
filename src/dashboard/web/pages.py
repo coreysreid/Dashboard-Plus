@@ -253,7 +253,11 @@ def _render_form(info, store, values, errors, from_form, record=None, status=200
                           a["adds"]["table"] == other.table.name and a["adds"]["link"] == column.name), None)
             words = words or display.labels_for(other).get("add_button")  # "Add a reading" (decision 0111)
             related.append({"href": f"/t/{other.name}/new?{column.name}={record['id']}",
-                            "label": display.table_title(other), "words": words})
+                            "label": display.table_title(other), "words": words, "table": other.name,
+                            "column": display.column_label(other, column)})
+    for button in related:  # two buttons to one list say which link each fills in, e.g. "Add to pets (vet)" (decision 0131)
+        if not button["words"] and sum(1 for r in related if r["table"] == button["table"]) > 1:
+            button["words"] = f"Add to {button['label'].lower()} ({button['column'].lower()})"
     charts = []  # a pet's recorded weights, drawn on its own page (decision 0109)
     if record and not record.get("deleted_at"):
         from dashboard.web.chart_pages import chart_tables, dots_view
