@@ -1,0 +1,9 @@
+{% extends "base.html" %}
+{% block title %}{{ label }} · Dashboard Plus{% endblock %}
+{% block body %}
+{# One private detail, shown after a pressed Show without a page script (decision 0123). Never cached. #}
+<h1>{{ label }}</h1>
+<p class="muted">{{ title }} #{{ record.id }}. This page is not kept by your browser. Use Back to return, then reload to hide it again.</p>
+<p data-revealed><strong>{{ text or "Nothing was saved here." }}</strong></p>
+<p><a href="/t/{{ info.name }}/{{ record.id }}">Open {{ title | lower }} #{{ record.id }}</a></p>
+{% endblock %}

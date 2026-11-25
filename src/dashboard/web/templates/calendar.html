@@ -14,6 +14,6 @@
 {% endif %}
 {% if chosen %}<h2>{{ chosen.name }} · {{ view.heading }}</h2>{% else %}<h2>{{ view.heading }}</h2>{% endif %}
 {% with cal = view, open_list = true %}{% include "_calendar.html" %}{% endwith %}
-{% if subject_href %}<p><a href="{{ subject_href }}">{{ chosen.name }}'s page</a></p>{% endif %}
+{% if subject_href %}<p><a href="{{ subject_href }}">{% if view.name_hidden %}Open the person's page{% else %}{{ chosen.name }}'s page{% endif %}</a></p>{% endif %}
 {% endif %}
 {% endblock %}

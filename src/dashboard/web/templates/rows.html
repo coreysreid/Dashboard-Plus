@@ -1,7 +1,8 @@
+{% from "_reveal.html" import show as reveal_button %}
 {% for r in rows %}
 <tr>
   {% for cell in r.cells %}
-  <td>{% if cell.sensitive %}{% if cell.saved %}<button type="button" class="quiet secret" data-reveal="/t/{{ info.name }}/{{ r.id }}/reveal?column={{ cell.column }}" aria-label="Show {{ cell.label | lower }} for {{ r.label }}">Show</button>{% endif %}{% else %}{{ cell.text }}{% endif %}</td>
+  <td>{% if cell.sensitive %}{% if cell.saved %}{{ reveal_button("/t/"~info.name~"/"~r.id~"/reveal", cell.column, "Show "~(cell.label|lower)~" for "~r.label) }}{% endif %}{% else %}{{ cell.text }}{% endif %}</td>
   {% endfor %}
   <td><a href="/t/{{ info.name }}/{{ r.id }}" aria-label="Open {{ r.label }}">Open</a>{% if r.review == "needs_review" %} <span class="muted">(needs review)</span>{% endif %}</td>
 </tr>

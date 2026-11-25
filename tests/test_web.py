@@ -54,6 +54,11 @@ class WebTests(TempDirTestCase):
     def get(self, path):
         return self.client.get(path, base_url=BASE)
 
+    def reveal(self, record, column):
+        """Press Show on one private detail the way the page script does: a POST with the session token (0123)."""
+        return self.client.post(f"/t/demo__items/{record}/reveal", data={"column": column, "_csrf": self.csrf},
+                                base_url=BASE, headers={"Accept": "application/json"})
+
     def post(self, path, data):
         return self.client.post(path, data=dict(data, _csrf=self.csrf), base_url=BASE)
 
@@ -106,9 +111,9 @@ class WebTests(TempDirTestCase):
         # Privacy audit: a private value is never in the list page; "Show" fetches just that one.
         self.assertNotIn("hidden note", grid)
         self.assertIn('aria-label="Show secret for Bandages"', grid)
-        record = re.search(r'/t/demo__items/(\d+)/reveal\?column=secret', grid).group(1)
-        self.assertEqual(self.get(f"/t/demo__items/{record}/reveal?column=secret").get_json()["text"], "hidden note")
-        self.assertEqual(self.get(f"/t/demo__items/{record}/reveal?column=name").status_code, 404)  # private only
+        record = re.search(r'formaction="/t/demo__items/(\d+)/reveal"', grid).group(1)
+        self.assertEqual(self.reveal(record, "secret").get_json()["text"], "hidden note")
+        self.assertEqual(self.reveal(record, "name").status_code, 404)  # private only
         page = self.get(f"/t/demo__items/{record}").get_data(as_text=True)
         self.assertNotIn("hidden note", page)  # opening the record doesn't show it either
         self.assertIn("Show private detail", page)
@@ -181,7 +186,7 @@ class PrivateFieldKeptTests(WebTests):
         self.post("/t/demo__items/new", {"name": "Gloves", "kind": "first_aid", "secret": "keep me"})
         record = re.search(r"/t/demo__items/(\d+)", self.get("/t/demo__items").get_data(as_text=True)).group(1)
         self.post(f"/t/demo__items/{record}", {"name": "Gloves (box)", "kind": "first_aid", "_keep_private": "secret"})
-        self.assertEqual(self.get(f"/t/demo__items/{record}/reveal?column=secret").get_json()["value"], "keep me")
+        self.assertEqual(self.reveal(record, "secret").get_json()["value"], "keep me")
 
     def test_a_refused_save_still_keeps_an_unopened_private_detail(self):
         # Found by the real-browser check (decision 0064): after a save was refused for another answer, the
@@ -196,4 +201,4 @@ class PrivateFieldKeptTests(WebTests):
         self.assertIn('name="_keep_private" value="secret"', page)
         self.assertNotIn("keep me", page)
         self.post(f"/t/demo__items/{record}", {"name": "Gloves", "secret": "", "_keep_private": "secret"})
-        self.assertEqual(self.get(f"/t/demo__items/{record}/reveal?column=secret").get_json()["value"], "keep me")
+        self.assertEqual(self.reveal(record, "secret").get_json()["value"], "keep me")

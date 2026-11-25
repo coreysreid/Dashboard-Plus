@@ -196,7 +196,7 @@ class BillsModuleTests(BillsCase):
             for private in sentinels:
                 with self.subTest(path=path, private=private):
                     self.assertNotIn(private, text)
-        shown = client.get(f"/t/{BILLS}/{bill}/reveal?column=reference", base_url=BASE).get_json()
+        shown = client.post(f"/t/{BILLS}/{bill}/reveal", data={"column": "reference", "_csrf": client.application.config["CSRF_TOKEN"]}, base_url=BASE, headers={"Accept": "application/json"}).get_json()
         self.assertEqual(shown["value"], REFERENCE)
         for name, text in self.export_files().items():
             for private in sentinels:

@@ -438,8 +438,8 @@ function expect(condition, message) { if (!condition) throw new Failed(message);
       expect(/-row-\d+$/.test(page.url()), `Choosing a bar with the keyboard should go to its table row; the page is at ${page.url()}.`);
       await goto('/t/pets__pets');
       await Promise.all([page.waitForNavigation(), page.click(`a[aria-label="Open ${c.pet}"]`)]);
-      const dots = await page.locator('svg.chart-svg a').count();
-      const rows = await page.locator('table.chart-table tbody tr').count();
+      const dots = await page.locator('section.chart-page:not(.bars) svg.chart-svg a').count();
+      const rows = await page.locator('section.chart-page:not(.bars) table.chart-table tbody tr').count();
       expect(dots === c.dots && rows === c.dots, `${c.pet}'s page should show ${c.dots} weigh-in dots and ${c.dots} table rows; it shows ${dots} and ${rows}.`);
       const pwide = await page.evaluate(() => document.documentElement.scrollWidth);
       expect(pwide <= 320, `At 320px ${c.pet}'s page is ${pwide}px wide; it should not scroll sideways.`);
@@ -541,12 +541,33 @@ function expect(condition, message) { if (!condition) throw new Failed(message);
       await fits('Things to do, Calendar');
       const legend = await page.locator('.cal-legend li').count();
       expect(legend === 5, `The routines legend should explain done, skipped, due, planned and a blank day; it has ${legend} lines.`);
+      const shows = await page.locator('.cal-show a').count();  // decision 0122: Show links keep one list
+      if (shows > 2) {
+        await Promise.all([page.waitForNavigation(), page.locator('.cal-show a').nth(1).click()]);
+        await fits('Things to do, Calendar showing one list');
+        const chosen = await page.locator('.cal-show a[aria-current="page"]').count();
+        expect(chosen === 1, `One Show link should be marked as chosen; ${chosen} are.`);
+      }
       await goto(`/charts/pets__weigh_ins`);
       await Promise.all([page.waitForNavigation(), page.click('.chart-ranges a:has-text("Last year")')]);
       await fits('the weights chart with a range chosen');
       expect(await page.locator('.chart-ranges a[aria-current="page"]').innerText() === 'Last year', 'Last year should be marked as chosen.');
       expect((await text('main')).includes('Since the reading before'), 'The weights page should say the change since the reading before.');
-      ok(`calendars at 320px: ${c.pet}'s feeding month with today in words and a symbol, keyboard reaches the day, routines legend of 5, weights for the last year with the change in words`);
+      // Bars over time (decision 0124): food put out per day from the pet's page, then by week, at 320px.
+      await goto('/t/pets__pets');
+      await Promise.all([page.waitForNavigation(), page.click(`a[aria-label="Open ${c.pet}"]`)]);
+      await Promise.all([page.waitForNavigation(), page.click('a[href^="/bars/pet_feeding__servings/food"]:has-text("Open food put out")')]);
+      await fits('the food put out bars');
+      const bars = page.locator('svg.chart-svg[role="group"] a.chart-mark');
+      expect(await bars.count() === 14, `Food put out per day should have 14 days, each a link; it has ${await bars.count()}.`);
+      const todayBar = await bars.last().getAttribute('aria-label');
+      expect(/\(so far\)/.test(todayBar), `Today's bar should say "so far" in words; it says "${todayBar}".`);
+      await Promise.all([page.waitForNavigation(), page.click('.chart-ranges a:has-text("By week")')]);
+      await fits('the food put out bars by week');
+      expect(await page.locator('.chart-ranges a[aria-current="page"]').first().innerText() === 'By week', 'By week should be marked as chosen.');
+      const main = await text('main');
+      expect(main.includes('put out') && !/\bmissed\b/.test(main.replace('it does not mean anything was missed', '')), 'The bars should say what was put out and never call a week missed.');
+      ok(`calendars at 320px: ${c.pet}'s feeding month with today in words and a symbol, keyboard reaches the day, routines legend of 5, weights for the last year with the change in words, food put out by day and by week (0124)`);
     } finally {
       await page.setViewportSize({ width: 1280, height: 720 });
     }
@@ -566,12 +587,14 @@ function expect(condition, message) { if (!condition) throw new Failed(message);
       expect(wide <= 320, `At 320px the Record a dose form is ${wide}px wide; it should not scroll sideways.`);
       expect(!(await html()).includes(d.secret), 'The Record a dose form sent the medication detail before Show was pressed.');
       expect(await page.inputValue('#f-amount') === '', 'Record a dose must not fill in an amount from an earlier dose.');
+      await page.selectOption('#f-medication', { index: 1 });  // nothing is chosen from an earlier dose (decision 0123)
       await page.click('[data-reveal-link]');
       await page.locator('#f-medication-shown', { hasText: d.secret }).waitFor({ timeout: 5000 });
       await submit('button[name=then][value=back]');
       expect(new URL(page.url()).pathname === personUrl, `Saving a dose should come back to ${d.person}'s page.`);
       expect((await text('main')).includes('1 dose entry recorded today'), 'After saving, the page should say "1 dose entry recorded today".');
       await Promise.all([page.waitForNavigation(), page.click('a[data-add-entry]')]);
+      await page.selectOption('#f-medication', { index: 1 });
       await Promise.all([page.waitForNavigation(), page.click('button[name=then][value=back]')]);
       expect((await text('#confirm-box')).includes(d.repeat), `A second dose straight away should ask: "${d.repeat}".`);
       expect((await text('#confirm-save')) === d.keep, `The repeat question's button should say "${d.keep}".`);
@@ -590,6 +613,7 @@ function expect(condition, message) { if (!condition) throw new Failed(message);
       expect(/\d+ doses recorded/.test(await cal.locator('.cal-summary').innerText()), 'The Dose calendar should say how many doses were recorded this month.');
       expect(await cal.locator('td[aria-current="date"] .cal-chip.cal-recorded').count() === 1, "Today's cell should show the ● mark for today's doses.");
       expect(!(await html()).includes(d.secret), `${d.person}'s Dose calendar sent the medicine before Show was pressed.`);
+      expect(!(await cal.innerText()).includes(d.person), `${d.person}'s Dose calendar named them before Show was pressed (decision 0123).`);
       const cwide = await page.evaluate(() => document.documentElement.scrollWidth);
       expect(cwide <= 320, `At 320px ${d.person}'s page with the Dose calendar is ${cwide}px wide; it should not scroll sideways.`);
       await submit('button[data-show-calendar]');

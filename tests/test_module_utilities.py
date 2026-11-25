@@ -134,9 +134,9 @@ class UtilitiesModuleTests(UtilitiesTestCase):
                 text = self.page(path, client)
                 for private in (ACCOUNT, PRIVATE_NOTE):
                     self.assertNotIn(private, text)
-        shown = client.get(f"/t/utilities__services/{service}/reveal?column=account_number", base_url=BASE).get_json()
+        shown = client.post(f"/t/utilities__services/{service}/reveal", data={"column": "account_number", "_csrf": client.application.config["CSRF_TOKEN"]}, base_url=BASE, headers={"Accept": "application/json"}).get_json()
         self.assertEqual(shown["value"], ACCOUNT)  # only the Show button's request returns it
-        self.assertEqual(client.get(f"/t/utilities__services/{service}/reveal?column=name", base_url=BASE).status_code, 404)
+        self.assertEqual(client.post(f"/t/utilities__services/{service}/reveal", data={"column": "name", "_csrf": client.application.config["CSRF_TOKEN"]}, base_url=BASE, headers={"Accept": "application/json"}).status_code, 404)
         for name, text in self.export().items():
             with self.subTest(export=name):
                 self.assertNotIn(ACCOUNT, text)

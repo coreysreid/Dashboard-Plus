@@ -1,3 +1,4 @@
+{% from "_reveal.html" import show as reveal_button %}
 {# One form field: label, input, error and help. Shared by form.html and action_form.html. #}
   <div class="{% if f.error %}has-error{% endif %}"{% if f.show_when %} data-show-when="{{ f.show_when[0] }}" data-show-value="{{ f.show_when[1] }}"{% endif %}{% if f.only_when_blank %} data-only-when-blank="{{ f.only_when_blank }}"{% endif %}>
     {% set fid = "f-" ~ f.name %}
@@ -20,7 +21,7 @@
         <div class="private-closed" id="{{ fid }}-closed">
           <p class="help" style="margin-top:0">Private detail saved. Show to read or change it.</p>
           <input type="hidden" name="_keep_private" value="{{ f.name }}" id="{{ fid }}-keep">
-          <button type="button" class="quiet" data-reveal-field="/t/{{ info.name }}/{{ record.id }}/reveal?column={{ f.name }}" data-field="{{ fid }}">Show private detail</button>
+          {{ reveal_button("/t/"~info.name~"/"~record.id~"/reveal", f.name, "Show private detail", "field", fid, "Show private detail") }}
         </div>
       {% endif %}
       {% if f.kind == "longtext" %}
@@ -34,7 +35,7 @@
           {% for value, label in f.options %}<option value="{{ value }}"{% if f.owners and value in f.owners %} data-owner="{{ f.owners[value] }}"{% endif %} {% if value == (f.value | string) %}selected{% endif %}>{{ label }}</option>{% endfor %}
         </select>
         {% if f.reveal_link %}{# the chosen record's private words, fetched only on Show (decision 0120) #}
-        <p style="margin:.35rem 0 0"><button type="button" class="quiet" data-reveal-link="{{ f.reveal_link }}" data-for="{{ fid }}">Show the chosen {{ f.label | lower }}</button></p>
+        <p style="margin:.35rem 0 0"><button type="button" class="quiet" data-reveal-link="{{ f.reveal_link }}" data-column="{{ f.reveal_column }}" data-for="{{ fid }}">Show the chosen {{ f.label | lower }}</button></p>
         <p class="help" id="{{ fid }}-shown" aria-live="polite" hidden></p>
         {% endif %}
         {% if f.follows %}<p class="help" data-follows-note="{{ fid }}" data-things="{{ f.things }}" hidden></p>

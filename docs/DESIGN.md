@@ -674,6 +674,44 @@ chart = { ..., ranges = ["3m", "1y", "all"], change = true, line = { gap_days = 
   colours could be confused, a pattern or dashed edge. A blank day is never called missed; a due date is shown
   once, on its own date. Each calendar has a legend and the same days listed in words.
 - `line` is a guide under the dots, broken across longer gaps; `scale = "fitted"` writes where the scale starts.
+- **A calendar of a table's own records** (decision 0122) leaves out `per`: `title`, `entry` and `due = true`
+  are required, and the table's own `watch.expiring` "due" gives each record's one open date (with its `where`,
+  and never a reminder moved to another list). Done marks come from `when`, an optional non-private date column
+  such as `last_done`, or else from the table's own Mark done buttons saved in history (Undo takes them away).
+  `show` is always "all"; `state`, `looks` and a private table are refused, and one record's due date may be on
+  only one calendar. Garden jobs, Vehicles (registration, insurance, services) and Bills and policies use it;
+  Home care's Work done uses the 0119 form with `per = "job"`.
+- **Things to do, Calendar** puts every calendar with due dates in one month: one grid, one legend, a count per
+  module, and each line in words starting with its module's name. **Show: All / one module** links keep one
+  module's lists (`?only=<module>`, with the month kept). With only one such calendar it is shown as before.
+
+### 5.13 Bars over time (decision 0124)
+
+```toml
+[[tables.servings.bars]]    # a list: a table may declare several, each with its own key
+key = "food"                # the page is /bars/<table>/food
+title = "Food put out"
+when = "given_at"           # a required date or date-and-time column; placed on the household's own day
+per = "pet"                 # a required link: one subject per chart, shown on its page
+measure = "sum"             # "count": how many entries; "sum": one number column added up
+amount = "amount"           # for a sum: an ordinary number column (not private, not money)
+unit = "unit"               # each entry's unit; leave out when the number column has its own `unit`
+verb = "put out"            # for a sum: "240 g put out"
+where = { kind = "bowl" }   # optional: only entries with these choices
+group = "medication"        # optional: each linked record also gets its own bars
+by = ["day", "week", "month"]  # 14 days, 12 weeks or 12 months; the first is shown first
+entry = ["feeding", "feedings"]
+subject = "pet"
+caveat = "Food put out, not necessarily eaten."  # optional
+```
+
+- Only accepted, undeleted records count. A sum adds one unit at a time (the latest entry's, or one chosen
+  with a link); other units and entries with no amount are said, never converted or read as zero.
+- Bars start at zero, oldest at the top; every value is printed in words. A period with nothing to draw says
+  "nothing recorded" beside a dashed empty box, never "missed"; the period still going on is striped and says
+  "so far". The same values are in a table; periods, Earlier, Later and units are server links.
+- A private table (0121) may only count, with no `where`; its `group` bars and names appear only after a
+  pressed Show.
 
 ## 6. Modules
 
@@ -986,8 +1024,12 @@ number and the core can load both for a transition period.
   `chart = { kind = "dots", x = "day", y = "weight", per = "pet", what = ["weight", "weights"], entry = ["weigh-in", "weigh-ins"], subject = "pet" }`;
   Pets' Weigh-ins does, so a pet's page shows its recorded weights as dots
   (never joined, from zero, one pet at a time) and `/charts/<table>` chooses
-  the pet and dates. Time series, annotations and saved chart settings are
-  still to come; a charting library (0004) may return for those.
+  the pet and dates. **Bars over time (decision 0124, section 5.13):** a
+  declared `bars` list counts entries or adds one number column in one unit
+  per day, week or month; Pet feeding (food put out), Routines (times done)
+  and Medicine doses (counted, each medicine only after Show) use it.
+  Annotations and saved chart settings are still to come; a charting library
+  (0004) may return for those.
 - **Analysis** (module, section 10.3).
 - **API connector** (module, section 6.1).
 

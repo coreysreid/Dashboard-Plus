@@ -4,13 +4,16 @@
 | base.html | Shared layout, colours (light and dark), header and footer | changing the overall look |
 | *chart.html | Charts with their equal tables: today's drinking water by item (supply_chart), one pet's recorded weights with a pet and date picker (dot_chart) and the piece shared with the pet's page (_dot_chart) | changing a chart page's wording |
 | *daily*.html | The feeding log: one pet's day with Add food (daily), the piece shared with the pet's page (_daily_panel) and the dated sheet that prints every entry or refuses (daily_sheet); medicine doses' private panel with counts until Show (_daily_private_panel, decision 0120) | changing the feeding log's or dose panel's wording |
-| *calendar.html | Month calendars (decision 0119): one calendar with its subject picker (calendar), the Things to do Calendar tab (todo_calendar) and the grid, legend and day list shared with record pages (_calendar) | changing a calendar's wording or layout |
+| *calendar.html | Month calendars (decision 0119): one calendar with its subject picker (calendar), the Things to do Calendar tab with every list together and Show links (todo_calendar, decision 0122) and the grid, legend and day list shared with record pages (_calendar) | changing a calendar's wording or layout |
+| *bars.html | Bars over time (decision 0124): one chart with its subject picker (bars) and the sentence, period links, bars, equal table and private Show shared with record pages (_bars) | changing a bars chart's wording or layout |
 | home.html | Home page: days of cover, needs attention, tables with counts, backup and data file status | changing the home screen |
 | attention.html | Running low, expiring soon, days of cover with the working shown, and gaps worth filling in | changing the attention page |
 | count.html | Count this batch: the count, its review and what was saved | changing the stocktake wording |
 | import.html | Import from a spreadsheet: choose a list and file, match columns, see which rows are ready, send to Review | changing the import wording |
 | grid.html | A table's records, a page at a time, sortable; a private table's only a count until a pressed Show (0121) | changing the list of records |
 | private_record.html | One record of a private table (0121), such as a medicine dose, before Show: its number, "Private history — press Show to see it." and the Show button | changing what a private record shows before Show |
+| reveal.html | One private detail after a pressed Show without a page script (0123), never cached | changing the no-script Show page |
+| _reveal.html | The Show button for one private detail: a submit button joined to the hidden form in base.html (0123) | changing how Show buttons are made |
 | rows.html | One page of grid rows (also loaded as you scroll) | changing a row |
 | form.html | Add and edit forms, delete and restore, and history | changing the form |
 | action_form.html | An action's small form, such as Mark done: what it asks, the next-date choice, Save once | changing the Mark done wording |

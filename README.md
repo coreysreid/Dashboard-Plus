@@ -85,6 +85,21 @@ is new: keep a copy of anything important somewhere else too. See
   A pet's weights can be shown for the last 3 months, the last year or all
   dates, with "Since the reading before: up 0.3 kg, from 4.4 kg to 4.7 kg" in
   words and a line between readings, on a scale that still starts at zero.
+  The **Calendar** tab now shows every dated list together: Home care's work
+  done and Do again by dates, Garden jobs marked done and their due dates,
+  each vehicle's registration, insurance and service dates, and each bill or
+  policy's check date, with each line in words starting with its list
+  ("Home care · Clear the gutters: Job done"). **Show: All / Home care /
+  Vegetable garden / ...** links keep one list at a time. A bill's amount and
+  any private detail are never on a calendar.
+- **Bars over time:** a pet's page shows **Food put out per day** (or per
+  week or month), in one unit at a time, such as grams or pouches, never added
+  together or converted; a routine's page shows **Times done per month**; a
+  person's page shows **Doses recorded per week**, every medicine together,
+  with each medicine's own bars only after **Show**. Every bar has its value in
+  words and the same values are in a table; a day, week or month with nothing
+  written down says "nothing recorded", never "missed", and this week or month
+  is striped and says "so far".
 - **Medicine doses:** each dose of medicine given to a person, from **Record a
   dose** on their page: the medicine is chosen from that person's own
   medication details (People → Important details), with the time now and, for

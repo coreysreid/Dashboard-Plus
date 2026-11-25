@@ -45,3 +45,22 @@ columns.notes = { type = "text" }
 
 [tables.services.watch]
 expiring = { date = "next_due", warn_days = 30, wording = "due", what = "service or check" }
+
+# Month calendars of each vehicle's own dates (decision 0122): registration, insurance renewal and each service's
+# next date, each shown once on its own date, and the day a service was last done. Things to do's Calendar tab
+# shows them together under Vehicles. The registration number is private and is never part of them.
+[tables.vehicles.calendar]
+title = "Registration calendar"
+entry = ["registration", "registrations"]
+due = true
+
+[tables.insurance.calendar]
+title = "Vehicle insurance calendar"
+entry = ["renewal", "renewals"]
+due = true
+
+[tables.services.calendar]
+title = "Vehicle services calendar"
+entry = ["service or check", "services or checks"]
+when = "last_done"
+due = true

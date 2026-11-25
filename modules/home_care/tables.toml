@@ -55,3 +55,14 @@ columns.job = { type = "link", to = "jobs", required = true, on_delete = "cascad
 columns.done_on = { type = "date", required = true, default = "today" }
 columns.done_by = { type = "link", to = "people.people", on_delete = "clear" }
 columns.notes = { type = "longtext" }
+
+# A month calendar of every job together (decision 0122): each Work done on the day it was done, and each job's one
+# Do again by date from its reminder, shown once. Things to do's Calendar tab shows it beside the other lists.
+[tables.work_done.calendar]
+when = "done_on"
+per = "job"
+show = "all"
+title = "Home care calendar"
+entry = ["job", "jobs"]
+look = "done"
+due = true

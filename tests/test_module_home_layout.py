@@ -169,7 +169,7 @@ class HomeLayoutModuleTests(TempDirTestCase):
             with self.subTest(path=path):
                 self.assertNotIn(CODE, client.get(path, base_url=BASE).get_data(as_text=True))
         for table, record in ids.items():
-            shown = client.get(f"/t/home_layout__{table}/{record}/reveal?column=access_details", base_url=BASE).get_json()
+            shown = client.post(f"/t/home_layout__{table}/{record}/reveal", data={"column": "access_details", "_csrf": client.application.config["CSRF_TOKEN"]}, base_url=BASE, headers={"Accept": "application/json"}).get_json()
             self.assertEqual(shown["value"], f"{CODE}-{ {'exits': 'door', 'shutoffs': 'water', 'equipment': 'alarm', 'meters': 'meter'}[table] }")
         form = client.get(f"/t/home_layout__exits/{ids['exits']}", base_url=BASE).get_data(as_text=True)
         self.assertIn("Codes or access details (private)", form)
