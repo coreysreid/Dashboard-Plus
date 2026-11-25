@@ -724,6 +724,8 @@ entry = ["weigh-in", "weigh-ins"]
 words = "{weight}"          # optional: a short text with {column} names, never a private column
 look = "measured"           # recorded (●), done (✓), measured (◆) or visit (■): a symbol beside the words
 change = "weight"           # optional: a number column with its own unit; "up 0.3 kg since 2 Oct, from ..."
+# change_unit = "unit"      # optional (0130): the choice column that says each entry's unit, for a change between
+#                           # two entries in the same unit only; per = "service.vehicle" may cross a module link
 # summarise = "day"         # optional: one line a day, "3 feedings recorded on Tue 24 Nov"; a private table must
 ```
 
@@ -734,6 +736,10 @@ change = "weight"           # optional: a number column with its own unit; "up 0
 - A private table (0121) must summarise by day and may not use `change`: before Show a day says only how many;
   **Show** is a POST with the session check that adds each entry's time and `words` (a private table's link shows
   its `link_rule` words), on that page only. A private column is never in `words`, so an amount never appears.
+- Decision 0130 adds the vehicle (readings with their change in the same unit, estimates without any private value),
+  a Home care job (work done) and a routine (done or skipped). After Show a dose reads in the medicine's own words
+  with no id; only two medicines with the same words get "(1 of 2 with the same words)". `words` with every
+  `{column}` empty says nothing.
 
 ## 6. Modules
 
@@ -1054,7 +1060,8 @@ number and the core can load both for a transition period.
   what happened, newest first, from each table's `timeline` declaration;
   Pets (weigh-ins with the change since the one before, vet visits,
   treatments given), Pet feeding (one line a day) and Medicine doses (how
-  many a day, the medicine only after Show) use it.
+  many a day, the medicine only after Show) use it; decision 0130 adds Vehicle running log (readings, estimates),
+  Home care (work done) and Routines (done or skipped).
   Annotations and saved chart settings are still to come; a charting library
   (0004) may return for those.
 - **Analysis** (module, section 10.3).

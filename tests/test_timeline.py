@@ -81,7 +81,7 @@ columns.note = { type = "text" }
                      "'look' must be one of recorded, done, measured, visit", "'summarise' can only be \"day\"",
                      "unknown setting 'colour'", "'change' must name a number column of this table with its own unit"):
             self.assertIn(said, text)
-        self.assertIn("'treatment' must point at a table of this module and 'name' must be a required link",
+        self.assertIn("'treatment' must point at a table of this module or of a module this one requires, and 'name' must be a required link",
                       self.problems('[tables.log.timeline]\nwhen = "at"\nper = "treatment.name"\n'
                                     'entry = ["a", "b"]\n'))
         self.assertIn("can't be used with summarise",
@@ -294,8 +294,8 @@ class DoseTimelineTests(DoseTestCase):
         reply = self.post(self.web, self.path)
         self.assertEqual(reply.status_code, 200)
         text = words(reply.get_data(as_text=True))
-        self.assertIn(f"8:00 am · {SECRET} (Medication #{self.med})", text)
-        self.assertIn(f"8:00 pm · Invented eye drops (Medication #{self.med2})", text)
+        self.assertIn(f"8:00 am · {SECRET}", text)
+        self.assertIn(f"8:00 pm · Invented eye drops", text)
         self.assertIn("Hide details", text)
         for never in (AMOUNT, "7.25 drops", "Maria Garcia"):
             self.assertNotIn(never, text)

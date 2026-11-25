@@ -44,7 +44,13 @@ def change_since(info, rule: dict, item: timeline.Item, style: str) -> str | Non
     column = info.table.columns[rule["change"]]
     if before is None or row.get(column.name) is None:
         return None
-    words = change_words(column, {"value": before[column.name]}, {"value": row[column.name]}, column.unit)
+    unit = column.unit
+    if rule.get("change_unit"):  # each entry says its own unit (decision 0130): never compared across units
+        unit_column = info.table.columns[rule["change_unit"]]
+        if row.get(unit_column.name) != before.get(unit_column.name):
+            return None
+        unit = next((c.label for c in unit_column.choices if c.key == row.get(unit_column.name)), "")
+    words = change_words(column, {"value": before[column.name]}, {"value": row[column.name]}, unit)
     when = _since(before["_day"], item.day, style)
     if words.startswith("no change"):
         return f"no change since {when}{words[len('no change'):]}"
@@ -53,17 +59,29 @@ def change_since(info, rule: dict, item: timeline.Item, style: str) -> str | Non
 
 
 def _private_link(store: records.Records, info, column, value) -> str:
-    """A private table's link after Show: the linked record's private words where its `link_rule` says which
-    (a medication detail as the household wrote it, "... (Medication #3)"), otherwise its ordinary name."""
+    """A private table's link after Show: the linked record's private words where its `link_rule` says which, as
+    the household wrote them ("Ibuprofen 200 mg"), with no id. Only when two of that person's records of the same
+    kind have the same words does it say which one: "(1 of 2 with the same words)", by the order they were added
+    (decision 0130). Otherwise the link's ordinary name."""
     target = store.registry.get(target_table(info.module.name, column))
     shows = column.link_rule.get("shows")
     if target is None or not shows or shows not in target.table.columns:
         return display.Formatter(store).text(info, column, value)
-    kind = " ".join(next((c.label for c in target.table.columns[k].choices if c.key == v), v)
-                    for k, v in column.link_rule.get("where", {}).items() if k in target.table.columns)
-    plain = f"{kind or display.column_label(info, column)} #{value}"
-    row = store.conn.execute(f"SELECT {shows} FROM {target.name} WHERE id = ?", (value,)).fetchone()
-    return f"{row[0]} ({plain})" if row and row[0] else plain
+    own = store.conn.execute(f"SELECT * FROM {target.name} WHERE id = ?", (value,)).fetchone()
+    words = " ".join(str(own[shows] or "").split()) if own is not None else ""
+    if own is None or not words:
+        kind = " ".join(next((c.label for c in target.table.columns[k].choices if c.key == v), v)
+                        for k, v in column.link_rule.get("where", {}).items() if k in target.table.columns)
+        return f"{kind or display.column_label(info, column)} with no words written"
+    same = {k: own[k] for k in (*column.link_rule.get("where", {}), *column.link_rule.get("same", {}).keys())
+            if k in target.table.columns}
+    clause = "".join(f" AND {k} = ?" if v is not None else f" AND {k} IS NULL" for k, v in same.items())
+    rows = store.conn.execute(f"SELECT id, {shows} FROM {target.name} WHERE deleted_at IS NULL{clause} ORDER BY id",
+                              [v for v in same.values() if v is not None]).fetchall()
+    twins = [r[0] for r in rows if " ".join(str(r[1] or "").split()).casefold() == words.casefold()]
+    if len(twins) > 1 and value in twins:
+        return f"{words} ({twins.index(value) + 1} of {len(twins)} with the same words)"
+    return words
 
 
 def fill(store: records.Records, formatter: display.Formatter, info, rule: dict, row: dict) -> str:
@@ -75,8 +93,13 @@ def fill(store: records.Records, formatter: display.Formatter, info, rule: dict,
             return ""
         if info.table.private and column.type == "link":
             return _private_link(store, info, column, value)
+        if column.name == rule.get("change") and column.type == "integer":
+            return f"{int(value):,}"  # a reading reads like its change: 49,740 (decision 0130)
         return formatter.text(info, column, value)
     words = TIMELINE_WORD.sub(one, rule["words"]).strip()
+    named = TIMELINE_WORD.findall(rule["words"])
+    if named and not any(row.get(m) not in (None, "") for m in named):
+        return ""  # "by {done_by}" with nobody named says nothing, not "by"
     return words.strip(" ·:,") if words else ""
 
 

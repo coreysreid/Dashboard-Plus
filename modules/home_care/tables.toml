@@ -78,3 +78,11 @@ measure = "count"
 by = ["month", "week"]
 entry = ["time done", "times done"]
 subject = "job"
+
+# On the job's own page (decision 0130): each time the job was done, newest first, and who did it.
+[tables.work_done.timeline]
+when = "done_on"
+per = "job"
+entry = ["work done", "work done"]
+words = "{done_by}"
+look = "done"

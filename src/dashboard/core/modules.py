@@ -69,7 +69,7 @@ BARS_BY = ("day", "week", "month")
 # One timeline on a record's page (decision 0126): "What happened, newest first", every dated entry of every table
 # that links to the record and declares `timeline`. Each kind has a fixed look (a symbol beside its words, never a
 # colour alone); `summarise = "day"` makes one line a day, as a private table must, so it says only how many.
-TIMELINE_KEYS = ("when", "per", "entry", "words", "look", "summarise", "change")
+TIMELINE_KEYS = ("when", "per", "entry", "words", "look", "summarise", "change", "change_unit")
 TIMELINE_LOOKS = ("recorded", "done", "measured", "visit")
 TIMELINE_WORD = re.compile(r"\{([^{}]*)\}")
 # A gentle check before a form saves, such as an odometer reading lower than the last one: Go back, or Save as
@@ -1168,9 +1168,13 @@ def _check_timeline(file: str, module: str, table: Table, tables: dict[str, Tabl
         other, _, name = link.to.partition(".") if "." in link.to else (module, ".", link.to)
         hop = tables.get(name) if other == module else None
         column = hop.columns.get(second) if hop is not None else None
-        if column is None or column.type != "link" or not column.required or "." in second:
-            problems.append(f"{where}: in per = \"{per}\", '{first}' must point at a table of this module and "
-                            f"'{second}' must be a required link column of that table.")
+        # A link into another module is checked once that module is loaded (_cross_module_timeline_problems).
+        if other != module and "." not in second and second:
+            pass
+        elif column is None or column.type != "link" or not column.required or "." in second:
+            problems.append(f"{where}: in per = \"{per}\", '{first}' must point at a table of this module or of a "
+                            f"module this one requires, and '{second}' must be a required link column of that "
+                            f"table.")
     words = raw.get("entry")
     if not (isinstance(words, list) and len(words) == 2 and all(isinstance(w, str) and w.strip() for w in words)):
         problems.append(f"{where}: 'entry' must be two words, singular then plural, like [\"weigh-in\", "
@@ -1198,12 +1202,21 @@ def _check_timeline(file: str, module: str, table: Table, tables: dict[str, Tabl
     if change is not None:
         column = table.columns.get(change) if isinstance(change, str) else None
         if column is None or column.type not in ("integer", "decimal", "measure") or column.sensitive \
-                or not column.unit:
-            problems.append(f"{where}: 'change' must name a number column of this table with its own unit and "
-                            f"not private, like change = \"weight\", so a change is never across units.")
+                or not (column.unit or raw.get("change_unit")):
+            problems.append(f"{where}: 'change' must name a number column of this table with its own unit (or with "
+                            f"change_unit naming the choice column that says the unit) and not private, like "
+                            f"change = \"weight\", so a change is never across units.")
         if summarise:
             problems.append(f"{where}: 'change' compares one entry with the one before, so it can't be used with "
                             f"summarise.")
+    change_unit = raw.get("change_unit")
+    if change_unit is not None:
+        unit_column = table.columns.get(change_unit) if isinstance(change_unit, str) else None
+        if change is None or unit_column is None or unit_column.type != "choice" or unit_column.sensitive \
+                or not unit_column.required:
+            problems.append(f"{where}: 'change_unit' goes with 'change' and must name a required choice column of "
+                            f"this table that is not private, like change_unit = \"unit\". A change is then only "
+                            f"said between two entries in the same unit, never converted.")
     if table.private:  # decisions 0121 and 0123: how many each day until Show, never an amount or a change
         if summarise != "day":
             problems.append(f"{where}: a private table's timeline must say summarise = \"day\", so before Show it "
@@ -1215,7 +1228,7 @@ def _check_timeline(file: str, module: str, table: Table, tables: dict[str, Tabl
         return {}
     return {"when": raw["when"], "per": per, "link": first, "through": second or None,
             "entry": [w.strip() for w in raw["entry"]], "words": text.strip(), "look": look,
-            "summarise": summarise, "change": change}
+            "summarise": summarise, "change": change, "change_unit": change_unit}
 
 
 def _check_own_calendar(where: str, table: Table, raw: dict, problems: list[str]) -> dict:
@@ -2252,6 +2265,24 @@ def _cross_module_gap_problems(module: Module, by_name: dict[str, Module]) -> li
     return problems
 
 
+def _cross_module_timeline_problems(module: Module, by_name: dict[str, Module]) -> list[str]:
+    """Check a timeline `per` like "service.vehicle" whose first link points into another module, once that module
+    is loaded: the table it names must have that column, as a required link (decision 0130)."""
+    problems = []
+    for table in module.tables.values():
+        rule = table.timeline
+        link = table.columns.get(rule["link"]) if rule and rule.get("through") else None
+        if link is None or "." not in (link.to or ""):
+            continue
+        other, _, other_table = link.to.partition(".")
+        target = by_name[other].tables.get(other_table) if other in by_name else None
+        column = target.columns.get(rule["through"]) if target is not None else None
+        if column is None or column.type != "link" or not column.required:
+            problems.append(f"In tables.toml, table '{table.name}', timeline: in per = \"{rule['per']}\", "
+                            f"'{link.to}' must have a required link column '{rule['through']}'.")
+    return problems
+
+
 def _cross_module_sheet_problems(module: Module, by_name: dict[str, Module]) -> list[str]:
     """Check sheet columns like "roadside_contact.phone" whose link points into another module.
 
@@ -2426,6 +2457,7 @@ def dependency_order(modules: list[Module], failures: dict[str, list[str]]) -> l
             state[module.name] = "failed"
             return False
         problems = _cross_module_gap_problems(module, by_name) + _cross_module_sheet_problems(module, by_name)
+        problems += _cross_module_timeline_problems(module, by_name)
         problems += _link_rule_problems(module, by_name)
         problems += _takes_over_problems(module, {n: m for n, m in by_name.items() if state.get(n) == "done"})
         if module.prompts is not None:
