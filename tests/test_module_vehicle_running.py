@@ -164,9 +164,9 @@ class AcceptanceTests(RunningTestCase):
             self.assertNotIn(claim, page)
         self.assertNotIn("Dealer scope words", page)  # behind Show
         ids = [r[0] for r in self.conn.execute(f"SELECT id FROM {ESTIMATES} ORDER BY id")]
-        shown = [client.get(f"/t/{ESTIMATES}/{i}/reveal?column=scope", base_url=BASE).get_json()["text"] for i in ids]
+        shown = [client.post(f"/t/{ESTIMATES}/{i}/reveal", data={"column": "scope", "_csrf": client.application.config["CSRF_TOKEN"]}, base_url=BASE, headers={"Accept": "application/json"}).get_json()["text"] for i in ids]
         self.assertEqual(shown, ["Dealer scope words", "Independent scope words"])
-        self.assertEqual(client.get(f"/t/{ESTIMATES}/{ids[0]}/reveal?column=amount", base_url=BASE).get_json()["text"],
+        self.assertEqual(client.post(f"/t/{ESTIMATES}/{ids[0]}/reveal", data={"column": "amount", "_csrf": client.application.config["CSRF_TOKEN"]}, base_url=BASE, headers={"Accept": "application/json"}).get_json()["text"],
                          "410.00")
         with self.assertRaises(records.ValidationError):  # no quote good until before it was quoted
             self.estimate("other", quoted_on="2026-11-18", good_until="2026-11-01")

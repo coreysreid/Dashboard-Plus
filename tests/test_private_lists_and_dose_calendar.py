@@ -146,7 +146,7 @@ class DoseCalendarTests(PrivateDoseCase):
 
     def test_an_empty_month_is_never_missed_and_the_day_page_names_the_giver_only_after_show(self):
         empty = self.page(f"{CAL}?subject={self.rosa}&month=2026-10", self.web)
-        self.assertIn("No dose entry recorded for Rosa Garcia in October 2026.", empty)
+        self.assertIn("No dose entry recorded for this person in October 2026.", empty)
         self.assertIn("It does not mean anything was missed.", empty)
         self.assertNotIn(PRIVATE, empty)  # nothing to show
         day = self.page(f"/daily/{TABLE}?subject={self.rosa}&day=2026-11-19", self.web)

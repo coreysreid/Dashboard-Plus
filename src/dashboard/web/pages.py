@@ -1,7 +1,7 @@
 """Pages built from module declarations: the record grid, add and edit forms, and history."""
 from __future__ import annotations
 
-from flask import Blueprint, abort, current_app, jsonify, redirect, render_template, request, url_for
+from flask import Blueprint, abort, current_app, jsonify, make_response, redirect, render_template, request, url_for
 
 from dashboard.core import actions, confirm, dates, records, schema, settings, suggest
 from dashboard.core.units import unit_for
@@ -308,11 +308,13 @@ def _form_values(info, store, creating: bool) -> dict:
     return values
 
 
-@pages.get("/t/<table>/<int:record_id>/reveal")
+@pages.post("/t/<table>/<int:record_id>/reveal")
 def reveal_private(table, record_id):
-    """One private detail, fetched only when the person chooses Show (privacy audit, decision 0059)."""
+    """One private detail, shown only when the person presses Show: a POST with the page's session token, never a
+    link, so it cannot land in history, logs or a bookmark, and never cached (decision 0123). A page script asks
+    for JSON and swaps the words in; without a script the same button opens a small page with the words."""
     info, store = _info(table), _store()
-    column = info.table.columns.get(request.args.get("column", ""))
+    column = info.table.columns.get(request.form.get("column", ""))
     if column is None or not column.sensitive:
         abort(404)
     try:
@@ -320,8 +322,15 @@ def reveal_private(table, record_id):
     except records.RecordNotFound:
         abort(404)
     value = record.get(column.name)
-    return jsonify({"text": display.Formatter(store).text(info, column, value),
-                    "value": "" if value is None else str(display.input_value(column, value))})
+    text = display.Formatter(store).text(info, column, value)
+    if request.accept_mimetypes.best == "application/json":
+        response = jsonify({"text": text, "value": "" if value is None else str(display.input_value(column, value))})
+    else:
+        response = make_response(render_template(
+            "reveal.html", info=info, record=record, label=display.column_label(info, column), text=text,
+            title=display.table_title(info)))
+    response.headers["Cache-Control"] = "no-store"
+    return response
 
 
 @pages.get("/t/<table>/new")

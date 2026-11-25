@@ -1,6 +1,6 @@
 {% extends "base.html" %}
 {% block title %}Step {{ number }}: {{ scenario.title }} · Dashboard Plus{% endblock %}
-{% block body %}
+{% block body %}{% from "_reveal.html" import show as reveal_button %}
 <p class="muted"><a href="/">Home</a> · <a href="/drills/{{ module }}">Think it through</a> · <a href="/drills/{{ module }}/{{ scenario.id }}">{{ scenario.title }}</a></p>
 <p class="muted">Step {{ number }} of {{ total }}</p>
 <h1>{{ step.question }}</h1>
@@ -43,7 +43,7 @@
   <div><label for="own_words">In your own words (optional)</label>
     <textarea id="own_words" name="own_words" rows="3"></textarea>
     <p class="help">Private: it stays on this computer. It is never exported, sent to your other computers or shown to a helper.</p>
-    {% if saved and saved.has_words %}<p>Your words for this step are saved. <button type="button" class="quiet secret" data-reveal="/t/{{ steps_table }}/{{ saved.id }}/reveal?column=own_words" aria-label="Show your words for this step">Show</button> Typing here replaces them.</p>{% endif %}
+    {% if saved and saved.has_words %}<p>Your words for this step are saved. {{ reveal_button("/t/"~steps_table~"/"~saved.id~"/reveal", "own_words", "Show your words for this step") }} Typing here replaces them.</p>{% endif %}
   </div>
 
   <div class="drill-actions">

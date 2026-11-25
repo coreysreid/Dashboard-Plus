@@ -408,8 +408,8 @@ class DrillCheckTests(DrillTestCase):
         done = self.page(f"/drills/readiness/bedroom-fire-night/runs/{run_id}?saved=1", client)
         self.assertIn("Practised on 20/11/26 · Look again on 01/06/27", done)
         self.assertNotIn(WORDS, done)
-        self.assertIn(f'data-reveal="/t/readiness__drill_steps/{first["id"]}/reveal?column=own_words"', done)
-        reveal = client.get(f"/t/readiness__drill_steps/{first['id']}/reveal?column=own_words", base_url=BASE)
+        self.assertIn(f'formaction="/t/readiness__drill_steps/{first["id"]}/reveal"', done)
+        reveal = client.post(f"/t/readiness__drill_steps/{first['id']}/reveal", data={"column": "own_words", "_csrf": client.application.config["CSRF_TOKEN"]}, base_url=BASE, headers={"Accept": "application/json"})
         self.assertEqual(reveal.get_json()["text"], WORDS)
         self.assertEqual(self.post(client, self.step_path("bedroom-fire-night", run_id, 1), choice="not_relevant",
                                    action="next").status_code, 409)  # a finished practice is history

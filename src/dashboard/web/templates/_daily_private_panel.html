@@ -14,7 +14,7 @@
   </ul>
   {% endif %}
   {% if view.first_add %}
-  <p class="muted">There is nothing to choose yet. First add it to {{ view.name }}'s {{ view.first_add.title | lower }}: <a href="{{ view.first_add.href }}">add one</a>.</p>
+  <p class="muted">There is nothing to choose yet. First add it to {{ "this person's" if view.name_hidden else view.name ~ "'s" }} {{ view.first_add.title | lower }}: <a href="{{ view.first_add.href }}">add one</a>.</p>
   {% else %}
   <div class="actions daily-add">
     <a class="button" href="{{ view.add }}" data-add-entry>{{ view.rule.add }}</a>
