@@ -889,7 +889,9 @@ class Records:
             if self.conn.execute("SELECT 1 FROM core__audit WHERE action = 'action' AND "
                                  "json_extract(after, '$.operation') = ? LIMIT 1", (op,)).fetchone():
                 raise ActionNotAvailable("That button was already used. Nothing was changed.")
-            values = {k: resolve_word(info.table.columns[k], v) for k, v in action["set"].items()}
+            # "today" is the same day the press is dated by, so the date it sets and the press agree (0112, 0129)
+            values = {k: today.isoformat() if today and v == "today" and info.table.columns[k].type == "date"
+                      else resolve_word(info.table.columns[k], v) for k, v in action["set"].items()}
             changed = self._update(info, record_id, values, actor)
             saved = self._row(info, record_id)
             before = {k: current.get(k) for k in values}

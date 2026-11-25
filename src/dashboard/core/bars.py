@@ -76,7 +76,7 @@ def entries(conn: sqlite3.Connection, info, rule: dict, subject_id: int, start: 
     low, high = start.isoformat(), (end + timedelta(days=1)).isoformat()
     if when.type == "datetime":  # wide enough for any offset, then checked exactly
         low, high = (start - timedelta(days=1)).isoformat(), (end + timedelta(days=2)).isoformat()
-    clause, params = f" AND {rule['per']} = ?", [low, high, subject_id]
+    clause, params = (f" AND {rule['per']} = ?", [low, high, subject_id]) if rule.get("per") else ("", [low, high])
     for column, value in (rule.get("where") or {}).items():
         clause, params = clause + f" AND {column} = ?", params + [value]
     if group_id is not None:
@@ -99,11 +99,28 @@ def entries(conn: sqlite3.Connection, info, rule: dict, subject_id: int, start: 
     return found
 
 
+def done_days(conn: sqlite3.Connection, registry: dict, info, rule: dict, subject_id: int | None, start: date,
+              end: date) -> list[dict]:
+    """For `history = true` (decision 0129): each day from `start` to `end` a record (of one subject, with `per`)
+    was done, by its "last done" date now and the earlier dates its history shows it moved on from, as entries
+    with `_day`. One record counts once a day."""
+    mine = None if not rule.get("per") else {r[0] for r in conn.execute(
+        f"SELECT id FROM {info.name} WHERE {rule['per']} = ?", (subject_id,))}
+    return [{"id": d.record_id, "_day": d.day, "_local": None, "_earlier": d.kind != "now"}
+            for d in calendars.done_days(conn, registry, info, rule["when"], start, end)
+            if mine is None or d.record_id in mine]
+
+
 def build(conn: sqlite3.Connection, info, rule: dict, subject_id: int, by: str, last_day: date, first_day: str,
-          today: date, group_id: int | None = None) -> list[Period]:
-    """The periods of one chart with their records, read fresh in one query."""
+          today: date, group_id: int | None = None, registry: dict | None = None) -> list[Period]:
+    """The periods of one chart with their records, read fresh in one query (with `history`, from the records and
+    their saved history: `registry` lets it also read Mark done presses, decision 0129)."""
     found = periods(by, last_day, first_day, today)
-    rows = entries(conn, info, rule, subject_id, found[0].start, found[-1].end, daily.household_zone(conn), group_id)
+    if rule.get("history"):  # each done day, earlier ones from the record's own history (decision 0129)
+        rows = done_days(conn, registry or {}, info, rule, subject_id, found[0].start, found[-1].end)
+    else:
+        rows = entries(conn, info, rule, subject_id, found[0].start, found[-1].end, daily.household_zone(conn),
+                       group_id)
     for entry in rows:
         for period in found:
             if period.start <= entry["_day"] <= period.end:

@@ -842,7 +842,9 @@ function expect(condition, message) { if (!condition) throw new Failed(message);
     await page.setViewportSize({ width: 320, height: 800 });
     const skip = /^\/(close|export|restore|helpers\/|static)|\.(zip|csv|json|ics)$|\/print|\/(accept|reject|delete|undo|new)$/;
     const seen = new Set();
-    const queue = ['/', '/to-do/year'];  // Home first, then every page its links reach; This year is named because it was once too wide
+    // Home first, then every page its links reach; This year is named because it was once too wide, and the Garden
+    // calendar and Jobs done per month (decision 0129) so they are checked wherever Garden is on (a 404 is skipped)
+    const queue = ['/', '/to-do/year', '/calendar/garden__jobs', '/bars/garden__jobs/done'];
     const wide = [];
     while (queue.length && seen.size < plan.widths) {
       const path = queue.shift();

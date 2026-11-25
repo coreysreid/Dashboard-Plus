@@ -24,10 +24,15 @@ def _store() -> records.Records:
 
 
 def bar_rules(registry: dict, subject=None) -> list[tuple]:
-    """Every (table, bars rule) whose `per` table is switched on, or only those pointing at `subject`."""
+    """Every (table, bars rule) whose `per` table is switched on, or only those pointing at `subject`. A chart of
+    every record of a table together (no `per`, decision 0129) is never a panel on one record's page."""
     found = []
     for info in registry.values():
         for rule in info.table.bars:
+            if not rule.get("per"):
+                if subject is None:
+                    found.append((info, rule))
+                continue
             target = target_table(info.module.name, info.table.columns[rule["per"]])
             if target in registry and (subject is None or target == subject.name):
                 found.append((info, rule))
@@ -102,12 +107,24 @@ def group_name(store: records.Records, info, rule: dict, group_id: int, show: bo
     return f"{row[0]} ({plain})" if row and row[0] else plain
 
 
-def _link(info, rule: dict, subject_id: int, **args) -> str:
+def _link(info, rule: dict, subject_id: int | None, **args) -> str:
     return f"/bars/{info.name}/{rule['key']}?" + urlencode(
-        {"subject": subject_id, **{k: v for k, v in args.items() if v not in (None, "")}})
+        {k: v for k, v in dict(subject=subject_id, **args).items() if v not in (None, "")})
 
 
-def bars_view(store: records.Records, info, rule: dict, subject_id: int, by: str | None = None,
+def table_panels(store: records.Records, info) -> list[dict]:
+    """The bars of every record of one table together (no `per`, decision 0129), such as Garden's jobs done per
+    month: shown on that table's own calendar page."""
+    return [bars_view(store, info, rule, None, panel=True) for rule in info.table.bars if not rule.get("per")]
+
+
+def table_links(info) -> list[dict]:
+    """Links from a table's list to its whole-table bars (decision 0129): "Jobs done per month"."""
+    return [{"href": f"/bars/{info.name}/{rule['key']}", "words": f"{rule['title']} per {rule['by'][0]}"}
+            for rule in info.table.bars if not rule.get("per")]
+
+
+def bars_view(store: records.Records, info, rule: dict, subject_id: int | None, by: str | None = None,
               end: date | None = None, unit: str | None = None, show: bool = False, group_id: int | None = None,
               panel: bool = False) -> dict:
     """Everything one bars chart shows: the plain sentence, the bars and the equal table, for one subject's periods
@@ -118,9 +135,13 @@ def bars_view(store: records.Records, info, rule: dict, subject_id: int, by: str
     today = today_for(store, info, rule)
     last_day = min(end or today, today)
     style = dates.household_style(store.conn)
-    found = bars.build(store.conn, info, rule, subject_id, by, last_day, week_start(store.conn), today, group_id)
-    subject_info = store.registry[target_table(info.module.name, info.table.columns[rule["per"]])]
-    name = display.display_name(subject_info, store.get(subject_info.name, subject_id), store)
+    found = bars.build(store.conn, info, rule, subject_id, by, last_day, week_start(store.conn), today, group_id,
+                       registry=store.registry)
+    if rule.get("per"):
+        subject_info = store.registry[target_table(info.module.name, info.table.columns[rule["per"]])]
+        name = display.display_name(subject_info, store.get(subject_info.name, subject_id), store)
+    else:  # every record of the table together (decision 0129): the chart is named by the list itself
+        name = display.table_title(info)
     is_sum = rule["measure"] == "sum"
     units = bars.units(rule, found) if is_sum else []
     chosen = unit if unit in units else (units[0] if units else "")
@@ -129,7 +150,8 @@ def bars_view(store: records.Records, info, rule: dict, subject_id: int, by: str
     total_n = sum(p.count for p in found)
     total, added, unmeasured, others = Decimal(0), 0, 0, {}
     rows, drawn = [], []
-    daily_page = bool(info.table.daily) and info.table.daily["per"] == rule["per"] and group_id is None
+    daily_page = bool(info.table.daily) and bool(rule.get("per")) and info.table.daily["per"] == rule["per"] \
+        and group_id is None
     for period in found:
         n = period.count
         full = _full(period, by, style) + (" (so far)" if period.so_far else "")
@@ -174,11 +196,17 @@ def bars_view(store: records.Records, info, rule: dict, subject_id: int, by: str
     span_end = "today" if last.so_far else dates.show(last.end, style)
     span = f"{len(found)} {by}s, {dates.show(first.start, style)} to {span_end}"
     one, many = rule["entry"]
-    recorded = store.conn.execute(
-        f"SELECT 1 FROM {info.name} WHERE deleted_at IS NULL AND review_status = 'confirmed' AND {rule['per']} = ?"
-        + "".join(f" AND {c} = ?" for c in rule["where"]) + (f" AND {rule['group']} = ?" if group_id is not None
-                                                             else "") + " LIMIT 1",
-        [subject_id, *rule["where"].values(), *([group_id] if group_id is not None else [])]).fetchone()
+    if rule.get("history"):  # any done day up to today, earlier ones from history included (decision 0129)
+        recorded = bool(total_n) or bool(bars.done_days(store.conn, store.registry, info, rule, subject_id,
+                                                        date(1900, 1, 1), today))
+    else:
+        recorded = store.conn.execute(
+            f"SELECT 1 FROM {info.name} WHERE deleted_at IS NULL AND review_status = 'confirmed'"
+            + (f" AND {rule['per']} = ?" if rule.get("per") else "")
+            + "".join(f" AND {c} = ?" for c in rule["where"])
+            + (f" AND {rule['group']} = ?" if group_id is not None else "") + " LIMIT 1",
+            [*([subject_id] if rule.get("per") else []), *rule["where"].values(),
+             *([group_id] if group_id is not None else [])]).fetchone()
     empty, notes = None, []
     if not recorded:
         empty = f"No {many} recorded for {name} yet."
@@ -229,7 +257,9 @@ def bars_view(store: records.Records, info, rule: dict, subject_id: int, by: str
                                     drawn, axis, unit_words, whole=not is_sum)
     caveat = " ".join(c for c in (rule.get("caveat"), (
         "Each bar adds up the amounts written down, in one unit only; other units are never converted or added in."
-        if is_sum else "Each bar counts the entries written down.")
+        if is_sum else "Each bar counts the days each was recorded as done, earlier ones from each one's history; "
+                       "a date typed back or cleared is never counted." if rule.get("history")
+        else "Each bar counts the entries written down.")
         + " A period with nothing recorded only means nothing was written down.") if c)
     groups = []
     private = info.table.private
@@ -299,6 +329,11 @@ def _bars_page(table, key, show: bool):
     info, rule = _find(store.registry, table, key)
     if info is None:
         abort(404)
+    if not rule.get("per"):  # every record of the table together (decision 0129): no one to choose
+        view = bars_view(store, info, rule, None, request.values.get("by"), _end(request.values.get("end")))
+        return render_template("bars.html", title=rule["title"], view=view, subjects=[],
+                               chosen={"id": None, "name": view["name"]}, rule=rule, no_subject=None,
+                               subject_href=None, list_href=f"/t/{info.name}")
     subject_info = store.registry[target_table(info.module.name, info.table.columns[rule["per"]])]
     rows = [dict(r) for r in store.conn.execute(f"SELECT * FROM {subject_info.name} WHERE deleted_at IS NULL "
                                                  f"ORDER BY id")]

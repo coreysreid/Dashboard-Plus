@@ -682,6 +682,14 @@ chart = { ..., ranges = ["3m", "1y", "all"], change = true, line = { gap_days = 
   only one calendar. Garden jobs, Vehicles (registration, insurance, services), Bills and policies, Documents, Home layout's alarms
   and Things lent out use it (decision 0125); Home care's Work done and Medical's Kit checks use the 0119 form
   with a `per` link.
+- **Earlier done days** (decision 0129): an own calendar with `when` may add `history = true`. Then each earlier
+  value of `when` that the record's saved history shows was later moved on to a later date, saved on a later day
+  than it was typed, is also a ✓ day, said "(an earlier time, from its history)". A date typed back (a
+  correction), cleared (by hand or by Undo) or changed again the same day never counts; a deleted record has
+  none; one record counts once a day. A Mark done press that did not set `when` itself (saved before the table
+  kept the date) also counts on the day it was pressed, unless undone. Nothing is stored or backfilled
+  (`done_days` in `core/calendars.py`). Vehicle services, Home layout's alarms, Things lent out and Garden
+  jobs (`done_on`, set by Mark done) use it.
 - **Things to do, Calendar** puts every calendar with due dates in one month: one grid, one legend, a count per
   module, and each line in words starting with its module's name. **Show: All / one module** links keep one
   module's lists (`?only=<module>`, with the month kept). With only one such calendar it is shown as before.
@@ -713,6 +721,11 @@ caveat = "Food put out, not necessarily eaten."  # optional
   "so far". The same values are in a table; periods, Earlier, Later and units are server links.
 - A private table (0121) may only count, with no `where`; its `group` bars and names appear only after a
   pressed Show.
+- **Every record together, and done days** (decision 0129): leave out `per` (and `subject`) for one chart of
+  the whole table, `measure = "count"` only, shown on the table's own calendar page, linked from its list and at
+  `/bars/<table>/<key>`, never on one record's page. `history = true` (with `when` a non-private date column,
+  not required) counts each done day the calendar's `history` reads, earlier ones included; no `where` or
+  `group`. Garden's **Jobs done per month** is `when = "done_on"`, `history = true`, `by = ["month", "week"]`.
 
 ### 5.14 One timeline on a record's page (decision 0126)
 

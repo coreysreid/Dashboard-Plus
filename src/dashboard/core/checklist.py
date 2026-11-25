@@ -58,6 +58,7 @@ class Done:
     planned: str | None
     missed: bool
     key: str  # the action that saved it, such as "done" or "skip"
+    fields: tuple = ()  # the fields a one-step press set, such as ("done",): decision 0129 reads them
 
 
 def sources(registry: dict[str, TableInfo]) -> list[Source]:
@@ -203,7 +204,8 @@ def done(conn: sqlite3.Connection, registry: dict[str, TableInfo], start: date, 
         planned = next((v for v in (result.get("copied") or {}).values() if v), None)
         found.append(Done(source, record_id, names[key], on, result.get("counts_as") or
                           (action or {}).get("counts_as") or "done", result["operation"], planned,
-                          bool(result.get("missed")), result.get("key") or ""))
+                          bool(result.get("missed")), result.get("key") or "",
+                          tuple((result.get("after") or {}) if result.get("one_step") else ())))
     found.sort(key=lambda d: (d.on, d.operation), reverse=True)
     return found
 

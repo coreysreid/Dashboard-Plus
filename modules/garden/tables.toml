@@ -44,25 +44,42 @@ columns.title = { type = "text", required = true }
 columns.bed = { type = "link", to = "beds" }
 columns.due_on = { type = "date" }
 columns.done = { type = "boolean", default = false }
+columns.done_on = { type = "date" }
 columns.notes = { type = "longtext" }
 
 # One press marks a job done; its reminder goes because it only looks at jobs not done (decision 0075).
-# The press is named in history, so Things to do counts it as done and offers Undo (decision 0112).
+# The press is named in history, so Things to do counts it as done and offers Undo (decision 0112). It also sets
+# Done on to today (decision 0129); jobs marked done before then keep no date and are never given a guessed one.
 [[tables.jobs.actions]]
 key = "done"
 label = "Mark done"
 show_when = { done = false }
-set = { done = true }
-done = "Marked as done. Add a new job if it needs doing again."
+set = { done = true, done_on = "today" }
+done = "Marked as done. Done on is today: change it below if it was another day. Add a new job if it needs doing again."
 undo = "Undo Mark done"
 
 [tables.jobs.watch]
 # A finished job is never reminded about (decision 0072): the reminder uses only the household's own due date.
 expiring = { date = "due_on", warn_days = 14, wording = "due", what = "job", where = { done = false } }
 
-# A month calendar of the jobs themselves (decision 0122): each Mark done on the day it was pressed (from history,
-# so Undo takes it away), and each open job's due date, shown once. A finished job has no due date to show.
+# A month calendar of the jobs themselves (decision 0122): the day each was done and each open job's due date, shown
+# once. A finished job has no due date to show. Since decision 0129 the done day is Done on, and with history = true
+# also each earlier Done on a job's history shows it moved on from, and each Mark done pressed before Done on existed
+# (Undo takes a press away; a date typed back or cleared never counts).
 [tables.jobs.calendar]
 title = "Garden calendar"
 entry = ["job", "jobs"]
+when = "done_on"
+history = true
 due = true
+
+# Jobs done per month (decision 0129): every job together, one count for each day a job was done, read the same way
+# as the Garden calendar. Jobs marked done before Done on existed count by the day Mark done was pressed.
+[[tables.jobs.bars]]
+key = "done"
+title = "Jobs done"
+when = "done_on"
+history = true
+measure = "count"
+by = ["month", "week"]
+entry = ["job done", "jobs done"]

@@ -56,14 +56,17 @@ CHART_SCALES = ("zero", "fitted")
 # A month calendar of a table's dated or timed records by the household's own day (decision 0119). Each record has
 # one of a few fixed looks (colour, symbol and pattern together); a linked record's open due date is shown only when
 # the table says `due = true`, and an empty day is never called missed. Without `per` it is a calendar of the
-# table's own records (decision 0122): each one's own open due date, and when each was done.
-CALENDAR_KEYS = ("when", "per", "show", "title", "entry", "state", "looks", "look", "due")
+# table's own records (decision 0122): each one's own open due date, and when each was done. `history = true` also
+# shows each earlier date its `when` column was moved on from, read from the record's saved history (decision 0129).
+CALENDAR_KEYS = ("when", "per", "show", "title", "entry", "state", "looks", "look", "due", "history")
 CALENDAR_ENTRY_LOOKS = ("recorded", "done", "skipped")
 CALENDAR_SHOW = ("one", "all")
 # Bars over time (decision 0124): how often (`measure = "count"`) or how much of one number column in one unit
 # (`"sum"`) per day, week or month, by the household's own day. A table may declare several, each with its own key.
+# Without `per` one chart counts every record of the table together; `history = true` counts each day a record's
+# own "last done" date says it was done, earlier ones from its saved history included (decision 0129).
 BARS_KEYS = ("key", "title", "when", "per", "measure", "amount", "unit", "where", "group", "by", "entry", "verb",
-             "subject", "caveat")
+             "subject", "caveat", "history")
 BARS_MEASURES = ("count", "sum")
 BARS_BY = ("day", "week", "month")
 # One timeline on a record's page (decision 0126): "What happened, newest first", every dated entry of every table
@@ -990,6 +993,9 @@ def _check_calendar(file: str, module: str, table: Table, tables: dict[str, Tabl
     if "per" not in raw:
         return _check_own_calendar(where, table, raw, problems)
     before = len(problems)
+    if "history" in raw:
+        problems.append(f"{where}: 'history' is only for a calendar of a table's own records (no 'per') whose 'when' "
+                        f"date says when each was last done. Here every entry is already its own record.")
     when, per =(table.columns.get(raw.get(k)) if isinstance(raw.get(k), str) else None for k in ("when", "per"))
     if when is None or when.type not in ("date", "datetime") or not when.required:
         problems.append(f"{where}: 'when' must name a required date or date-and-time column of this table.")
@@ -1068,9 +1074,23 @@ def _check_bars(file: str, table: Table, raw, problems: list[str]) -> list[dict]
         if not (isinstance(rule.get("title"), str) and rule["title"].strip()):
             problems.append(f"{where}: 'title' must be what the bars show, like \"Food put out\".")
         when, per = (table.columns.get(rule.get(k)) if isinstance(rule.get(k), str) else None for k in ("when", "per"))
-        if when is None or when.type not in ("date", "datetime") or not when.required:
+        history = rule.get("history", False)
+        if not isinstance(history, bool):
+            problems.append(f"{where}: 'history' must be true or false.")
+        elif history:  # decision 0129: each day a "last done" date says it was done, earlier ones from history
+            if when is None or when.type != "date" or when.sensitive:
+                problems.append(f"{where}: with history = true, 'when' must name a date column of this table that "
+                                f"says when each was last done, like \"last_done\", and is not private.")
+            if rule.get("measure") != "count" or "where" in rule or "group" in rule or table.private:
+                problems.append(f"{where}: with history = true the bars count done days only: measure = \"count\", "
+                                f"no 'where' or 'group', and not on a private table.")
+        elif when is None or when.type not in ("date", "datetime") or not when.required:
             problems.append(f"{where}: 'when' must name a required date or date-and-time column of this table.")
-        if per is None or per.type != "link" or not per.required:
+        if "per" not in rule:  # one chart of every record of this table together (decision 0129)
+            if rule.get("measure") != "count" or "group" in rule or table.private:
+                problems.append(f"{where}: without 'per' one chart counts every record of this table together, so it "
+                                f"needs measure = \"count\", no 'group', and a table that is not private.")
+        elif per is None or per.type != "link" or not per.required:
             problems.append(f"{where}: 'per' must name a required link column, so each chart shows one subject.")
         measure = rule.get("measure")
         if measure not in BARS_MEASURES:
@@ -1126,18 +1146,21 @@ def _check_bars(file: str, table: Table, raw, problems: list[str]) -> list[dict]
         if not (isinstance(words, list) and len(words) == 2 and all(isinstance(w, str) and w.strip() for w in words)):
             problems.append(f"{where}: 'entry' must be two words, singular then plural, like [\"feeding\", "
                             f"\"feedings\"].")
-        if not (isinstance(rule.get("subject"), str) and rule["subject"].strip()):
+        if "per" in rule and not (isinstance(rule.get("subject"), str) and rule["subject"].strip()):
             problems.append(f"{where}: 'subject' must be the word for one subject, like \"pet\".")
+        elif "per" not in rule and "subject" in rule:
+            problems.append(f"{where}: 'subject' names the record each chart is for, so it needs 'per'.")
         if "caveat" in rule and not (isinstance(rule["caveat"], str) and rule["caveat"].strip()):
             problems.append(f"{where}: 'caveat' must be a sentence, like \"Food put out, not necessarily eaten.\"")
         if len(problems) > before:
             continue
         keys.add(key)
-        found.append({"key": key, "title": rule["title"].strip(), "when": rule["when"], "per": rule["per"],
+        found.append({"key": key, "title": rule["title"].strip(), "when": rule["when"], "per": rule.get("per"),
+                      "history": history,
                       "measure": measure, "amount": rule.get("amount"), "unit": rule.get("unit"),
                       "fixed_unit": fixed, "where": dict(choices), "group": group, "by": list(by),
                       "entry": [w.strip() for w in rule["entry"]], "verb": (rule.get("verb") or "").strip(),
-                      "subject": rule["subject"].strip(), "caveat": (rule.get("caveat") or "").strip() or None})
+                      "subject": (rule.get("subject") or "").strip(), "caveat": (rule.get("caveat") or "").strip() or None})
     return found
 
 
@@ -1253,11 +1276,17 @@ def _check_own_calendar(where: str, table: Table, raw: dict, problems: list[str]
         problems.append(f"{where}: 'entry' must be two words, singular then plural, like [\"job\", \"jobs\"].")
     if raw.get("look", "done") not in CALENDAR_ENTRY_LOOKS:
         problems.append(f"{where}: 'look' must be \"recorded\", \"done\" or \"skipped\", not {raw['look']!r}.")
+    history = raw.get("history", False)
+    if not isinstance(history, bool):
+        problems.append(f"{where}: 'history' must be true or false.")
+    elif history and when is None:
+        problems.append(f"{where}: 'history = true' shows each earlier date the 'when' column was moved on from, so "
+                        f"it needs 'when': a date column that says when each was last done, like \"last_done\".")
     if len(problems) > before:
         return {}
     return {"when": when, "per": None, "show": "all", "title": raw["title"].strip(),
             "entry": [w.strip() for w in raw["entry"]], "state": None, "looks": {},
-            "look": raw.get("look", "done"), "due": True}
+            "look": raw.get("look", "done"), "due": True, "history": history}
 
 
 def _check_record_name(file: str, table: Table, tables: dict[str, Table], template, problems: list[str]) -> str | None:

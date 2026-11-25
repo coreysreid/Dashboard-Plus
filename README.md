@@ -93,6 +93,11 @@ is new: keep a copy of anything important somewhere else too. See
   ("Home care · Clear the gutters: Job done"). **Show: All / Home care /
   Vegetable garden / ...** links keep one list at a time. A bill's amount and
   any private detail are never on a calendar.
+  Earlier times show too: each earlier day a vehicle service, an alarm test,
+  a return or a garden job was recorded as done stays on its day, read from
+  the record's own history, marked "(an earlier time, from its history)". A
+  date typed back to fix it, cleared, or changed again the same day never
+  counts, and an undone Mark done never shows.
 - **Bars over time:** a pet's page shows **Food put out per day** (or per
   week or month), in one unit at a time, such as grams or pouches, never added
   together or converted; a routine's page shows **Times done per month**; a
@@ -101,6 +106,10 @@ is new: keep a copy of anything important somewhere else too. See
   words and the same values are in a table; a day, week or month with nothing
   written down says "nothing recorded", never "missed", and this week or month
   is striped and says "so far".
+  Garden jobs now keep a **Done on** date (Mark done fills in today; older
+  jobs keep no date, never a guessed one), and the Garden calendar and list
+  link to **Jobs done per month**: every job together, one count for each day
+  a job was done.
 - **What happened, newest first:** a pet's page and a person's page end with
   one list of everything recorded for them, under month headings: each
   weigh-in with the change since the one before ("up 0.3 kg since 2 Oct"),

@@ -178,6 +178,7 @@ One record per decision, from `TEMPLATE.md`. Never deleted; reversed ones are ma
 | [0122](0122-more-lists-on-the-calendar.md) | Home care (Work done with `per = "job"`), Garden jobs, Vehicles (registration, insurance, services with `last_done`) and Bills and policies on month calendars; a `calendar` without `per` is of a table's own records: its own due date once (never a reminder moved elsewhere) and done from `when` or its Mark done presses in history; Things to do's Calendar tab shows every list in one month, each line labelled with its module, with a count per list and plain Show links per module; no amounts or private details | Accepted |
 | [0125](0125-the-rest-of-the-dated-lists.md) | Documents, Medical kit checks, Home layout alarm tests and Things lent out on the Calendar tab (own-records or `per`); Home care work done per month as bars; Utilities, Vehicle past services, Garden bars and old Garden presses left out and why | Accepted |
 | [0127](0127-lane-b-wording-and-phone-width-check.md) | Lane B's open findings on This year width, receipt group words and the Mac read-me were checked and already fixed (0113, 0097/0105, 0096); the browser check now sweeps the main pages of Smith, Garcia and Taylor at 320px and fails on any page wider than the screen | Accepted |
+| [0129](0129-earlier-done-days-from-history.md) | Earlier done days from a record's own saved history (`history = true` on an own calendar with `when`): a date counts when the next value saved is a later date, saved on a later day; a date typed back, cleared or changed the same day, an undone press and a deleted record never count; Vehicle services, alarm tests, loans returned and Garden jobs use it; Garden jobs gain an empty `done_on` set by Mark done (additive, never backfilled), and bars without `per` give Garden's Jobs done per month | Accepted |
 | [0126](0126-one-timeline-on-a-records-page.md) | One timeline on a record's page ("What happened, newest first") from a generic `timeline` declaration (when, per with an optional one link inside the module, entry, words naming ordinary columns only, four fixed looks each with a symbol, `summarise = "day"`, `change` in one fixed unit); accepted undeleted entries by the household's own day under month headings, Earlier by day as server links, an exact empty state, the change since the weigh-in before in 0119's words; Pets weigh-ins, vet visits and treatments given, Pet feeding one line a day, Medicine doses counted per day with the medicine only after a pressed Show and never an amount or giver | Accepted |
 | [TEMPLATE](TEMPLATE.md) | Blank record to copy for a new decision | recording a decision |
 
@@ -312,7 +313,7 @@ Generate the next one with: python tools/make_migration.py documents --name <wha
 | Entry | What it is | Open it when |
 |---|---|---|
 | module.toml | Name, version, description; requires Household stock (places) | changing the module's details |
-| tables.toml | Beds, crops, plantings, harvests and jobs; a job reminder only while not done; a Garden `calendar` of jobs marked done and due (decision 0122) | adding a field or a gap question |
+| tables.toml | Beds, crops, plantings, harvests and jobs; a job reminder only while not done; Done on set by Mark done; a Garden `calendar` of jobs done (with earlier days from history) and due, and Jobs done per month bars (decisions 0122, 0129) | adding a field or a gap question |
 | labels.toml | Friendly labels, help text, form and list order, jobs main on home | changing wording or order |
 | sheets.toml | Garden plan sheet: beds and where they are, plantings, jobs not yet done | changing what prints |
 | migrations/ | Numbered database changes | after changing tables.toml |
@@ -323,6 +324,7 @@ Generate the next one with: python tools/make_migration.py garden --name <what_c
 | Entry | What it is | Open it when |
 |---|---|---|
 | 0001_first_tables.sql | The module's first tables, generated from tables.toml | checking how the tables are stored |
+| 0002_done_on.sql | Adds the optional Done on date to jobs, empty for every job already there (never guessed, decision 0129) | checking how a job's done day is stored |
 
 ## modules/home_care/  (summary: the Home care module, files only; built on Lane B's draft, linking to People and Household stock)
 | Entry | What it is | Open it when |
@@ -625,7 +627,7 @@ Generate the next one with: python tools/make_migration.py wine --name <what_cha
 | watch.py | Work out what is running low, what expires soon, how many days of supplies are on hand, and what is worth filling in. | changing running low, expiring, days of cover or gaps |
 | checklist.py | Things to do: Today, This week, This month and This year over the due dates modules already keep (decision 0107). | changing which tasks show, their windows, week start or what counts as done |
 | daily.py | Daily totals by the household's own day: accepted entries only, amounts added only in matching units (decision 0110). | changing the household day, daily totals or the possible-repeat match |
-| calendars.py | Month calendars from a table's dated or timed records by the household's own day; an empty day is never called missed (decision 0119). | changing the calendar grid, its looks, which records and due dates it shows, or a calendar of a table's own records (0122) |
+| calendars.py | Month calendars from a table's dated or timed records by the household's own day; an empty day is never called missed (decision 0119), earlier done days read from history (0129). | changing the calendar grid, its looks, which records and due dates it shows, a calendar of a table's own records (0122), or earlier done days from history (0129) |
 | bars.py | Bars over time: how often, or how much in one unit, per day, week or month by the household's own day; an empty period is never called missed (decision 0124). | changing which records a bars chart counts, its periods or how amounts add up |
 | timeline.py | One record's timeline: dated entries from every table that links to it and declares `timeline`, newest first, by the household's own day (decision 0126). | changing which entries a timeline lists, their order, a day's summary or its pages |
 | startup.py | Prepare the database at start-up: load modules, back up if needed, migrate, and give permanent record IDs. | changing what happens at start-up |
@@ -766,6 +768,7 @@ How to run them is in AGENTS.md.
 | test_calendars_rest.py | Tests for Documents, first aid kit checks, alarm tests and things lent out on the calendar, and Home care bars (decision 0125). | changing one of those calendars or Work done bars |
 | test_timeline.py | Tests for one record's timeline (decision 0126): the declaration, newest first by month, a symbol and words per kind, the change since the weigh-in before, feedings one line a day, Earlier paging, the empty words, modules switched off and private doses before and after Show. | changing a timeline, its declaration, paging or private Show |
 | test_calendars_more.py | Tests for Home care, Garden, Vehicles and Bills on calendars and one Things to do month with Show links (decision 0122). | changing a calendar of a table's own records, the combined Calendar tab or its Show links |
+| test_done_history.py | Tests for earlier done days from a record's own history, and Garden's done date and jobs done per month (decision 0129). | changing done days from history, Garden's Done on or bars of a whole table |
 | test_module_vehicle_running.py | Tests for the Vehicle running log: odometer readings and service estimates beside Vehicles (decision 0111). | changing readings, estimates, gentle checks or listed-under sections |
 | test_gaps.py | Tests for gaps: details worth filling in, declared in a table's `watch.gaps` and asked as questions. | changing gaps |
 | test_examples.py | Tests for the example households: each loads cleanly and shows exactly what it was written to show. | changing an example household |

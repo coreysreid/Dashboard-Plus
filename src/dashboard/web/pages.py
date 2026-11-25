@@ -100,7 +100,16 @@ def grid(table):
     return render_template("grid.html", info=info, title=display.table_title(info), columns=columns, rows=rows,
                            total=total, next_offset=len(rows) if len(rows) < total else None,
                            sort=sort, desc=desc, moves_choice=moves_pages.choice_box(store, info),
-                           moves_review=moves_pages.review_link(store, info))
+                           moves_review=moves_pages.review_link(store, info), see_also=_see_also(info))
+
+
+def _see_also(info) -> list[dict]:
+    """Links from a list to its own calendar and its whole-list bars (decisions 0122 and 0129), if it has them."""
+    from dashboard.web.bar_pages import table_links
+    found = []
+    if info.table.calendar and not info.table.calendar.get("per"):
+        found.append({"href": f"/calendar/{info.name}", "words": info.table.calendar["title"]})
+    return found + table_links(info)
 
 
 @pages.post("/t/<table>/show")

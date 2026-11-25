@@ -44,4 +44,5 @@ message = "How would you reach {borrower} about {name}? Add a phone number if yo
 title = "Lent out calendar"
 entry = ["return", "returns"]
 when = "returned_on"
+history = true  # also each earlier date this was moved on from, from its history (decision 0129)
 due = true
