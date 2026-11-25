@@ -4,7 +4,7 @@
 {% if cal.prev or cal.next %}
 <nav class="cal-nav" aria-label="Choose the month: {{ cal.title }}">
   {% if cal.prev %}<a href="{{ cal.prev }}" rel="prev">Previous month<span class="vh">: {{ cal.prev_words }}</span></a>{% endif %}
-  {% if cal.this_month %}<a href="{{ cal.this_month }}">This month</a>{% endif %}
+  {% if cal.this_month %}<a href="{{ cal.this_month }}">Go to the current month</a>{% endif %}
   {% if cal.next %}<a href="{{ cal.next }}" rel="next">Next month<span class="vh">: {{ cal.next_words }}</span></a>{% endif %}
 </nav>
 {% endif %}
@@ -40,7 +40,8 @@
   <ol>
     {% for d in cal.days %}
     <li id="{{ d.anchor }}"><strong>{{ d.day }}</strong>: {{ d.summary }}{% if d.day_href %} · <a href="{{ d.day_href }}">See this day</a>{% endif %}
-      {% if d.marks %}<ul>{% for i in d.marks %}<li><span class="cal-chip cal-{{ i.look }}" aria-hidden="true">{{ i.symbol }}</span> <a href="{{ i.href }}">{{ i.words }}</a></li>{% endfor %}</ul>{% endif %}
+      {% if d.marks %}<ul>{% for i in d.marks %}<li><span class="cal-chip cal-{{ i.look }}" aria-hidden="true">{{ i.symbol }}</span> <a href="{{ i.href }}">{{ i.words }}</a>{% if i.remove and cal.remove_action %}{# a day read from history can be taken off (decision 0132) #}
+        <form method="post" action="{{ cal.remove_action }}" class="cal-fix" style="margin:.2rem 0 .4rem"><input type="hidden" name="_csrf" value="{{ csrf_token }}"><input type="hidden" name="record" value="{{ i.remove.record }}"><input type="hidden" name="day" value="{{ i.remove.day }}"><input type="hidden" name="month" value="{{ cal.month }}"><button type="submit" class="quiet">Not a done day — remove from the calendar<span class="vh">: {{ i.words }}, {{ i.remove.day_words }}</span></button></form>{% endif %}</li>{% endfor %}</ul>{% endif %}
     </li>
     {% endfor %}
   </ol>

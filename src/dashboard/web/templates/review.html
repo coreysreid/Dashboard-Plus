@@ -174,6 +174,14 @@
       <p>{% if b.kind == "import" %}Row {{ p.source_row }} would add to{% else %}{{ b.helper }} suggests adding to{% endif %} <strong>{{ p.text.table }}</strong>: <span class="helper-text">{% for label, text in p.text.parts %}{% if label %}{{ label }}: {% endif %}<bdi>{{ text }}</bdi>{% if not loop.last %} · {% endif %}{% endfor %}</span></p>
       {% endif %}
       {% if p.source %}<p class="muted helper-text more">From the receipt or paper, as {{ b.helper }} read it:{% if p.source.line %} <q><bdi>{{ p.source.line }}</bdi></q>{% endif %}{% if p.source.price %} · Price: <bdi>{{ p.source.price }}</bdi>{% endif %}. Shown for checking only; it is not saved in your records.</p>{% endif %}
+      {% if p.price_offer %}{# a price only a person can type, saved with the press of Accept (decision 0133) #}
+      <details class="price-offer" data-price-offer style="margin:.4rem 0"><summary>Save a price with this Stock in?</summary>
+        <p class="muted" style="margin:.3rem 0">Optional. Type what you paid, from the paper or what you remember.{% if p.source and p.source.price %} The paper shows <bdi>{{ p.source.price }}</bdi>, for checking: it is never copied in for you.{% endif %} It is saved only when you press Accept, stays on this computer and is shown only after Show. Leave it blank to save no price.</p>
+        <p style="margin:.3rem 0"><label for="price-{{ p.id }}">What you paid</label> <input type="text" id="price-{{ p.id }}" name="price" form="accept-{{ p.id }}" inputmode="decimal" autocomplete="off" size="8"></p>
+        <p style="margin:.3rem 0"><label for="basis-{{ p.id }}">That price is</label> <select id="basis-{{ p.id }}" name="price_basis" form="accept-{{ p.id }}"><option value="">Choose one</option>{% for key, label in p.price_offer.basis %}<option value="{{ key }}">{{ label }}</option>{% endfor %}</select></p>
+        <p style="margin:.3rem 0"><label for="currency-{{ p.id }}">Currency (optional)</label> <input type="text" id="currency-{{ p.id }}" name="currency" form="accept-{{ p.id }}" autocomplete="off" size="4" maxlength="3"> <span class="muted">{% if p.price_offer.currency %}Blank means {{ p.price_offer.currency }}.{% else %}Blank uses the usual currency in Settings.{% endif %}</span></p>
+      </details>
+      {% endif %}
       {% if p.needs %}<p class="muted more">{% if p.needs | length == 1 %}Accepting this {{ p.text.noun }} also adds its new {{ p.needs_nouns[0] }} above.{% else %}Accepting this also adds the {{ p.needs | length }} new records above that it needs.{% endif %}</p>{% endif %}
       {% if p.needed_by %}<p class="muted more">Accepting only this leaves the {{ p.needed_by }} row{{ "" if p.needed_by == 1 else "s" }} below waiting. Rejecting this also rejects the {{ p.needed_by }} row{{ "" if p.needed_by == 1 else "s" }} below that need{{ "s" if p.needed_by == 1 else "" }} it.</p>{% endif %}
       {% if p.twice %}<p class="problem" role="status" data-count-twice style="margin:.4rem 0"><bdi>{{ p.twice }}</bdi></p>{% endif %}
@@ -190,7 +198,7 @@
         {% elif b.held %}
         <button type="button" disabled title="This may be the same receipt again. Choose Reject this copy or Keep this as another purchase first.">Accept</button>
         {% else %}
-        <form method="post" action="/review/{{ p.id }}/accept"><input type="hidden" name="_csrf" value="{{ csrf_token }}"><button type="submit" data-accept>{{ p.repeat.accept if p.repeat else "Accept" }}{% if p.needs | length == 1 %}<span class="hidden-words"> {{ p.text.noun }} and its new {{ p.needs_nouns[0] }}</span>{% endif %}</button></form>
+        <form method="post" action="/review/{{ p.id }}/accept" id="accept-{{ p.id }}"><input type="hidden" name="_csrf" value="{{ csrf_token }}"><button type="submit" data-accept>{{ p.repeat.accept if p.repeat else "Accept" }}{% if p.needs | length == 1 %}<span class="hidden-words"> {{ p.text.noun }} and its new {{ p.needs_nouns[0] }}</span>{% endif %}</button></form>
         {% endif %}
         <form method="post" action="/review/{{ p.id }}/reject"><input type="hidden" name="_csrf" value="{{ csrf_token }}"><button type="submit" class="quiet" data-reject>{{ p.repeat.reject if p.repeat else "Reject" }}</button></form>
       </div>

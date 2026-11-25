@@ -96,8 +96,13 @@ is new: keep a copy of anything important somewhere else too. See
   Earlier times show too: each earlier day a vehicle service, an alarm test,
   a return or a garden job was recorded as done stays on its day, read from
   the record's own history, marked "(an earlier time, from its history)". A
-  date typed back to fix it, cleared, or changed again the same day never
-  counts, and an undone Mark done never shows.
+  date typed back to fix it or changed again the same day never counts, and
+  an undone Mark done never shows. A date cleared a day or more after it was
+  typed (a thing lent again) stays as a done day, and an old Mark done with a
+  Done on typed later counts once, on the typed day. If one of these earlier
+  days is wrong, **Not a done day — remove from the calendar** under its line
+  takes it off (and off Jobs done per month), with **Undo**; the record's
+  history keeps a line for it, with **Put back on the calendar**.
 - **Bars over time:** a pet's page shows **Food put out per day** (or per
   week or month), in one unit at a time, such as grams or pouches, never added
   together or converted; a routine's page shows **Times done per month**; a
@@ -119,6 +124,16 @@ is new: keep a copy of anything important somewhere else too. See
   a time. A Stock in without a price is counted, never read as zero, and the
   page says it covers only prices that were typed in. Prices stay on this
   computer and are never on lists, sheets, the export or a helper's screen.
+- **Money back and a price on Review:** on a Stock in with a price, **Record
+  money back** saves a refund tied to it, in the same currency and never more
+  than was paid unless you tick that it is. **Spent per month** says it in
+  words and in its table ("3.80 AUD spent, less 3.00 refunded") and never
+  draws a negative bar. A refund never changes the stock; if the goods went
+  back, you also record a Stock out with the reason **Returned to the shop**.
+  On Review, a bought Stock in has **Save a price with this Stock in?**: you
+  type the price (the paper's is shown beside it for checking and never
+  filled in) and it is saved when you press Accept. A Stock in's page also
+  shows its worked-out **Line total** after **Show**.
 - **What happened, newest first:** a pet's page and a person's page end with
   one list of everything recorded for them, under month headings: each
   weigh-in with the change since the one before ("up 0.3 kg since 2 Oct"),

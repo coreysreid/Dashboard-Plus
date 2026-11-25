@@ -56,6 +56,14 @@
     {% if errors.when %}<p class="error" id="line-when-error">{{ errors.when }}</p>{% endif %}
     <p class="help">{{ hint }}{% if ctx.hints.receipt_date %} This is the date the helper read from the paper: check it.{% endif %}</p>
   </div>
+  {% if offer %}{# a price only a person can type; the paper's price above is for checking and is never copied in (decision 0133) #}
+  <details class="price-offer" data-price-offer{% if typed.price or errors._form %} open{% endif %}><summary>Save a price with this Stock in?</summary>
+    <p class="help">Optional. Type what you paid, from the paper or what you remember.{% if ctx.source.price %} The paper shows <bdi>{{ ctx.source.price }}</bdi>, for checking: it is not copied in for you.{% endif %} It stays on this computer and is shown only after Show. Leave it blank to save no price.</p>
+    <div><label for="line-price">What you paid</label> <input type="text" id="line-price" name="price" value="{{ typed.price or '' }}" inputmode="decimal" autocomplete="off" size="8"></div>
+    <div><label for="line-basis">That price is</label> <select id="line-basis" name="price_basis"><option value="">Choose one</option>{% for key, label in offer.basis %}<option value="{{ key }}"{% if typed.price_basis == key %} selected{% endif %}>{{ label }}</option>{% endfor %}</select></div>
+    <div><label for="line-currency">Currency (optional)</label> <input type="text" id="line-currency" name="currency" value="{{ typed.currency or '' }}" autocomplete="off" size="4" maxlength="3"> <span class="help">{% if offer.currency %}Blank means {{ offer.currency }}.{% else %}Blank uses the usual currency in Settings.{% endif %}</span></div>
+  </details>
+  {% endif %}
   <div class="actions"><button type="submit">Save this Stock in</button><a href="/review">Back to Review</a></div>
 </form>
 {% if step == "new" %}{% include "_form_script.html" %}{% endif %}

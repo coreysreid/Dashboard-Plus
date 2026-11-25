@@ -7,7 +7,7 @@ from decimal import Decimal, InvalidOperation
 
 from flask import Blueprint, current_app, redirect, render_template, request, url_for
 
-from dashboard.core import actions, dates, receipts, records
+from dashboard.core import actions, dates, receipts, records, receipt_prices
 from dashboard.core.units import unit_for
 from dashboard.errors import PlainError
 from dashboard.web import display, review
@@ -61,7 +61,9 @@ def _date_text(ctx: dict, typed: str | None) -> str:
 
 
 def _page(ctx: dict, step: str, status: int = 200, **more):
-    return render_template("review_line.html", ctx=ctx, step=step, hint=dates.HINTS[ctx["style"]] + ".",
+    more.setdefault("typed", {})
+    offer = receipt_prices.offer(current_app.config["CONNECT"](), ctx["info"], {})  # a price only a person types (0133)
+    return render_template("review_line.html", ctx=ctx, step=step, hint=dates.HINTS[ctx["style"]] + ".", offer=offer,
                            owner_title=display.table_title(ctx["owner"]),
                            owner_noun=review.noun(ctx["owner"], {}), **more), status
 
@@ -89,7 +91,7 @@ def _existing(store: records.Records, ctx: dict, item_id: int, errors: dict | No
     unit = item.get("unit") if "unit" in owner.table.columns else None
     amount, note = _amount_hint(ctx, unit, name)
     typed = typed or {}
-    return _page(ctx, "amount", status, item=item, item_name=visible(name), unit=visible(unit or ""),
+    return _page(ctx, "amount", status, typed=typed, item=item, item_name=visible(name), unit=visible(unit or ""),
                  units=visible(unit_for(2, unit) if unit else ""), revision=actions.revision(store, owner, item_id),
                  amount=typed.get("amount", amount), note=note, when=_date_text(ctx, typed.get("when")),
                  errors=errors or {})
@@ -113,7 +115,7 @@ def _new(store: records.Records, ctx: dict, values: dict | None = None, errors: 
     owner, only = ctx["owner"], _item_fields(ctx["owner"])
     fields = display.build_fields(store, owner, values or {}, errors or {}, from_form=values is not None, only=only)
     typed = typed or {}
-    return _page(ctx, "new", status, fields=fields, amount=typed.get("amount", ctx["hints"].get("quantity_hint", "")
+    return _page(ctx, "new", status, typed=typed, fields=fields, amount=typed.get("amount", ctx["hints"].get("quantity_hint", "")
                  if not ctx["hints"].get("unit_hint") else ""), when=_date_text(ctx, typed.get("when")),
                  errors=errors or {}, item_info=owner)
 
@@ -163,7 +165,9 @@ def save(line_id):
     except PlainError as error:
         return _back("line_stale" if str(error) == "decided" else "stale")
     amount, when, problems = _amount_and_date(ctx)
-    typed = {"amount": request.form.get("amount", ""), "when": request.form.get("when", "")}
+    typed = {"amount": request.form.get("amount", ""), "when": request.form.get("when", ""),
+             **{k: request.form.get(k, "") for k in receipt_prices.FIELDS}}
+    price = receipt_prices.typed(request.form)
     making = bool(request.form.get("new"))
     owner = ctx["owner"]
     if making:
@@ -179,10 +183,10 @@ def save(line_id):
             return _existing(store, ctx, int(item), problems, typed, status=400)
     try:
         if making:
-            receipts.add_for_line(store, line_id, amount, when, new_item=values)
+            receipts.add_for_line(store, line_id, amount, when, new_item=values, price=price)
         else:
             receipts.add_for_line(store, line_id, amount, when, item_id=int(item),
-                                  seen_revision=request.form.get("revision", -1, type=int))
+                                  seen_revision=request.form.get("revision", -1, type=int), price=price)
     except receipts.LineStale as error:
         return _existing(store, ctx, int(item), {"_form": str(error)}, typed, status=409)
     except records.ValidationError as error:

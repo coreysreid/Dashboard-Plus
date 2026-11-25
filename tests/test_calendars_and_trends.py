@@ -338,7 +338,7 @@ class StructureTests(CalendarTestCase):
         page = self.page(f"/calendar/{FEED}?subject={self.rex}&month=2027-11")
         self.assertIn("November 2027", page)
         self.assertNotIn('rel="next"', page, "twelve months ahead is the last one offered")
-        self.assertIn(">This month</a>", page)
+        self.assertIn(">Go to the current month</a>", page)
         for wrong in ("2028-01", "2026-13", "soon", "0999-01"):
             self.assertIn("November 2026", self.page(f"/calendar/{FEED}?subject={self.rex}&month={wrong}"))
 

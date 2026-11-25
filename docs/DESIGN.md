@@ -685,11 +685,23 @@ chart = { ..., ranges = ["3m", "1y", "all"], change = true, line = { gap_days = 
 - **Earlier done days** (decision 0129): an own calendar with `when` may add `history = true`. Then each earlier
   value of `when` that the record's saved history shows was later moved on to a later date, saved on a later day
   than it was typed, is also a ✓ day, said "(an earlier time, from its history)". A date typed back (a
-  correction), cleared (by hand or by Undo) or changed again the same day never counts; a deleted record has
+  correction), cleared by Undo, or changed or cleared again the same day never counts (0132); a deleted record has
   none; one record counts once a day. A Mark done press that did not set `when` itself (saved before the table
   kept the date) also counts on the day it was pressed, unless undone. Nothing is stored or backfilled
   (`done_days` in `core/calendars.py`). Vehicle services, Home layout's alarms, Things lent out and Garden
   jobs (`done_on`, set by Mark done) use it.
+- **Correcting done days** (decision 0132): three rules on top of 0129. (1) A date cleared on a later household
+  day than it was typed counts as an earlier done day (a thing lent again, a job needing doing again); a clear
+  the same day, and a clear made by Undo (the history line just before an `undo` entry), never do. (2) A one-step
+  press that did not set `when`, and the first `when` date saved after it while every field the press set still
+  holds the press's value and before another press, are one completion: only the typed date counts. (3) Each line
+  read from history (an earlier date or an old press, never the date the record keeps now) has a small POST form,
+  **Not a done day — remove from the calendar**, with the session token and no script. It adds one history entry
+  (`not_done_day`, after = `calendar_day` and `operation` only); **Undo** on the calendar's notice, or **Put back
+  on the calendar** on that history line, adds a `done_day_back` entry. Neither changes the record, its earlier
+  history or its revision (so a Mark done's Undo still works), and neither enters the sync change log. Offered
+  on every own calendar with `history = true`, never a private table; nothing more to declare. The bars count
+  the same days.
 - **Things to do, Calendar** puts every calendar with due dates in one month: one grid, one legend, a count per
   module, and each line in words starting with its module's name. **Show: All / one module** links keep one
   module's lists (`?only=<module>`, with the month kept). With only one such calendar it is shown as before.
@@ -750,6 +762,36 @@ only_words = "can only be saved on a Stock in that was bought or added. A Stock 
 - The four columns are private, so a helper, a spreadsheet import, a list, a sheet, the export and the change
   log's values never carry them; they stay in local backups. A receipt's price on Review stays checking text
   (0097): nothing copies it into a price.
+
+### 5.13b Money back and a price on Review (decision 0133)
+
+```toml
+[tables.refunds.refund]
+of = "movement"             # a required link to the Stock in the money came back for
+when = "happened_on"        # a required, non-private date: the day it came back
+paid = "paid_total"         # the Stock in's line total (private money); the refunds' sum may not pass it
+currency_of = "currency"    # the Stock in's currency: a refund is always in it
+amount = "amount"           # money, required, private, travels = "never"
+currency = "currency"       # private text, filled in from the Stock in
+confirm = "over_paid"       # a private tick: "This is more than was paid"
+
+[[tables.movements.bars]]
+refunds = "refunds"         # said beside the bar after Show: "less 3.00 refunded", never a negative bar
+```
+
+- A refund needs a Stock in that has a price, is more than 0, and (all the money back for that Stock in together)
+  is not above the line total unless the tick is on; a different currency is refused; a deleted refund does not
+  count. A refund never changes the stock: the person records a Stock out with the reason `returned` if the goods
+  went back, and that Stock out never carries a price.
+- Money back is counted in the period of its own day, in its own currency (another currency is said, never
+  converted), through the Stock in so a chart's `where` and category apply. The summary gives the net for the
+  months shown in words, or says more came back than was spent.
+- On Review, `core/receipt_prices.py` reads `price`, `price_basis` and `currency` from a person's press of
+  Accept (or Save this Stock in on a receipt line) and checks them first; a mistake keeps the row waiting with the
+  reason, a good price is saved with the Stock in in one transaction. The receipt's price is never copied in, and
+  Accept all and Accept ticked add none.
+- A priced Stock in's page ends with a read-only Line total behind a pressed Show (the generic reveal, with the
+  currency added), and its money back under it with amounts behind Show.
 
 ### 5.14 One timeline on a record's page (decision 0126)
 
@@ -1095,7 +1137,9 @@ number and the core can load both for a transition period.
   and Medicine doses (counted, each medicine only after Show) use it.
   **Spent per month (decision 0128, section 5.13a):** Household stock adds
   up the prices people typed on a bought Stock in, in one currency at a time,
-  overall and for each category, after a pressed Show.
+  overall and for each category, after a pressed Show. **Money back (decision
+  0133, section 5.13b):** a refund linked to a priced Stock in is said beside
+  that month's bar ("less 3.00 refunded"); a price can be typed on Review.
   **One timeline (decision 0126, section 5.14):** a record's page ends with
   what happened, newest first, from each table's `timeline` declaration;
   Pets (weigh-ins with the change since the one before, vet visits,

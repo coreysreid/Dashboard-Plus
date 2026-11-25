@@ -41,6 +41,28 @@ columns.price_basis = { label = "That price is", help = "The total for this Stoc
 columns.paid_total = { label = "Line total" }
 columns.currency = { label = "Currency (optional)", help = "Leave blank for the household's usual currency in Settings. Prices in different currencies are never added together.", show_when = { reason = "bought" } }
 
+# Money back on a Stock in that has a price (decision 0133).
+[tables.refunds]
+add_button = "Record money back"
+empty = "Money back appears here after you record a refund on a Stock in that has a price."
+form = ["movement", "happened_on", "amount", "over_paid", "notes"]
+list = ["movement", "happened_on"]
+columns.movement = { label = "Which Stock in", help = "The Stock in you saved a price on. The money back is in the same currency as that price." }
+columns.happened_on = { label = "Date the money came back" }
+columns.amount = { label = "Money back", help = "How much came back to you, in the currency of that Stock in. It stays on this computer and is shown only after you press Show. It does not change the stock amount: if the goods went back to the shop, also record a Stock out with the reason Returned to the shop." }
+columns.currency = { label = "Currency" }
+columns.over_paid = { label = "This is more than was paid", help = "Tick only if the money back really is more than you paid for this Stock in, for example a returned deposit. You are asked when the total money back goes above the price." }
+columns.notes = { label = "Notes", help = "Optional and private, only on this computer. Leave card numbers and receipt numbers out." }
+
+# Shown on the Stock in's own page: its money back, amounts behind Show.
+[tables.refunds.under]
+link = "movement"
+title = "Money back"
+intro = "Refunds recorded for this Stock in. The money back is never taken off the price: it is said beside it."
+columns = ["happened_on", "amount"]
+order = "happened_on"
+reveal = "Show money back"
+
 [tables.connections]
 home = "more"
 form = ["place", "connects_to", "kind", "destination", "notes"]

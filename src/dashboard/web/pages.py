@@ -3,7 +3,7 @@ from __future__ import annotations
 
 from flask import Blueprint, abort, current_app, jsonify, make_response, redirect, render_template, request, url_for
 
-from dashboard.core import actions, confirm, dates, records, schema, settings, suggest
+from dashboard.core import actions, confirm, dates, calendars_corrections, records, schema, settings, suggest
 from dashboard.core.units import unit_for
 from dashboard.web import display
 
@@ -202,6 +202,7 @@ def _render_form(info, store, values, errors, from_form, record=None, status=200
     if record:
         formatter = display.Formatter(store)
         columns = info.table.columns
+        taken_off = set(calendars_corrections.removed(store.conn, info.name).values())  # still off the calendar (0132)
         for entry in reversed(store.history(info.name, record["id"])):
             changes = []
             for name, after in (entry["after"] or {}).items():
@@ -211,9 +212,13 @@ def _render_form(info, store, values, errors, from_form, record=None, status=200
                                     "before": formatter.text(info, columns[name], before),
                                     "after": formatter.text(info, columns[name], after),
                                     "sensitive": columns[name].sensitive})
+            op = (entry["after"] or {}).get("operation") if entry["action"] == calendars_corrections.OFF else None
             history.append({"at": entry["at"].replace("T", " ")[:16], "who": display.actor_text(entry["actor"]),
                             "action": display.operation_text(store, info, entry) or
-                            display.ACTION_TEXT.get(entry["action"], entry["action"]), "changes": changes})
+                            calendars_corrections.history_words(store.conn, entry) or
+                            display.ACTION_TEXT.get(entry["action"], entry["action"]), "changes": changes,
+                            "put_back": {"href": f"/calendar/{info.name}/put-back", "op": op}
+                            if op in taken_off else None})
     record_name = display.display_name(info, record, store) if record else None
     if record and info.table.parent:
         chain = store.ancestors(info, record["id"])
@@ -253,7 +258,11 @@ def _render_form(info, store, values, errors, from_form, record=None, status=200
                           a["adds"]["table"] == other.table.name and a["adds"]["link"] == column.name), None)
             words = words or display.labels_for(other).get("add_button")  # "Add a reading" (decision 0111)
             related.append({"href": f"/t/{other.name}/new?{column.name}={record['id']}",
-                            "label": display.table_title(other), "words": words})
+                            "label": display.table_title(other), "words": words, "table": other.name,
+                            "column": display.column_label(other, column)})
+    for button in related:  # two buttons to one list say which link each fills in, e.g. "Add to pets (vet)" (decision 0131)
+        if not button["words"] and sum(1 for r in related if r["table"] == button["table"]) > 1:
+            button["words"] = f"Add to {button['label'].lower()} ({button['column'].lower()})"
     charts = []  # a pet's recorded weights, drawn on its own page (decision 0109)
     if record and not record.get("deleted_at"):
         from dashboard.web.chart_pages import chart_tables, dots_view
@@ -277,7 +286,12 @@ def _render_form(info, store, values, errors, from_form, record=None, status=200
     if record and not record.get("deleted_at") and not info.table.private:
         from dashboard.web.timeline_pages import record_panel
         what_happened = record_panel(store, info, record)
+    line_total = None  # what the price comes to, read only and behind Show like the price itself (decision 0133)
+    if record and info.table.price and record.get(info.table.price["total"]) is not None \
+            and not record.get("deleted_at"):
+        line_total = {"column": info.table.price["total"], "url": f"/t/{info.name}/{record['id']}/reveal"}
     return render_template("form.html", info=info, title=display.table_title(info), fields=fields, record=record,
+                           line_total=line_total,
                            record_name=record_name, errors=errors, history=history, saved=saved, charts=charts,
                            feeding=feeding, month_calendars=month_calendars, period_bars=period_bars,
                            what_happened=what_happened,
@@ -342,6 +356,8 @@ def reveal_private(table, record_id):
         abort(404)
     value = record.get(column.name)
     text = display.Formatter(store).text(info, column, value)
+    if info.table.price and column.name == info.table.price["total"] and value is not None:
+        text = f"{text} {record.get(info.table.price['currency']) or ''}".strip()  # "3.80 AUD" (decision 0133)
     if request.accept_mimetypes.best == "application/json":
         response = jsonify({"text": text, "value": "" if value is None else str(display.input_value(column, value))})
     else:

@@ -179,11 +179,14 @@ class EarlierDaysTests(HistoryCase):
         self.assertEqual([d for _, d, _ in done_days(self.conn, self.registry, SERVICES, "last_done")],
                          ["2026-03-02", "2026-07-09"])
 
-    def test_a_cleared_date_never_counts(self):
+    def test_a_date_cleared_the_same_day_never_counts(self):
+        # Decision 0132 keeps a date cleared on a later day (tests/test_done_days_corrections.py); a same-day clear
+        # is a slip fixed at once and never counts.
+        self.on("2026-07-10", SERVICES, self.service, {"last_done": "2026-07-01"})
         self.on("2026-07-10", SERVICES, self.service, {"last_done": None})
         self.on("2026-08-10", SERVICES, self.service, {"last_done": "2026-08-09"})
         self.assertEqual([d for _, d, _ in done_days(self.conn, self.registry, SERVICES, "last_done")],
-                         ["2026-08-09"])
+                         ["2026-03-02", "2026-08-09"], "1 July was cleared the day it was typed")
 
     def test_a_deleted_record_has_no_done_days_and_comes_back_with_its_history(self):
         self.on("2026-07-10", SERVICES, self.service, {"last_done": "2026-07-09"})
@@ -214,6 +217,7 @@ class EarlierDaysTests(HistoryCase):
         self.assertIn('<span class="cal-chip cal-done" title="', text)
         self.assertIn("✓", text)
         plain = re.sub(r"<[^>]+>", " ", text).replace("earlier times are never filled in as missed", "")
+        plain = plain.replace("does not mean anything was missed", "")  # the bars under the calendar (decision 0131)
         for word in ("missed", "Missed", "overdue", "late"):
             self.assertNotIn(word, plain)
 

@@ -36,7 +36,7 @@ MODULE_KEYS = ("name", "title", "version", "description", "core_api", "kind", "r
 MODULE_REQUIRED = ("name", "title", "version", "description", "core_api", "kind")
 TABLE_KEYS = ("title", "description", "columns", "watch", "adjusts", "parent", "total", "record_name", "actions",
               "pair", "suggestions", "chart", "daily", "confirm", "takes_over", "calendar", "private", "bars", "timeline",
-              "price")
+              "price", "refund")
 # One reminder per policy (decision 0117): records of an older list in another module (Vehicle insurance) that
 # the household may choose, one by one, to have reminded from this table instead. `where` is what such a record
 # is here (a vehicle policy), `copy` which of this table's columns take which of the other's, the date included.
@@ -67,12 +67,17 @@ CALENDAR_SHOW = ("one", "all")
 # Without `per` one chart covers the whole list (decision 0128); `history = true` counts each day a record's
 # own "last done" date says it was done, earlier ones from its saved history included (decision 0129).
 BARS_KEYS = ("key", "title", "when", "per", "measure", "amount", "unit", "where", "group", "by", "entry", "verb",
-             "subject", "caveat", "missing", "history")
+             "subject", "caveat", "missing", "history", "refunds")
 # A confirmed purchase price on a Stock in (decision 0128): the price a person typed (`paid`), whether it is the
 # total or the price for each one (`basis`, choices "total" and "each"), the line total worked out from them
 # (`total`), its currency (`currency`), the bought amount a price for each is multiplied by (`amount`), and which
 # records may carry a price at all (`only`, like reason = "bought", with `only_words` saying so).
 PRICE_KEYS = ("paid", "basis", "total", "currency", "amount", "only", "only_words")
+# Money back on a priced Stock in (decision 0133): the table's own refunds name the Stock in they are for (`of`, a
+# required link), the day the money came back (`when`), which of the Stock in's columns holds the line total paid (`paid`) and its currency (`currency_of`), the
+# refunded amount (`amount`), its currency (`currency`, always the Stock in's) and the yes that says the refund is
+# more than was paid (`confirm`).
+REFUND_KEYS = ("of", "when", "paid", "currency_of", "amount", "currency", "confirm")
 BARS_MEASURES = ("count", "sum")
 BARS_BY = ("day", "week", "month")
 # One timeline on a record's page (decision 0126): "What happened, newest first", every dated entry of every table
@@ -209,6 +214,7 @@ class Table:
     bars: list = field(default_factory=list)  # checked `bars`: how often or how much per day, week or month (0124)
     timeline: dict = field(default_factory=dict)  # checked `timeline`: its entries on a record's timeline (0126)
     price: dict = field(default_factory=dict)  # checked `price`: a confirmed purchase price on a Stock in (0128)
+    refund: dict = field(default_factory=dict)  # checked `refund`: money back on a priced Stock in (0133)
     # Decision 0120: every record is private history, such as medicine given. Never on Home, a sheet, a helper
     # or the spreadsheet export; made only on this program's own screens (suggestions = false is required).
     private: bool = False
@@ -1104,6 +1110,51 @@ def _check_price(file: str, table: Table, raw, problems: list[str]) -> dict:
         "only": dict(only), "only_words": raw["only_words"].strip()}
 
 
+def _check_refund(file: str, table: Table, tables: dict[str, Table], raw, problems: list[str]) -> dict:
+    """Check `refund`: money back on a record that carries a price, such as a Stock in (decision 0133). The refunded
+    amount, its currency and the "more than was paid" yes are private columns that never travel, so a helper, a
+    spreadsheet import, a list, a sheet or the export never carries them and only a person types them."""
+    where = f"In {file}, table '{table.name}', refund"
+    example = ('[tables.refunds.refund] with of = "movement", when = "happened_on", paid = "paid_total", currency_of = "currency", '
+               'amount = "amount", currency = "currency", confirm = "over_paid"')
+    if not isinstance(raw, dict):
+        problems.append(f"{where}: write it as {example}.")
+        return {}
+    problems.extend(_unknown_keys(where, raw, REFUND_KEYS))
+    before = len(problems)
+    columns = {k: table.columns.get(raw.get(k)) if isinstance(raw.get(k), str) else None
+               for k in ("of", "amount", "currency", "confirm")}
+    link = columns["of"]
+    day = table.columns.get(raw.get("when")) if isinstance(raw.get("when"), str) else None
+    if day is None or day.type != "date" or not day.required or day.sensitive:
+        problems.append(f"{where}: 'when' must name a required date column that is not private: the day the money "
+                        f"came back.")
+    if link is None or link.type != "link" or not link.required or not link.to or link.to not in tables:
+        problems.append(f"{where}: 'of' must name a required link column to a table of this module, the Stock in "
+                        f"the money came back for.")
+    for key, kind, words in (("amount", "money", "a required money column for the amount that came back"),
+                             ("currency", "text", "a text column for the currency code, not required"),
+                             ("confirm", "boolean", "a yes-or-no column that says the refund is more than was paid")):
+        column = columns[key]
+        if column is None or column.type != kind or not column.sensitive or column.travels != "never" \
+                or not column.travels_reviewed or (key == "amount") != bool(column.required):
+            problems.append(f"{where}: '{key}' must name {words}, private (sensitive = true) and kept on this "
+                            f"computer (travels = \"never\").")
+    if len({raw.get(k) for k in ("of", "amount", "currency", "confirm")}) != 4:
+        problems.append(f"{where}: 'of', 'amount', 'currency' and 'confirm' must be four different columns.")
+    target = tables.get(link.to) if link is not None and link.type == "link" and link.to else None
+    if target is not None:
+        paid, code = (target.columns.get(raw.get(k)) if isinstance(raw.get(k), str) else None
+                      for k in ("paid", "currency_of"))
+        if paid is None or paid.type != "money" or not paid.sensitive or code is None or code.type != "text" \
+                or not code.sensitive:
+            problems.append(f"{where}: 'paid' and 'currency_of' must name the private line total (money) and the "
+                            f"private currency (text) that '{target.name}' keeps for its price.")
+    if len(problems) > before:
+        return {}
+    return {k: raw[k] for k in REFUND_KEYS}
+
+
 def _check_bars(file: str, table: Table, tables: dict[str, Table], raw, problems: list[str]) -> list[dict]:
     """Check `bars`: bars over time of one subject's records, or of the whole list when there is no `per`, counted
     (how often) or one number column added up in one unit at a time (how much), per day, week or month by the
@@ -1222,6 +1273,12 @@ def _check_bars(file: str, table: Table, tables: dict[str, Table], raw, problems
             problems.append(f"{where}: 'missing' must be the word for an entry's amount, like \"price\".")
         if "caveat" in rule and not (isinstance(rule["caveat"], str) and rule["caveat"].strip()):
             problems.append(f"{where}: 'caveat' must be a sentence, like \"Food put out, not necessarily eaten.\"")
+        if "refunds" in rule:  # money back in the month it came back, said beside the bar (decision 0133)
+            other = tables.get(rule["refunds"]) if isinstance(rule["refunds"], str) else None
+            if measure != "sum" or other is None or not any(
+                    c.type == "link" and c.to == table.name for c in other.columns.values()):
+                problems.append(f"{where}: 'refunds' names a table of this module whose records link to this one, "
+                                f"like refunds = \"refunds\", and only for measure = \"sum\".")
         if len(problems) > before:
             continue
         keys.add(key)
@@ -1234,7 +1291,7 @@ def _check_bars(file: str, table: Table, tables: dict[str, Table], raw, problems
                       "caveat": (rule.get("caveat") or "").strip() or None,
                       "money": measure == "sum" and amount.type == "money",
                       "hidden": measure == "sum" and amount.sensitive, "through": through,
-                      "missing": (rule.get("missing") or "amount").strip()})
+                      "missing": (rule.get("missing") or "amount").strip(), "refunds": rule.get("refunds")})
     return found
 
 
@@ -1492,6 +1549,8 @@ def _check_tables(module: str, data: dict, requires: list[str], problems: list[s
                                                          problems)
             if "price" in raw:
                 tables[tname].price = _check_price(file, tables[tname], raw["price"], problems)
+            if "refund" in raw:
+                tables[tname].refund = _check_refund(file, tables[tname], tables, raw["refund"], problems)
             if "bars" in raw:
                 tables[tname].bars = _check_bars(file, tables[tname], tables, raw["bars"], problems)
             if "timeline" in raw:

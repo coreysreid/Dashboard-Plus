@@ -84,6 +84,7 @@ columns.reason = { type = "choice", required = true, default = "bought", choices
   "expired",
   { key = "thrown_away", label = "Thrown away" },
   { key = "given_away", label = "Given away" },
+  { key = "returned", label = "Returned to the shop" },
   { key = "counted_more", label = "Stocktake: more than recorded" },
   { key = "counted_less", label = "Stocktake: fewer than recorded" },
 ] }
@@ -128,7 +129,10 @@ by = ["month", "week"]
 entry = ["Stock in", "Stock ins"]
 verb = "spent"
 missing = "price"
-caveat = "Only prices typed in for a Stock in are added up, so this is not everything the household spent. A Stock out never takes money off."
+caveat = "Only prices typed in for a Stock in are added up, so this is not everything the household spent. A Stock out never takes money off; money back comes only from a refund you recorded."
+# Money back (decision 0133): the refunds recorded against these Stock ins, by the day the money came back, said
+# beside the bar ("less 3.00 refunded") and never taken off it silently.
+refunds = "refunds"
 
 [tables.movements.adjusts]
 # Each movement changes one batch, and so the item's amount: "bought" (and counting more) adds, the others take away.
@@ -146,6 +150,28 @@ oldest_first = "expires"
 # stocktake correction: counted_more adds it, counted_less takes it away. Never the count on top of
 # the amount, never a purchase or waste. It needs a chosen batch (decision 0070).
 counts = { more = "counted_more", less = "counted_less", note = "notes" }
+
+[tables.refunds]
+title = "Money back"
+description = "Money you got back for a Stock in you had saved a price on: a refund. It never changes the stock amount; if the goods went back to the shop, also record a Stock out."
+record_name = "Money back on {movement}"
+columns.movement = { type = "link", to = "movements", required = true, on_delete = "restrict" }
+columns.happened_on = { type = "date", required = true, default = "today" }
+# Private like a price, and kept on this computer (decisions 0128 and 0133): never on a list, a sheet, the export,
+# a helper or the change log's values. The currency is always the one the Stock in was paid in.
+columns.amount = { type = "money", required = true, min = 0, sensitive = true, travels = "never" }
+columns.currency = { type = "text", sensitive = true, travels = "never" }
+columns.over_paid = { type = "boolean", sensitive = true, travels = "never" }
+columns.notes = { type = "text", sensitive = true, travels = "never" }
+
+[tables.refunds.refund]
+of = "movement"
+when = "happened_on"
+paid = "paid_total"
+currency_of = "currency"
+amount = "amount"
+currency = "currency"
+confirm = "over_paid"
 
 [tables.connections]
 title = "Connections between places"

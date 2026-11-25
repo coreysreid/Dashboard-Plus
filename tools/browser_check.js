@@ -556,6 +556,11 @@ function expect(condition, message) { if (!condition) throw new Failed(message);
       // Bars over time (decision 0124): food put out per day from the pet's page, then by week, at 320px.
       await goto('/t/pets__pets');
       await Promise.all([page.waitForNavigation(), page.click(`a[aria-label="Open ${c.pet}"]`)]);
+      // The pet's page folds its bars under a summary (decision 0131): closed they are not shown, opened they are, at 320px.
+      expect(!(await page.locator('details.panel-fold svg.chart-svg').first().isVisible()), 'The pet page should fold the food bars until their summary is pressed.');
+      await page.click('details.panel-fold > summary:has-text("Show the bars")');
+      expect(await page.locator('details.panel-fold svg.chart-svg').first().isVisible(), 'Pressing the bars summary should show the drawing.');
+      await fits('the pet page with its bars opened');
       await Promise.all([page.waitForNavigation(), page.click('a[href^="/bars/pet_feeding__servings/food"]:has-text("Open food put out")')]);
       await fits('the food put out bars');
       const bars = page.locator('svg.chart-svg[role="group"] a.chart-mark');
@@ -575,6 +580,7 @@ function expect(condition, message) { if (!condition) throw new Failed(message);
       await fits('Spent per month after Show');
       const spent = await text('main');
       expect(/\d\.\d\d [A-Z]{3} spent/.test(spent) && spent.includes('Each category on its own'), 'After Show, Spent per month should add up the typed prices and give each category its own bars.');
+      expect(spent.includes('less 1.20 refunded'), 'After Show, the money back (decision 0133) should be said as "less 1.20 refunded", never as a smaller or negative bar.');
       await Promise.all([page.waitForNavigation(), page.click('.chart-ranges button:has-text("By week")')]);
       await fits('Spent per week after Show');
       expect((await text('main')).includes('Spent per week'), 'By week after Show should keep the amounts shown.');

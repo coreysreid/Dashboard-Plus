@@ -823,8 +823,12 @@ def accept(conn: sqlite3.Connection, registry: dict, proposal_id: int) -> tuple[
     return table, record_id
 
 
-def accept_counted(conn: sqlite3.Connection, registry: dict, proposal_id: int) -> tuple[str, int, int]:
-    """Accept, as above. Returns (table, new record id, how many rows it needed were added first)."""
+def accept_counted(conn: sqlite3.Connection, registry: dict, proposal_id: int,
+                   typed: dict | None = None) -> tuple[str, int, int]:
+    """Accept, as above. Returns (table, new record id, how many rows it needed were added first).
+
+    `typed` is a price the person typed on Review for this one row (decision 0133): its columns are saved with the
+    record in the same step. A helper cannot send them; they come only from the person's own press."""
     row = _load(conn, proposal_id)
     chain, made = _needed_first(conn, registry, row)
     plan = []
@@ -844,6 +848,8 @@ def accept_counted(conn: sqlite3.Connection, registry: dict, proposal_id: int) -
                 failing, failing_info = needed, info
                 _claim(conn, needed["id"], "accepted")  # first, so a second click or window cannot add it again
                 values = dict(values, **{field: made[ref] for field, ref in refs_in(values).items()})
+                if typed and needed["id"] == row["id"]:
+                    values = dict(values, **typed)
                 record_id = store.create_in(needed["table_name"], values, actor=actor,
                                             review_status="confirmed", batch_id=needed["batch_id"])
                 conn.execute(f"UPDATE {info.name} SET edited_by_person = 1 WHERE id = ?", (record_id,))

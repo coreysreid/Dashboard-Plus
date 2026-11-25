@@ -1,6 +1,6 @@
 # 0129. Earlier done days from a record's own history, and Garden's done date
 
-- **Status:** Accepted
+- **Status:** Accepted (three downsides resolved by 0132)
 - **Date:** 2026-11-25
 - **Decided by:** Claude (technical decision delegated by User 1)
 - **Builds on:** 0075 (one-press buttons), 0091 and 0112 (Mark done in history, with Undo), 0107 (Things to do),
@@ -81,6 +81,8 @@ this change keep no date: nothing is guessed. Their Mark done press still shows 
 - **Making `done_on` required when a job is done:** would refuse to save older done jobs that have no date.
 
 ## What this costs us (the downsides)
+Decision 0132 resolves the first two and the Garden press one: a household can take a wrong earlier day off with **Not a done day** (with Undo), a date cleared a day or more after it was typed now counts, and an old press with a Done on typed later counts once.
+
 - **A forward fix on a later day still counts the wrong date.** If a household types 1 September on 2 September
   and only on 10 September changes it to 10 September, 1 September shows as an earlier done day, and nothing on
   the page can remove it. The line says "from its history" so it can be recognised.

@@ -5,7 +5,7 @@ import json
 
 from flask import Blueprint, current_app, redirect, render_template, request, url_for
 
-from dashboard.core import csv_import, dates, helpers, move_in, proposals, receipts, records
+from dashboard.core import csv_import, dates, helpers, move_in, proposals, receipts, records, receipt_prices
 from dashboard.core.proposals import HIDDEN_CHARACTERS
 from dashboard.core.units import unit_for
 from dashboard.errors import PlainError
@@ -409,6 +409,7 @@ def review():
             item["twice"] = twice.get(item["position"])
             item["private"] = private_words(store, move_in.private_copies(known, item["values"], item["source"]))
             item["exists"] = _already_there(store, same, item) if batch["kind"] == "import" else None
+            item["price_offer"] = receipt_prices.offer(conn, store.registry.get(item["table_name"]), item["values"])
             item["repeat"] = review_note(store, item)  # a feeding that may be sent twice (decision 0110)
             item["source"] = {k: visible(v) for k, v in item["source"].items()} if item["source"] else None
             item["needs"] = sorted({ref for ref in item["refs"].values() if ref in waiting})
@@ -449,8 +450,11 @@ def _tally_args(tally: dict) -> dict:
 @review_pages.post("/review/<int:proposal_id>/accept")
 def accept(proposal_id):
     conn, registry = current_app.config["CONNECT"](), current_app.config["REGISTRY_FOR_REQUEST"]()
+    price = receipt_prices.typed(request.form)  # "Save a price with this Stock in?" (decision 0133)
     try:
-        table, _record, also = proposals.accept_counted(conn, registry, proposal_id)
+        if price:
+            receipt_prices.check(conn, registry, proposal_id, price)  # a mistake is kept as the row's reason
+        table, _record, also = proposals.accept_counted(conn, registry, proposal_id, price or None)
     except receipts.RepeatHeld:
         return _back(done="held")
     except PlainError as error:
