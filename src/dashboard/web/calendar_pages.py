@@ -319,7 +319,7 @@ def _calendar_page(table, show: bool):
     rows = [dict(r) for r in store.conn.execute(f"SELECT * FROM {subject_info.name} WHERE deleted_at IS NULL "
                                                  f"ORDER BY id")]
     hidden = info.table.private and not show  # names wait for Show, so the people are listed by number (0123)
-    per = info.table.columns[rule["per"]]
+    per = info.table.columns[rule["per"]] if hidden else None  # a private calendar always has `per` (0122, 0123)
     subjects = sorted(({"id": r["id"], "name": display.private_subject_name(info, per, r["id"]) if hidden
                         else display.display_name(subject_info, r, store)} for r in rows
                        if _applies(store, info, r["id"])),
