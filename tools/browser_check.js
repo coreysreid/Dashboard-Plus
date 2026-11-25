@@ -823,6 +823,29 @@ function expect(condition, message) { if (!condition) throw new Failed(message);
     ok('private medical sheet asks first (a ?show=1 link does not skip it), then shows');
   }
 
+  async function checkWidths() {  // a 320px sweep (decision 0127): the main pages, found by following links from Home, never wider than the phone
+    await page.setViewportSize({ width: 320, height: 800 });
+    const skip = /^\/(close|export|restore|helpers\/|static)|\.(zip|csv|json|ics)$|\/print|\/(accept|reject|delete|undo|new)$/;
+    const seen = new Set();
+    const queue = ['/', '/to-do/year'];  // Home first, then every page its links reach; This year is named because it was once too wide
+    const wide = [];
+    while (queue.length && seen.size < plan.widths) {
+      const path = queue.shift();
+      if (seen.has(path)) continue;
+      seen.add(path);
+      const response = await page.goto(base + path);
+      if (!response || !response.ok() || !(response.headers()['content-type'] || '').includes('html')) continue;
+      const width = await page.evaluate(() => document.documentElement.scrollWidth);
+      if (width > 320) wide.push(`${path} (${width}px)`);
+      const links = await page.evaluate(() => [...document.querySelectorAll('a[href^="/"]')].map((a) => a.getAttribute('href').split('#')[0]));
+      for (const link of links) if (!seen.has(link) && !skip.test(link)) queue.push(link);
+    }
+    expect(!wide.length, `At 320px these pages are wider than the screen: ${wide.join(', ')}.`);
+    expect(seen.has('/to-do/year'), 'The 320px sweep should have reached Things to do, This year.');
+    await page.setViewportSize({ width: 1280, height: 900 });
+    ok(`${plan.locale}: ${seen.size} pages fit a 320 pixel phone screen`);
+  }
+
   async function checkClose() {
     await goto('/close');
     await Promise.all([page.waitForNavigation(), page.click('form button[type=submit]')]);
@@ -854,6 +877,7 @@ function expect(condition, message) { if (!condition) throw new Failed(message);
       if (plan.bills) await checkBills();
       if (plan.optional) await checkOptionalLink();
       if (plan.private) { await checkPrivateDetail(); await checkPrivateSheet(); }
+      if (plan.widths) await checkWidths();
       await checkClose();
     }
     expect(!problems.length, 'The browser reported problems:\n  ' + problems.join('\n  '));
