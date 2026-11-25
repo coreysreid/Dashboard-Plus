@@ -259,9 +259,13 @@ def _render_form(info, store, values, errors, from_form, record=None, status=200
     if record and not record.get("deleted_at"):
         from dashboard.web.calendar_pages import record_panels as calendar_panels
         month_calendars = calendar_panels(store, info, record)
+    period_bars = []  # how often or how much per day, week or month for this record (decision 0124)
+    if record and not record.get("deleted_at"):
+        from dashboard.web.bar_pages import record_panels as bar_panels
+        period_bars = bar_panels(store, info, record)
     return render_template("form.html", info=info, title=display.table_title(info), fields=fields, record=record,
                            record_name=record_name, errors=errors, history=history, saved=saved, charts=charts,
-                           feeding=feeding, month_calendars=month_calendars,
+                           feeding=feeding, month_calendars=month_calendars, period_bars=period_bars,
                            related=related, back=back, batches=batches, count_href=count_href,
                            under=_under(store, info, record) if record and not record.get("deleted_at") else [],
                            confirm=confirm_warnings or [], then=then, moves=_moves(store, info, record),

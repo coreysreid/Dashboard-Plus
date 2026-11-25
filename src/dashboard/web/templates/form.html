@@ -116,6 +116,10 @@
 <h2>{{ cal.title }}</h2>
 {% with open_list = false %}{% include "_calendar.html" %}{% endwith %}
 {% endfor %}
+{% for bv in period_bars %}
+<h2>{{ bv.title }}</h2>
+{% with level = 3 %}{% include "_bars.html" %}{% endwith %}
+{% endfor %}
 {% for u in under %}{# another list's records that point here, like a service's quotes (labels.toml `under`, 0111) #}
 <section class="under" id="under-{{ u.table }}" aria-labelledby="under-{{ u.table }}-heading">
 <h2 id="under-{{ u.table }}-heading">{{ u.title }}</h2>

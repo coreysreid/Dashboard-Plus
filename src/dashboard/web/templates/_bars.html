@@ -1,0 +1,59 @@
+{# Bars over time (decision 0124): the plain sentence, the period links, the bars and the equal table. Needs `bv`; `level` is the heading level of the table's heading. On a record's page (`bv.full`) the table is folded away. #}
+<section class="chart-page bars" id="{{ bv.id }}" aria-labelledby="{{ bv.id }}-heading">
+{% if bv.by_links or bv.unit_links or bv.earlier %}
+<nav class="chart-ranges" aria-label="Choose the periods shown: {{ bv.title }}"><ul>
+  {% for b in bv.by_links %}<li><a href="{{ b.href }}"{% if b.current %} aria-current="page"{% endif %}>{{ b.words }}</a></li>{% endfor %}
+  {% for u in bv.unit_links %}<li><a href="{{ u.href }}"{% if u.current %} aria-current="page"{% endif %}>{{ u.words }}</a></li>{% endfor %}
+  <li><a href="{{ bv.earlier }}" rel="prev">Earlier</a></li>
+  {% if bv.later %}<li><a href="{{ bv.later }}" rel="next">Later</a></li>{% endif %}
+  {% if bv.today_href %}<li><a href="{{ bv.today_href }}">Up to today</a></li>{% endif %}
+</ul></nav>
+{% endif %}
+{% if bv.empty %}
+<p class="chart-empty" role="status" id="{{ bv.id }}-heading"><strong>{{ bv.empty }}</strong></p>
+{% else %}
+<p class="chart-headline" id="{{ bv.id }}-heading"><strong>{{ bv.summary }}</strong></p>
+{% for n in bv.notes %}<p class="muted">{{ n }}</p>{% endfor %}
+<p class="muted">{{ bv.caveat }}</p>
+{% if bv.chart %}
+<figure class="chart">
+  {{ bv.chart }}
+  <figcaption class="muted">{{ bv.caption }}</figcaption>
+</figure>
+{% endif %}
+{% if bv.full %}<details class="bars-table"><summary>{{ bv.heading }}, as a table</summary>{% else %}
+<h{{ level or 3 }}>{{ bv.heading }}</h{{ level or 3 }}>{% endif %}
+<table class="grid chart-table">
+  <thead><tr><th scope="col">Period</th><th scope="col">{{ bv.value_label }}</th><th scope="col">More</th></tr></thead>
+  <tbody>
+  {% for r in bv.rows %}
+  <tr id="{{ r.id }}"{% if r.empty %} class="bars-empty"{% endif %}>
+    <td data-label="Period">{{ r.period }}</td>
+    <td data-label="{{ bv.value_label }}">{{ r.value }}</td>
+    <td data-label="More">{% if r.details %}{{ r.details }}{% endif %}{% if r.href %}{% if r.details %} · {% endif %}<a href="{{ r.href }}">{{ r.link_words }}</a>{% endif %}</td>
+  </tr>
+  {% endfor %}
+  </tbody>
+</table>
+{% if bv.full %}</details>{% endif %}
+{% if bv.private %}{# private history (decision 0121): counts only until a pressed Show, never a link #}
+{% if bv.show %}{% if bv.hide %}<p><a class="button quiet" href="{{ bv.hide }}" data-hide-details>Hide details</a></p>{% endif %}
+{% elif bv.can_show %}<p class="muted" data-private-words>{{ bv.private_words }}</p>
+<form method="post" action="{{ bv.show_action }}" class="actions">
+  <input type="hidden" name="_csrf" value="{{ csrf_token }}">
+  <input type="hidden" name="subject" value="{{ bv.subject_id }}">
+  <input type="hidden" name="by" value="{{ bv.by }}">
+  {% if bv.end %}<input type="hidden" name="end" value="{{ bv.end }}">{% endif %}
+  <button type="submit" class="quiet" data-show-bars>Show</button> <span class="muted">Shows each one's own bars, on that page only.</span>
+</form>{% endif %}
+{% endif %}
+{% if bv.groups %}
+<h{{ (level or 3) }}>{{ bv.group_title }}</h{{ (level or 3) }}>
+{% for g in bv.groups %}
+<h{{ (level or 3) + 1 }}>{{ g.name }}</h{{ (level or 3) + 1 }}>
+{% with bv = g, level = (level or 3) + 2 %}{% include "_bars.html" %}{% endwith %}
+{% endfor %}
+{% endif %}
+{% endif %}
+{% if bv.full %}<p><a href="{{ bv.full }}">Open {{ bv.title | lower }}</a></p>{% endif %}
+</section>

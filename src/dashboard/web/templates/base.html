@@ -84,6 +84,13 @@
     .chart-ranges a { display: inline-block; border: 1px solid var(--line); border-radius: 999px; padding: .2rem .75rem; text-decoration: none; }
     .chart-ranges a[aria-current] { background: var(--accent); color: var(--bg); border-color: var(--accent); }
     .chart-changes { margin: .3rem 0; padding-left: 1.2rem; }
+    /* Bars over time (decision 0124): a period still going on is striped, a period with nothing to add up has a
+       dashed empty box and its words, so neither is told apart by colour alone. */
+    .chart-svg .chart-bar-so-far-bg { fill: var(--card); } .chart-svg .chart-bar-so-far-line { stroke: var(--accent); }
+    .chart-svg .chart-none { stroke: var(--muted); stroke-dasharray: 2 2; }
+    .chart-svg .chart-none-text { fill: var(--muted); font-style: italic; }
+    .chart-table tr.bars-empty td:nth-child(2) { font-style: italic; color: var(--muted); }
+    .bars-table summary { cursor: pointer; color: var(--accent); margin: .4rem 0; }
     @media (max-width: 40rem) {  /* on a phone each row of a chart's table is a card, in the same order */
       .chart-table thead { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); }
       .chart-table, .chart-table tbody, .chart-table tr, .chart-table td { display: block; width: 100%; }
@@ -93,11 +100,15 @@
     @media (forced-colors: active) {
       .chart-svg text { fill: CanvasText; } .chart-svg .chart-axis { stroke: CanvasText; }
       .chart-svg .chart-bar, .chart-svg .chart-dot { fill: CanvasText; stroke: Canvas; } .chart-svg .chart-line { stroke: CanvasText; }
+      .chart-svg .chart-bar-so-far { stroke: CanvasText; } .chart-svg .chart-bar-so-far-bg { fill: Canvas; }
+      .chart-svg .chart-bar-so-far-line, .chart-svg .chart-none { stroke: CanvasText; } .chart-svg .chart-none-text { fill: CanvasText; }
     }
     @media print {
       .chart-svg { max-width: 15cm; } .chart-svg text { fill: #000; } .chart-svg .chart-axis { stroke: #000; }
       .chart-svg .chart-bar, .chart-svg .chart-dot { fill: #555; stroke: #000; } .chart-svg .chart-line { stroke: #000; }
       .chart-table tr { break-inside: avoid; } .chart-choose, .chart-ranges { display: none; }
+      .chart-svg .chart-bar-so-far-bg { fill: #fff; } .chart-svg .chart-bar-so-far-line, .chart-svg .chart-none { stroke: #000; }
+      .chart-svg .chart-none-text { fill: #000; } .bars form { display: none; }
     }
     /* Month calendars (decision 0119): a small fixed palette, and every look also has its own symbol, and a
        pattern or a dashed edge where colours could be confused, so nothing is told apart by colour alone. */

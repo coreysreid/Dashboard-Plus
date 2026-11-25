@@ -438,8 +438,8 @@ function expect(condition, message) { if (!condition) throw new Failed(message);
       expect(/-row-\d+$/.test(page.url()), `Choosing a bar with the keyboard should go to its table row; the page is at ${page.url()}.`);
       await goto('/t/pets__pets');
       await Promise.all([page.waitForNavigation(), page.click(`a[aria-label="Open ${c.pet}"]`)]);
-      const dots = await page.locator('svg.chart-svg a').count();
-      const rows = await page.locator('table.chart-table tbody tr').count();
+      const dots = await page.locator('section.chart-page:not(.bars) svg.chart-svg a').count();
+      const rows = await page.locator('section.chart-page:not(.bars) table.chart-table tbody tr').count();
       expect(dots === c.dots && rows === c.dots, `${c.pet}'s page should show ${c.dots} weigh-in dots and ${c.dots} table rows; it shows ${dots} and ${rows}.`);
       const pwide = await page.evaluate(() => document.documentElement.scrollWidth);
       expect(pwide <= 320, `At 320px ${c.pet}'s page is ${pwide}px wide; it should not scroll sideways.`);
@@ -546,7 +546,21 @@ function expect(condition, message) { if (!condition) throw new Failed(message);
       await fits('the weights chart with a range chosen');
       expect(await page.locator('.chart-ranges a[aria-current="page"]').innerText() === 'Last year', 'Last year should be marked as chosen.');
       expect((await text('main')).includes('Since the reading before'), 'The weights page should say the change since the reading before.');
-      ok(`calendars at 320px: ${c.pet}'s feeding month with today in words and a symbol, keyboard reaches the day, routines legend of 5, weights for the last year with the change in words`);
+      // Bars over time (decision 0124): food put out per day from the pet's page, then by week, at 320px.
+      await goto('/t/pets__pets');
+      await Promise.all([page.waitForNavigation(), page.click(`a[aria-label="Open ${c.pet}"]`)]);
+      await Promise.all([page.waitForNavigation(), page.click('a[href^="/bars/pet_feeding__servings/food"]:has-text("Open food put out")')]);
+      await fits('the food put out bars');
+      const bars = page.locator('svg.chart-svg[role="group"] a.chart-mark');
+      expect(await bars.count() === 14, `Food put out per day should have 14 days, each a link; it has ${await bars.count()}.`);
+      const todayBar = await bars.last().getAttribute('aria-label');
+      expect(/\(so far\)/.test(todayBar), `Today's bar should say "so far" in words; it says "${todayBar}".`);
+      await Promise.all([page.waitForNavigation(), page.click('.chart-ranges a:has-text("By week")')]);
+      await fits('the food put out bars by week');
+      expect(await page.locator('.chart-ranges a[aria-current="page"]').first().innerText() === 'By week', 'By week should be marked as chosen.');
+      const main = await text('main');
+      expect(main.includes('put out') && !/\bmissed\b/.test(main.replace('it does not mean anything was missed', '')), 'The bars should say what was put out and never call a week missed.');
+      ok(`calendars at 320px: ${c.pet}'s feeding month with today in words and a symbol, keyboard reaches the day, routines legend of 5, weights for the last year with the change in words, food put out by day and by week (0124)`);
     } finally {
       await page.setViewportSize({ width: 1280, height: 720 });
     }
