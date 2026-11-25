@@ -214,6 +214,7 @@ class EarlierDaysTests(HistoryCase):
         self.assertIn('<span class="cal-chip cal-done" title="', text)
         self.assertIn("✓", text)
         plain = re.sub(r"<[^>]+>", " ", text).replace("earlier times are never filled in as missed", "")
+        plain = plain.replace("does not mean anything was missed", "")  # the bars under the calendar (decision 0131)
         for word in ("missed", "Missed", "overdue", "late"):
             self.assertNotIn(word, plain)
 

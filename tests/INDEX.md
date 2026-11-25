@@ -77,3 +77,4 @@ How to run them is in AGENTS.md.
 | test_review_speedups.py | Tests for faster Review (decision 0101): Accept all by group, ticked rows, keys, fixed buttons and Allow 200 more today. | changing Accept all, ticked rows, Review keys or the daily limit |
 | test_polish_0127.py | Tests that keep decision 0127's fixes in place: the narrow This year layout, the receipt group words and the Mac read-me words. | changing the This year page, receipt Review words or the Mac read-me |
 | test_receipt_review.py | Tests for receipts on Review (decision 0105): clearer group words, lines a helper could not match, and repeat receipts. | changing receipt lines, Finish receipt review or the repeat-receipt warning |
+| test_visual_tidy_0131.py | Tests for the hands-on visual check of decisions 0119 to 0130: Services done per month, folded bars, one "This month" (decision 0131). | changing the folded bars, the calendar's current-month link or the Add buttons on a record's page |

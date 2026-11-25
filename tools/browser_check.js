@@ -556,6 +556,11 @@ function expect(condition, message) { if (!condition) throw new Failed(message);
       // Bars over time (decision 0124): food put out per day from the pet's page, then by week, at 320px.
       await goto('/t/pets__pets');
       await Promise.all([page.waitForNavigation(), page.click(`a[aria-label="Open ${c.pet}"]`)]);
+      // The pet's page folds its bars under a summary (decision 0131): closed they are not shown, opened they are, at 320px.
+      expect(!(await page.locator('details.panel-fold svg.chart-svg').first().isVisible()), 'The pet page should fold the food bars until their summary is pressed.');
+      await page.click('details.panel-fold > summary:has-text("Show the bars")');
+      expect(await page.locator('details.panel-fold svg.chart-svg').first().isVisible(), 'Pressing the bars summary should show the drawing.');
+      await fits('the pet page with its bars opened');
       await Promise.all([page.waitForNavigation(), page.click('a[href^="/bars/pet_feeding__servings/food"]:has-text("Open food put out")')]);
       await fits('the food put out bars');
       const bars = page.locator('svg.chart-svg[role="group"] a.chart-mark');
