@@ -55,7 +55,8 @@ CHART_RANGES = ("3m", "1y", "all")
 CHART_SCALES = ("zero", "fitted")
 # A month calendar of a table's dated or timed records by the household's own day (decision 0119). Each record has
 # one of a few fixed looks (colour, symbol and pattern together); a linked record's open due date is shown only when
-# the table says `due = true`, and an empty day is never called missed.
+# the table says `due = true`, and an empty day is never called missed. Without `per` it is a calendar of the
+# table's own records (decision 0122): each one's own open due date, and when each was done.
 CALENDAR_KEYS = ("when", "per", "show", "title", "entry", "state", "looks", "look", "due")
 CALENDAR_ENTRY_LOOKS = ("recorded", "done", "skipped")
 CALENDAR_SHOW = ("one", "all")
@@ -979,8 +980,10 @@ def _check_calendar(file: str, module: str, table: Table, tables: dict[str, Tabl
         problems.append(f"{where}: write it as {example}.")
         return {}
     problems.extend(_unknown_keys(where, raw, CALENDAR_KEYS))
+    if "per" not in raw:
+        return _check_own_calendar(where, table, raw, problems)
     before = len(problems)
-    when, per = (table.columns.get(raw.get(k)) if isinstance(raw.get(k), str) else None for k in ("when", "per"))
+    when, per =(table.columns.get(raw.get(k)) if isinstance(raw.get(k), str) else None for k in ("when", "per"))
     if when is None or when.type not in ("date", "datetime") or not when.required:
         problems.append(f"{where}: 'when' must name a required date or date-and-time column of this table.")
     if per is None or per.type != "link" or not per.required:
@@ -1131,6 +1134,48 @@ def _check_bars(file: str, table: Table, raw, problems: list[str]) -> list[dict]
     return found
 
 
+def _check_own_calendar(where: str, table: Table, raw: dict, problems: list[str]) -> dict:
+    """Check a calendar of a table's own records, with no `per` (decision 0122): each record's one open due date
+    from this table's own reminder, and the days it was done, from an optional date column (`when`, such as
+    "last_done") or else from this table's own Mark done buttons saved in history (decision 0112)."""
+    before = len(problems)
+    expiring = (table.watch or {}).get("expiring") if isinstance(table.watch, dict) else None
+    if raw.get("due") is not True:
+        problems.append(f"{where}: without 'per' it is a calendar of this table's own records, so it needs "
+                        f"due = true. To show entries that belong to another record, name it with 'per'.")
+    elif not expiring or expiring.get("wording") != "due":
+        problems.append(f"{where}: 'due = true' without 'per' shows each record's own due date, so this table needs "
+                        f"a reminder with wording = \"due\".")
+    if table.private:
+        problems.append(f"{where}: a private table's calendar needs 'per' and never shows a due date.")
+    if raw.get("show", "all") != "all":
+        problems.append(f"{where}: a calendar of this table's own records shows them all together: leave out "
+                        f"'show' or write show = \"all\".")
+    for key in ("state", "looks"):
+        if key in raw:
+            problems.append(f"{where}: '{key}' needs 'per'; a calendar of this table's own records shows only "
+                            f"when each was done and when each is due.")
+    when = raw.get("when")
+    if when is not None:
+        column = table.columns.get(when) if isinstance(when, str) else None
+        if column is None or column.type != "date" or column.sensitive or \
+                (expiring is not None and when == expiring.get("date")):
+            problems.append(f"{where}: 'when' must name a date column of this table that says when it was last "
+                            f"done, like \"last_done\": not private, and not the due date itself.")
+    if not (isinstance(raw.get("title"), str) and raw["title"].strip()):
+        problems.append(f"{where}: 'title' must be the calendar's name, like \"Garden calendar\".")
+    words = raw.get("entry")
+    if not (isinstance(words, list) and len(words) == 2 and all(isinstance(w, str) and w.strip() for w in words)):
+        problems.append(f"{where}: 'entry' must be two words, singular then plural, like [\"job\", \"jobs\"].")
+    if raw.get("look", "done") not in CALENDAR_ENTRY_LOOKS:
+        problems.append(f"{where}: 'look' must be \"recorded\", \"done\" or \"skipped\", not {raw['look']!r}.")
+    if len(problems) > before:
+        return {}
+    return {"when": when, "per": None, "show": "all", "title": raw["title"].strip(),
+            "entry": [w.strip() for w in raw["entry"]], "state": None, "looks": {},
+            "look": raw.get("look", "done"), "due": True}
+
+
 def _check_record_name(file: str, table: Table, tables: dict[str, Table], template, problems: list[str]) -> str | None:
     """Check `record_name`: a pattern like "{quantity} {item.unit} of {item}" naming a record."""
     where = f"In {file}, table '{table.name}', record_name"
@@ -1252,6 +1297,13 @@ def _check_tables(module: str, data: dict, requires: list[str], problems: list[s
             if "takes_over" in raw:
                 tables[tname].takes_over = _check_takes_over(file, tables[tname], raw["takes_over"], requires,
                                                              list(optional), problems)
+    for table in tables.values():  # decision 0122: one record's due date is on one calendar only
+        rule = table.calendar
+        if rule and rule.get("due") and rule.get("per"):
+            target = table.columns[rule["per"]].to
+            if target in tables and tables[target].calendar and not tables[target].calendar.get("per"):
+                problems.append(f"In {file}, table '{target}', calendar: '{table.name}' already shows its due dates "
+                                f"on its own calendar (due = true). Keep one of the two, so each date shows once.")
     for table in tables.values():
         for column in table.columns.values():
             if column.type in ("link", "links") and column.to:

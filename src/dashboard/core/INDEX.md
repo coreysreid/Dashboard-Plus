@@ -24,7 +24,7 @@
 | watch.py | Work out what is running low, what expires soon, how many days of supplies are on hand, and what is worth filling in. | changing running low, expiring, days of cover or gaps |
 | checklist.py | Things to do: Today, This week, This month and This year over the due dates modules already keep (decision 0107). | changing which tasks show, their windows, week start or what counts as done |
 | daily.py | Daily totals by the household's own day: accepted entries only, amounts added only in matching units (decision 0110). | changing the household day, daily totals or the possible-repeat match |
-| calendars.py | Month calendars from a table's dated or timed records by the household's own day; an empty day is never called missed (decision 0119). | changing the calendar grid, its looks or which records and due dates it shows |
+| calendars.py | Month calendars from a table's dated or timed records by the household's own day; an empty day is never called missed (decision 0119). | changing the calendar grid, its looks, which records and due dates it shows, or a calendar of a table's own records (0122) |
 | bars.py | Bars over time: how often, or how much in one unit, per day, week or month by the household's own day; an empty period is never called missed (decision 0124). | changing which records a bars chart counts, its periods or how amounts add up |
 | startup.py | Prepare the database at start-up: load modules, back up if needed, migrate, and give permanent record IDs. | changing what happens at start-up |
 | helper_address.py | The small address file a connector reads to find Dashboard after a restart: only the address and a run ID (0092). | changing how a connector finds Dashboard |

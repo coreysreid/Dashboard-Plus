@@ -175,6 +175,7 @@ One record per decision, from `TEMPLATE.md`. Never deleted; reversed ones are ma
 | [0121](0121-dose-calendar-and-private-lists.md) | Every `private = true` list and record says only how many and "Private history — press Show to see it." until a pressed Show (a POST, never a link); no sort, scroll or suggestion addresses; a private record's name is its list and number; questions treat it as private; Medicine doses declares a per-person Dose calendar of ● and counts, with each day's lines only after Show, and a private calendar may not use a state, due dates or another look; the dose panel names the giver only after Show | Accepted |
 | [0123](0123-private-calendars-record-link-and-show-by-post.md) | A private table's calendar and day page say only "this person" and how many until Show (people listed by number); Record a dose carries only the person and the time, never the last medicine or giver; Show on one private detail is a POST with the session token (GET refused), works without a script, and is never cached | Accepted |
 | [0124](0124-bars-over-time.md) | Bars over time from a generic `bars` declaration (count, or a sum of one number column in one unit at a time with the other units and missing amounts said, never converted; optional `where` and `group`) per day, week or month by the household's own day; server-drawn SVG rows from zero with every value in words, a striped "so far" bar and "nothing recorded", never missed, plus an equal table; Pet feeding food put out, Routines times done, Medicine doses counted with each medicine only after a pressed Show; no odometer distance (0111) | Accepted |
+| [0122](0122-more-lists-on-the-calendar.md) | Home care (Work done with `per = "job"`), Garden jobs, Vehicles (registration, insurance, services with `last_done`) and Bills and policies on month calendars; a `calendar` without `per` is of a table's own records: its own due date once (never a reminder moved elsewhere) and done from `when` or its Mark done presses in history; Things to do's Calendar tab shows every list in one month, each line labelled with its module, with a count per list and plain Show links per module; no amounts or private details | Accepted |
 | [TEMPLATE](TEMPLATE.md) | Blank record to copy for a new decision | recording a decision |
 
 ## docs/plans/  (summary: build plans for larger pieces of work, written before building)
@@ -275,7 +276,7 @@ numbered migrations. See docs/DESIGN.md section 6 for the module contract.
 | Entry | What it is | Open it when |
 |---|---|---|
 | module.toml | Name, version, description; requires People (provider); Vehicles and Household stock only optionally (decisions 0115, 0117) | changing the module's details |
-| tables.toml | Bills and policies with private amount, cover, reference and notes that never travel; due words per kind; `takes_over` of Vehicle insurance | adding a field or changing the reminder |
+| tables.toml | Bills and policies with private amount, cover, reference and notes that never travel; due words per kind; `takes_over` of Vehicle insurance; a `calendar` of check dates, never amounts (decision 0122) | adding a field or changing the reminder |
 | labels.toml | Friendly labels and help, the optional vehicle and place words, and the household's words for moving a Vehicle insurance reminder | changing wording or order |
 | sheets.toml | Bills and policies to check: names, kinds, providers and dates, nothing private | changing what prints |
 | migrations/ | Numbered database changes | after changing tables.toml |
@@ -308,7 +309,7 @@ Generate the next one with: python tools/make_migration.py documents --name <wha
 | Entry | What it is | Open it when |
 |---|---|---|
 | module.toml | Name, version, description; requires Household stock (places) | changing the module's details |
-| tables.toml | Beds, crops, plantings, harvests and jobs; a job reminder only while not done | adding a field or a gap question |
+| tables.toml | Beds, crops, plantings, harvests and jobs; a job reminder only while not done; a Garden `calendar` of jobs marked done and due (decision 0122) | adding a field or a gap question |
 | labels.toml | Friendly labels, help text, form and list order, jobs main on home | changing wording or order |
 | sheets.toml | Garden plan sheet: beds and where they are, plantings, jobs not yet done | changing what prints |
 | migrations/ | Numbered database changes | after changing tables.toml |
@@ -324,7 +325,7 @@ Generate the next one with: python tools/make_migration.py garden --name <what_c
 | Entry | What it is | Open it when |
 |---|---|---|
 | module.toml | Name, version, description; requires People (who does it) and Household stock (places) | changing the module's details |
-| tables.toml | Home care jobs with a do-again-by date, an optional household repeat, Mark done and one gap question, and the work done on each | adding a field or a gap question |
+| tables.toml | Home care jobs with a do-again-by date, an optional household repeat, Mark done and one gap question, and the work done on each; a Home care `calendar` of work done and do-again-by dates (decision 0122) | adding a field or a gap question |
 | labels.toml | Friendly labels, help text, form and list order, which list is main on home | changing wording or order |
 | sheets.toml | Home care sheet: each job, where, who usually does it and its dates, with no notes | changing what prints |
 | migrations/ | Numbered database changes | after changing tables.toml |
@@ -540,7 +541,7 @@ Generate the next one with: python tools/make_migration.py vehicle_running --nam
 | Entry | What it is | Open it when |
 |---|---|---|
 | module.toml | Name, version, description; requires People (who to call) and Household stock (places, car kit) | changing the module's details |
-| tables.toml | Vehicles, insurance renewals, services and checks, with due dates and one gap question | adding a field or a gap question |
+| tables.toml | Vehicles, insurance renewals, services and checks, with due dates and one gap question; a `calendar` of each kind of date (decision 0122) | adding a field or a gap question |
 | labels.toml | Friendly labels, help text, form and list order | changing wording or order |
 | sheets.toml | Vehicles sheet: who to call, where each is kept and the dates, with no private numbers | changing what prints |
 | migrations/ | Numbered database changes | after changing tables.toml |
@@ -621,7 +622,7 @@ Generate the next one with: python tools/make_migration.py wine --name <what_cha
 | watch.py | Work out what is running low, what expires soon, how many days of supplies are on hand, and what is worth filling in. | changing running low, expiring, days of cover or gaps |
 | checklist.py | Things to do: Today, This week, This month and This year over the due dates modules already keep (decision 0107). | changing which tasks show, their windows, week start or what counts as done |
 | daily.py | Daily totals by the household's own day: accepted entries only, amounts added only in matching units (decision 0110). | changing the household day, daily totals or the possible-repeat match |
-| calendars.py | Month calendars from a table's dated or timed records by the household's own day; an empty day is never called missed (decision 0119). | changing the calendar grid, its looks or which records and due dates it shows |
+| calendars.py | Month calendars from a table's dated or timed records by the household's own day; an empty day is never called missed (decision 0119). | changing the calendar grid, its looks, which records and due dates it shows, or a calendar of a table's own records (0122) |
 | bars.py | Bars over time: how often, or how much in one unit, per day, week or month by the household's own day; an empty period is never called missed (decision 0124). | changing which records a bars chart counts, its periods or how amounts add up |
 | startup.py | Prepare the database at start-up: load modules, back up if needed, migrate, and give permanent record IDs. | changing what happens at start-up |
 | helper_address.py | The small address file a connector reads to find Dashboard after a restart: only the address and a run ID (0092). | changing how a connector finds Dashboard |
@@ -681,7 +682,7 @@ Add a new file with the next number instead of changing an old one.
 | export_page.py | Settings, Export my records: a page and a button that downloads a zip of spreadsheet files. | changing the Export page |
 | chart*.py | Charts drawn on the server as SVG, labelled bars, dated dots and bars over time (charts, decision 0124), and the pages showing today's drinking water and one pet's recorded weights (chart_pages, decision 0109) | changing a chart or its empty words |
 | daily_pages.py | Daily totals pages (decision 0110): one subject's day, a dated sheet, the Home lines, the record panel and Review's repeat note. | changing the feeding log pages, its sheet or its Home card |
-| calendar_pages.py | Month calendars (decision 0119): a colour-coded grid with a symbol for every state, a legend and the same days in words. | changing a calendar page, its words, the Things to do Calendar tab, the record panel or a private calendar's Show (0121) |
+| calendar_pages.py | Month calendars (decision 0119): a colour-coded grid with a symbol for every state, a legend and the same days in words. | changing a calendar page, its words, the Things to do Calendar tab (every list together, 0122), the record panel or a private calendar's Show (0121) |
 | bar_pages.py | Bars over time (decision 0124): how often, or how much in one unit, per day, week or month, drawn on the server with the same values in a table and in words. | changing a bars chart page, its words, the record panel or a private table's Show |
 | private_daily.py | Private daily history (decision 0120), such as medicine doses: counts and times until Show, per-medicine totals after it. | changing the dose panel, Record a dose or Show details on Dose history |
 | restore.py | Settings, Backups: the list of backups, a preview of one, putting it back, and Undo restore. | changing the restore pages |
@@ -693,7 +694,7 @@ Add a new file with the next number instead of changing an old one.
 | base.html | Shared layout, colours (light and dark), header and footer | changing the overall look |
 | *chart.html | Charts with their equal tables: today's drinking water by item (supply_chart), one pet's recorded weights with a pet and date picker (dot_chart) and the piece shared with the pet's page (_dot_chart) | changing a chart page's wording |
 | *daily*.html | The feeding log: one pet's day with Add food (daily), the piece shared with the pet's page (_daily_panel) and the dated sheet that prints every entry or refuses (daily_sheet); medicine doses' private panel with counts until Show (_daily_private_panel, decision 0120) | changing the feeding log's or dose panel's wording |
-| *calendar.html | Month calendars (decision 0119): one calendar with its subject picker (calendar), the Things to do Calendar tab (todo_calendar) and the grid, legend and day list shared with record pages (_calendar) | changing a calendar's wording or layout |
+| *calendar.html | Month calendars (decision 0119): one calendar with its subject picker (calendar), the Things to do Calendar tab with every list together and Show links (todo_calendar, decision 0122) and the grid, legend and day list shared with record pages (_calendar) | changing a calendar's wording or layout |
 | *bars.html | Bars over time (decision 0124): one chart with its subject picker (bars) and the sentence, period links, bars, equal table and private Show shared with record pages (_bars) | changing a bars chart's wording or layout |
 | home.html | Home page: days of cover, needs attention, tables with counts, backup and data file status | changing the home screen |
 | attention.html | Running low, expiring soon, days of cover with the working shown, and gaps worth filling in | changing the attention page |
@@ -757,6 +758,7 @@ How to run them is in AGENTS.md.
 | test_private_lists_and_dose_calendar.py | Tests for private lists and the dose calendar (decision 0121): nothing of a private table before a pressed Show, and doses as ● and a count by day. | changing what a private list, record or calendar shows before Show |
 | test_private_reveal.py | Tests for decision 0123: private calendars name nobody until Show, the Record a dose link copies nothing private, and Show on one private detail is a POST that is never cached. | changing private calendars, the Record a dose link or Show on a private detail |
 | test_bar_charts.py | Tests for bars over time (decision 0124): declarations, periods by the household's own day, one unit at a time, empty periods never missed, the drawing, private doses and modules switched off. | changing a bars chart, its periods, units or private Show |
+| test_calendars_more.py | Tests for Home care, Garden, Vehicles and Bills on calendars and one Things to do month with Show links (decision 0122). | changing a calendar of a table's own records, the combined Calendar tab or its Show links |
 | test_module_vehicle_running.py | Tests for the Vehicle running log: odometer readings and service estimates beside Vehicles (decision 0111). | changing readings, estimates, gentle checks or listed-under sections |
 | test_gaps.py | Tests for gaps: details worth filling in, declared in a table's `watch.gaps` and asked as questions. | changing gaps |
 | test_examples.py | Tests for the example households: each loads cleanly and shows exactly what it was written to show. | changing an example household |
