@@ -65,7 +65,9 @@ expiring = { date = "due_on", warn_days = 14, wording = "due", what = "job", whe
 # A month calendar of the jobs themselves (decision 0122): the day each was done and each open job's due date, shown
 # once. A finished job has no due date to show. Since decision 0129 the done day is Done on, and with history = true
 # also each earlier Done on a job's history shows it moved on from, and each Mark done pressed before Done on existed
-# (Undo takes a press away; a date typed back or cleared never counts).
+# (Undo takes a press away; a date typed back never counts). Decision 0132: a Done on cleared a day or more after it
+# was typed still counts, a Done on typed after an old press counts once, and any day from history can be taken off
+# with "Not a done day".
 [tables.jobs.calendar]
 title = "Garden calendar"
 entry = ["job", "jobs"]

@@ -3,6 +3,14 @@
 {% block body %}
 <p class="muted"><a href="/">Home</a> · <a href="/t/{{ table }}">List of every entry</a></p>
 <h1>{{ title }}</h1>
+{% if fix_notice %}{# after "Not a done day" or its Undo (decision 0132) #}
+<div class="notice" role="status" id="fix-notice">{{ fix_notice.words }}{% if fix_notice.undo %}
+  <form method="post" action="{{ fix_notice.undo.href }}" style="display:inline;margin-left:.5rem">
+    <input type="hidden" name="_csrf" value="{{ csrf_token }}"><input type="hidden" name="op" value="{{ fix_notice.undo.op }}"><input type="hidden" name="month" value="{{ month }}">
+    <button type="submit" class="quiet">Undo</button>
+  </form>{% endif %}
+</div>
+{% endif %}
 {% if no_subject %}
 <p role="status"><strong>{{ no_subject }}</strong></p>
 <p><a class="button" href="{{ add_subject }}">Add one</a></p>
