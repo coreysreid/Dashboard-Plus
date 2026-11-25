@@ -124,7 +124,8 @@ def _current() -> dict:
             "mobility_needs": get("household.mobility_needs", False),
             "hazards": get("household.hazards", []), "second_copy": get("backups.second_copy", True),
             "week_starts": checklist.week_start(_conn()),
-            "distance_unit": settings.household_choice(conn, "distance_unit")}
+            "distance_unit": settings.household_choice(conn, "distance_unit"),
+            "currency": settings.household_choice(conn, "currency")}
 
 
 def _when(text: str | None) -> str | None:
@@ -161,6 +162,7 @@ def _render(mode: str, values: dict, errors: dict, status: int = 200, saved: boo
                            name_slots=NAME_SLOTS, home_types=HOME_TYPES, hazards=HAZARDS, countries=COUNTRIES,
                            regions=REGIONS, timezone_guess=TIMEZONE_GUESS,
                            distance_units=list(settings.HOUSEHOLD_CHOICES["distance_unit"].items()),
+                           currencies=list(settings.HOUSEHOLD_CHOICES["currency"].items()),
                            data_backups=current_app.config["DATA_DIR"] / "backups",
                            extra_backups=default_extra_dir(),
                            backup=backup_report(current_app.config["DATA_DIR"])), status
@@ -202,6 +204,9 @@ def _save(form, mode: str):
     distance_unit = form.get("distance_unit")
     if distance_unit is not None and distance_unit not in settings.HOUSEHOLD_CHOICES["distance_unit"]:
         errors["distance_unit"] = "Choose kilometres or miles."
+    currency = form.get("currency")
+    if currency and currency not in settings.HOUSEHOLD_CHOICES["currency"]:
+        errors["currency"] = "Choose one of the listed currencies."
     chosen_modules = set(form.getlist("modules"))
     for module in current_app.config["LOADED"]:
         needed = [r for r in module.requires if r not in chosen_modules]
@@ -233,6 +238,8 @@ def _save(form, mode: str):
         values[checklist.WEEK_START_KEY] = week_starts
     if distance_unit:  # only Settings asks; until then it follows the country (decision 0111)
         values["household.distance_unit"] = distance_unit
+    if currency:  # only Settings asks; until then it follows the country (decision 0128)
+        values["household.currency"] = currency
     if form.get("timezone"):
         values["household.timezone"] = form.get("timezone")[:64]
     for key, value in values.items():
@@ -275,6 +282,7 @@ def _form_values(form) -> dict:
             "storeys": form.get("storeys"), "mobility_needs": bool(form.get("mobility_needs")),
             "hazards": form.getlist("hazards"), "second_copy": bool(form.get("second_copy")),
             "week_starts": form.get("week_starts", ""), "distance_unit": form.get("distance_unit", ""),
+            "currency": form.get("currency", ""),
             "names": [form.get(f"name_{i}", "") for i in range(1, NAME_SLOTS + 1)],
             "pet_names": [form.get(f"pet_{i}", "") for i in range(1, PET_SLOTS + 1)],
             "pet_kinds": [form.get(f"pet_kind_{i}", "") for i in range(1, PET_SLOTS + 1)]}

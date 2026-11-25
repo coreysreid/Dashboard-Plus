@@ -101,6 +101,15 @@ is new: keep a copy of anything important somewhere else too. See
   words and the same values are in a table; a day, week or month with nothing
   written down says "nothing recorded", never "missed", and this week or month
   is striped and says "so far".
+- **What you paid and Spent per month:** when you save a bought Stock in, or
+  later, you can type what you paid and say whether it is the total or the
+  price for each one, in your household's currency (chosen in Settings). A
+  receipt price a helper read stays on Review for checking and is never saved
+  by itself. **Spent per month** (on Household stock) counts your Stock ins;
+  **Show** adds up the prices, overall and for each category, one currency at
+  a time. A Stock in without a price is counted, never read as zero, and the
+  page says it covers only prices that were typed in. Prices stay on this
+  computer and are never on lists, sheets, the export or a helper's screen.
 - **What happened, newest first:** a pet's page and a person's page end with
   one list of everything recorded for them, under month headings: each
   weigh-in with the change since the one before ("up 0.3 kg since 2 Oct"),

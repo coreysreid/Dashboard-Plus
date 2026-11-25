@@ -93,6 +93,42 @@ columns.notes = { type = "text" }
 columns.lot = { type = "link", to = "lots", on_delete = "clear" }
 columns.expires = { type = "date" }
 columns.place = { type = "link", to = "places", on_delete = "clear" }
+# A confirmed purchase price (decision 0128), typed by a person on a bought Stock in, never copied from a receipt
+# line on Review (decision 0097). Private, and kept on this computer like bills amounts (decision 0100): never on a
+# list, a sheet, the export, a helper or the change log's values. The line total is worked out when it is saved.
+columns.price = { type = "money", min = 0, sensitive = true, travels = "never" }
+columns.price_basis = { type = "choice", sensitive = true, travels = "never", choices = [
+  { key = "total", label = "Total for these goods" },
+  { key = "each", label = "Price for each one" },
+] }
+columns.paid_total = { type = "money", min = 0, sensitive = true, travels = "never" }
+columns.currency = { type = "text", sensitive = true, travels = "never" }
+
+[tables.movements.price]
+paid = "price"
+basis = "price_basis"
+total = "paid_total"
+currency = "currency"
+amount = "amount"
+only = { reason = "bought" }
+only_words = "can only be saved on a Stock in that was bought or added. A Stock out never takes money off."
+
+[[tables.movements.bars]]
+# Spent per month (decision 0128): the line totals people typed, in one currency at a time, overall and for each
+# category of Stock item. A Stock in without a price is counted, never read as zero. Added up only after Show.
+key = "spending"
+title = "Spent"
+when = "happened_on"
+measure = "sum"
+amount = "paid_total"
+unit = "currency"
+where = { reason = "bought" }
+group = "item.category"
+by = ["month", "week"]
+entry = ["Stock in", "Stock ins"]
+verb = "spent"
+missing = "price"
+caveat = "Only prices typed in for a Stock in are added up, so this is not everything the household spent. A Stock out never takes money off."
 
 [tables.movements.adjusts]
 # Each movement changes one batch, and so the item's amount: "bought" (and counting more) adds, the others take away.

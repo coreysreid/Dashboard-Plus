@@ -92,10 +92,13 @@ columns.outcome = { type = "choice", required = true, choices = ["done", "skippe
         base = ('[[tables.log.bars]]\nkey = "k"\ntitle = "T"\nwhen = "at"\nper = "pet"\nmeasure = "sum"\n'
                 'by = ["day"]\nentry = ["a", "b"]\nsubject = "pet"\n')
         self.assertIn("a sum needs a unit", self.problems(base + 'amount = "amount"\nverb = "v"\n'))
-        self.assertIn("'amount' must name a number column of this table that is not private",
-                      self.problems(base + 'amount = "secret"\nunit = "unit"\nverb = "v"\n'))
-        self.assertIn("'amount' must name a number column", self.problems(base + 'amount = "cost"\nunit = "unit"\n'
-                                                                                 'verb = "v"\n'))
+        # Decision 0128: a private amount is added up only after a pressed Show, and money in whole units.
+        secret = self.load(base + 'amount = "secret"\nunit = "unit"\nverb = "v"\n').tables["log"].bars[0]
+        self.assertEqual((secret["hidden"], secret["money"]), (True, False))
+        cost = self.load(base + 'amount = "cost"\nunit = "unit"\nverb = "v"\n').tables["log"].bars[0]
+        self.assertEqual((cost["hidden"], cost["money"]), (False, True))
+        self.assertIn("'amount' must name a number or money column", self.problems(base + 'amount = "on"\n'
+                                                                                         'unit = "unit"\nverb = "v"\n'))
         self.assertIn("'verb' must be the words after an amount", self.problems(base + 'amount = "amount"\n'
                                                                                        'unit = "unit"\n'))
         count = base.replace('"sum"', '"count"')
