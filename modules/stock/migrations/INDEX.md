@@ -10,3 +10,4 @@ Generate the next one with: python tools/make_migration.py stock --name <what_ch
 | 0006_connections_between_places.sql | Connections between places: which rooms lead into which, and doors to outside (decision 0103) | checking how connections are stored |
 | 0007_way_out_sketch_facts.sql | A floor, sleeping and checked-window flag on places, and a confirmed destination on doors to outside, for the way-out sketch (decision 0118) | checking how the sketch's facts are stored |
 | 0005_batches.sql | Batches: an item's stock split by use-by date and place; each existing item becomes one batch | checking how the tables are stored |
+| 0008_purchase_prices.sql | A confirmed purchase price, how it was meant, its line total and currency on Stock in and out; existing rows keep no price (decision 0128) | checking how prices are stored |

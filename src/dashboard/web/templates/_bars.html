@@ -8,6 +8,14 @@
   {% if bv.later %}<li><a href="{{ bv.later }}" rel="next">Later</a></li>{% endif %}
   {% if bv.today_href %}<li><a href="{{ bv.today_href }}">Up to today</a></li>{% endif %}
 </ul></nav>
+{% elif bv.pressed %}{# a private amount after Show (decision 0128): each period link is a pressed button, so moving keeps it shown without an address #}
+<nav class="chart-ranges" aria-label="Choose the periods shown: {{ bv.title }}"><ul>
+  {% for p in bv.pressed %}<li><form method="post" action="{{ bv.show_action }}">
+    <input type="hidden" name="_csrf" value="{{ csrf_token }}">
+    {% for f in p.fields %}<input type="hidden" name="{{ f.name }}" value="{{ f.value }}">{% endfor %}
+    <button type="submit" class="quiet"{% if p.current %} aria-current="page"{% endif %}>{{ p.words }}</button>
+  </form></li>{% endfor %}
+</ul></nav>
 {% endif %}
 {% if bv.empty %}
 <p class="chart-empty" role="status" id="{{ bv.id }}-heading"><strong>{{ bv.empty }}</strong></p>
@@ -45,6 +53,16 @@
   <input type="hidden" name="by" value="{{ bv.by }}">
   {% if bv.end %}<input type="hidden" name="end" value="{{ bv.end }}">{% endif %}
   <button type="submit" class="quiet" data-show-bars>Show</button> <span class="muted">Shows each one's own bars, on that page only.</span>
+</form>{% endif %}
+{% elif bv.hidden %}{# a private amount, such as prices paid (decision 0128): counted until a pressed Show, never an address #}
+{% if bv.show %}{% if bv.hide %}<p><a class="button quiet" href="{{ bv.hide }}" data-hide-details>Hide amounts</a></p>{% endif %}
+{% elif bv.can_show %}<p class="muted" data-private-words>{{ bv.hidden_words }}</p>
+<form method="post" action="{{ bv.show_action }}" class="actions">
+  <input type="hidden" name="_csrf" value="{{ csrf_token }}">
+  {% if bv.subject_id is not none %}<input type="hidden" name="subject" value="{{ bv.subject_id }}">{% endif %}
+  <input type="hidden" name="by" value="{{ bv.by }}">
+  {% if bv.end %}<input type="hidden" name="end" value="{{ bv.end }}">{% endif %}
+  <button type="submit" class="quiet" data-show-bars>Show</button> <span class="muted">Shows the amounts, on this page only.</span>
 </form>{% endif %}
 {% endif %}
 {% if bv.groups %}

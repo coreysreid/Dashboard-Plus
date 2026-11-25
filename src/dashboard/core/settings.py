@@ -31,15 +31,26 @@ def enabled_modules(conn: sqlite3.Connection) -> set[str]:
 
 # A household's usual choice that a module's choice column may take as its default (decision 0111): the unit an
 # odometer shows. Until Settings says, it follows the country: miles in the United States and the United Kingdom.
-HOUSEHOLD_CHOICES = {"distance_unit": {"km": "Kilometres (km)", "mi": "Miles (mi)"}}
+# The household's currency (decision 0128) is the one a typed purchase price is saved in when none is typed. Until
+# Settings says, it follows the country; for a country the program does not know there is none, so none is guessed.
+HOUSEHOLD_CHOICES = {"distance_unit": {"km": "Kilometres (km)", "mi": "Miles (mi)"},
+                     "currency": {"AUD": "Australian dollars (AUD)", "CAD": "Canadian dollars (CAD)",
+                                  "EUR": "Euros (EUR)", "GBP": "Pounds sterling (GBP)",
+                                  "NZD": "New Zealand dollars (NZD)", "USD": "US dollars (USD)",
+                                  "ZAR": "South African rand (ZAR)"}}
 MILES_COUNTRIES = {"United States", "United Kingdom"}
+COUNTRY_CURRENCY = {"Australia": "AUD", "Canada": "CAD", "Ireland": "EUR", "New Zealand": "NZD",
+                    "South Africa": "ZAR", "United Kingdom": "GBP", "United States": "USD"}
 
 
 def household_choice(conn: sqlite3.Connection, name: str) -> str:
-    """The household's chosen value for one of HOUSEHOLD_CHOICES, or the country's usual one."""
+    """The household's chosen value for one of HOUSEHOLD_CHOICES, or the country's usual one ("" for the currency
+    of a country the program does not know)."""
     chosen = get(conn, f"household.{name}")
     if chosen in HOUSEHOLD_CHOICES[name]:
         return chosen
+    if name == "currency":
+        return COUNTRY_CURRENCY.get(get(conn, "household.country"), "")
     return "mi" if get(conn, "household.country") in MILES_COUNTRIES else "km"
 
 

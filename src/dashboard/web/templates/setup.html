@@ -108,6 +108,13 @@
     </select>
     {% if errors.distance_unit %}<p class="error">{{ errors.distance_unit }}</p>{% endif %}
     <p class="help">The unit a new odometer reading starts with. Each reading keeps the unit it was saved in; nothing is converted.</p></div>
+  <div id="currency" class="{% if errors.currency %}has-error{% endif %}"><label for="currency_choice">Prices you type are usually in</label>
+    <select id="currency_choice" name="currency">
+      {% if not values.currency %}<option value="" selected>Not chosen yet</option>{% endif %}
+      {% for key, label in currencies %}<option value="{{ key }}" {% if values.currency == key %}selected{% endif %}>{{ label }}</option>{% endfor %}
+    </select>
+    {% if errors.currency %}<p class="error">{{ errors.currency }}</p>{% endif %}
+    <p class="help">The currency a purchase price is saved in when you do not type one. Each price keeps its own currency; nothing is converted.</p></div>
   {% endif %}
 
   <h2>3. What to track</h2>

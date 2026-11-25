@@ -120,6 +120,12 @@
         <span class="muted">Calm practice runs for a few situations</span></span></li>{% endif %}
     </ul>
     {% endif %}
+    {% if g.charts %}{# charts of a whole list, like Spent per month (decision 0128) #}
+    <ul class="main-lists">
+      {% for c in g.charts %}<li><span><a class="list-name" href="{{ c.href }}">{{ c.words }}</a>
+        <span class="muted">Bars over time</span></span></li>{% endfor %}
+    </ul>
+    {% endif %}
     {% if g.more %}
     <ul class="more-lists" aria-label="More lists in {{ g.title }}">
       {% for t in g.more %}<li><a href="/t/{{ t.name }}">{{ t.title }}</a> <span class="muted">{{ t.count }}</span></li>

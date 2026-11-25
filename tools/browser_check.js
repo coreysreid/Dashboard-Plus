@@ -567,6 +567,18 @@ function expect(condition, message) { if (!condition) throw new Failed(message);
       expect(await page.locator('.chart-ranges a[aria-current="page"]').first().innerText() === 'By week', 'By week should be marked as chosen.');
       const main = await text('main');
       expect(main.includes('put out') && !/\bmissed\b/.test(main.replace('it does not mean anything was missed', '')), 'The bars should say what was put out and never call a week missed.');
+      // Spent per month (decision 0128): Stock ins counted until a pressed Show, then the typed prices, at 320px.
+      await goto('/bars/stock__movements/spending');
+      await fits('Spent per month before Show');
+      expect(!/\d\.\d\d [A-Z]{3}/.test(await text('main')), 'Spent per month should show no amount before Show.');
+      await Promise.all([page.waitForNavigation(), page.click('button[data-show-bars]')]);
+      await fits('Spent per month after Show');
+      const spent = await text('main');
+      expect(/\d\.\d\d [A-Z]{3} spent/.test(spent) && spent.includes('Each category on its own'), 'After Show, Spent per month should add up the typed prices and give each category its own bars.');
+      await Promise.all([page.waitForNavigation(), page.click('.chart-ranges button:has-text("By week")')]);
+      await fits('Spent per week after Show');
+      expect((await text('main')).includes('Spent per week'), 'By week after Show should keep the amounts shown.');
+      ok('spent per month at 320px: counted until Show, then the typed prices and each category, and By week keeps them shown (0128)');
       // One timeline (decision 0126): what happened, newest first, on the pet's page and its own page, at 320px.
       await goto('/t/pets__pets');
       await Promise.all([page.waitForNavigation(), page.click(`a[aria-label="Open ${c.pet}"]`)]);

@@ -713,6 +713,31 @@ caveat = "Food put out, not necessarily eaten."  # optional
   "so far". The same values are in a table; periods, Earlier, Later and units are server links.
 - A private table (0121) may only count, with no `where`; its `group` bars and names appear only after a
   pressed Show.
+- **Decision 0128** adds three things. Leaving out `per` (and `subject`) gives one chart of the whole list,
+  linked from the module's card on Home and from the list, never on a record's page. `group = "item.category"`
+  gives each choice of the linked record its own bars. `amount` may be a `money` column (shown with two
+  decimals, its currency as the unit) or a private one: a private amount is counted until a pressed Show (a
+  POST, never an address; after it, the period links are pressed buttons too), and only then added up.
+  `missing = "price"` names what an entry without an amount lacks ("1 Stock in has no price").
+
+### 5.13a A confirmed purchase price (decision 0128)
+
+```toml
+[tables.movements.price]
+paid = "price"              # money, private, travels = "never": what the person typed
+basis = "price_basis"       # a private choice of exactly "total" (for these goods) and "each" (for each one)
+total = "paid_total"        # money, private: the line total, worked out on every save (price, or price x amount)
+currency = "currency"       # private text: a three-letter code, from Settings when left blank, never guessed
+amount = "amount"           # the bought amount a price for each one is multiplied by
+only = { reason = "bought" }  # only these records may carry a price
+only_words = "can only be saved on a Stock in that was bought or added. A Stock out never takes money off."
+```
+
+- A price without its basis, on a record outside `only`, or with no currency known is refused with every other
+  problem, and nothing is saved. Without a price, the basis, line total and currency are cleared.
+- The four columns are private, so a helper, a spreadsheet import, a list, a sheet, the export and the change
+  log's values never carry them; they stay in local backups. A receipt's price on Review stays checking text
+  (0097): nothing copies it into a price.
 
 ### 5.14 One timeline on a record's page (decision 0126)
 
@@ -1050,6 +1075,9 @@ number and the core can load both for a transition period.
   declared `bars` list counts entries or adds one number column in one unit
   per day, week or month; Pet feeding (food put out), Routines (times done)
   and Medicine doses (counted, each medicine only after Show) use it.
+  **Spent per month (decision 0128, section 5.13a):** Household stock adds
+  up the prices people typed on a bought Stock in, in one currency at a time,
+  overall and for each category, after a pressed Show.
   **One timeline (decision 0126, section 5.14):** a record's page ends with
   what happened, newest first, from each table's `timeline` declaration;
   Pets (weigh-ins with the change since the one before, vet visits,

@@ -97,7 +97,9 @@ def grid(table):
     columns = [{"name": c.name, "label": display.column_label(info, c), "sortable": c.name not in off}
                for c in display.list_columns(info)]
     from dashboard.web import moves_pages  # one reminder per policy: the household's choice (decision 0117)
+    from dashboard.web.bar_pages import whole_list_links  # Spent per month on Stock in and out (decision 0128)
     return render_template("grid.html", info=info, title=display.table_title(info), columns=columns, rows=rows,
+                           bar_links=whole_list_links(store.registry, table=info.name),
                            total=total, next_offset=len(rows) if len(rows) < total else None,
                            sort=sort, desc=desc, moves_choice=moves_pages.choice_box(store, info),
                            moves_review=moves_pages.review_link(store, info))
