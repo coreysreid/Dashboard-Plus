@@ -191,3 +191,37 @@ def amounts(rule: dict, period: Period, unit: str) -> Amounts:
         else:
             result.others[its_unit] = result.others.get(its_unit, Decimal(0)) + value
     return result
+
+
+def money_back(conn: sqlite3.Connection, registry: dict, info, rule: dict, found: list[Period],
+               group_id=None) -> dict[date, dict[str, Decimal]]:
+    """Money back per period (decision 0133): the refunds recorded for the entries this chart adds up, by the day
+    the money came back, in each refund's own currency (always its Stock in's). Never taken off an amount: the
+    page says it beside the bar. Keyed by each period's start; a chart with no `refunds` has none."""
+    other = registry.get(f"{info.module.name}__{rule['refunds']}") if rule.get("refunds") else None
+    if other is None or not other.table.refund or not found:
+        return {}
+    refund = other.table.refund
+    clause, params = "", []
+    for column, value in (rule.get("where") or {}).items():
+        clause, params = clause + f" AND {info.name}.{column} = ?", params + [value]
+    if group_id is not None:
+        clause, params = clause + f" AND {group_sql(info, rule)} = ?", params + [group_id]
+    rows = conn.execute(
+        f"SELECT r.{refund['when']} AS day, r.{refund['amount']} AS cents, r.{refund['currency']} AS code "
+        f"FROM {other.name} r JOIN {info.name} ON {info.name}.id = r.{refund['of']} "
+        f"WHERE r.deleted_at IS NULL AND r.review_status = 'confirmed' AND {info.name}.deleted_at IS NULL "
+        f"AND r.{refund['when']} >= ? AND r.{refund['when']} < ?{clause}",
+        [found[0].start.isoformat(), (found[-1].end + timedelta(days=1)).isoformat(), *params]).fetchall()
+    back: dict[date, dict[str, Decimal]] = {}
+    for row in rows:
+        try:
+            day = date.fromisoformat(str(row["day"])[:10])
+        except ValueError:
+            continue
+        period = next((p for p in found if p.start <= day <= p.end), None)
+        if period is None or row["cents"] is None or not row["code"]:
+            continue
+        sums = back.setdefault(period.start, {})
+        sums[row["code"]] = sums.get(row["code"], Decimal(0)) + Decimal(int(row["cents"])) / 100
+    return back

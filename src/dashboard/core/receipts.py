@@ -130,13 +130,17 @@ def line(conn: sqlite3.Connection, line_id: int):
 
 
 def add_for_line(store: Records, line_id: int, amount, happened_on: str | None, item_id: int | None = None,
-                 seen_revision: int | None = None, new_item: dict | None = None) -> int:
+                 seen_revision: int | None = None, new_item: dict | None = None,
+                 price: dict | None = None) -> int:
     """A person chose what a receipt line added: one Stock in, saved once. Returns the new Stock in's id.
 
     Either `item_id` (an item already in Stock, with the revision the person saw) or `new_item` (the values of a
     new item, added in the same transaction). The line's own text and hints are never copied into either. If
     the item changed since the person looked, LineStale and nothing is saved; a second press finds the line
-    already decided and adds nothing."""
+    already decided and adds nothing.
+
+    `price` is what the person typed in "Save a price with this Stock in?" (decision 0133): saved with the Stock in
+    or not at all. The line's own price text is never used for it."""
     conn, registry = store.conn, store.registry
     row = line(conn, line_id)
     if row["status"] != "pending":
@@ -163,6 +167,8 @@ def add_for_line(store: Records, line_id: int, amount, happened_on: str | None, 
         when = date_column(info)
         if when and happened_on:
             values[when] = happened_on
+        if price:
+            values.update(price)
         movement = store.create_in(info.name, values, actor="person", batch_id=row["batch_id"])
         conn.execute("UPDATE core__proposals SET record_id = ?, reason = NULL WHERE id = ?", (movement, line_id))
         _audit(conn, "line_add", "core__proposals", line_id,

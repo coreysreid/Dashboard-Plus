@@ -195,6 +195,9 @@ def bars_view(store: records.Records, info, rule: dict, subject_id: int | None, 
     smaller = {"week": "day", "month": "week" if "week" in rule["by"] else "day"}.get(by)
     total_n = sum(p.count for p in found)
     total, added, unmeasured, others = Decimal(0), 0, 0, {}
+    # Money back (decision 0133), said beside each bar once amounts are shown, never taken off it silently.
+    back = bars.money_back(store.conn, store.registry, info, rule, found, group_id) if is_sum else {}
+    back_total, back_others = Decimal(0), {}
     rows, drawn = [], []
     daily_page = bool(info.table.daily) and bool(rule.get("per")) and info.table.daily["per"] == rule["per"] \
         and group_id is None
@@ -207,13 +210,27 @@ def bars_view(store: records.Records, info, rule: dict, subject_id: int | None, 
             total, added, unmeasured = total + part.total, added + part.added, unmeasured + part.unmeasured
             for other, amount in part.others.items():
                 others[other] = others.get(other, Decimal(0)) + amount
+            returned = back.get(period.start, {})
+            mine = returned.get(chosen, Decimal(0))
+            back_total += mine
+            for other, amount in returned.items():
+                if other != chosen:
+                    back_others[other] = back_others.get(other, Decimal(0)) + amount
             if part.added:
                 value, text = float(part.total), worded(part.total, chosen)
                 said = f"{text} {rule['verb']}"
             elif n:
                 text = said = f"no {rule['missing']} recorded" if not part.others else f"none in {chosen}"
+            elif mine:
+                text, said = "nothing spent", "Nothing spent"
             else:
                 text, said = "nothing recorded", "Nothing recorded"
+            if mine:
+                said += f", less {mine:,.2f} refunded" if n else f", {mine:,.2f} refunded"
+                text += f", less {mine:,.2f} refunded" if n else ""
+            for other, amount in returned.items():
+                if other != chosen:
+                    details.append(f"also {_money(amount, other)} refunded, not in this chart")
             if n:
                 details.append(f"{_entries(n, rule)} recorded")
             if part.unmeasured:
@@ -268,6 +285,13 @@ def bars_view(store: records.Records, info, rule: dict, subject_id: int | None, 
         if others:
             notes.append(f"Also recorded in another {'currency' if rule.get('money') else 'unit'}, not added and "
                          f"never converted: {_and([worded(v, u) for u, v in others.items()])}.")
+        if back_total:
+            summary += f", less {back_total:,.2f} refunded" + (
+                f" ({worded(total - back_total, chosen)} after money back)" if total >= back_total else
+                " (more came back than was spent in these months)")
+        if back_others:
+            notes.append(f"Also refunded in another currency, not taken off and never converted: "
+                         f"{_and([worded(v, u) for u, v in back_others.items()])}.")
     else:
         summary = f"{name} · {span} · {_entries(total_n, rule)} recorded"
     unit_links = [{"words": f"In {u}", "current": u == chosen,

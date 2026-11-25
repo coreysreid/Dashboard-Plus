@@ -575,6 +575,7 @@ function expect(condition, message) { if (!condition) throw new Failed(message);
       await fits('Spent per month after Show');
       const spent = await text('main');
       expect(/\d\.\d\d [A-Z]{3} spent/.test(spent) && spent.includes('Each category on its own'), 'After Show, Spent per month should add up the typed prices and give each category its own bars.');
+      expect(spent.includes('less 1.20 refunded'), 'After Show, the money back (decision 0133) should be said as "less 1.20 refunded", never as a smaller or negative bar.');
       await Promise.all([page.waitForNavigation(), page.click('.chart-ranges button:has-text("By week")')]);
       await fits('Spent per week after Show');
       expect((await text('main')).includes('Spent per week'), 'By week after Show should keep the amounts shown.');

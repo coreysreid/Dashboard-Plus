@@ -204,11 +204,15 @@ class MigrationTests(TempDirTestCase):
     def test_the_change_is_additive_and_keeps_every_existing_stock_in(self):
         old = self.tmp / "old" / "stock"
         shutil.copytree(ROOT / "modules" / "stock", old)
+        (old / "migrations" / "0009_money_back.sql").unlink()  # money back (0133) came after prices
         (old / "migrations" / "0008_purchase_prices.sql").unlink()
         text = (old / "tables.toml").read_text(encoding="utf-8")
         start, end = text.index("# A confirmed purchase price"), text.index("[tables.movements.adjusts]")
-        (old / "tables.toml").write_text(text[:start] + text[end:], encoding="utf-8")
+        text = text[:start] + text[end:]
+        text = text[:text.index("[tables.refunds]")] + text[text.index("[tables.connections]"):]
+        (old / "tables.toml").write_text(text, encoding="utf-8")
         labels = (old / "labels.toml").read_text(encoding="utf-8")
+        labels = labels[:labels.index("# Money back on a Stock in")] + labels[labels.index("[tables.connections]"):]
         labels = labels.replace(', "price", "price_basis", "currency"', "")
         labels = "\n".join(line for line in labels.splitlines()
                            if not line.startswith(("columns.price", "columns.paid_total", "columns.currency")))

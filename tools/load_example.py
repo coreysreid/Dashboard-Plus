@@ -93,9 +93,10 @@ def _find(conn: sqlite3.Connection, info, name: str) -> int | None:
     return row["id"] if row else None
 
 
-def _find_by(conn: sqlite3.Connection, registry: dict, info, spec: dict) -> int | None:
+def _find_by(conn: sqlite3.Connection, registry: dict, info, spec: dict, today: date | None = None) -> int | None:
     """The first record whose columns match `spec`, such as { person = "Rosa Garcia", kind = "medication" }, for a
-    record with no name of its own (a private detail); links in `spec` name their record (decision 0120)."""
+    record with no name of its own (a private detail) or a Stock in; links in `spec` name their record (decision
+    0120) and a date may be written as today-6 (decision 0133)."""
     clauses, params = ["deleted_at IS NULL"], []
     for column, value in spec.items():
         col = info.table.columns.get(column)
@@ -103,6 +104,8 @@ def _find_by(conn: sqlite3.Connection, registry: dict, info, spec: dict) -> int 
             raise ExampleError(f"{info.name}: there is no column '{column}' to match.")
         if col.type == "link":
             value = _find(conn, registry[target_table(info.module.name, col)], value)
+        elif col.type == "date":
+            value = _date(value, today or date.today())
         clauses.append(f"{column} = ?")
         params.append(value)
     row = conn.execute(f"SELECT id FROM {info.name} WHERE {' AND '.join(clauses)} ORDER BY id LIMIT 1",
@@ -190,7 +193,7 @@ def load_records(conn: sqlite3.Connection, registry: dict, data: dict, today: da
                     raise ExampleError(f"{name}: there is no column '{column}'.")
                 if col.type == "link":
                     target = registry[target_table(info.module.name, col)]
-                    found = _find_by(conn, registry, target, value) if isinstance(value, dict) else \
+                    found = _find_by(conn, registry, target, value, today) if isinstance(value, dict) else \
                         _find(conn, target, value)
                     if found is None:
                         raise ExampleError(f"{name}: '{value}' must be added before it is linked to.")

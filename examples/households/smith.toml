@@ -667,6 +667,13 @@ notes = "Weekly shop."
 price = 1.80
 price_basis = "each"
 
+# One invented refund (decision 0133): money back for part of the Rice, against that Stock in's own price.
+[[stock.refunds]]
+movement = { item = "Rice", reason = "bought", happened_on = "today-6" }
+happened_on = "today-5"
+amount = 1.20
+notes = "One damaged bag refunded at the shop."
+
 [[stock.movements]]
 item = "Tinned tomatoes"
 reason = "used"

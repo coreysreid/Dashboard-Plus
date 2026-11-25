@@ -435,6 +435,19 @@ class Records:
             if current is None or current.get(column) != value or column in cleaned:
                 cleaned[column] = value
 
+    def _check_refund(self, info: TableInfo, cleaned: dict, current: dict | None, record_id: int | None) -> None:
+        """Money back on a priced Stock in (decision 0133): refuse one for a Stock in with no price, above what was
+        paid without the person's yes, or in another currency, and put the Stock in's currency into `cleaned`."""
+        if not info.table.refund:
+            return
+        from dashboard.core import records_refunds
+        try:
+            worked_out = records_refunds.fill(self.conn, info, self.registry, dict(current or {}, **cleaned),
+                                              record_id)
+        except records_refunds.RefundProblems as error:
+            raise ValidationError(error.problems) from None
+        cleaned.update(worked_out)
+
     @staticmethod
     def _check_required_when(info: TableInfo, record: dict) -> None:
         """Refuse a record that leaves blank a field its other answers make necessary (e.g. "Safe to drink")."""
@@ -637,6 +650,7 @@ class Records:
             values.pop(column, None)  # worked out from the batches
         cleaned = self.clean(info, values, creating=True)
         self._check_price(info, cleaned, None)
+        self._check_refund(info, cleaned, None, None)
         self._check_required_when(info, cleaned)
         self._check_date_order(info, cleaned)
         self._check_nesting(info, None, cleaned)
@@ -923,6 +937,7 @@ class Records:
         values = self._keep_off_links(info, values, current)
         cleaned = self.clean(info, values, creating=False)
         self._check_price(info, cleaned, current)
+        self._check_refund(info, cleaned, current, record_id)
         self._check_required_when(info, dict(current, **cleaned))
         self._check_date_order(info, dict(current, **cleaned))
         self._check_nesting(info, record_id, cleaned)

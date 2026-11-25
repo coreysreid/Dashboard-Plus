@@ -277,7 +277,12 @@ def _render_form(info, store, values, errors, from_form, record=None, status=200
     if record and not record.get("deleted_at") and not info.table.private:
         from dashboard.web.timeline_pages import record_panel
         what_happened = record_panel(store, info, record)
+    line_total = None  # what the price comes to, read only and behind Show like the price itself (decision 0133)
+    if record and info.table.price and record.get(info.table.price["total"]) is not None \
+            and not record.get("deleted_at"):
+        line_total = {"column": info.table.price["total"], "url": f"/t/{info.name}/{record['id']}/reveal"}
     return render_template("form.html", info=info, title=display.table_title(info), fields=fields, record=record,
+                           line_total=line_total,
                            record_name=record_name, errors=errors, history=history, saved=saved, charts=charts,
                            feeding=feeding, month_calendars=month_calendars, period_bars=period_bars,
                            what_happened=what_happened,
@@ -342,6 +347,8 @@ def reveal_private(table, record_id):
         abort(404)
     value = record.get(column.name)
     text = display.Formatter(store).text(info, column, value)
+    if info.table.price and column.name == info.table.price["total"] and value is not None:
+        text = f"{text} {record.get(info.table.price['currency']) or ''}".strip()  # "3.80 AUD" (decision 0133)
     if request.accept_mimetypes.best == "application/json":
         response = jsonify({"text": text, "value": "" if value is None else str(display.input_value(column, value))})
     else:

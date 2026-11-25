@@ -86,6 +86,9 @@
     <a href="/t/{{ info.name }}">Cancel</a>
   </div>
 </form>
+{% if line_total %}{# the price worked out, read only: a total, or the price for each times the amount (decision 0133) #}
+<p data-line-total>Line total (worked out from the price, not typed): {{ reveal_button(line_total.url, line_total.column, "Show the line total", "cell", None, "Show") }}</p>
+{% endif %}
 {% for b in batches %}
 <h2>{{ b.title }}</h2>
 <p><strong>{{ b.summary }}</strong></p>

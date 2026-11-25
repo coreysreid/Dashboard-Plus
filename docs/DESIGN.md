@@ -751,6 +751,36 @@ only_words = "can only be saved on a Stock in that was bought or added. A Stock 
   log's values never carry them; they stay in local backups. A receipt's price on Review stays checking text
   (0097): nothing copies it into a price.
 
+### 5.13b Money back and a price on Review (decision 0133)
+
+```toml
+[tables.refunds.refund]
+of = "movement"             # a required link to the Stock in the money came back for
+when = "happened_on"        # a required, non-private date: the day it came back
+paid = "paid_total"         # the Stock in's line total (private money); the refunds' sum may not pass it
+currency_of = "currency"    # the Stock in's currency: a refund is always in it
+amount = "amount"           # money, required, private, travels = "never"
+currency = "currency"       # private text, filled in from the Stock in
+confirm = "over_paid"       # a private tick: "This is more than was paid"
+
+[[tables.movements.bars]]
+refunds = "refunds"         # said beside the bar after Show: "less 3.00 refunded", never a negative bar
+```
+
+- A refund needs a Stock in that has a price, is more than 0, and (all the money back for that Stock in together)
+  is not above the line total unless the tick is on; a different currency is refused; a deleted refund does not
+  count. A refund never changes the stock: the person records a Stock out with the reason `returned` if the goods
+  went back, and that Stock out never carries a price.
+- Money back is counted in the period of its own day, in its own currency (another currency is said, never
+  converted), through the Stock in so a chart's `where` and category apply. The summary gives the net for the
+  months shown in words, or says more came back than was spent.
+- On Review, `core/receipt_prices.py` reads `price`, `price_basis` and `currency` from a person's press of
+  Accept (or Save this Stock in on a receipt line) and checks them first; a mistake keeps the row waiting with the
+  reason, a good price is saved with the Stock in in one transaction. The receipt's price is never copied in, and
+  Accept all and Accept ticked add none.
+- A priced Stock in's page ends with a read-only Line total behind a pressed Show (the generic reveal, with the
+  currency added), and its money back under it with amounts behind Show.
+
 ### 5.14 One timeline on a record's page (decision 0126)
 
 ```toml
@@ -1095,7 +1125,9 @@ number and the core can load both for a transition period.
   and Medicine doses (counted, each medicine only after Show) use it.
   **Spent per month (decision 0128, section 5.13a):** Household stock adds
   up the prices people typed on a bought Stock in, in one currency at a time,
-  overall and for each category, after a pressed Show.
+  overall and for each category, after a pressed Show. **Money back (decision
+  0133, section 5.13b):** a refund linked to a priced Stock in is said beside
+  that month's bar ("less 3.00 refunded"); a price can be typed on Review.
   **One timeline (decision 0126, section 5.14):** a record's page ends with
   what happened, newest first, from each table's `timeline` declaration;
   Pets (weigh-ins with the change since the one before, vet visits,
