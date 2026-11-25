@@ -37,3 +37,11 @@ expiring = { date = "due_back", warn_days = 7, wording = "due", what = "return",
 missing = "borrower.phone"
 where = { status = "out" }
 message = "How would you reach {borrower} about {name}? Add a phone number if you have one."
+
+# A month calendar of things lent out (decision 0125): the day each came back and, while it is still out, the date it
+# is due back, shown once. A returned loan has no due date. Nothing says a loan is late.
+[tables.loans.calendar]
+title = "Lent out calendar"
+entry = ["return", "returns"]
+when = "returned_on"
+due = true

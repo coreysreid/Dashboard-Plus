@@ -53,3 +53,12 @@ by = ["day", "week", "month"]
 entry = ["feeding", "feedings"]
 subject = "pet"
 caveat = "Food put out, not necessarily eaten."
+
+# On the pet's timeline (decision 0126): one line a day, never hundreds of rows ("3 feedings recorded on Tue 24 Nov
+# · 240 g put out"), with the day's totals in each unit, never added across units.
+[tables.servings.timeline]
+when = "given_at"
+per = "pet"
+entry = ["feeding", "feedings"]
+summarise = "day"
+look = "recorded"

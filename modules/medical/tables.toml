@@ -45,3 +45,14 @@ columns.notes = { type = "text" }
 
 [tables.training.watch]
 expiring = { date = "renew_by", warn_days = 30, wording = "due", what = "training renewal" }
+
+# A month calendar of first aid kit checks (decision 0125): each Kit checks entry on the day it was done, and each
+# kit's one next check date from its reminder, shown once. Notes and who checked never show.
+[tables.kit_checks.calendar]
+when = "checked_on"
+per = "kit"
+show = "all"
+title = "First aid kit calendar"
+entry = ["kit check", "kit checks"]
+look = "done"
+due = true

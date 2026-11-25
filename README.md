@@ -88,7 +88,8 @@ is new: keep a copy of anything important somewhere else too. See
   The **Calendar** tab now shows every dated list together: Home care's work
   done and Do again by dates, Garden jobs marked done and their due dates,
   each vehicle's registration, insurance and service dates, and each bill or
-  policy's check date, with each line in words starting with its list
+  policy's check date, each paper's review or renewal date, first aid kit
+  checks, smoke alarm tests and the day a lent thing is due back, with each line in words starting with its list
   ("Home care · Clear the gutters: Job done"). **Show: All / Home care /
   Vegetable garden / ...** links keep one list at a time. A bill's amount and
   any private detail are never on a calendar.
@@ -100,6 +101,13 @@ is new: keep a copy of anything important somewhere else too. See
   words and the same values are in a table; a day, week or month with nothing
   written down says "nothing recorded", never "missed", and this week or month
   is striped and says "so far".
+- **What happened, newest first:** a pet's page and a person's page end with
+  one list of everything recorded for them, under month headings: each
+  weigh-in with the change since the one before ("up 0.3 kg since 2 Oct"),
+  each vet visit and treatment given, feedings as one line a day ("3 feedings
+  recorded on Tue 24 Nov · 240 g put out"), and doses as one line a day that
+  says only how many until **Show** names each medicine. Every kind has its
+  own symbol beside its words, and **Earlier** goes back a page.
 - **Medicine doses:** each dose of medicine given to a person, from **Record a
   dose** on their page: the medicine is chosen from that person's own
   medication details (People → Important details), with the time now and, for

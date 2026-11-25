@@ -567,7 +567,20 @@ function expect(condition, message) { if (!condition) throw new Failed(message);
       expect(await page.locator('.chart-ranges a[aria-current="page"]').first().innerText() === 'By week', 'By week should be marked as chosen.');
       const main = await text('main');
       expect(main.includes('put out') && !/\bmissed\b/.test(main.replace('it does not mean anything was missed', '')), 'The bars should say what was put out and never call a week missed.');
-      ok(`calendars at 320px: ${c.pet}'s feeding month with today in words and a symbol, keyboard reaches the day, routines legend of 5, weights for the last year with the change in words, food put out by day and by week (0124)`);
+      // One timeline (decision 0126): what happened, newest first, on the pet's page and its own page, at 320px.
+      await goto('/t/pets__pets');
+      await Promise.all([page.waitForNavigation(), page.click(`a[aria-label="Open ${c.pet}"]`)]);
+      const tl = page.locator('section.timeline');
+      expect(await tl.count() === 1, `${c.pet}'s page should end with one "What happened, newest first".`);
+      expect(await tl.locator('.tl-month').count() >= 1, 'The timeline should have month headings.');
+      const marks = await tl.locator('.tl-mark').allInnerTexts();
+      expect(marks.includes('◆') && marks.includes('●'), `Weigh-ins and feedings should each show their own symbol; the marks are ${marks.join(' ')}.`);
+      const tlText = await tl.innerText();
+      expect(/Weigh-in/.test(tlText) && / since /.test(tlText), 'A weigh-in after another should say the change since it in words.');
+      await Promise.all([page.waitForNavigation(), page.click('section.timeline a:has-text("Open the whole timeline")')]);
+      await fits(`${c.pet}'s whole timeline`);
+      expect(!(await html()).includes('<script src'), 'The timeline page should need no script of its own.');
+      ok(`calendars at 320px: ${c.pet}'s feeding month with today in words and a symbol, keyboard reaches the day, routines legend of 5, weights for the last year with the change in words, food put out by day and by week (0124), and what happened with symbols, months and the change since the weigh-in before (0126)`);
     } finally {
       await page.setViewportSize({ width: 1280, height: 720 });
     }
@@ -616,6 +629,8 @@ function expect(condition, message) { if (!condition) throw new Failed(message);
       expect(!(await cal.innerText()).includes(d.person), `${d.person}'s Dose calendar named them before Show was pressed (decision 0123).`);
       const cwide = await page.evaluate(() => document.documentElement.scrollWidth);
       expect(cwide <= 320, `At 320px ${d.person}'s page with the Dose calendar is ${cwide}px wide; it should not scroll sideways.`);
+      const doseLine = await page.locator('section.timeline').innerText();  // decision 0126: how many a day until Show
+      expect(/\d+ doses? recorded on /.test(doseLine) && !doseLine.includes(d.secret), `${d.person}'s timeline should say only how many doses a day before Show; it says "${doseLine.slice(0, 120)}".`);
       await submit('button[data-show-calendar]');
       expect((await html()).includes(d.secret), 'Show on the Dose calendar should list each day\'s medicine.');
       const shwide = await page.evaluate(() => document.documentElement.scrollWidth);
@@ -823,6 +838,29 @@ function expect(condition, message) { if (!condition) throw new Failed(message);
     ok('private medical sheet asks first (a ?show=1 link does not skip it), then shows');
   }
 
+  async function checkWidths() {  // a 320px sweep (decision 0127): the main pages, found by following links from Home, never wider than the phone
+    await page.setViewportSize({ width: 320, height: 800 });
+    const skip = /^\/(close|export|restore|helpers\/|static)|\.(zip|csv|json|ics)$|\/print|\/(accept|reject|delete|undo|new)$/;
+    const seen = new Set();
+    const queue = ['/', '/to-do/year'];  // Home first, then every page its links reach; This year is named because it was once too wide
+    const wide = [];
+    while (queue.length && seen.size < plan.widths) {
+      const path = queue.shift();
+      if (seen.has(path)) continue;
+      seen.add(path);
+      const response = await page.goto(base + path);
+      if (!response || !response.ok() || !(response.headers()['content-type'] || '').includes('html')) continue;
+      const width = await page.evaluate(() => document.documentElement.scrollWidth);
+      if (width > 320) wide.push(`${path} (${width}px)`);
+      const links = await page.evaluate(() => [...document.querySelectorAll('a[href^="/"]')].map((a) => a.getAttribute('href').split('#')[0]));
+      for (const link of links) if (!seen.has(link) && !skip.test(link)) queue.push(link);
+    }
+    expect(!wide.length, `At 320px these pages are wider than the screen: ${wide.join(', ')}.`);
+    expect(seen.has('/to-do/year'), 'The 320px sweep should have reached Things to do, This year.');
+    await page.setViewportSize({ width: 1280, height: 900 });
+    ok(`${plan.locale}: ${seen.size} pages fit a 320 pixel phone screen`);
+  }
+
   async function checkClose() {
     await goto('/close');
     await Promise.all([page.waitForNavigation(), page.click('form button[type=submit]')]);
@@ -854,6 +892,7 @@ function expect(condition, message) { if (!condition) throw new Failed(message);
       if (plan.bills) await checkBills();
       if (plan.optional) await checkOptionalLink();
       if (plan.private) { await checkPrivateDetail(); await checkPrivateSheet(); }
+      if (plan.widths) await checkWidths();
       await checkClose();
     }
     expect(!problems.length, 'The browser reported problems:\n  ' + problems.join('\n  '));

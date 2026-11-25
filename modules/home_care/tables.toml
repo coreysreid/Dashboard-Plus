@@ -66,3 +66,15 @@ title = "Home care calendar"
 entry = ["job", "jobs"]
 look = "done"
 due = true
+
+# Bars over time (decision 0125): how many times each job was done in each month or week. A month with no bar has
+# nothing recorded, which never means the job was missed.
+[[tables.work_done.bars]]
+key = "done"
+title = "Work done"
+when = "done_on"
+per = "job"
+measure = "count"
+by = ["month", "week"]
+entry = ["time done", "times done"]
+subject = "job"

@@ -54,3 +54,14 @@ group = "medication"
 by = ["week", "day", "month"]
 entry = ["dose", "doses"]
 subject = "person"
+
+# On the person's timeline (decision 0126): one line a day saying only how many ("3 doses recorded on Tue 24 Nov").
+# Which medicine each was appears only after a pressed Show on the timeline's own page; amounts and who gave a
+# dose never appear on the timeline at all.
+[tables.doses.timeline]
+when = "given_at"
+per = "recipient"
+entry = ["dose", "doses"]
+words = "{medication}"
+summarise = "day"
+look = "done"

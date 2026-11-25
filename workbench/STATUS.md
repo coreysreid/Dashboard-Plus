@@ -104,9 +104,9 @@ the "Requests" table of docs/WORKSTREAMS.md.
 | Batch 18 item 79: Wine final check | ready for PR | lane-b/batch18-item79 | All 15 areas pass against shipped Wine; Garcia's old draft example expectation is superseded by decision 0095. |
 | Batch 18 item 80: Utilities promotion pass | ready for PR | lane-b/batch18-item80 | Exact Home layout meter links, fault phone on sheet, three optional example mappings and 12 promotion checks. |
 | Batch 18 item 81: User 1's one-hour test refresh | ready for PR | lane-b/batch18-item81 | Fifteen slots total 60 minutes; Home care Mark done double press/Undo, document Copies and helper key rotation added. |
-| Batch 19 item 82: receipt group Review rerun | ready for PR | lane-b/batch19-item82 | Live MCP source lines and new item ref passed; group action and unit wording need clarifying. |
+| Batch 19 item 82: receipt group Review rerun | already fixed by Lane A (0097, 0105; checked again in 0127) | lane-b/batch19-item82 | Live MCP source lines and new item ref passed; group action and unit wording need clarifying. |
 | Batch 19 item 83: unmatched receipt lines | ready for PR | lane-b/batch19-item83 | Choose item/Skip line flow, proposed helper payload, Review-only storage and 13 acceptance checks. |
-| Batch 19 item 84: Mac preview read-through | ready for PR | lane-b/batch19-item84 | Seven ranked wording changes for README/bundled read-me; six real-Mac checks still needed. |
+| Batch 19 item 84: Mac preview read-through | already fixed by Lane A (0096 follow-up; checked again in 0127); real-Mac checks stay with User 1 | lane-b/batch19-item84 | Seven ranked wording changes for README/bundled read-me; six real-Mac checks still needed. |
 | Batch 19 item 85: sync stage 1 acceptance | ready for PR | lane-b/batch19-item85 | Sixteen exact offline test cases against decision 0100, with current coverage and priority gaps. |
 | Batch 19 item 86: repeated receipt design | ready for PR | lane-b/batch19-item86 | Cross-helper/import possible-repeat evidence, exact Review choices and 14 checks; no automatic rejection. |
 | Batch 19 item 87: phone first screens | ready for PR | lane-b/batch19-item87 | Four member screens with exact labels, pending versus accepted states, omissions, seven checks and core gaps. |
@@ -119,7 +119,7 @@ the "Requests" table of docs/WORKSTREAMS.md.
 | Batch 20 item 95: Think it through drills | ready for PR | lane-b/batch20-item95 | Eight original sourced scenarios, exact record/missing maps, practice state and twelve checks. |
 | Batch 20 item 96: routine checklists | promoted by Lane A to Things to do and modules/routines (decision 0107) | lane-b/batch20-item96 | Four time windows, source-owned ticks, missed/repeat behavior, eleven checks (automated); seasonal questions still to come; the draft folder is in git history. |
 | Batch 20 item 97: first two charts | ready for PR | lane-b/batch20-item97 | Current drinking-water composition and pet weight, exact data/empty/table views and nine checks. |
-| Batch 21 item 98: routine checklists UX | ready for PR | lane-b/batch21-item98 | 24 live page views and three action/Undo paths; This year overflows 320px by 24px. |
+| Batch 21 item 98: routine checklists UX | already fixed by Lane A (0113; width now guarded in 0127) | lane-b/batch21-item98 | 24 live page views and three action/Undo paths; This year overflows 320px by 24px. |
 | Batch 21 item 99: Think it through UX | ready for PR | lane-b/batch21-item99 | Three end-to-end invented practices, eight exact missing sentences and private-answer output checks; no new blocker. |
 | Batch 21 item 100: readiness return rules | ready for PR | lane-b/batch21-item100 | Field-level ask-again and no-ask rules for all eight selected-record questions, with twelve checks and a safe upgrade plan. |
 | Batch 21 item 101: Queensland pack sources | ready for PR | lane-b/batch21-item101 | Eight official-source rows mapped to prompts/drills, with checked dates, reuse limits and water-scope distinction. |

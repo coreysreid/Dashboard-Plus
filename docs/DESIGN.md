@@ -679,8 +679,9 @@ chart = { ..., ranges = ["3m", "1y", "all"], change = true, line = { gap_days = 
   and never a reminder moved to another list). Done marks come from `when`, an optional non-private date column
   such as `last_done`, or else from the table's own Mark done buttons saved in history (Undo takes them away).
   `show` is always "all"; `state`, `looks` and a private table are refused, and one record's due date may be on
-  only one calendar. Garden jobs, Vehicles (registration, insurance, services) and Bills and policies use it;
-  Home care's Work done uses the 0119 form with `per = "job"`.
+  only one calendar. Garden jobs, Vehicles (registration, insurance, services), Bills and policies, Documents, Home layout's alarms
+  and Things lent out use it (decision 0125); Home care's Work done and Medical's Kit checks use the 0119 form
+  with a `per` link.
 - **Things to do, Calendar** puts every calendar with due dates in one month: one grid, one legend, a count per
   module, and each line in words starting with its module's name. **Show: All / one module** links keep one
   module's lists (`?only=<module>`, with the month kept). With only one such calendar it is shown as before.
@@ -712,6 +713,27 @@ caveat = "Food put out, not necessarily eaten."  # optional
   "so far". The same values are in a table; periods, Earlier, Later and units are server links.
 - A private table (0121) may only count, with no `where`; its `group` bars and names appear only after a
   pressed Show.
+
+### 5.14 One timeline on a record's page (decision 0126)
+
+```toml
+[tables.weigh_ins.timeline]
+when = "day"                # a required date or date-and-time column; placed on the household's own day
+per = "pet"                 # a required link: the record whose page shows it; "treatment.pet" goes one link further
+entry = ["weigh-in", "weigh-ins"]
+words = "{weight}"          # optional: a short text with {column} names, never a private column
+look = "measured"           # recorded (●), done (✓), measured (◆) or visit (■): a symbol beside the words
+change = "weight"           # optional: a number column with its own unit; "up 0.3 kg since 2 Oct, from ..."
+# summarise = "day"         # optional: one line a day, "3 feedings recorded on Tue 24 Nov"; a private table must
+```
+
+- The record's page ends with **What happened, newest first**: every accepted, undeleted entry of every switched-on
+  table that declares a timeline for it, newest first under month headings, 8 lines with **Earlier** and **Open the
+  whole timeline** (`/timeline/<table>/<id>`, 25 lines a page; **Earlier** is `?before=<day>`, and a day is never
+  split across pages). Nothing recorded says "Nothing recorded yet for Rex."; a gap is never called missed.
+- A private table (0121) must summarise by day and may not use `change`: before Show a day says only how many;
+  **Show** is a POST with the session check that adds each entry's time and `words` (a private table's link shows
+  its `link_rule` words), on that page only. A private column is never in `words`, so an amount never appears.
 
 ## 6. Modules
 
@@ -1028,6 +1050,11 @@ number and the core can load both for a transition period.
   declared `bars` list counts entries or adds one number column in one unit
   per day, week or month; Pet feeding (food put out), Routines (times done)
   and Medicine doses (counted, each medicine only after Show) use it.
+  **One timeline (decision 0126, section 5.14):** a record's page ends with
+  what happened, newest first, from each table's `timeline` declaration;
+  Pets (weigh-ins with the change since the one before, vet visits,
+  treatments given), Pet feeding (one line a day) and Medicine doses (how
+  many a day, the medicine only after Show) use it.
   Annotations and saved chart settings are still to come; a charting library
   (0004) may return for those.
 - **Analysis** (module, section 10.3).

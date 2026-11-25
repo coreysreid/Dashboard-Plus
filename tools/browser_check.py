@@ -1,4 +1,4 @@
-"""Click through the real dashboard in Chromium (setup, Set up my home, dates, stock in, stocktake, Mark returned, Mark done, Things to do, spreadsheet import, Review keys and buttons, readiness questions, Think it through drills, charts, the way-out sketch, pet feeding at 320px, calendars, weight trends and bars over time at 320px, medicine doses at 320px, vehicle running log, Bills and a moved car insurance reminder, Utilities with Our home off, private details, closing) and fail loudly."""
+"""Click through the real dashboard in Chromium (setup, Set up my home, dates, stock in, stocktake, Mark returned, Mark done, Things to do, spreadsheet import, Review keys and buttons, readiness questions, Think it through drills, charts, the way-out sketch, pet feeding at 320px, calendars, weight trends, bars over time and the timeline at 320px, a 320px width sweep of the main pages in all three households, medicine doses at 320px, vehicle running log, Bills and a moved car insurance reminder, Utilities with Our home off, private details, closing) and fail loudly."""
 from __future__ import annotations
 
 import argparse
@@ -72,6 +72,9 @@ US = {"household": "garcia", "locale": "en-US", "timezone": "America/Los_Angeles
       "doses": {"person": "Rosa Garcia", "secret": "Metformin",
                 "repeat": "A dose of this medicine is already recorded for this person near this time.",
                 "keep": "Keep this as another dose"}}
+UK = {"household": "taylor", "locale": "en-GB", "timezone": "Europe/London",
+      "dates": {"item": "Browser check tins", "typed": "20/05/27", "words": "20 May 2027",
+                "wrongOrder": "05/20/27", "hint": "Use DD/MM/YY"}}
 
 
 class CheckFailed(Exception):
@@ -188,7 +191,7 @@ def run_au(work: Path, executable: str | None) -> list[str]:
         done += drive(dict(plan, dates=AU["dates"], stock=AU["stock"], private=AU["private"], loan=AU["loan"],
                            job=AU["job"], routine=AU["routine"], csv=AU["csv"], review=AU["review"], questions=AU["questions"],
                            charts=AU["charts"], exit=AU["exit"], feeding=AU["feeding"], calendar=AU["calendar"],
-                           drills=AU["drills"],
+                           drills=AU["drills"], widths=60,
                            running=dict(AU["running"], at=date.today().isoformat() + "T10:00")), work,
                            "main")
         closed = True
@@ -206,7 +209,22 @@ def run_us(work: Path, executable: str | None) -> list[str]:
     try:
         done = drive({"base": base, "launch": launch, "locale": US["locale"], "timezone": US["timezone"],
                       "executablePath": executable, "dates": US["dates"], "optional": US["optional"],
-                      "bills": US["bills"], "doses": US["doses"]}, work, "main")
+                      "bills": US["bills"], "doses": US["doses"], "widths": 60}, work, "main")
+        closed = True
+    finally:
+        stop_server(process, closed)
+    return done
+
+
+def run_uk(work: Path, executable: str | None) -> list[str]:
+    """United Kingdom: the Taylors, loaded directly; only the 320px width sweep (decision 0127)."""
+    data_dir = work / "uk" / "data"
+    load_example.load(UK["household"], data_dir)
+    process, base, launch = start_server(data_dir, server_env(work))
+    closed = False
+    try:
+        done = drive({"base": base, "launch": launch, "locale": UK["locale"], "timezone": UK["timezone"],
+                      "executablePath": executable, "dates": UK["dates"], "widths": 60}, work, "main")
         closed = True
     finally:
         stop_server(process, closed)
@@ -219,6 +237,7 @@ def check(executable: str | None = None, us: bool = True) -> list[str]:
         done = run_au(Path(tmp), executable)
         if us:
             done += run_us(Path(tmp), executable)
+            done += run_uk(Path(tmp), executable)
     return done
 
 

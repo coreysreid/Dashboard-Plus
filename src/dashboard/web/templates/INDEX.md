@@ -6,6 +6,7 @@
 | *daily*.html | The feeding log: one pet's day with Add food (daily), the piece shared with the pet's page (_daily_panel) and the dated sheet that prints every entry or refuses (daily_sheet); medicine doses' private panel with counts until Show (_daily_private_panel, decision 0120) | changing the feeding log's or dose panel's wording |
 | *calendar.html | Month calendars (decision 0119): one calendar with its subject picker (calendar), the Things to do Calendar tab with every list together and Show links (todo_calendar, decision 0122) and the grid, legend and day list shared with record pages (_calendar) | changing a calendar's wording or layout |
 | *bars.html | Bars over time (decision 0124): one chart with its subject picker (bars) and the sentence, period links, bars, equal table and private Show shared with record pages (_bars) | changing a bars chart's wording or layout |
+| *timeline.html | One record's timeline (decision 0126): its own page with Earlier (timeline) and the month headings, lines with a symbol, change words and private Show shared with record pages (_timeline) | changing the timeline's wording or layout |
 | home.html | Home page: days of cover, needs attention, tables with counts, backup and data file status | changing the home screen |
 | attention.html | Running low, expiring soon, days of cover with the working shown, and gaps worth filling in | changing the attention page |
 | count.html | Count this batch: the count, its review and what was saved | changing the stocktake wording |
