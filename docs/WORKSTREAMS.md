@@ -730,9 +730,11 @@ the first two charts (0109) from your batch 20 drafts.
 
 Built on 24 and 25 November: colour-coded month calendars and weight trends
 (0119), medicine doses (0120), private lists that say only how many until
-Show, with a dose calendar (0121). Lane A is now building calendars for Home
-care, Garden, Vehicles and Bills (0122), the remaining private-list fixes
-(0123) and bar charts of how often and how much (0124). User 1's priority is
+Show, with a dose calendar (0121), calendars for Home care, Garden, Vehicles
+and Bills (0122), the remaining private-list fixes (0123) and bar charts of
+how often and how much (0124). Lane A is now building the remaining
+calendars (0125), a timeline on each pet's and person's page (0126) and
+phone-width and wording fixes from your reports (0127). User 1's priority is
 seeing results visually: pets' weights, medication, colour-coded calendars.
 
 106. **Calendars, checked.** Once 0122 is on `main`, walk every calendar
@@ -749,10 +751,11 @@ seeing results visually: pets' weights, medication, colour-coded calendars.
     private value could escape before Show: lists, calendars, charts, record
     pages, search, links and their addresses, print, export, sheets, the
     helper API and connector, Review and browser history. Worst first.
-109. **One health page per pet and person.** Design a single timeline that
-    puts weigh-ins, doses, vet or doctor visits and feeding summaries
-    together, with exact words, privacy (doses are private), empty states
-    and an accessible text version. Say what the core must add.
+109. **The timeline, checked.** Once 0126 is on `main`, walk a pet's and a
+    person's "What happened" timeline in all three households at 320px and
+    desktop: weigh-ins with change words, feedings summed per day, doses
+    naming nothing before Show, paging, empty states, print. Then say what
+    vet or doctor visit records a household would add to it. Worst first.
 110. **Spending over time, designed.** From your purchase prices draft
     (item 92), the smallest confirmed-purchase record that would allow a
     monthly spend chart by category, which amounts stay on the computer
