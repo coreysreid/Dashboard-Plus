@@ -664,8 +664,7 @@ Use made-up data only; never copy anything from User 1's real household.
     fire at night from a candle with the smoke alarm sounding (your way out,
     your meeting place); a kitchen fire at dinner time; someone breaking in
     at 2am; a car breakdown 150 km from home; a 72-hour power cut; a state
-    warning that tap water is unsafe across the whole region (for example
-    a region such as South East Queensland); a cyclone or hurricane forecast to track near
+    warning that tap water is unsafe across the whole region; a cyclone or hurricane forecast to track near
     your suburb. For each: the questions, which record each answer comes
     from (Home layout shut-offs and ways out, Set up my home rooms and
     outside doors (0103), smoke alarms, stock such as torches, batteries and
@@ -706,7 +705,7 @@ the first two charts (0109) from your batch 20 drafts.
     batch) brings a question back. For each of the eight record-backed
     questions, say which field changes should ask again and which should
     not, with the household words.
-101. **Queensland pack, sourced.** User 1 lives in Australia.
+101. **Queensland pack, sourced.** As one example of a state row.
     Find the Queensland and Australian public sources (Queensland Fire
     Department, SES, Bureau of Meteorology, Queensland Health water notices,
     Energex outage guidance) that fit our readiness questions and drills;
@@ -726,6 +725,43 @@ the first two charts (0109) from your batch 20 drafts.
     renewal reminder: what moves, the household's choice on upgrade, and
     the exact words, so a promoted Bills module never shows two reminders
     for one policy.
+
+### Batch 22: checking the calendars and charts, and what comes next (M2)
+
+Built on 24 and 25 November: colour-coded month calendars and weight trends
+(0119), medicine doses (0120), private lists that say only how many until
+Show, with a dose calendar (0121). Lane A is now building calendars for Home
+care, Garden, Vehicles and Bills (0122), the remaining private-list fixes
+(0123) and bar charts of how often and how much (0124). User 1's priority is
+seeing results visually: pets' weights, medication, colour-coded calendars.
+
+106. **Calendars, checked.** Once 0122 is on `main`, walk every calendar
+    (a pet's feedings, Routines, doses, Home care, Garden, Vehicles, Bills
+    and Things to do's Calendar tab) in all three households at 320px and
+    desktop, in dark mode and print preview. Check the legend, the day list
+    in words, keyboard and screen-reader order, and that a blank day never
+    reads as missed. Worst first, exact words.
+107. **Bar charts, checked.** Once 0124 is on `main`, check each bar chart's
+    words, data table, empty periods, unit handling and ranges against its
+    records, at 320px and desktop. Then rank the next three charts a
+    household would most want, with the exact records each needs.
+108. **Private lists, leak audit.** After 0121 and 0123, try every route a
+    private value could escape before Show: lists, calendars, charts, record
+    pages, search, links and their addresses, print, export, sheets, the
+    helper API and connector, Review and browser history. Worst first.
+109. **One health page per pet and person.** Design a single timeline that
+    puts weigh-ins, doses, vet or doctor visits and feeding summaries
+    together, with exact words, privacy (doses are private), empty states
+    and an accessible text version. Say what the core must add.
+110. **Spending over time, designed.** From your purchase prices draft
+    (item 92), the smallest confirmed-purchase record that would allow a
+    monthly spend chart by category, which amounts stay on the computer
+    they were typed on, refunds, and the exact chart words.
+111. **State rows for every Australian state and territory.** Your
+    Queensland sources (item 101) are one state. Give the same sourced,
+    dated rows for each other state and territory (fire service, SES or
+    equivalent, health water notices, power outage pages), so a pack never
+    favours one region. Cite and date each.
 
 ## Brief for Lane B, batch 3 (done)
 
