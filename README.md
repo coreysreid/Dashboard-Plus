@@ -88,7 +88,8 @@ is new: keep a copy of anything important somewhere else too. See
   The **Calendar** tab now shows every dated list together: Home care's work
   done and Do again by dates, Garden jobs marked done and their due dates,
   each vehicle's registration, insurance and service dates, and each bill or
-  policy's check date, with each line in words starting with its list
+  policy's check date, each paper's review or renewal date, first aid kit
+  checks, smoke alarm tests and the day a lent thing is due back, with each line in words starting with its list
   ("Home care · Clear the gutters: Job done"). **Show: All / Home care /
   Vegetable garden / ...** links keep one list at a time. A bill's amount and
   any private detail are never on a calendar.
