@@ -6,14 +6,21 @@
 <nav class="todo-tabs" aria-label="Things to do">
   {% for key, href, words in tabs %}<a href="{{ href }}"{% if key == window %} aria-current="page"{% endif %}>{{ words }}</a>{% endfor %}
 </nav>
+{% if choices %}{# decision 0122: plain links that keep one module's lists, so a busy month can be read one list at a time #}
+<nav class="cal-show" aria-label="Show which lists on the calendar"><span>Show:</span>
+  {% for c in choices %}<a href="{{ c.href }}"{% if c.current %} aria-current="page"{% endif %}>{{ c.label }}</a>{% endfor %}
+</nav>
+{% endif %}
 <h2 style="margin-top:1rem">{{ heading }}</h2>
 {% for view in views %}
 {% if views | length > 1 %}<h3>{{ view.title }}</h3>{% endif %}
+{% if view.by_list %}<p class="muted" data-by-list>How many this month, by list: {% for l in view.by_list %}{{ l.label }}: {{ l.count }}{% if not loop.last %} · {% endif %}{% endfor %}. Each line in words starts with its list.</p>{% endif %}
 {% with cal = view, open_list = true %}{% include "_calendar.html" %}{% endwith %}
 {% endfor %}
 <style>
-  .todo-tabs { display: flex; flex-wrap: wrap; gap: .4rem; margin: 1rem 0; }
-  .todo-tabs a { border: 1px solid var(--line); border-radius: 999px; padding: .25rem .8rem; text-decoration: none; }
-  .todo-tabs a[aria-current] { background: var(--accent); color: var(--bg); border-color: var(--accent); }
+  .todo-tabs, .cal-show { display: flex; flex-wrap: wrap; gap: .4rem; margin: 1rem 0; align-items: center; }
+  .todo-tabs a, .cal-show a { border: 1px solid var(--line); border-radius: 999px; padding: .25rem .8rem; text-decoration: none; }
+  .todo-tabs a[aria-current], .cal-show a[aria-current] { background: var(--accent); color: var(--bg); border-color: var(--accent); }
+  @media print { .cal-show { display: none; } }
 </style>
 {% endblock %}

@@ -674,6 +674,16 @@ chart = { ..., ranges = ["3m", "1y", "all"], change = true, line = { gap_days = 
   colours could be confused, a pattern or dashed edge. A blank day is never called missed; a due date is shown
   once, on its own date. Each calendar has a legend and the same days listed in words.
 - `line` is a guide under the dots, broken across longer gaps; `scale = "fitted"` writes where the scale starts.
+- **A calendar of a table's own records** (decision 0122) leaves out `per`: `title`, `entry` and `due = true`
+  are required, and the table's own `watch.expiring` "due" gives each record's one open date (with its `where`,
+  and never a reminder moved to another list). Done marks come from `when`, an optional non-private date column
+  such as `last_done`, or else from the table's own Mark done buttons saved in history (Undo takes them away).
+  `show` is always "all"; `state`, `looks` and a private table are refused, and one record's due date may be on
+  only one calendar. Garden jobs, Vehicles (registration, insurance, services) and Bills and policies use it;
+  Home care's Work done uses the 0119 form with `per = "job"`.
+- **Things to do, Calendar** puts every calendar with due dates in one month: one grid, one legend, a count per
+  module, and each line in words starting with its module's name. **Show: All / one module** links keep one
+  module's lists (`?only=<module>`, with the month kept). With only one such calendar it is shown as before.
 
 ## 6. Modules
 

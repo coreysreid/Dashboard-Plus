@@ -5,7 +5,7 @@ import sqlite3
 from dataclasses import dataclass, field
 from datetime import date, timedelta, tzinfo
 
-from dashboard.core import daily, watch
+from dashboard.core import checklist, daily, reminder_moves, watch
 from dashboard.core.schema import target_table
 
 # The fixed looks, in the order the legend and each day list them. Each has a colour (base.html, .cal-<look>),
@@ -61,12 +61,22 @@ class Month:
         return found
 
 
+def own(info) -> bool:
+    """Whether a calendar is of its table's own records (no `per`, decision 0122), like Garden jobs or Bills."""
+    return bool(info.table.calendar) and not info.table.calendar.get("per")
+
+
 def calendar_tables(registry: dict, subject=None) -> list:
-    """Tables that declare `calendar` and whose `per` table is switched on, or only those pointing at `subject`."""
+    """Tables that declare `calendar` and whose `per` table is switched on, or only those pointing at `subject`.
+    A calendar of a table's own records (decision 0122) is never a panel on one of them, so `subject` leaves it out."""
     found = []
     for info in registry.values():
         rule = info.table.calendar
         if not rule:
+            continue
+        if own(info):
+            if subject is None:
+                found.append(info)
             continue
         target = target_table(info.module.name, info.table.columns[rule["per"]])
         if target in registry and (subject is None or target == subject.name):
@@ -75,6 +85,9 @@ def calendar_tables(registry: dict, subject=None) -> list:
 
 
 def subject_table(registry: dict, info):
+    """The table each mark belongs to: the `per` table, or the calendar's own table when it has no `per`."""
+    if own(info):
+        return info
     return registry[target_table(info.module.name, info.table.columns[info.table.calendar["per"]])]
 
 
@@ -110,16 +123,19 @@ def _entries(conn: sqlite3.Connection, info, start: date, end: date, zone: tzinf
     """Accepted, undeleted records whose household day is from `start` to `end`. A time with an offset counts on
     the household's day it happened; a time typed without one is already the household's clock (decision 0110)."""
     rule = info.table.calendar
+    if not rule.get("when"):
+        return []  # a calendar of a table's own records with no date column: its presses are read from history
     when = info.table.columns[rule["when"]]
     state = rule.get("state")
+    per = rule.get("per") or "id"  # a table's own records each belong to themselves (decision 0122)
     low, high = start.isoformat(), (end + timedelta(days=1)).isoformat()
     if when.type == "datetime":  # wide enough for any offset, then checked exactly
         low, high = (start - timedelta(days=1)).isoformat(), (end + timedelta(days=2)).isoformat()
     clause, params = "", [low, high]
     if subject is not None:
-        clause, params = f" AND {rule['per']} = ?", params + [subject]
+        clause, params = f" AND {per} = ?", params + [subject]
     rows = conn.execute(
-        f"SELECT id, {rule['when']} AS at, {rule['per']} AS subject" + (f", {state} AS state" if state else "") +
+        f"SELECT id, {rule['when']} AS at, {per} AS subject" + (f", {state} AS state" if state else "") +
         f" FROM {info.name} WHERE deleted_at IS NULL AND review_status = 'confirmed' AND {rule['when']} >= ? "
         f"AND {rule['when']} < ?{clause} ORDER BY {rule['when']}, id", params).fetchall()
     found = []
@@ -150,6 +166,7 @@ def _due(conn: sqlite3.Connection, registry: dict, info, start: date, end: date,
     if not rule:
         return []
     clause, params = watch._where_sql(target, rule.get("where") or {})
+    clause += reminder_moves.silent_clause(target.name)  # moved to another list: shown there only (decision 0117)
     if subject is not None:
         clause, params = clause + " AND id = ?", params + [subject]
     found = []
@@ -164,6 +181,21 @@ def _due(conn: sqlite3.Connection, registry: dict, info, start: date, end: date,
     return found
 
 
+def _presses(conn: sqlite3.Connection, registry: dict, info, start: date, end: date,
+             subject: int | None) -> list[Mark]:
+    """For a calendar of a table's own records with no `when` column (decision 0122): each Mark done (or Skip)
+    saved in history for them, on the day it was dated, read the way Things to do reads it, so an undone press or
+    a deleted record is left out (decisions 0091 and 0112)."""
+    if not own(info) or info.table.calendar.get("when"):
+        return []
+    found = [Mark("skipped" if d.counts_as == "skipped" else info.table.calendar["look"], "entry", d.record_id,
+                  d.record_id, day=d.on)
+             for d in checklist.done(conn, registry, start, end, only=info.name)
+             if subject is None or d.record_id == subject]
+    found.sort(key=lambda m: (m.day, m.record_id))
+    return found
+
+
 def month(conn: sqlite3.Connection, registry: dict, info, year: int, month_: int, today: date, first_day: str,
           subject: int | None = None) -> Month:
     """One month of marks, read fresh: nothing is stored by the calendar, so an edit, delete or restore shows at
@@ -173,8 +205,8 @@ def month(conn: sqlite3.Connection, registry: dict, info, year: int, month_: int
     last = date(*shift(year, month_, 1), 1) - timedelta(days=1)
     zone = daily.household_zone(conn)
     by_day: dict[date, list[Mark]] = {}
-    for mark in _entries(conn, info, first, last, zone, subject) + _due(conn, registry, info, first, last, today,
-                                                                        subject):
+    for mark in (_entries(conn, info, first, last, zone, subject) + _presses(conn, registry, info, first, last, subject)
+                 + _due(conn, registry, info, first, last, today, subject)):
         by_day.setdefault(mark.day, []).append(mark)
     return Month(year, month_, [[Day(d, True, by_day.get(d, [])) if d else Day(None, False) for d in week]
                                 for week in weeks], today)

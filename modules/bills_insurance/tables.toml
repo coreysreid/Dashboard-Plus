@@ -46,3 +46,10 @@ what = "policy check"
 from = "vehicles.insurance"
 where = { kind = "policy", category = "vehicle" }
 copy = { vehicle = "vehicle", name = "name", next_due = "renew_by" }
+
+# A month calendar of each bill or policy's own date to check (decision 0122), shown once. Nothing says a bill was
+# paid; the amount, cover, reference and notes are never part of it.
+[tables.commitments.calendar]
+title = "Bills and policies calendar"
+entry = ["check", "checks"]
+due = true

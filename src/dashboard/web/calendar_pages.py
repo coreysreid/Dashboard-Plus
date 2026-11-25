@@ -7,7 +7,8 @@ from urllib.parse import urlencode
 
 from flask import Blueprint, abort, current_app, render_template, request
 
-from dashboard.core import calendars, daily, dates, records
+from dashboard.core import calendars, daily, dates, records, watch
+from dashboard.core.modules import CALENDAR_ENTRY_LOOKS
 from dashboard.core.checklist import week_start
 from dashboard.web import display
 
@@ -25,7 +26,8 @@ def _store() -> records.Records:
 def today_for(store: records.Records, info) -> date:
     """Today for this calendar: by the household's time zone for timed entries (decision 0110), else the
     computer's date, as Things to do reads it (decision 0107), so "Due today" means the same on both pages."""
-    if info.table.columns[info.table.calendar["when"]].type == "datetime":
+    when = info.table.columns.get(info.table.calendar["when"] or "")
+    if when is not None and when.type == "datetime":
         clock = current_app.config.get("NOW")
         return daily.today(store.conn, clock() if clock else datetime.now(timezone.utc))
     return current_app.config["TODAY"]()
@@ -66,8 +68,14 @@ class Words:
                 look = self.rule["looks"][choice.key]
                 self.labels[look] = (self.labels[look] + " or " if look in self.labels else "") + \
                     self.formatter.text(info, state, choice.key)
-        else:
-            self.labels[self.rule["look"]] = f"{self.one[:1].upper()}{self.one[1:]} recorded"
+        elif not calendars.own(info) or self.rule.get("when") or info.table.actions:
+            # "Feeding recorded", "Job done": a calendar of a table's own records has entries only from its date
+            # column or its Mark done buttons (decision 0122); one with neither, like Bills, shows due dates only.
+            self.labels[self.rule["look"]] = f"{self.one[:1].upper()}{self.one[1:]} {self.rule['look']}"
+            if calendars.own(info) and not self.rule.get("when") and any(
+                    a.get("counts_as") == "skipped" for a in info.table.actions):
+                self.labels["skipped"] = f"{self.one[:1].upper()}{self.one[1:]} skipped"
+        self._rows: dict[int, dict] = {}
 
     def looks(self) -> list[str]:
         """The looks this calendar can show, in the legend's order."""
@@ -83,25 +91,34 @@ class Words:
 
     def count(self, look: str, n: int, day: date | None = None, today: date | None = None) -> str:
         """"2 feedings recorded", "Done: 2", "Due today", "Due, not recorded as done yet", "Planned"."""
-        if look == "recorded" and not self.rule.get("state"):
-            return f"{n} {self.one if n == 1 else self.many} recorded"
+        if look in CALENDAR_ENTRY_LOOKS and not self.rule.get("state"):  # "2 feedings recorded", "1 job done"
+            return f"{n} {self.one if n == 1 else self.many} {look}"
         if look == "due":
             words = "Due today" if day is not None and day == today else "Due, not recorded as done yet"
         elif look == "planned":
             words = "Planned"
         else:
-            words = self.labels[look]
+            words = self.labels.get(look, look.capitalize())
         return words if n == 1 else f"{words}: {n}"
 
     def total(self, look: str, n: int) -> str:
         """A month's count, always with its number: "18 feedings recorded", "Done: 1", "Planned: 2"."""
-        if look == "recorded" and not self.rule.get("state"):
+        if look in CALENDAR_ENTRY_LOOKS and not self.rule.get("state"):
             return self.count(look, n)
         if look in ("due", "planned"):
             return f"{'Due, not recorded as done yet' if look == 'due' else 'Planned'}: {n}"
-        return f"{self.labels[look]}: {n}"
+        return f"{self.labels.get(look, look.capitalize())}: {n}"
+
+    def _row(self, record_id: int) -> dict:
+        """One of a table's own records, for a calendar without `per` (decision 0122), read once per page."""
+        if record_id not in self._rows:
+            row = self.store.conn.execute(f"SELECT * FROM {self.info.name} WHERE id = ?", (record_id,)).fetchone()
+            self._rows[record_id] = dict(row) if row else {"id": record_id}
+        return self._rows[record_id]
 
     def subject(self, subject_id: int) -> str:
+        if calendars.own(self.info):  # the record's own name, never one of its private columns (decision 0122)
+            return display.display_name(self.info, self._row(subject_id), self.store)
         column = self.info.table.columns[self.rule["per"]]
         return self.formatter.text(self.info, column, subject_id)
 
@@ -112,11 +129,14 @@ class Words:
             when = ("due today" if mark.day == today else
                     f"due since {dates.show(mark.day, style)}, not recorded as done yet" if mark.day < today
                     else "planned")
+            if calendars.own(self.info):  # "Hatchback: registration or vehicle tax due today" (decision 0122)
+                what = watch.what_for(self.info.table.watch.get("expiring") or {}, self._row(mark.subject_id))
+                when = f"{what} {when}" if what else when
             return {"look": mark.look, "symbol": calendars.SYMBOLS[mark.look],
                     "words": f"{self.subject(mark.subject_id)}: {when}", "href": f"/t/{target.name}/{mark.subject_id}"}
         state = self.info.table.columns.get(self.rule.get("state") or "")
         what = (self.formatter.text(self.info, state, mark.state) if state is not None
-                else f"{self.one[:1].upper()}{self.one[1:]} recorded")
+                else self.labels.get(mark.look, f"{self.one[:1].upper()}{self.one[1:]} {mark.look}"))
         if self.rule["show"] == "all":
             what = f"{self.subject(mark.subject_id)}: {what}"
         if mark.moment is not None:
@@ -313,18 +333,124 @@ def _calendar_page(table, show: bool):
                            subject_href=f"/t/{subject_info.name}/{subject_id}" if subject_id else None)
 
 
+# Words for each look when several lists share one month (decision 0122); each line in words says its own.
+TOGETHER = {"done": "Done", "recorded": "Recorded", "skipped": "Skipped",
+            "due": "Due, not recorded as done yet", "planned": "Planned"}
+TOGETHER_LEGEND = {**TOGETHER, "due": "Due, not recorded as done yet: shown once, on its own date",
+                   "planned": "Planned date"}
+TOGETHER_BLANK = ("A blank day has nothing recorded or planned. Only each one's next open date is shown as due, "
+                  "once; earlier times are never filled in as missed.")
+
+
+def _together_count(look: str, n: int, day: date, today: date) -> str:
+    words = "Due today" if look == "due" and day == today else TOGETHER[look]
+    return words if n == 1 else f"{words}: {n}"
+
+
+def together_view(store: records.Records, infos: list, year: int, month: int, today: date, link=None,
+                  name: str = "Things to do calendar") -> dict:
+    """Several calendars in one month (decision 0122): one grid of every list's marks, one legend, and each line in
+    words starting with its module's name ("Home care · Clear the gutters: Job done"). Never a private table."""
+    style = dates.household_style(store.conn)
+    first_day = week_start(store.conn)
+    cal_id = "cal-together"
+    by_day: dict[date, list] = {}
+    looks: set[str] = set()
+    per_list: dict[str, int] = {}
+    for info in infos:
+        if info.table.private:
+            continue
+        words = Words(store, info)
+        looks |= set(words.looks())
+        label = info.module.title
+        per_list.setdefault(label, 0)
+        for cell in calendars.month(store.conn, store.registry, info, year, month, today, first_day).days:
+            for mark in cell.marks:
+                by_day.setdefault(cell.day, []).append((label, words, mark))
+                per_list[label] += 1
+    weeks, listed, totals = [], [], {}
+    for week in calendars.grid(year, month, first_day):
+        row = []
+        for day in week:
+            if day is None:
+                row.append(None)
+                continue
+            marks = by_day.get(day, [])
+            counts: dict[str, int] = {}
+            for _, _, mark in marks:
+                counts[mark.look] = counts.get(mark.look, 0) + 1
+                totals[mark.look] = totals.get(mark.look, 0) + 1
+            chips = [{"look": look, "symbol": calendars.SYMBOLS[look], "count": counts[look],
+                      "words": _together_count(look, counts[look], day, today)}
+                     for look in calendars.LOOKS if look in counts]
+            said = "; ".join(c["words"] for c in chips)
+            anchor = f"{cal_id}-d-{day.isoformat()}"
+            row.append({"day": day.day, "iso": day.isoformat(), "today": day == today, "chips": chips,
+                        "anchor": anchor if chips else None,
+                        "label": f"{day.day} {dates.MONTHS[month - 1]}" + (", today" if day == today else "")
+                                 + (f": {said}" if said else "")})
+            if chips:
+                items = []
+                for label, words, mark in marks:
+                    item = words.item(mark, today, style)
+                    items.append({**item, "words": f"{label} · {item['words']}"})
+                listed.append({"anchor": anchor, "day": _short_day(day, style) + (" (today)" if day == today else ""),
+                               "summary": said, "day_href": None, "marks": items})
+        weeks.append(row)
+    heading = month_words(year, month)
+    summary = (f"{heading} · " + " · ".join(f"{TOGETHER[look]}: {totals[look]}" for look in calendars.LOOKS
+                                             if look in totals)
+               if totals else f"Nothing recorded or planned in {heading}.")
+    prev_y, prev_m = calendars.shift(year, month, -1)
+    next_y, next_m = calendars.shift(year, month, 1)
+    latest = calendars.shift(today.year, today.month, AHEAD)
+    return {"id": cal_id, "title": name, "heading": heading, "name": None, "summary": summary,
+            "caption": f"{name}, {heading}",
+            "headers": [{"short": DAY_NAMES[i][:3], "long": DAY_NAMES[i]} for i in calendars.weekday_order(first_day)],
+            "weeks": weeks, "days": listed, "blank": TOGETHER_BLANK,
+            "legend": [{"look": look, "symbol": calendars.SYMBOLS[look], "words": TOGETHER_LEGEND[look]}
+                       for look in calendars.LOOKS if look in looks],
+            "by_list": [{"label": label, "count": n} for label, n in per_list.items()],
+            "prev": link(prev_y, prev_m) if link else None, "prev_words": month_words(prev_y, prev_m),
+            "next": link(next_y, next_m) if link and (next_y, next_m) <= latest else None,
+            "next_words": month_words(next_y, next_m),
+            "this_month": link(today.year, today.month) if link and (year, month) != (today.year, today.month) else None,
+            "full": None, "private": False, "show": False, "show_action": None, "subject_id": None,
+            "month": f"{year:04d}-{month:02d}", "hide": None}
+
+
 @calendar_pages.get("/to-do/calendar")
 def todo_calendar():
-    """Things to do, Calendar: each list with due dates (Routines) as one month, done and skipped by the day they
-    happened and each open date once."""
+    """Things to do, Calendar: every list with due dates in one month (Routines, Home care, Garden, Vehicles,
+    Bills...), done and skipped by the day they happened and each open date once, with Show links that keep one
+    module's lists only (decision 0122)."""
     from dashboard.web.checklist import visible_tabs
     store = _store()
-    found = todo_calendar_tables(store.registry)
+    found = sorted(todo_calendar_tables(store.registry), key=lambda i: i.module.title.lower())  # by name, A to Z
     if not found:
         abort(404)
     today = current_app.config["TODAY"]()
     year, month = chosen_month(request.args.get("month"), today)
-    views = [month_view(store, info, year, month, today, link=_href("/to-do/calendar"),
-                        full_href=f"/calendar/{info.name}") for info in found]
-    return render_template("todo_calendar.html", views=views, tabs=visible_tabs(store.registry), window="calendar",
-                           heading=month_words(year, month))
+    by_module: dict[str, dict] = {}
+    for info in found:
+        by_module.setdefault(info.module.name, {"name": info.module.name, "label": info.module.title, "infos": []})
+        by_module[info.module.name]["infos"].append(info)
+    only = request.args.get("only")
+    if only not in by_module:
+        only = None  # an unknown or switched-off module shows everything, never an error
+    picked = by_module[only]["infos"] if only else found
+    link = _href("/to-do/calendar", only=only)
+    if len(picked) == 1:
+        view = month_view(store, picked[0], year, month, today, link=link, full_href=f"/calendar/{picked[0].name}")
+    else:
+        view = together_view(store, picked, year, month, today, link=link,
+                             name=f"{by_module[only]['label']} calendar" if only else "Things to do calendar")
+    shown = f"{year:04d}-{month:02d}"
+    choices = []
+    if len(by_module) > 1:  # plain links, no script (decision 0122)
+        choices = [{"label": "All", "current": only is None, "href": "/to-do/calendar?" + urlencode({"month": shown})}]
+        choices += [{"label": m["label"], "current": only == m["name"],
+                     "href": "/to-do/calendar?" + urlencode({"only": m["name"], "month": shown})}
+                    for m in by_module.values()]
+    return render_template("todo_calendar.html", views=[view], tabs=visible_tabs(store.registry), window="calendar",
+                           heading=month_words(year, month), choices=choices)

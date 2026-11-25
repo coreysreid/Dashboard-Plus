@@ -541,6 +541,13 @@ function expect(condition, message) { if (!condition) throw new Failed(message);
       await fits('Things to do, Calendar');
       const legend = await page.locator('.cal-legend li').count();
       expect(legend === 5, `The routines legend should explain done, skipped, due, planned and a blank day; it has ${legend} lines.`);
+      const shows = await page.locator('.cal-show a').count();  // decision 0122: Show links keep one list
+      if (shows > 2) {
+        await Promise.all([page.waitForNavigation(), page.locator('.cal-show a').nth(1).click()]);
+        await fits('Things to do, Calendar showing one list');
+        const chosen = await page.locator('.cal-show a[aria-current="page"]').count();
+        expect(chosen === 1, `One Show link should be marked as chosen; ${chosen} are.`);
+      }
       await goto(`/charts/pets__weigh_ins`);
       await Promise.all([page.waitForNavigation(), page.click('.chart-ranges a:has-text("Last year")')]);
       await fits('the weights chart with a range chosen');

@@ -59,3 +59,10 @@ undo = "Undo Mark done"
 [tables.jobs.watch]
 # A finished job is never reminded about (decision 0072): the reminder uses only the household's own due date.
 expiring = { date = "due_on", warn_days = 14, wording = "due", what = "job", where = { done = false } }
+
+# A month calendar of the jobs themselves (decision 0122): each Mark done on the day it was pressed (from history,
+# so Undo takes it away), and each open job's due date, shown once. A finished job has no due date to show.
+[tables.jobs.calendar]
+title = "Garden calendar"
+entry = ["job", "jobs"]
+due = true
