@@ -1,4 +1,4 @@
-"""Draw small charts as SVG on the server: labelled bars and dated dots, each with a title and description, no scripts."""
+"""Draw small charts as SVG on the server: labelled bars, dated dots and bars over time, each with a title and description, no scripts."""
 from __future__ import annotations
 
 import math
@@ -188,3 +188,64 @@ def dot_chart(chart_id: str, title: str, description: str, dots: list[Dot], axis
         first_mark = next(i for i, part in enumerate(body) if part.startswith("<a "))
         body[first_mark:first_mark] = lines
     return _svg(chart_id, height, title, description, body)
+
+
+@dataclass
+class PeriodBar:
+    """One period's bar (decision 0124): its short and full names, its value (None when there is nothing to draw),
+    the words printed beside it, the row of the table it matches, and whether the period is still going on."""
+    label: str
+    full: str
+    value: float | None
+    text: str
+    href: str
+    so_far: bool = False
+
+
+PERIOD_ROW = 26  # one period: its name on the left, the bar and its value on the right
+PERIOD_LEFT = 96  # room for "From 16 Nov" or "Tue 17 Nov"
+
+
+def period_chart(chart_id: str, title: str, description: str, bars: list[PeriodBar], axis_label: str,
+                 unit: str, whole: bool = False) -> Markup:
+    """Bars over time, oldest first from the top, from zero, each period named on the left and its value printed
+    beside its bar. A period with nothing to draw has no bar, a dashed empty box and its words ("nothing
+    recorded"); a period still going on is striped and its words say "so far", so neither depends on colour."""
+    top, _ = axis_steps(max((b.value or 0 for b in bars), default=0), most=2)
+    if whole:  # counts: a scale of whole entries, never "0.5 doses"
+        top = max(2, math.ceil(top))
+        top += top % 2
+    left, right = PERIOD_LEFT + 4, 64  # room on the right for the longest value, like "1,250 g"
+    span = WIDTH - left - right
+    pattern = f"{chart_id}-so-far"
+    body = [f'<defs><pattern id="{pattern}" width="6" height="6" patternUnits="userSpaceOnUse" '
+            f'patternTransform="rotate(45)"><rect width="6" height="6" class="chart-bar-so-far-bg"/>'
+            f'<line x1="0" y1="0" x2="0" y2="6" class="chart-bar-so-far-line" stroke-width="3"/></pattern></defs>']
+    for i, bar in enumerate(bars):
+        y = i * PERIOD_ROW + 4
+        said = f"{bar.full}: {bar.text}" + (" so far" if bar.so_far and bar.value else "")
+        body.append(f'<a href="{escape(bar.href)}" class="chart-mark" aria-label="{escape(said)}">'
+                    f'<title>{escape(said)}</title>'
+                    f'<text x="{PERIOD_LEFT}" y="{y + 15}" font-size="{SMALL}" text-anchor="end" '
+                    f'class="chart-label">{escape(bar.label)}</text>')
+        if bar.value:
+            length = max(2.0, span * bar.value / top)
+            fill = f' style="fill: url(#{pattern})"' if bar.so_far else ""  # stripes beat the plain fill
+            body.append(f'<rect class="chart-bar{" chart-bar-so-far" if bar.so_far else ""}"{fill} x="{left}" '
+                        f'y="{y + 3}" width="{length:.1f}" height="16" rx="2"/>'
+                        f'<text x="{left + length + 5:.1f}" y="{y + 15}" font-size="{SMALL}" class="chart-value">'
+                        f'{escape(bar.text)}</text>')
+        else:  # no bar: an empty dashed box and the words, never a zero that looks like a measurement
+            body.append(f'<rect class="chart-none" x="{left}" y="{y + 5}" width="10" height="12" fill="none"/>'
+                        f'<text x="{left + 15}" y="{y + 15}" font-size="{SMALL}" class="chart-none-text">'
+                        f'{escape(bar.text)}</text>')
+        body.append("</a>")
+    axis = len(bars) * PERIOD_ROW + 8
+    body.append(f'<line class="chart-axis" x1="{left}" x2="{left + span}" y1="{axis}" y2="{axis}"/>')
+    for value, anchor, x in ((0, "start", left), (top / 2, "middle", left + span / 2), (top, "end", left + span)):
+        body.append(f'<line class="chart-axis" x1="{x:.1f}" x2="{x:.1f}" y1="{axis}" y2="{axis + 5}"/>'
+                    f'<text x="{x:.1f}" y="{axis + 5 + SMALL + 2}" font-size="{SMALL}" text-anchor="{anchor}">'
+                    f'{number_text(value)}{escape(" " + unit if unit else "")}</text>')
+    body.append(f'<text x="{left + span / 2:.1f}" y="{axis + 2 * SMALL + 14}" font-size="{SMALL}" '
+                f'text-anchor="middle" class="chart-axis-title">{escape(axis_label)}</text>')
+    return _svg(chart_id, axis + 2 * SMALL + 22, title, description, body)

@@ -36,3 +36,20 @@ per = "pet"
 show = "one"
 title = "Feeding calendar"
 entry = ["feeding", "feedings"]
+
+# Bars over time (decision 0124): how much food was put out for one pet per day, week or month, in one unit at a
+# time (grams, pouches and scoops are never added together or converted). Food put out, not food eaten; a period
+# with no bar only has nothing written down.
+[[tables.servings.bars]]
+key = "food"
+title = "Food put out"
+when = "given_at"
+per = "pet"
+measure = "sum"
+amount = "amount"
+unit = "unit"
+verb = "put out"
+by = ["day", "week", "month"]
+entry = ["feeding", "feedings"]
+subject = "pet"
+caveat = "Food put out, not necessarily eaten."

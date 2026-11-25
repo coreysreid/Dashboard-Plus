@@ -40,3 +40,17 @@ per = "recipient"
 show = "one"
 title = "Dose calendar"
 entry = ["dose", "doses"]
+
+# Bars over time (decision 0124): how many doses one person was given per week, day or month, every medicine
+# together, so the bars never say which medicine. Each medicine's own bars come only after a pressed Show, as on the
+# Dose calendar (decision 0121). Amounts are never added up: they are private, and medicines never share a unit.
+[[tables.doses.bars]]
+key = "doses"
+title = "Doses recorded"
+when = "given_at"
+per = "recipient"
+measure = "count"
+group = "medication"
+by = ["week", "day", "month"]
+entry = ["dose", "doses"]
+subject = "person"

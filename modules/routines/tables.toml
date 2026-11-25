@@ -79,3 +79,16 @@ entry = ["time", "times"]
 state = "outcome"
 looks = { done = "done", skipped = "skipped" }
 due = true
+
+# Bars over time (decision 0124): how many times one routine was done in each month or week. Skipped times are not
+# counted as done; a month with no bar has nothing recorded as done, which never means it was missed.
+[[tables.times.bars]]
+key = "done"
+title = "Times done"
+when = "done_on"
+per = "routine"
+measure = "count"
+where = { outcome = "done" }
+by = ["month", "week"]
+entry = ["time done", "times done"]
+subject = "routine"

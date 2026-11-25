@@ -35,7 +35,7 @@ MODULE_KEYS = ("name", "title", "version", "description", "core_api", "kind", "r
                "outbound_hosts")
 MODULE_REQUIRED = ("name", "title", "version", "description", "core_api", "kind")
 TABLE_KEYS = ("title", "description", "columns", "watch", "adjusts", "parent", "total", "record_name", "actions",
-              "pair", "suggestions", "chart", "daily", "confirm", "takes_over", "calendar", "private")
+              "pair", "suggestions", "chart", "daily", "confirm", "takes_over", "calendar", "private", "bars")
 # One reminder per policy (decision 0117): records of an older list in another module (Vehicle insurance) that
 # the household may choose, one by one, to have reminded from this table instead. `where` is what such a record
 # is here (a vehicle policy), `copy` which of this table's columns take which of the other's, the date included.
@@ -59,6 +59,12 @@ CHART_SCALES = ("zero", "fitted")
 CALENDAR_KEYS = ("when", "per", "show", "title", "entry", "state", "looks", "look", "due")
 CALENDAR_ENTRY_LOOKS = ("recorded", "done", "skipped")
 CALENDAR_SHOW = ("one", "all")
+# Bars over time (decision 0124): how often (`measure = "count"`) or how much of one number column in one unit
+# (`"sum"`) per day, week or month, by the household's own day. A table may declare several, each with its own key.
+BARS_KEYS = ("key", "title", "when", "per", "measure", "amount", "unit", "where", "group", "by", "entry", "verb",
+             "subject", "caveat")
+BARS_MEASURES = ("count", "sum")
+BARS_BY = ("day", "week", "month")
 # A gentle check before a form saves, such as an odometer reading lower than the last one: Go back, or Save as
 # entered. Never a block, and nothing is worked out from it (decision 0111).
 CONFIRM_KEYS = ("key", "when", "column", "per", "order", "among", "message", "later")
@@ -184,6 +190,7 @@ class Table:
     confirm: list = field(default_factory=list)  # checked gentle checks before a form saves (decision 0111)
     takes_over: dict = field(default_factory=dict)  # checked `takes_over`: one reminder per policy (0117)
     calendar: dict = field(default_factory=dict)  # checked `calendar`: a month grid by the household's day (0119)
+    bars: list = field(default_factory=list)  # checked `bars`: how often or how much per day, week or month (0124)
     # Decision 0120: every record is private history, such as medicine given. Never on Home, a sheet, a helper
     # or the spreadsheet export; made only on this program's own screens (suggestions = false is required).
     private: bool = False
@@ -1027,6 +1034,103 @@ def _check_calendar(file: str, module: str, table: Table, tables: dict[str, Tabl
             "look": raw.get("look", "recorded"), "due": due}
 
 
+def _check_bars(file: str, table: Table, raw, problems: list[str]) -> list[dict]:
+    """Check `bars`: bars over time of one subject's records, counted (how often) or one number column added up in
+    one unit at a time (how much), per day, week or month by the household's own day (decision 0124). A private
+    table may only count, never add amounts or filter by a choice, and names its groups only after Show."""
+    where = f"In {file}, table '{table.name}', bars"
+    example = ('[[tables.servings.bars]] with key = "food", title = "Food put out", when = "given_at", per = "pet", '
+               'measure = "sum", amount = "amount", unit = "unit", verb = "put out", by = ["day", "week", "month"], '
+               'entry = ["feeding", "feedings"], subject = "pet"')
+    if not isinstance(raw, list) or not raw:
+        problems.append(f"{where}: write each chart as {example}.")
+        return []
+    found, keys = [], set()
+    for rule in raw:
+        if not isinstance(rule, dict):
+            problems.append(f"{where}: write each chart as {example}.")
+            continue
+        problems.extend(_unknown_keys(where, rule, BARS_KEYS))
+        before = len(problems)
+        key = rule.get("key")
+        if not isinstance(key, str) or not CHOICE_KEY.match(key) or key in keys:
+            problems.append(f"{where}: each chart needs its own 'key', lower-case letters and underscores.")
+        if not (isinstance(rule.get("title"), str) and rule["title"].strip()):
+            problems.append(f"{where}: 'title' must be what the bars show, like \"Food put out\".")
+        when, per = (table.columns.get(rule.get(k)) if isinstance(rule.get(k), str) else None for k in ("when", "per"))
+        if when is None or when.type not in ("date", "datetime") or not when.required:
+            problems.append(f"{where}: 'when' must name a required date or date-and-time column of this table.")
+        if per is None or per.type != "link" or not per.required:
+            problems.append(f"{where}: 'per' must name a required link column, so each chart shows one subject.")
+        measure = rule.get("measure")
+        if measure not in BARS_MEASURES:
+            problems.append(f"{where}: 'measure' must be \"count\" (how many entries) or \"sum\" (one number column "
+                            f"added up), not {measure!r}.")
+        amount = table.columns.get(rule["amount"]) if isinstance(rule.get("amount"), str) else None
+        unit = table.columns.get(rule["unit"]) if isinstance(rule.get("unit"), str) else None
+        fixed = None
+        if measure == "sum":
+            if table.private:
+                problems.append(f"{where}: a private table's bars can only count entries (measure = \"count\"): "
+                                f"its amounts stay behind Show.")
+            if amount is None or amount.type not in ("integer", "decimal", "measure") or amount.sensitive:
+                problems.append(f"{where}: 'amount' must name a number column of this table that is not private.")
+            if "unit" in rule:
+                if unit is None or unit.type not in ("choice", "text") or unit.sensitive:
+                    problems.append(f"{where}: 'unit' must name a choice or text column holding each entry's unit, "
+                                    f"that is not private.")
+            elif amount is not None and amount.unit:
+                fixed = amount.unit
+            else:
+                problems.append(f"{where}: a sum needs a unit: name a 'unit' column, or give '{rule.get('amount')}' "
+                                f"its own unit, so different units are never added together.")
+            if not (isinstance(rule.get("verb"), str) and rule["verb"].strip()):
+                problems.append(f"{where}: 'verb' must be the words after an amount, like \"put out\".")
+        else:
+            for name in ("amount", "unit"):
+                if name in rule:
+                    problems.append(f"{where}: '{name}' only applies to measure = \"sum\".")
+        choices = rule.get("where", {})
+        if not isinstance(choices, dict) or any(
+                not isinstance(c, str) or c not in table.columns or table.columns[c].type != "choice"
+                or table.columns[c].sensitive or v not in [x.key for x in table.columns[c].choices]
+                for c, v in choices.items()):
+            problems.append(f"{where}: 'where' names choice columns of this table that are not private and one "
+                            f"choice each, like where = {{ outcome = \"done\" }}.")
+            choices = {}
+        elif choices and table.private:
+            problems.append(f"{where}: a private table's bars can't use 'where': they count every entry, so no "
+                            f"kind of entry can be told from the bars.")
+        group = rule.get("group")
+        if group is not None and (not isinstance(group, str) or group not in table.columns
+                                  or table.columns[group].type != "link" or not table.columns[group].required
+                                  or group == rule.get("per")):
+            problems.append(f"{where}: 'group' must name another required link column, whose records each get "
+                            f"their own bars, like group = \"medication\".")
+        by = rule.get("by")
+        if not (isinstance(by, list) and by and all(isinstance(b, str) and b in BARS_BY for b in by)
+                and len(set(by)) == len(by)):
+            problems.append(f"{where}: 'by' must list some of \"day\", \"week\" and \"month\", each once, the one "
+                            f"shown first first, like by = [\"week\", \"month\"].")
+        words = rule.get("entry")
+        if not (isinstance(words, list) and len(words) == 2 and all(isinstance(w, str) and w.strip() for w in words)):
+            problems.append(f"{where}: 'entry' must be two words, singular then plural, like [\"feeding\", "
+                            f"\"feedings\"].")
+        if not (isinstance(rule.get("subject"), str) and rule["subject"].strip()):
+            problems.append(f"{where}: 'subject' must be the word for one subject, like \"pet\".")
+        if "caveat" in rule and not (isinstance(rule["caveat"], str) and rule["caveat"].strip()):
+            problems.append(f"{where}: 'caveat' must be a sentence, like \"Food put out, not necessarily eaten.\"")
+        if len(problems) > before:
+            continue
+        keys.add(key)
+        found.append({"key": key, "title": rule["title"].strip(), "when": rule["when"], "per": rule["per"],
+                      "measure": measure, "amount": rule.get("amount"), "unit": rule.get("unit"),
+                      "fixed_unit": fixed, "where": dict(choices), "group": group, "by": list(by),
+                      "entry": [w.strip() for w in rule["entry"]], "verb": (rule.get("verb") or "").strip(),
+                      "subject": rule["subject"].strip(), "caveat": (rule.get("caveat") or "").strip() or None})
+    return found
+
+
 def _check_record_name(file: str, table: Table, tables: dict[str, Table], template, problems: list[str]) -> str | None:
     """Check `record_name`: a pattern like "{quantity} {item.unit} of {item}" naming a record."""
     where = f"In {file}, table '{table.name}', record_name"
@@ -1141,6 +1245,8 @@ def _check_tables(module: str, data: dict, requires: list[str], problems: list[s
             if "calendar" in raw:
                 tables[tname].calendar = _check_calendar(file, module, tables[tname], tables, raw["calendar"],
                                                          problems)
+            if "bars" in raw:
+                tables[tname].bars = _check_bars(file, tables[tname], raw["bars"], problems)
             if "confirm" in raw:
                 tables[tname].confirm = _check_confirm(file, tables[tname], raw["confirm"], problems)
             if "takes_over" in raw:
