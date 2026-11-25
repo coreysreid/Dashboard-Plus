@@ -100,3 +100,11 @@ columns.access_details = { type = "text", sensitive = true, travels = "never" }
 [[tables.meters.watch.gaps]]
 missing = "place"
 message = "Which place is {name} in? Choose where to find it."
+
+# A month calendar of the alarms and safety equipment (decision 0125): the day each was last tested and each one's
+# next check date, shown once. Access details are private and never show.
+[tables.equipment.calendar]
+title = "Alarm test calendar"
+entry = ["test", "tests"]
+when = "last_tested"
+due = true

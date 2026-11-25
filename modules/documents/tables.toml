@@ -36,3 +36,10 @@ expiring = { date = "renew_by", warn_days = 30, wording = "due", what = "review 
 [[tables.documents.watch.gaps]]
 missing = "place"
 message = "Where is {name} kept? Choosing one of your places is enough."
+
+# A month calendar of each paper's own review or renewal date (decision 0125), shown once. Nothing says a paper was
+# renewed. Only the paper's name and the date show; its kind, holder, place and notes never do.
+[tables.documents.calendar]
+title = "Documents calendar"
+entry = ["renewal", "renewals"]
+due = true

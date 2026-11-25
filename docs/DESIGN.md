@@ -679,8 +679,9 @@ chart = { ..., ranges = ["3m", "1y", "all"], change = true, line = { gap_days = 
   and never a reminder moved to another list). Done marks come from `when`, an optional non-private date column
   such as `last_done`, or else from the table's own Mark done buttons saved in history (Undo takes them away).
   `show` is always "all"; `state`, `looks` and a private table are refused, and one record's due date may be on
-  only one calendar. Garden jobs, Vehicles (registration, insurance, services) and Bills and policies use it;
-  Home care's Work done uses the 0119 form with `per = "job"`.
+  only one calendar. Garden jobs, Vehicles (registration, insurance, services), Bills and policies, Documents, Home layout's alarms
+  and Things lent out use it (decision 0125); Home care's Work done and Medical's Kit checks use the 0119 form
+  with a `per` link.
 - **Things to do, Calendar** puts every calendar with due dates in one month: one grid, one legend, a count per
   module, and each line in words starting with its module's name. **Show: All / one module** links keep one
   module's lists (`?only=<module>`, with the month kept). With only one such calendar it is shown as before.
