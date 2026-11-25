@@ -66,24 +66,46 @@ def periods(by: str, last_day: date, first_day: str, today: date) -> list[Period
     return found[::-1]
 
 
-def entries(conn: sqlite3.Connection, info, rule: dict, subject_id: int, start: date, end: date,
-            zone: tzinfo | None, group_id: int | None = None) -> list[dict]:
-    """Accepted, undeleted records of one subject whose household day is from `start` to `end`, matching the
-    rule's `where` choices (and one `group` record when given). A time with an offset counts on the household's
-    day it happened; a time typed without one is already the household's clock (decision 0110). Each row gains
-    `_day`. Nothing is stored, so an edit, delete or restore shows at once."""
+def group_sql(info, rule: dict) -> str:
+    """The SQL for an entry's group: its own link, or the choice of the record it links to (`item.category`,
+    decision 0128)."""
+    through = rule.get("through")
+    if through:
+        target = f"{info.module.name}__{through['table']}"
+        return f"(SELECT g.{through['column']} FROM {target} g WHERE g.id = {info.name}.{through['link']})"
+    return f"{info.name}.{rule['group']}"
+
+
+def subject_clause(rule: dict, subject_id: int | None, group_id=None, info=None) -> tuple[str, list]:
+    """The SQL that keeps one subject's entries (every entry, for a chart of the whole list) matching the rule's
+    `where` choices, and one group's when given."""
+    clause, params = "", []
+    if rule.get("per"):
+        clause, params = f" AND {rule['per']} = ?", [subject_id]
+    for column, value in (rule.get("where") or {}).items():
+        clause, params = clause + f" AND {column} = ?", params + [value]
+    if group_id is not None:
+        clause, params = clause + f" AND {group_sql(info, rule)} = ?", params + [group_id]
+    return clause, params
+
+
+def entries(conn: sqlite3.Connection, info, rule: dict, subject_id: int | None, start: date, end: date,
+            zone: tzinfo | None, group_id=None) -> list[dict]:
+    """Accepted, undeleted records of one subject (or of the whole list, for a rule without `per`) whose household
+    day is from `start` to `end`, matching the rule's `where` choices (and one group when given). A time with an
+    offset counts on the household's day it happened; a time typed without one is already the household's clock
+    (decision 0110). Each row gains `_day` and, with a group, `_group`. Nothing is stored, so an edit, delete or
+    restore shows at once."""
     when = info.table.columns[rule["when"]]
     low, high = start.isoformat(), (end + timedelta(days=1)).isoformat()
     if when.type == "datetime":  # wide enough for any offset, then checked exactly
         low, high = (start - timedelta(days=1)).isoformat(), (end + timedelta(days=2)).isoformat()
-    clause, params = f" AND {rule['per']} = ?", [low, high, subject_id]
-    for column, value in (rule.get("where") or {}).items():
-        clause, params = clause + f" AND {column} = ?", params + [value]
-    if group_id is not None:
-        clause, params = clause + f" AND {rule['group']} = ?", params + [group_id]
+    clause, params = subject_clause(rule, subject_id, group_id, info)
+    group = f", {group_sql(info, rule)} AS _group" if rule.get("group") else ""
     rows = conn.execute(
-        f"SELECT * FROM {info.name} WHERE deleted_at IS NULL AND review_status = 'confirmed' AND {rule['when']} >= ? "
-        f"AND {rule['when']} < ?{clause} ORDER BY {rule['when']}, id", params).fetchall()
+        f"SELECT *{group} FROM {info.name} WHERE deleted_at IS NULL AND review_status = 'confirmed' "
+        f"AND {rule['when']} >= ? AND {rule['when']} < ?{clause} ORDER BY {rule['when']}, id",
+        [low, high, *params]).fetchall()
     found = []
     for row in rows:
         entry = dict(row)
@@ -99,11 +121,28 @@ def entries(conn: sqlite3.Connection, info, rule: dict, subject_id: int, start: 
     return found
 
 
-def build(conn: sqlite3.Connection, info, rule: dict, subject_id: int, by: str, last_day: date, first_day: str,
-          today: date, group_id: int | None = None) -> list[Period]:
-    """The periods of one chart with their records, read fresh in one query."""
+def done_days(conn: sqlite3.Connection, registry: dict, info, rule: dict, subject_id: int | None, start: date,
+              end: date) -> list[dict]:
+    """For `history = true` (decision 0129): each day from `start` to `end` a record (of one subject, with `per`)
+    was done, by its "last done" date now and the earlier dates its history shows it moved on from, as entries
+    with `_day`. One record counts once a day."""
+    mine = None if not rule.get("per") else {r[0] for r in conn.execute(
+        f"SELECT id FROM {info.name} WHERE {rule['per']} = ?", (subject_id,))}
+    return [{"id": d.record_id, "_day": d.day, "_local": None, "_earlier": d.kind != "now"}
+            for d in calendars.done_days(conn, registry, info, rule["when"], start, end)
+            if mine is None or d.record_id in mine]
+
+
+def build(conn: sqlite3.Connection, info, rule: dict, subject_id: int | None, by: str, last_day: date,
+          first_day: str, today: date, group_id=None, registry: dict | None = None) -> list[Period]:
+    """The periods of one chart with their records, read fresh in one query (with `history`, from the records and
+    their saved history: `registry` lets it also read Mark done presses, decision 0129)."""
     found = periods(by, last_day, first_day, today)
-    rows = entries(conn, info, rule, subject_id, found[0].start, found[-1].end, daily.household_zone(conn), group_id)
+    if rule.get("history"):  # each done day, earlier ones from the record's own history (decision 0129)
+        rows = done_days(conn, registry or {}, info, rule, subject_id, found[0].start, found[-1].end)
+    else:
+        rows = entries(conn, info, rule, subject_id, found[0].start, found[-1].end, daily.household_zone(conn),
+                       group_id)
     for entry in rows:
         for period in found:
             if period.start <= entry["_day"] <= period.end:
@@ -130,17 +169,25 @@ def units(rule: dict, found: list[Period]) -> list[str]:
     return seen
 
 
+def value_of(rule: dict, entry: dict) -> Decimal | None:
+    """An entry's amount, money in whole units (it is stored in cents), or None when it has none."""
+    value = entry.get(rule["amount"])
+    if value is None:
+        return None
+    return Decimal(int(value)) / 100 if rule.get("money") else Decimal(str(value))
+
+
 def amounts(rule: dict, period: Period, unit: str) -> Amounts:
     """One period's amounts added up in `unit` only. An entry with no amount is counted, never read as zero; an
-    amount in another unit is kept apart, never converted (decisions 0110 and 0111)."""
+    amount in another unit (or currency) is kept apart, never converted (decisions 0110, 0111 and 0128)."""
     result = Amounts()
     for entry in period.entries:
-        value, its_unit = entry.get(rule["amount"]), unit_of(rule, entry)
+        value, its_unit = value_of(rule, entry), unit_of(rule, entry)
         if value is None or not its_unit:
             result.unmeasured += 1
         elif its_unit == unit:
-            result.total += Decimal(str(value))
+            result.total += value
             result.added += 1
         else:
-            result.others[its_unit] = result.others.get(its_unit, Decimal(0)) + Decimal(str(value))
+            result.others[its_unit] = result.others.get(its_unit, Decimal(0)) + value
     return result

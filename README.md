@@ -93,6 +93,11 @@ is new: keep a copy of anything important somewhere else too. See
   ("Home care · Clear the gutters: Job done"). **Show: All / Home care /
   Vegetable garden / ...** links keep one list at a time. A bill's amount and
   any private detail are never on a calendar.
+  Earlier times show too: each earlier day a vehicle service, an alarm test,
+  a return or a garden job was recorded as done stays on its day, read from
+  the record's own history, marked "(an earlier time, from its history)". A
+  date typed back to fix it, cleared, or changed again the same day never
+  counts, and an undone Mark done never shows.
 - **Bars over time:** a pet's page shows **Food put out per day** (or per
   week or month), in one unit at a time, such as grams or pouches, never added
   together or converted; a routine's page shows **Times done per month**; a
@@ -101,6 +106,19 @@ is new: keep a copy of anything important somewhere else too. See
   words and the same values are in a table; a day, week or month with nothing
   written down says "nothing recorded", never "missed", and this week or month
   is striped and says "so far".
+  Garden jobs now keep a **Done on** date (Mark done fills in today; older
+  jobs keep no date, never a guessed one), and the Garden calendar and list
+  link to **Jobs done per month**: every job together, one count for each day
+  a job was done.
+- **What you paid and Spent per month:** when you save a bought Stock in, or
+  later, you can type what you paid and say whether it is the total or the
+  price for each one, in your household's currency (chosen in Settings). A
+  receipt price a helper read stays on Review for checking and is never saved
+  by itself. **Spent per month** (on Household stock) counts your Stock ins;
+  **Show** adds up the prices, overall and for each category, one currency at
+  a time. A Stock in without a price is counted, never read as zero, and the
+  page says it covers only prices that were typed in. Prices stay on this
+  computer and are never on lists, sheets, the export or a helper's screen.
 - **What happened, newest first:** a pet's page and a person's page end with
   one list of everything recorded for them, under month headings: each
   weigh-in with the change since the one before ("up 0.3 kg since 2 Oct"),
@@ -108,6 +126,11 @@ is new: keep a copy of anything important somewhere else too. See
   recorded on Tue 24 Nov · 240 g put out"), and doses as one line a day that
   says only how many until **Show** names each medicine. Every kind has its
   own symbol beside its words, and **Earlier** goes back a page.
+  A vehicle's page lists its odometer readings ("up 1,240 km since 2 Oct",
+  only between readings in the same unit, never converted) and service
+  estimates (never an amount); a Home care job's page lists the work done; a
+  routine's page lists each time it was done or skipped. After **Show**, a
+  dose reads in the medicine's own words, with no id.
 - **Medicine doses:** each dose of medicine given to a person, from **Record a
   dose** on their page: the medicine is chosen from that person's own
   medication details (People → Important details), with the time now and, for

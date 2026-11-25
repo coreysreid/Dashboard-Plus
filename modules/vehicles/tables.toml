@@ -63,4 +63,5 @@ due = true
 title = "Vehicle services calendar"
 entry = ["service or check", "services or checks"]
 when = "last_done"
+history = true  # also each earlier date this was moved on from, from its history (decision 0129)
 due = true

@@ -581,6 +581,9 @@ reason = "bought"
 amount = 7.6
 happened_on = "today-20"
 notes = "Two more jugs."
+# An invented price (decision 0128), typed as the total for the two jugs.
+price = 2.58
+price_basis = "total"
 
 [[stock.movements]]
 item = "Metformin 500 mg (Rosa)"
@@ -614,6 +617,8 @@ reason = "bought"
 amount = 1
 happened_on = "today-1"
 notes = "Weekly shop."
+price = 3.49
+price_basis = "total"
 
 [[stock.items]]
 name = "Car emergency kit"

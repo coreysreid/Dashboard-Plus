@@ -148,7 +148,8 @@ class AcceptanceTests(RunningTestCase):
         self.assertEqual(history[-1]["before"]["distance"], 48512)
         page = self.page(f"/t/vehicles__vehicles/{self.car}", client)
         self.assertIn("Corrected on", page)
-        for invented in ("km travelled", "travelled since", "per day", "average", "km since", "due at", "Service due"):
+        for invented in ("km travelled", "travelled since", "per day", "average", "since the last service", "since last service", "due at",
+                         "Service due"):  # decision 0130: "up 1,240 km since 2 Oct" is only two readings' difference
             self.assertNotIn(invented, page)
 
     def test_3_two_estimates_show_their_own_kind_dates_and_scope_with_no_cheapest_or_same_work_claim(self):

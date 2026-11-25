@@ -29,7 +29,9 @@ def home_groups(registry: dict, count, sheets: list[dict]) -> list[dict]:
 
     `count` gives the number of records in a table, by its real name.
     """
+    from dashboard.web.bar_pages import whole_list_links  # charts of a whole list, like Spent per month (0128)
     groups: dict[str, dict] = {}
+    charts = whole_list_links(registry)
     for name, info in registry.items():
         if info.table.private:  # private history, such as medicine doses, is never on Home (decision 0120)
             continue
@@ -41,7 +43,8 @@ def home_groups(registry: dict, count, sheets: list[dict]) -> list[dict]:
                 "places": home_places(module), "sheets": [s for s in sheets if s["module"] == module.name],
                 "questions": f"/questions/{module.name}" if module.prompts is not None else None,
                 "drills": f"/drills/{module.name}" if module.prompts is not None and module.prompts.scenarios
-                else None}
+                else None,
+                "charts": [c for c in charts if registry[c["table"]].module.name == module.name]}
         entry = {"name": name, "title": table_title(info), "module": module.title, "count": count(name),
                  "empty": empty_hint(info)}
         group[group["places"][info.table.name]].append(entry)

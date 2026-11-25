@@ -107,4 +107,5 @@ message = "Which place is {name} in? Choose where to find it."
 title = "Alarm test calendar"
 entry = ["test", "tests"]
 when = "last_tested"
+history = true  # also each earlier date this was moved on from, from its history (decision 0129)
 due = true

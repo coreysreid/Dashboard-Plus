@@ -142,6 +142,8 @@ class Words:
                 else self.labels.get(mark.look, f"{self.one[:1].upper()}{self.one[1:]} {mark.look}"))
         if self.rule["show"] == "all":
             what = f"{self.subject(mark.subject_id)}: {what}"
+        if mark.earlier:  # not the date the record keeps now, but one its history shows (decision 0129)
+            what = f"{what} (an earlier time, from its history)"
         if mark.moment is not None:
             what = f"{mark.moment.hour % 12 or 12}:{mark.moment.minute:02d} {'am' if mark.moment.hour < 12 else 'pm'} · {what}"
         return {"look": mark.look, "symbol": calendars.SYMBOLS[mark.look], "words": what,
@@ -335,9 +337,11 @@ def _calendar_page(table, show: bool):
     subject_id = chosen["id"] if chosen else None
     view = month_view(store, info, year, month, today, subject_id, link=_href(f"/calendar/{table}", subject=subject_id),
                       show=show, show_action=f"/calendar/{table}")
+    from dashboard.web.bar_pages import table_panels  # jobs done per month under the month (decision 0129)
     return render_template("calendar.html", title=rule["title"], view=view, subjects=subjects, chosen=chosen,
                            table=table, month=f"{year:04d}-{month:02d}", no_subject=None,
                            show_all=rule["show"] == "all",
+                           table_bars=table_panels(store, info) if calendars.own(info) else [],
                            subject_href=f"/t/{subject_info.name}/{subject_id}" if subject_id else None)
 
 

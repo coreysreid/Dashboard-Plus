@@ -255,6 +255,9 @@ item = "Oat milk"
 reason = "bought"
 amount = 2
 happened_on = "today-1"
+# An invented price (decision 0128), typed as the price for each carton; the bottled water has no price.
+price = 1.65
+price_basis = "each"
 
 # ---- Medical readiness --------------------------------------------------------
 

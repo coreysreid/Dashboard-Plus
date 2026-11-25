@@ -1,6 +1,7 @@
-"""Month calendars from a table's dated or timed records by the household's own day; an empty day is never called missed (decision 0119)."""
+"""Month calendars from a table's dated or timed records by the household's own day; an empty day is never called missed (decision 0119), earlier done days read from history (0129)."""
 from __future__ import annotations
 
+import json
 import sqlite3
 from dataclasses import dataclass, field
 from datetime import date, timedelta, tzinfo
@@ -26,6 +27,7 @@ class Mark:
     state: str | None = None  # the record's choice in the calendar's `state` column, such as "done"
     moment: object = None  # the household's clock time, for an entry with a date and time
     day: date | None = None  # the household's day it is on
+    earlier: bool = False  # a done day read from the record's history, not the date it keeps now (decision 0129)
 
 
 @dataclass
@@ -118,13 +120,17 @@ def shift(year: int, month: int, by: int) -> tuple[int, int]:
     return index // 12, index % 12 + 1
 
 
-def _entries(conn: sqlite3.Connection, info, start: date, end: date, zone: tzinfo | None,
+def _entries(conn: sqlite3.Connection, registry: dict, info, start: date, end: date, zone: tzinfo | None,
              subject: int | None) -> list[Mark]:
     """Accepted, undeleted records whose household day is from `start` to `end`. A time with an offset counts on
     the household's day it happened; a time typed without one is already the household's clock (decision 0110)."""
     rule = info.table.calendar
     if not rule.get("when"):
         return []  # a calendar of a table's own records with no date column: its presses are read from history
+    if rule.get("history"):  # also each earlier done day, from the record's own history (decision 0129)
+        return [Mark(rule["look"], "entry", d.record_id, d.record_id, day=d.day, earlier=d.kind != "now")
+                for d in done_days(conn, registry, info, rule["when"], start, end)
+                if subject is None or d.record_id == subject]
     when = info.table.columns[rule["when"]]
     state = rule.get("state")
     per = rule.get("per") or "id"  # a table's own records each belong to themselves (decision 0122)
@@ -205,8 +211,75 @@ def month(conn: sqlite3.Connection, registry: dict, info, year: int, month_: int
     last = date(*shift(year, month_, 1), 1) - timedelta(days=1)
     zone = daily.household_zone(conn)
     by_day: dict[date, list[Mark]] = {}
-    for mark in (_entries(conn, info, first, last, zone, subject) + _presses(conn, registry, info, first, last, subject)
+    for mark in (_entries(conn, registry, info, first, last, zone, subject)
+                 + _presses(conn, registry, info, first, last, subject)
                  + _due(conn, registry, info, first, last, today, subject)):
         by_day.setdefault(mark.day, []).append(mark)
     return Month(year, month_, [[Day(d, True, by_day.get(d, [])) if d else Day(None, False) for d in week]
                                 for week in weeks], today)
+
+
+# ----- earlier done days from a record's own history (decision 0129) ------------------------------------
+
+
+@dataclass(frozen=True)
+class DoneDay:
+    """One day a record was done: `kind` is "now" (the date it keeps), "earlier" (a date it kept before and then
+    moved on from to a later day) or "press" (a Mark done press saved before the table kept the date)."""
+    record_id: int
+    day: date
+    kind: str
+
+
+def _as_day(value) -> date | None:
+    try:
+        return date.fromisoformat(str(value)[:10]) if value not in (None, "") else None
+    except ValueError:
+        return None
+
+
+def earlier_done(conn: sqlite3.Connection, info, column: str, zone: tzinfo | None) -> dict[int, set[date]]:
+    """For each record, the dates `column` held before it was moved on to a later date, read from history in the
+    order they were saved. A date counts only when the very next value saved is a later date, saved on a later day
+    of the household's than the date itself was saved. So a date typed back (a correction), a date cleared (by hand
+    or by Undo) and a date changed again the same day it was typed never count: they may have been mistakes."""
+    found: dict[int, list[tuple[date | None, str]]] = {}
+    for row in conn.execute("SELECT record_id, at, after FROM core__audit WHERE table_name = ? "
+                            "AND action IN ('create', 'update') AND json_type(after, ?) IS NOT NULL ORDER BY id",
+                            (info.name, f"$.{column}")):
+        try:
+            saved = daily.local_day(row["at"], zone)
+            value = json.loads(row["after"]).get(column)
+        except (TypeError, ValueError):
+            continue
+        found.setdefault(row["record_id"], []).append((_as_day(value), saved))
+    result: dict[int, set[date]] = {}
+    for record_id, values in found.items():
+        for (before, saved), (after, moved) in zip(values, values[1:]):
+            if before is not None and after is not None and after > before and moved > saved:
+                result.setdefault(record_id, set()).add(before)
+    return result
+
+
+def done_days(conn: sqlite3.Connection, registry: dict, info, column: str, start: date, end: date) -> list[DoneDay]:
+    """Every day from `start` to `end` that an accepted, undeleted record of `info` was done: the date `column`
+    keeps now, each earlier date it was moved on from (see `earlier_done`), and each Mark done press that did not
+    set `column` itself (pressed before the table kept the date), read the way Things to do reads presses, so an
+    undone press is left out. One record counts once a day. Nothing is stored, so an edit, delete or restore
+    shows at once."""
+    live = {row["id"]: _as_day(row["value"]) for row in conn.execute(
+        f"SELECT id, {column} AS value FROM {info.name} WHERE deleted_at IS NULL AND review_status = 'confirmed'")}
+    found: dict[tuple[int, date], str] = {}
+    for record_id, day in live.items():
+        if day is not None:
+            found[(record_id, day)] = "now"
+    for record_id, before in earlier_done(conn, info, column, daily.household_zone(conn)).items():
+        if record_id in live:
+            for day in before:
+                found.setdefault((record_id, day), "earlier")
+    if info.table.actions:
+        for press in checklist.done(conn, registry, start, end, only=info.name):
+            if press.record_id in live and press.counts_as == "done" and column not in press.fields:
+                found.setdefault((press.record_id, press.on), "press")
+    return sorted((DoneDay(r, d, k) for (r, d), k in found.items() if start <= d <= end),
+                  key=lambda d: (d.day, d.record_id))

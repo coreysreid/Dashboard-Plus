@@ -12,7 +12,7 @@
   {% for s in subjects %}<li>{% if s.id == chosen.id %}<strong aria-current="page">{{ s.name }}</strong>{% else %}<a href="/bars/{{ view.table }}/{{ view.key }}?subject={{ s.id }}&amp;by={{ view.by }}">{{ s.name }}</a>{% endif %}</li>{% endfor %}
 </ul></nav>
 {% endif %}
-<h2>{{ chosen.name }} · {{ view.title }}</h2>
+<h2>{% if chosen %}{{ chosen.name }}{% else %}{{ view.name }}{% endif %} · {{ view.title }}</h2>
 {% with bv = view, level = 3 %}{% include "_bars.html" %}{% endwith %}
 {% if subject_href %}<p><a href="{{ subject_href }}">{{ chosen.name }}'s page</a></p>{% endif %}
 {% endif %}
