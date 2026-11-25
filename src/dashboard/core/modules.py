@@ -35,7 +35,7 @@ MODULE_KEYS = ("name", "title", "version", "description", "core_api", "kind", "r
                "outbound_hosts")
 MODULE_REQUIRED = ("name", "title", "version", "description", "core_api", "kind")
 TABLE_KEYS = ("title", "description", "columns", "watch", "adjusts", "parent", "total", "record_name", "actions",
-              "pair", "suggestions", "chart", "daily", "confirm", "takes_over", "calendar", "private", "bars")
+              "pair", "suggestions", "chart", "daily", "confirm", "takes_over", "calendar", "private", "bars", "timeline")
 # One reminder per policy (decision 0117): records of an older list in another module (Vehicle insurance) that
 # the household may choose, one by one, to have reminded from this table instead. `where` is what such a record
 # is here (a vehicle policy), `copy` which of this table's columns take which of the other's, the date included.
@@ -66,6 +66,12 @@ BARS_KEYS = ("key", "title", "when", "per", "measure", "amount", "unit", "where"
              "subject", "caveat")
 BARS_MEASURES = ("count", "sum")
 BARS_BY = ("day", "week", "month")
+# One timeline on a record's page (decision 0126): "What happened, newest first", every dated entry of every table
+# that links to the record and declares `timeline`. Each kind has a fixed look (a symbol beside its words, never a
+# colour alone); `summarise = "day"` makes one line a day, as a private table must, so it says only how many.
+TIMELINE_KEYS = ("when", "per", "entry", "words", "look", "summarise", "change")
+TIMELINE_LOOKS = ("recorded", "done", "measured", "visit")
+TIMELINE_WORD = re.compile(r"\{([^{}]*)\}")
 # A gentle check before a form saves, such as an odometer reading lower than the last one: Go back, or Save as
 # entered. Never a block, and nothing is worked out from it (decision 0111).
 CONFIRM_KEYS = ("key", "when", "column", "per", "order", "among", "message", "later")
@@ -192,6 +198,7 @@ class Table:
     takes_over: dict = field(default_factory=dict)  # checked `takes_over`: one reminder per policy (0117)
     calendar: dict = field(default_factory=dict)  # checked `calendar`: a month grid by the household's day (0119)
     bars: list = field(default_factory=list)  # checked `bars`: how often or how much per day, week or month (0124)
+    timeline: dict = field(default_factory=dict)  # checked `timeline`: its entries on a record's timeline (0126)
     # Decision 0120: every record is private history, such as medicine given. Never on Home, a sheet, a helper
     # or the spreadsheet export; made only on this program's own screens (suggestions = false is required).
     private: bool = False
@@ -1134,6 +1141,83 @@ def _check_bars(file: str, table: Table, raw, problems: list[str]) -> list[dict]
     return found
 
 
+def _check_timeline(file: str, module: str, table: Table, tables: dict[str, Table], raw,
+                    problems: list[str]) -> dict:
+    """Check `timeline`: this table's dated entries on the timeline of the record `per` points at, like a pet's
+    weigh-ins or a person's doses (decision 0126). `per` may go through one link of this module ("treatment.pet");
+    `words` names ordinary columns only; `change` says the change since the entry before in one fixed unit; a
+    private table must summarise by day and never says a change."""
+    where = f"In {file}, table '{table.name}', timeline"
+    example = ('[tables.weigh_ins.timeline] with when = "day", per = "pet", entry = ["weigh-in", "weigh-ins"], '
+               'words = "{weight}", look = "measured"')
+    if not isinstance(raw, dict):
+        problems.append(f"{where}: write it as {example}.")
+        return {}
+    problems.extend(_unknown_keys(where, raw, TIMELINE_KEYS))
+    before = len(problems)
+    when = table.columns.get(raw.get("when")) if isinstance(raw.get("when"), str) else None
+    if when is None or when.type not in ("date", "datetime") or not when.required:
+        problems.append(f"{where}: 'when' must name a required date or date-and-time column of this table.")
+    per = raw.get("per")
+    first, _, second = per.partition(".") if isinstance(per, str) else ("", "", "")
+    link = table.columns.get(first)
+    if link is None or link.type != "link" or not link.required:
+        problems.append(f"{where}: 'per' must name a required link column, so each entry belongs to one record, "
+                        f"like per = \"pet\", or go through one link of this module, like per = \"treatment.pet\".")
+    elif second:
+        other, _, name = link.to.partition(".") if "." in link.to else (module, ".", link.to)
+        hop = tables.get(name) if other == module else None
+        column = hop.columns.get(second) if hop is not None else None
+        if column is None or column.type != "link" or not column.required or "." in second:
+            problems.append(f"{where}: in per = \"{per}\", '{first}' must point at a table of this module and "
+                            f"'{second}' must be a required link column of that table.")
+    words = raw.get("entry")
+    if not (isinstance(words, list) and len(words) == 2 and all(isinstance(w, str) and w.strip() for w in words)):
+        problems.append(f"{where}: 'entry' must be two words, singular then plural, like [\"weigh-in\", "
+                        f"\"weigh-ins\"].")
+    text = raw.get("words", "")
+    if not isinstance(text, str):
+        problems.append(f"{where}: 'words' must be a short text with column names in braces, like \"{{weight}}\".")
+        text = ""
+    for name in TIMELINE_WORD.findall(text):
+        column = table.columns.get(name)
+        if column is None or column.sensitive:
+            problems.append(f"{where}: 'words' can only name columns of this table that are not private; "
+                            f"'{{{name}}}' is not one.")
+    if "{" in TIMELINE_WORD.sub("", text) or "}" in TIMELINE_WORD.sub("", text):
+        problems.append(f"{where}: 'words' has a brace without its pair; write a column as {{name}}.")
+    look = raw.get("look", "recorded")
+    if look not in TIMELINE_LOOKS:
+        problems.append(f"{where}: 'look' must be one of {', '.join(TIMELINE_LOOKS)}, not {look!r}. Each has its "
+                        f"own symbol, so a kind is never told apart by colour alone.")
+    summarise = raw.get("summarise")
+    if summarise not in (None, "day"):
+        problems.append(f"{where}: 'summarise' can only be \"day\" (one line a day, such as \"3 feedings recorded "
+                        f"on Tue 24 Nov\"), not {summarise!r}.")
+    change = raw.get("change")
+    if change is not None:
+        column = table.columns.get(change) if isinstance(change, str) else None
+        if column is None or column.type not in ("integer", "decimal", "measure") or column.sensitive \
+                or not column.unit:
+            problems.append(f"{where}: 'change' must name a number column of this table with its own unit and "
+                            f"not private, like change = \"weight\", so a change is never across units.")
+        if summarise:
+            problems.append(f"{where}: 'change' compares one entry with the one before, so it can't be used with "
+                            f"summarise.")
+    if table.private:  # decisions 0121 and 0123: how many each day until Show, never an amount or a change
+        if summarise != "day":
+            problems.append(f"{where}: a private table's timeline must say summarise = \"day\", so before Show it "
+                            f"says only how many each day.")
+        if change is not None:
+            problems.append(f"{where}: a private table's timeline can't use 'change': it would show a private "
+                            f"value.")
+    if len(problems) > before:
+        return {}
+    return {"when": raw["when"], "per": per, "link": first, "through": second or None,
+            "entry": [w.strip() for w in raw["entry"]], "words": text.strip(), "look": look,
+            "summarise": summarise, "change": change}
+
+
 def _check_own_calendar(where: str, table: Table, raw: dict, problems: list[str]) -> dict:
     """Check a calendar of a table's own records, with no `per` (decision 0122): each record's one open due date
     from this table's own reminder, and the days it was done, from an optional date column (`when`, such as
@@ -1292,6 +1376,9 @@ def _check_tables(module: str, data: dict, requires: list[str], problems: list[s
                                                          problems)
             if "bars" in raw:
                 tables[tname].bars = _check_bars(file, tables[tname], raw["bars"], problems)
+            if "timeline" in raw:
+                tables[tname].timeline = _check_timeline(file, module, tables[tname], tables, raw["timeline"],
+                                                         problems)
             if "confirm" in raw:
                 tables[tname].confirm = _check_confirm(file, tables[tname], raw["confirm"], problems)
             if "takes_over" in raw:

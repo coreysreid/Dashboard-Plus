@@ -713,6 +713,27 @@ caveat = "Food put out, not necessarily eaten."  # optional
 - A private table (0121) may only count, with no `where`; its `group` bars and names appear only after a
   pressed Show.
 
+### 5.14 One timeline on a record's page (decision 0126)
+
+```toml
+[tables.weigh_ins.timeline]
+when = "day"                # a required date or date-and-time column; placed on the household's own day
+per = "pet"                 # a required link: the record whose page shows it; "treatment.pet" goes one link further
+entry = ["weigh-in", "weigh-ins"]
+words = "{weight}"          # optional: a short text with {column} names, never a private column
+look = "measured"           # recorded (●), done (✓), measured (◆) or visit (■): a symbol beside the words
+change = "weight"           # optional: a number column with its own unit; "up 0.3 kg since 2 Oct, from ..."
+# summarise = "day"         # optional: one line a day, "3 feedings recorded on Tue 24 Nov"; a private table must
+```
+
+- The record's page ends with **What happened, newest first**: every accepted, undeleted entry of every switched-on
+  table that declares a timeline for it, newest first under month headings, 8 lines with **Earlier** and **Open the
+  whole timeline** (`/timeline/<table>/<id>`, 25 lines a page; **Earlier** is `?before=<day>`, and a day is never
+  split across pages). Nothing recorded says "Nothing recorded yet for Rex."; a gap is never called missed.
+- A private table (0121) must summarise by day and may not use `change`: before Show a day says only how many;
+  **Show** is a POST with the session check that adds each entry's time and `words` (a private table's link shows
+  its `link_rule` words), on that page only. A private column is never in `words`, so an amount never appears.
+
 ## 6. Modules
 
 A module is a folder:
@@ -1028,6 +1049,11 @@ number and the core can load both for a transition period.
   declared `bars` list counts entries or adds one number column in one unit
   per day, week or month; Pet feeding (food put out), Routines (times done)
   and Medicine doses (counted, each medicine only after Show) use it.
+  **One timeline (decision 0126, section 5.14):** a record's page ends with
+  what happened, newest first, from each table's `timeline` declaration;
+  Pets (weigh-ins with the change since the one before, vet visits,
+  treatments given), Pet feeding (one line a day) and Medicine doses (how
+  many a day, the medicine only after Show) use it.
   Annotations and saved chart settings are still to come; a charting library
   (0004) may return for those.
 - **Analysis** (module, section 10.3).

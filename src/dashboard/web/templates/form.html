@@ -120,6 +120,10 @@
 <h2>{{ bv.title }}</h2>
 {% with level = 3 %}{% include "_bars.html" %}{% endwith %}
 {% endfor %}
+{% if what_happened %}{# one timeline of every dated entry that links here (decision 0126) #}
+<h2>{{ what_happened.title }}</h2>
+{% with tl = what_happened, level = 3 %}{% include "_timeline.html" %}{% endwith %}
+{% endif %}
 {% for u in under %}{# another list's records that point here, like a service's quotes (labels.toml `under`, 0111) #}
 <section class="under" id="under-{{ u.table }}" aria-labelledby="under-{{ u.table }}-heading">
 <h2 id="under-{{ u.table }}-heading">{{ u.title }}</h2>

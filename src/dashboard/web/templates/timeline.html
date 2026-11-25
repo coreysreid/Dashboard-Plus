@@ -1,0 +1,7 @@
+{% extends "base.html" %}
+{% block title %}{{ title }} · Dashboard Plus{% endblock %}
+{% block body %}
+<p class="muted"><a href="/">Home</a> · <a href="{{ subject_href }}">{{ view.name }}'s page</a></p>
+<h1>{{ view.heading }}</h1>
+{% with tl = view, level = 2 %}{% include "_timeline.html" %}{% endwith %}
+{% endblock %}

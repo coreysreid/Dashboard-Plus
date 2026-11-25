@@ -167,8 +167,9 @@ class DoseCalendarTests(PrivateDoseCase):
 
     def test_a_private_calendar_may_not_declare_a_state_a_due_date_or_another_look(self):
         tables = (ROOT / "modules" / "medicine_doses" / "tables.toml").read_text(encoding="utf-8")
-        bad = tables.replace('entry = ["dose", "doses"]\n', 'entry = ["dose", "doses"]\ndue = true\nlook = "done"\n')
-        bad = bad.replace("[tables.doses.calendar]", "[tables.doses.calendar]\nstate = \"unit\"")
+        head, _, rest = tables.partition("[tables.doses.calendar]")  # only the calendar's own lines change
+        rest = rest.replace('entry = ["dose", "doses"]\n', 'entry = ["dose", "doses"]\ndue = true\nlook = "done"\n', 1)
+        bad = head + "[tables.doses.calendar]\nstate = \"unit\"" + rest
         self.make_module("dosecal", module=MODULE_TOML, tables=bad, labels=None,
                          root="bad")
         shutil.copytree(ROOT / "modules" / "people", self.tmp / "bad" / "people")

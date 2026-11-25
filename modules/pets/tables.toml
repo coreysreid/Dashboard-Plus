@@ -82,3 +82,28 @@ columns.vet = { type = "link", to = "people.people", on_delete = "clear" }
 columns.reason = { type = "text", required = true }
 columns.cost = { type = "money", min = 0 }
 columns.notes = { type = "longtext" }
+
+# One timeline on a pet's page (decision 0126): "What happened, newest first". Each weigh-in says the change since
+# the weigh-in before ("up 0.3 kg since 2 Oct"), in the column's own unit; a vet visit says why; a treatment given
+# says which treatment. Records are kept and shown only once accepted; nothing here is a health verdict.
+[tables.weigh_ins.timeline]
+when = "day"
+per = "pet"
+entry = ["weigh-in", "weigh-ins"]
+words = "{weight}"
+look = "measured"
+change = "weight"
+
+[tables.vet_visits.timeline]
+when = "day"
+per = "pet"
+entry = ["vet visit", "vet visits"]
+words = "{reason}"
+look = "visit"
+
+[tables.given.timeline]
+when = "given_on"
+per = "treatment.pet"
+entry = ["treatment given", "treatments given"]
+words = "{treatment}"
+look = "done"
