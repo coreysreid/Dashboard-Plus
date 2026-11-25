@@ -40,15 +40,18 @@ this change keep no date: nothing is guessed. Their Mark done press still shows 
   `done_on = "today"`, and Undo puts both back. Jobs done before keep an empty Done on; their press shows as
   above. A one-step press's "today" is now the day the press is dated by (the page's today), so the date it sets
   and the press always agree.
-- **Bars of a whole table, counting done days** (0124's declaration, two changes): `per` may be left out (with
-  `subject`) for one chart of every record together, `measure = "count"` only, no `group`, not a private table;
-  and `history = true` (with `when` a non-private date column that need not be required) counts the same done
-  days the calendar shows, with no `where` or `group`. Such a chart is never a panel on one record's page; it is
-  shown under the table's own calendar at `/calendar/<table>`, at `/bars/<table>/<key>`, and linked from the
-  table's list ("See: Garden calendar · Jobs done per month"). Garden declares **Jobs done**, by month or week.
-  Its caveat says each bar counts the days each was recorded as done, earlier ones from history, and that a date
-  typed back or cleared is never counted. Every 0119 and 0124 rule stays: the fixed looks and symbols, never
-  "missed", no script, 320px, private columns never read (only the record's name and a date are shown).
+- **Bars of a whole list, counting done days.** This uses the one "whole list" shape of 0124's declaration that
+  decision 0128 added for Spent per month (built in parallel; the two were merged into one code path): leave out
+  `per` and `subject` for one chart of the whole list, named by the module's title, linked from Home and from the
+  list, never a panel on one record's page; 0128's groups by a choice of the linked record and its private amounts
+  counted until a pressed Show are unchanged. This decision adds `history = true` (with `when` a non-private date
+  column that need not be required), which counts the same done days the calendar shows, with `measure = "count"`
+  and no `where` or `group`; it works with or without `per`. A whole-list chart is also shown under its table's own
+  calendar at `/calendar/<table>`, and the list's single "See:" line links to both ("See: Garden calendar · Jobs
+  done per month"). Garden declares **Jobs done**, by month or week. Its caveat says each bar counts the days each
+  was recorded as done, earlier ones from history, and that a date typed back or cleared is never counted. Every
+  0119 and 0124 rule stays: the fixed looks and symbols, never "missed", no script, 320px, private columns never
+  read (only the record's name and a date are shown).
 - **Tests** in `tests/test_done_history.py` (19): the checker's words, the shipped declarations, the migration
   adds an empty column only, the core names no module, earlier days moved forward, a date typed back, a same-day
   fix, a cleared date, delete and restore, alarm tests across months and on Things to do, a loan's undone return
@@ -91,13 +94,14 @@ this change keep no date: nothing is guessed. Their Mark done press still shows 
   presses; fine for a household, slower with many years of daily edits.
 - An old Garden press and a Done on typed by hand later for the same job show as two days if they differ.
 - "(an earlier time, from its history)" makes lines longer at 320px; the list in words still wraps.
-- One more declaration key on calendars and bars, and bars without `per` is a new shape to learn and check.
+- One more declaration key on calendars and bars to learn and check.
 - Vehicle services have no bars yet; they would need one `[[tables.services.bars]]` with `per = "vehicle"`.
 
 ## How hard it is to undo
 Easy. Remove the `history = true` lines from the four `tables.toml` files and Garden's `[[tables.jobs.bars]]`;
 drop `DoneDay`, `earlier_done`, `done_days` and the `history` branch in `calendars.py`, the `history` branches
-in `bars.py` and `bar_pages.py`, the `history` and no-`per` checks in `modules.py`, `table_panels`/`table_links`, the "See:" line in `grid.html`, the bars block
+in `bars.py` and `bar_pages.py`, the `history` checks in `modules.py`, `table_panels`, the calendar link in
+`_see_also` (`pages.py`), the bars block
 in `calendar.html`, and `Done.fields`. Garden's `done_on` column stays (a released migration is never edited);
 taking `done_on` out of Mark done's `set` stops it being filled. No household data is changed.
 

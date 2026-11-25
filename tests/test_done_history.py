@@ -78,7 +78,6 @@ columns.on = { type = "date", required = true }
         text = self.problems(base + 'when = "last_done"\nhistory = true\nmeasure = "sum"\namount = "amount"\n'
                              'verb = "used"\n')
         self.assertIn("with history = true the bars count done days only", text)
-        self.assertIn("without 'per' one chart counts every record of this table together", text)
         text = self.problems(base + 'when = "last_done"\nmeasure = "count"\n')
         self.assertIn("'when' must name a required date or date-and-time column", text)
         text = self.problems(base + 'when = "last_done"\nhistory = true\nmeasure = "count"\nsubject = "job"\n')
@@ -291,7 +290,7 @@ class GardenTests(HistoryCase):
                          [("2026-09-01", 1), ("2026-10-01", 2)])
         page = self.page(f"/bars/{GARDEN}/done")
         text = main(page)
-        self.assertIn("Garden jobs · 12 months", text)
+        self.assertIn("Vegetable garden · 12 months", text)
         self.assertIn("2 jobs done recorded", text)
         self.assertIn("never counted", text)
         self.assertNotIn("<script", text)

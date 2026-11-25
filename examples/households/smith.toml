@@ -645,6 +645,9 @@ reason = "bought"
 amount = 10
 happened_on = "today-12"
 notes = "Second cask for bushfire season."
+# Invented prices (decision 0128), each typed once on its own Stock in; the Pasta line is a price for each pack.
+price = 9.50
+price_basis = "total"
 
 [[stock.movements]]
 item = "Rice"
@@ -652,6 +655,8 @@ reason = "bought"
 amount = 2
 happened_on = "today-6"
 notes = "Weekly shop."
+price = 6.40
+price_basis = "total"
 
 [[stock.movements]]
 item = "Pasta"
@@ -659,6 +664,8 @@ reason = "bought"
 amount = 2
 happened_on = "today-6"
 notes = "Weekly shop."
+price = 1.80
+price_basis = "each"
 
 [[stock.movements]]
 item = "Tinned tomatoes"

@@ -421,6 +421,20 @@ class Records:
             levels += 1 if current else 0
         return levels
 
+    def _check_price(self, info: TableInfo, cleaned: dict, current: dict | None) -> None:
+        """A typed purchase price (decision 0128): refuse one that does not say what it means or sits on the wrong
+        record, and put its worked-out line total and currency into `cleaned`, so they are saved with it."""
+        if not info.table.price:
+            return
+        from dashboard.core import records_prices
+        try:
+            worked_out = records_prices.fill(self.conn, info, dict(current or {}, **cleaned), current)
+        except records_prices.PriceProblems as error:
+            raise ValidationError(error.problems) from None
+        for column, value in worked_out.items():
+            if current is None or current.get(column) != value or column in cleaned:
+                cleaned[column] = value
+
     @staticmethod
     def _check_required_when(info: TableInfo, record: dict) -> None:
         """Refuse a record that leaves blank a field its other answers make necessary (e.g. "Safe to drink")."""
@@ -622,6 +636,7 @@ class Records:
         for column in self._derived(info):
             values.pop(column, None)  # worked out from the batches
         cleaned = self.clean(info, values, creating=True)
+        self._check_price(info, cleaned, None)
         self._check_required_when(info, cleaned)
         self._check_date_order(info, cleaned)
         self._check_nesting(info, None, cleaned)
@@ -907,6 +922,7 @@ class Records:
         current = self._row(info, record_id)
         values = self._keep_off_links(info, values, current)
         cleaned = self.clean(info, values, creating=False)
+        self._check_price(info, cleaned, current)
         self._check_required_when(info, dict(current, **cleaned))
         self._check_date_order(info, dict(current, **cleaned))
         self._check_nesting(info, record_id, cleaned)

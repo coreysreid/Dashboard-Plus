@@ -29,13 +29,17 @@ columns.expires = { label = "Use by" }
 columns.place = { label = "Where it is" }
 
 [tables.movements]
-form = ["item", "reason", "amount", "happened_on", "lot", "expires", "place", "notes"]
+form = ["item", "reason", "amount", "happened_on", "lot", "expires", "place", "price", "price_basis", "currency", "notes"]
 list = ["happened_on", "item", "reason", "amount", "lot", "notes"]
 columns.amount = { label = "Amount to add or use", help = "In the item's own unit. The batch's count, and the item's, change by this much." }
 columns.happened_on = { label = "Date" }
 columns.lot = { label = "Which batch", help = "Only this item's batches are listed. Choose one to add to it or take from it.", blank = { takes = "Use the batch with the earliest use-by date" } }
 columns.expires = { label = "Use by", help = "For the new batch.", show_when = { reason = "bought" } }
 columns.place = { label = "Where you put it", help = "For the new batch.", show_when = { reason = "bought" } }
+columns.price = { label = "What you paid (optional)", help = "From the receipt or what you remember paying. Leave blank if you are unsure. It does not change the stock amount, and it stays on this computer.", show_when = { reason = "bought" } }
+columns.price_basis = { label = "That price is", help = "The total for this Stock in, or the price of each one (each tin, pack or kg). Only needed with a price.", show_when = { reason = "bought" } }
+columns.paid_total = { label = "Line total" }
+columns.currency = { label = "Currency (optional)", help = "Leave blank for the household's usual currency in Settings. Prices in different currencies are never added together.", show_when = { reason = "bought" } }
 
 [tables.connections]
 home = "more"

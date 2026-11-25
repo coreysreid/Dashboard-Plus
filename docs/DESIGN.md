@@ -721,11 +721,35 @@ caveat = "Food put out, not necessarily eaten."  # optional
   "so far". The same values are in a table; periods, Earlier, Later and units are server links.
 - A private table (0121) may only count, with no `where`; its `group` bars and names appear only after a
   pressed Show.
-- **Every record together, and done days** (decision 0129): leave out `per` (and `subject`) for one chart of
-  the whole table, `measure = "count"` only, shown on the table's own calendar page, linked from its list and at
-  `/bars/<table>/<key>`, never on one record's page. `history = true` (with `when` a non-private date column,
-  not required) counts each done day the calendar's `history` reads, earlier ones included; no `where` or
-  `group`. Garden's **Jobs done per month** is `when = "done_on"`, `history = true`, `by = ["month", "week"]`.
+- **Decision 0128** adds three things. Leaving out `per` (and `subject`) gives one chart of the whole list,
+  linked from the module's card on Home and from the list, never on a record's page. `group = "item.category"`
+  gives each choice of the linked record its own bars. `amount` may be a `money` column (shown with two
+  decimals, its currency as the unit) or a private one: a private amount is counted until a pressed Show (a
+  POST, never an address; after it, the period links are pressed buttons too), and only then added up.
+  `missing = "price"` names what an entry without an amount lacks ("1 Stock in has no price").
+- **Done days from history** (decision 0129): `history = true` (with `when` a non-private date column, not
+  required) counts each done day the calendar's `history` reads, earlier ones included; `measure = "count"`,
+  no `where` or `group`. A whole-list chart is also shown under the table's own calendar. Garden's **Jobs done
+  per month** is a whole-list chart with `when = "done_on"`, `history = true`, `by = ["month", "week"]`.
+
+### 5.13a A confirmed purchase price (decision 0128)
+
+```toml
+[tables.movements.price]
+paid = "price"              # money, private, travels = "never": what the person typed
+basis = "price_basis"       # a private choice of exactly "total" (for these goods) and "each" (for each one)
+total = "paid_total"        # money, private: the line total, worked out on every save (price, or price x amount)
+currency = "currency"       # private text: a three-letter code, from Settings when left blank, never guessed
+amount = "amount"           # the bought amount a price for each one is multiplied by
+only = { reason = "bought" }  # only these records may carry a price
+only_words = "can only be saved on a Stock in that was bought or added. A Stock out never takes money off."
+```
+
+- A price without its basis, on a record outside `only`, or with no currency known is refused with every other
+  problem, and nothing is saved. Without a price, the basis, line total and currency are cleared.
+- The four columns are private, so a helper, a spreadsheet import, a list, a sheet, the export and the change
+  log's values never carry them; they stay in local backups. A receipt's price on Review stays checking text
+  (0097): nothing copies it into a price.
 
 ### 5.14 One timeline on a record's page (decision 0126)
 
@@ -737,6 +761,8 @@ entry = ["weigh-in", "weigh-ins"]
 words = "{weight}"          # optional: a short text with {column} names, never a private column
 look = "measured"           # recorded (●), done (✓), measured (◆) or visit (■): a symbol beside the words
 change = "weight"           # optional: a number column with its own unit; "up 0.3 kg since 2 Oct, from ..."
+# change_unit = "unit"      # optional (0130): the choice column that says each entry's unit, for a change between
+#                           # two entries in the same unit only; per = "service.vehicle" may cross a module link
 # summarise = "day"         # optional: one line a day, "3 feedings recorded on Tue 24 Nov"; a private table must
 ```
 
@@ -747,6 +773,10 @@ change = "weight"           # optional: a number column with its own unit; "up 0
 - A private table (0121) must summarise by day and may not use `change`: before Show a day says only how many;
   **Show** is a POST with the session check that adds each entry's time and `words` (a private table's link shows
   its `link_rule` words), on that page only. A private column is never in `words`, so an amount never appears.
+- Decision 0130 adds the vehicle (readings with their change in the same unit, estimates without any private value),
+  a Home care job (work done) and a routine (done or skipped). After Show a dose reads in the medicine's own words
+  with no id; only two medicines with the same words get "(1 of 2 with the same words)". `words` with every
+  `{column}` empty says nothing.
 
 ## 6. Modules
 
@@ -1063,11 +1093,15 @@ number and the core can load both for a transition period.
   declared `bars` list counts entries or adds one number column in one unit
   per day, week or month; Pet feeding (food put out), Routines (times done)
   and Medicine doses (counted, each medicine only after Show) use it.
+  **Spent per month (decision 0128, section 5.13a):** Household stock adds
+  up the prices people typed on a bought Stock in, in one currency at a time,
+  overall and for each category, after a pressed Show.
   **One timeline (decision 0126, section 5.14):** a record's page ends with
   what happened, newest first, from each table's `timeline` declaration;
   Pets (weigh-ins with the change since the one before, vet visits,
   treatments given), Pet feeding (one line a day) and Medicine doses (how
-  many a day, the medicine only after Show) use it.
+  many a day, the medicine only after Show) use it; decision 0130 adds Vehicle running log (readings, estimates),
+  Home care (work done) and Routines (done or skipped).
   Annotations and saved chart settings are still to come; a charting library
   (0004) may return for those.
 - **Analysis** (module, section 10.3).
