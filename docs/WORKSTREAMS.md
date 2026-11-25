@@ -733,8 +733,10 @@ Built on 24 and 25 November: colour-coded month calendars and weight trends
 Show, with a dose calendar (0121), calendars for Home care, Garden, Vehicles
 and Bills (0122), the remaining private-list fixes (0123) and bar charts of
 how often and how much (0124). Lane A is now building the remaining
-calendars (0125), a timeline on each pet's and person's page (0126) and
-phone-width and wording fixes from your reports (0127). User 1's priority is
+calendars (0125), a timeline on each pet's and person's page (0126),
+phone-width and wording fixes from your reports (0127), confirmed purchase
+prices with spending bars (0128), earlier done days (0129) and more
+timelines (0130). User 1's priority is
 seeing results visually: pets' weights, medication, colour-coded calendars.
 
 106. **Calendars, checked.** Once 0122 is on `main`, walk every calendar
@@ -756,10 +758,11 @@ seeing results visually: pets' weights, medication, colour-coded calendars.
     desktop: weigh-ins with change words, feedings summed per day, doses
     naming nothing before Show, paging, empty states, print. Then say what
     vet or doctor visit records a household would add to it. Worst first.
-110. **Spending over time, designed.** From your purchase prices draft
-    (item 92), the smallest confirmed-purchase record that would allow a
-    monthly spend chart by category, which amounts stay on the computer
-    they were typed on, refunds, and the exact chart words.
+110. **Spending, checked.** Once 0128 is on `main`, check confirmed
+    purchase prices and the "Spent per month" bars in all three households:
+    which amounts stay on the computer they were typed on, refunds, months
+    with no prices, a price never taken silently from a receipt, and the
+    words at 320px. Worst first, exact words.
 111. **State rows for every Australian state and territory.** Your
     Queensland sources (item 101) are one state. Give the same sourced,
     dated rows for each other state and territory (fire service, SES or
