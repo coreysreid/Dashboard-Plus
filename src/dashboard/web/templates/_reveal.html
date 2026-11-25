@@ -1,0 +1,5 @@
+{# The Show button for one private detail (decision 0123). It belongs to the one hidden form in base.html, which holds
+   the page's session token, so it POSTs even inside another form and works without a page script. #}
+{% macro show(url, column, label, kind="cell", field=None, text="Show") -%}
+<button type="submit" form="reveal-form" formmethod="post" formaction="{{ url }}" name="column" value="{{ column }}" class="quiet{% if kind == 'cell' %} secret{% endif %}" {% if kind == "cell" %}data-reveal{% else %}data-reveal-field data-field="{{ field }}"{% endif %} aria-label="{{ label }}">{{ text }}</button>
+{%- endmacro %}

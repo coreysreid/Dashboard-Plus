@@ -1,6 +1,6 @@
 {% extends "base.html" %}
 {% block title %}{{ scenario.title }}: your practice · Dashboard Plus{% endblock %}
-{% block body %}
+{% block body %}{% from "_reveal.html" import show as reveal_button %}
 <p class="muted"><a href="/">Home</a> · <a href="/drills/{{ module }}">Think it through</a> · <a href="/drills/{{ module }}/{{ scenario.id }}">{{ scenario.title }}</a></p>
 <h1>{{ scenario.title }}: your practice</h1>
 {% if saved and run.status == "practised" %}<p class="notice" role="status">Practised on {{ show_date(run.practised_on) }} · Look again on {{ show_date(run.review_on) }}</p>{% endif %}
@@ -17,7 +17,7 @@
   {% for r in rows %}
   <li><strong>{{ r.step.question }}</strong><br>
     {% if r.answer %}{{ choice_words[r.answer.choice] }}{% if r.answer.record %}, using one of your records{% endif %}.
-    {% if r.answer.has_words %}Your own words: <button type="button" class="quiet secret" data-reveal="/t/{{ steps_table }}/{{ r.answer.id }}/reveal?column=own_words" aria-label="Show your words for step {{ r.number }}">Show</button>{% endif %}
+    {% if r.answer.has_words %}Your own words: {{ reveal_button("/t/"~steps_table~"/"~r.answer.id~"/reveal", "own_words", "Show your words for step "~r.number) }}{% endif %}
     {% else %}<span class="muted">Not answered yet.</span>{% endif %}
     {% if run.status == "in_progress" %}<a href="/drills/{{ module }}/{{ scenario.id }}/runs/{{ run.id }}/{{ r.number }}">{% if r.answer %}Change{% else %}Answer{% endif %}</a>{% endif %}
     {% if r.changed %}<br><span class="notice-inline">{{ changed_words }}</span>{% endif %}

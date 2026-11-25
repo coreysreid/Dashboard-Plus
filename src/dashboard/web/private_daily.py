@@ -80,25 +80,12 @@ def line(store, info: records.TableInfo, row: dict, formatter: display.Formatter
 
 
 def add_link(store: records.Records, info: records.TableInfo, subject_id: int) -> str:
-    """Record a dose: the person, the household's time now, and the medicine and giver of the last entry if they
-    still fit, shown on the form for checking. The amount is never copied from an earlier entry."""
+    """Record a dose: only the person whose page this is and the household's time now (decision 0123). The medicine and
+    the giver of an earlier entry are never copied into the address or the form, so a link, history or log holds
+    neither; they are chosen on the form each time."""
     from dashboard.web.daily_pages import _now
     rule = info.table.daily
-    args: dict = {}
-    columns = [c.name for c in _links(info)] + ([rule["group"]] if rule.get("group") else [])
-    last = daily.recent_choices(store.conn, info, subject_id, columns, limit=1) if columns else []
-    fits = {r["id"] for r in group_rows(store, info, subject_id)}
-    if last:
-        for name, value in last[0].items():
-            if value in (None, "") or (name == rule.get("group") and value not in fits):
-                continue
-            args[name] = value
-        if args:
-            args["from"] = "last"
-    if rule.get("group") and rule["group"] not in args and len(fits) == 1:
-        args[rule["group"]] = next(iter(fits))  # the person's only medication detail, still shown for checking
-    args[rule["when"]] = daily.now_text(store.conn, _now())
-    args[rule["per"]] = subject_id
+    args = {rule["when"]: daily.now_text(store.conn, _now()), rule["per"]: subject_id}
     return f"/t/{info.name}/new?{urlencode(args)}"
 
 
@@ -126,7 +113,8 @@ def view(store: records.Records, info: records.TableInfo, subject_id: int, day: 
     style = dates.household_style(store.conn)
     formatter = display.Formatter(store)
     subject_info = _subject_info(store, info)
-    name = display.display_name(subject_info, store.get(subject_info.name, subject_id), store)
+    name = (display.display_name(subject_info, store.get(subject_info.name, subject_id), store) if show
+            else "this person")  # names wait for Show (decision 0123)
     result = daily.days(store.conn, info, subject_id, day, day, zone)[0]
     rows = [{"href": f"/t/{info.name}/{e['id']}", "line": line(store, info, e, formatter, show)}
             for e in result.entries]
@@ -154,7 +142,7 @@ def view(store: records.Records, info: records.TableInfo, subject_id: int, day: 
             "before": before, "after": after if after <= today else None,
             "add": add_link(store, info, subject_id), "first_add": first_add(store, info, subject_id),
             "picks": [], "sheet": None, "list": f"/t/{info.name}",
-            "subject_href": f"/t/{subject_info.name}/{subject_id}",
+            "subject_href": f"/t/{subject_info.name}/{subject_id}", "name_hidden": not show,
             "entry_one": rule["entry"][0], "entry_many": rule["entry"][1],
             "calendar": (f"/calendar/{info.name}?" + urlencode({"subject": subject_id, "month": day[:7]})
                          if info.table.calendar else None)}  # the month around this day, counts only (0121)

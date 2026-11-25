@@ -124,6 +124,12 @@ def display_name(info: TableInfo, row: dict, records: Records | None = None) -> 
     return str(value) if value not in (None, "") else f"{table_title(info)} #{row['id']}"
 
 
+def private_subject_name(info: TableInfo, column: Column, subject_id: int) -> str:
+    """Who a private log or calendar is for, before Show: only the kind and number, "Recipient #3", never the
+    person's name (decision 0123). `column` is the link that points at the person."""
+    return f"{column_label(info, column)} #{subject_id}"
+
+
 def money_text(cents) -> str:
     return f"{Decimal(int(cents)) / 100:,.2f}"
 
@@ -245,6 +251,7 @@ class Field:
     # A link with `shows` in its link_rule (decision 0120): where to fetch the chosen record's private detail when
     # the person presses Show ("{id}" is replaced by the chosen record), never sent with the page.
     reveal_link: str | None = None
+    reveal_column: str | None = None
     add_first: tuple[str, str] | None = None  # for an empty link list: (where to add one, what they are called)
     # An optional link (decision 0115): `hidden_link` when its module is off, so there is no picker and the saved
     # value is kept as it is; `note` is the household's sentence beside it, such as the repair words.
@@ -450,8 +457,8 @@ def build_fields(records: Records, info: TableInfo, values: dict, errors: dict, 
             field.things = table_title(formatter.target(info, column)).lower() if not column.link_rule \
                 else column_label(info, column).lower()
         if column.type == "link" and column.link_rule.get("shows"):
-            field.reveal_link = (f"/t/{formatter.target(info, column).name}/{{id}}/reveal?column="
-                                 f"{column.link_rule['shows']}")
+            field.reveal_link = f"/t/{formatter.target(info, column).name}/{{id}}/reveal"
+            field.reveal_column = column.link_rule["shows"]
         own_blank = _labels(info).get("columns", {}).get(column.name, {}).get("blank")
         if isinstance(own_blank, str):  # "I do not know" for an optional link (decision 0120)
             field.blank = own_blank

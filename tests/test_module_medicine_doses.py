@@ -154,7 +154,7 @@ class SamePersonAndKindTests(DoseTestCase):
         self.assertNotIn(f'value="{self.allergy}"', select)
         for words in (SECRET, "Invented eye drops", "Invented inhaler"):
             self.assertNotIn(words, form)
-        self.assertIn(f'data-reveal-link="/t/{INFO}/{{id}}/reveal?column=detail"', form)
+        self.assertIn(f'data-reveal-link="/t/{INFO}/{{id}}/reveal" data-column="detail"', form)
         self.assertIn('<option value="">I do not know</option>', form)
 
 
@@ -198,7 +198,7 @@ class PrivacyTests(DoseTestCase):
         shown = self.post(client, f"/daily/{TABLE}", subject=str(self.rosa)).get_data(as_text=True)  # pressed Show
         self.assertIn(SECRET, shown)
         self.assertIn("7.25 drops", shown)
-        reveal = client.get(f"/t/{TABLE}/{entry}/reveal?column=amount", base_url=BASE).get_json()
+        reveal = client.post(f"/t/{TABLE}/{entry}/reveal", data={"column": "amount", "_csrf": client.application.config["CSRF_TOKEN"]}, base_url=BASE, headers={"Accept": "application/json"}).get_json()
         self.assertEqual(reveal["value"], AMOUNT)
         data = export.build(self.conn, self.registry, __version__)
         with zipfile.ZipFile(io.BytesIO(data)) as archive:
@@ -291,7 +291,7 @@ class DayAndRepeatTests(DoseTestCase):
                          given_at="2026-11-20T12:00", given_by="")
         self.assertEqual(edit.status_code, 302)  # changing an entry never matches itself
 
-    def test_record_a_dose_fills_in_the_last_medicine_and_giver_but_never_the_amount(self):
+    def test_record_a_dose_link_carries_only_the_person_and_the_time(self):
         client = self.client()
         page = self.page(f"/t/people__people/{self.rosa}", client)
         self.assertIn("Medicine given today", page)
@@ -307,10 +307,9 @@ class DayAndRepeatTests(DoseTestCase):
         self.assertNotIn(AMOUNT, page)
         link = re.search(r'href="([^"]+)" data-add-entry>Record a dose<', page).group(1).replace("&amp;", "&")
         args = {k: v[0] for k, v in parse_qs(urlparse(link).query).items()}
-        self.assertEqual(args, {"recipient": str(self.rosa), "medication": str(self.med), "given_by": str(self.maria),
-                                "given_at": "2026-11-20T12:00", "from": "last"})
+        self.assertEqual(args, {"recipient": str(self.rosa), "given_at": "2026-11-20T12:00"})  # nothing private (0123)
         form = self.page(link, client)
-        self.assertIn("Filled in from a recent entry. Check each answer before you save.", form)
+        self.assertNotIn("Filled in from a recent entry", form)
         self.assertNotIn(AMOUNT, form)
         self.assertIn(f'name="back" value="/t/people__people/{self.rosa}"', form)  # Save goes back to Rosa
         self.assertNotIn("Medicine given today", self.page(f"/t/people__people/{self.maria}", client))  # no medicine

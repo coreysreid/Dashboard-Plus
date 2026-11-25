@@ -101,8 +101,11 @@ class Words:
             return f"{'Due, not recorded as done yet' if look == 'due' else 'Planned'}: {n}"
         return f"{self.labels[look]}: {n}"
 
-    def subject(self, subject_id: int) -> str:
+    def subject(self, subject_id: int, hidden: bool = False) -> str:
+        """Who the calendar is for. On a private table before Show it is only "this person" (decision 0123)."""
         column = self.info.table.columns[self.rule["per"]]
+        if hidden:
+            return "this person"
         return self.formatter.text(self.info, column, subject_id)
 
     def item(self, mark: calendars.Mark, today: date, style: str) -> dict:
@@ -155,7 +158,7 @@ def month_view(store: records.Records, info, year: int, month: int, today: date,
     first_day = week_start(store.conn)
     found = calendars.month(store.conn, store.registry, info, year, month, today, first_day, subject_id)
     cal_id = f"cal-{info.name}" + (f"-{subject_id}" if subject_id is not None else "")
-    name = words.subject(subject_id) if subject_id is not None else None
+    name = words.subject(subject_id, private and not show) if subject_id is not None else None
     totals_by_day = {}
     lines = _private_lines(store, info, subject_id, found.days[0].day, found.days[-1].day) if private and show else {}
     if not private and info.table.daily and subject_id is not None and rule["show"] == "one" and info.table.daily["per"] == rule["per"]:
@@ -230,7 +233,8 @@ def month_view(store: records.Records, info, year: int, month: int, today: date,
             "full": full_href, "private": private, "show": show, "private_words": PRIVATE_WORDS,
             "show_action": show_action if private else None, "subject_id": subject_id,
             "month": f"{year:04d}-{month:02d}",
-            "hide": link(year, month) if private and show and link else None}
+            "hide": link(year, month) if private and show and link else None,
+            "name_hidden": bool(private and not show and name)}
 
 
 def _href(path: str, **args):
@@ -294,8 +298,12 @@ def _calendar_page(table, show: bool):
     year, month = chosen_month(request.values.get("month"), today)
     rows = [dict(r) for r in store.conn.execute(f"SELECT * FROM {subject_info.name} WHERE deleted_at IS NULL "
                                                  f"ORDER BY id")]
-    subjects = sorted(({"id": r["id"], "name": display.display_name(subject_info, r, store)} for r in rows
-                       if _applies(store, info, r["id"])), key=lambda s: (s["name"].lower(), s["id"]))
+    hidden = info.table.private and not show  # names wait for Show, so the people are listed by number (0123)
+    per = info.table.columns[rule["per"]]
+    subjects = sorted(({"id": r["id"], "name": display.private_subject_name(info, per, r["id"]) if hidden
+                        else display.display_name(subject_info, r, store)} for r in rows
+                       if _applies(store, info, r["id"])),
+                      key=lambda s: (s["id"],) if hidden else (s["name"].lower(), s["id"]))
     wanted = request.values.get("subject", type=int)
     chosen = next((s for s in subjects if s["id"] == wanted), None)
     if rule["show"] == "one" and chosen is None:

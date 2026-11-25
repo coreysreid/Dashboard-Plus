@@ -78,8 +78,8 @@ this.
 - The calendar, the day page and the person's page still name the person whose calendar it is (it is their page),
   and the person chooser shows who has medication details, as Dose history already did.
 - The **Record a dose** link on a person's page carries the last giver's and medicine's record numbers (not their
-  names), and the form it opens shows them chosen; that form is opened on purpose to add a dose.
-- The reveal address for a private cell (0059) is still a fetch, not a POST, as for every other private detail.
+  names), and the form it opens shows them chosen (stopped by 0123); that form is opened on purpose to add a dose.
+- The reveal address for a private cell (0059) was still a fetch, not a POST (changed to a POST by 0123).
 - The Backups preview still counts a private list's rows; backups hold everything, as before.
 
 ## How hard it is to undo

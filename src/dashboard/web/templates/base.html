@@ -159,17 +159,22 @@
     {% block body %}{% endblock %}
   </main>
   <footer>Runs on this computer only. Dashboard Plus itself sends nothing anywhere; a helper you connect sees only what you tick. Version {{ version }}.</footer>
+<form id="reveal-form" method="post" hidden><input type="hidden" name="_csrf" value="{{ csrf_token }}"></form>
 <script>
-  // Private details are never in the page; "Show" fetches just the one asked for (privacy audit, decision 0059).
+  // Private details are never in the page; "Show" asks for just the one wanted, by a POST with this page's session
+  // token (decisions 0059 and 0123). Without this script the same button submits the form and opens a small page.
   document.addEventListener("click", function (event) {
     var button = event.target.closest("[data-reveal], [data-reveal-field]");
-    if (!button) return;
-    var url = button.dataset.reveal || button.dataset.revealField;
-    fetch(url, {credentials: "same-origin"}).then(function (r) { return r.ok ? r.json() : null; }).then(function (found) {
+    if (!button || !window.fetch || !window.FormData) return;
+    event.preventDefault();
+    var data = new FormData(document.getElementById("reveal-form"));
+    data.set("column", button.value);
+    fetch(button.getAttribute("formaction"), {method: "POST", body: data, credentials: "same-origin",
+      headers: {"Accept": "application/json"}}).then(function (r) { return r.ok ? r.json() : null; }).then(function (found) {
       if (!found) return;
-      if (button.dataset.reveal) {
-        var span = document.createElement("span"); span.textContent = found.text;
-        button.replaceWith(span);
+      if (button.hasAttribute("data-reveal")) {
+        var span = document.createElement("span"); span.textContent = found.text; span.tabIndex = -1;
+        button.replaceWith(span); span.focus();
         return;
       }
       var id = button.dataset.field, field = document.getElementById(id);

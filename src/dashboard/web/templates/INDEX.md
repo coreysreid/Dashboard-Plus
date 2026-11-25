@@ -11,6 +11,8 @@
 | import.html | Import from a spreadsheet: choose a list and file, match columns, see which rows are ready, send to Review | changing the import wording |
 | grid.html | A table's records, a page at a time, sortable; a private table's only a count until a pressed Show (0121) | changing the list of records |
 | private_record.html | One record of a private table (0121), such as a medicine dose, before Show: its number, "Private history — press Show to see it." and the Show button | changing what a private record shows before Show |
+| reveal.html | One private detail after a pressed Show without a page script (0123), never cached | changing the no-script Show page |
+| _reveal.html | The Show button for one private detail: a submit button joined to the hidden form in base.html (0123) | changing how Show buttons are made |
 | rows.html | One page of grid rows (also loaded as you scroll) | changing a row |
 | form.html | Add and edit forms, delete and restore, and history | changing the form |
 | action_form.html | An action's small form, such as Mark done: what it asks, the next-date choice, Save once | changing the Mark done wording |

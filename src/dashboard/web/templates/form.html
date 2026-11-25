@@ -1,6 +1,6 @@
 {% extends "base.html" %}
 {% block title %}{{ title }} · Dashboard Plus{% endblock %}
-{% block body %}
+{% block body %}{% from "_reveal.html" import show as reveal_button %}
 <p class="muted"><a href="/">Home</a> · <a href="/t/{{ info.name }}">{{ title }}</a></p>
 {% if record %}
 <h1>{{ record_name }}{% if record.deleted_at %} <span class="muted">(deleted)</span>{% endif %}</h1>
@@ -128,7 +128,7 @@
   {% for r in u.rows %}
   <tr>
     <td data-label="Record"><a href="{{ r.href }}">{{ r.name }}</a></td>
-    {% for cell in r.cells %}<td data-label="{{ cell.label }}">{% if cell.sensitive %}{% if cell.saved %}<button type="button" class="quiet secret" data-reveal="/t/{{ u.table }}/{{ r.id }}/reveal?column={{ cell.column }}" aria-label="Show {{ cell.label | lower }} for {{ r.name }}">Show</button>{% endif %}{% else %}{{ cell.text }}{% endif %}</td>{% endfor %}
+    {% for cell in r.cells %}<td data-label="{{ cell.label }}">{% if cell.sensitive %}{% if cell.saved %}{{ reveal_button("/t/"~u.table~"/"~r.id~"/reveal", cell.column, "Show "~(cell.label|lower)~" for "~r.name) }}{% endif %}{% else %}{{ cell.text }}{% endif %}</td>{% endfor %}
   </tr>
   {% endfor %}
   </tbody>
