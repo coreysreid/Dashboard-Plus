@@ -1010,10 +1010,13 @@ def _check_calendar(file: str, module: str, table: Table, tables: dict[str, Tabl
         problems.append(f"{where}: 'history' is only for a calendar of a table's own records (no 'per') whose 'when' "
                         f"date says when each was last done. Here every entry is already its own record.")
     when, per =(table.columns.get(raw.get(k)) if isinstance(raw.get(k), str) else None for k in ("when", "per"))
-    if when is None or when.type not in ("date", "datetime") or not when.required:
-        problems.append(f"{where}: 'when' must name a required date or date-and-time column of this table.")
-    if per is None or per.type != "link" or not per.required:
-        problems.append(f"{where}: 'per' must name a required link column, so each mark belongs to one record.")
+    # A calendar is on the page before any Show, so its date and its link are never private ones (decision 0134).
+    if when is None or when.type not in ("date", "datetime") or not when.required or when.sensitive:
+        problems.append(f"{where}: 'when' must name a required date or date-and-time column of this table that is "
+                        f"not private.")
+    if per is None or per.type != "link" or not per.required or per.sensitive:
+        problems.append(f"{where}: 'per' must name a required link column that is not private, so each mark "
+                        f"belongs to one record.")
     if raw.get("show") not in CALENDAR_SHOW:
         problems.append(f"{where}: 'show' must be \"one\" (one record's month at a time, like one pet) or \"all\" "
                         f"(every record together, like all routines), not {raw.get('show')!r}.")
@@ -1190,14 +1193,15 @@ def _check_bars(file: str, table: Table, tables: dict[str, Table], raw, problems
             if rule.get("measure") != "count" or "where" in rule or "group" in rule or table.private:
                 problems.append(f"{where}: with history = true the bars count done days only: measure = \"count\", "
                                 f"no 'where' or 'group', and not on a private table.")
-        elif when is None or when.type not in ("date", "datetime") or not when.required:
-            problems.append(f"{where}: 'when' must name a required date or date-and-time column of this table.")
+        elif when is None or when.type not in ("date", "datetime") or not when.required or when.sensitive:
+            problems.append(f"{where}: 'when' must name a required date or date-and-time column of this table "
+                            f"that is not private.")
         whole = "per" not in rule  # one chart of the whole list, like a household's spending (decision 0128)
         if whole and table.private:
             problems.append(f"{where}: a private table's bars need 'per', so each chart shows one person.")
-        elif not whole and (per is None or per.type != "link" or not per.required):
-            problems.append(f"{where}: 'per' must name a required link column, so each chart shows one subject, "
-                            f"or be left out for one chart of the whole list.")
+        elif not whole and (per is None or per.type != "link" or not per.required or per.sensitive):
+            problems.append(f"{where}: 'per' must name a required link column that is not private, so each chart "
+                            f"shows one subject, or be left out for one chart of the whole list.")
         measure = rule.get("measure")
         if measure not in BARS_MEASURES:
             problems.append(f"{where}: 'measure' must be \"count\" (how many entries) or \"sum\" (one number column "
@@ -1252,9 +1256,10 @@ def _check_bars(file: str, table: Table, tables: dict[str, Table], raw, problems
                 through = {"link": first, "table": link.to, "column": second}
         elif group is not None and (not isinstance(group, str) or group not in table.columns
                                     or table.columns[group].type != "link" or not table.columns[group].required
-                                    or group == rule.get("per")):
-            problems.append(f"{where}: 'group' must name another required link column, whose records each get "
-                            f"their own bars, like group = \"medication\", or a choice of the linked record, "
+                                    or table.columns[group].sensitive or group == rule.get("per")):
+            problems.append(f"{where}: 'group' must name another required link column that is not private, whose "
+                            f"records each get their own bars, like group = \"medication\", or a choice of the "
+                            f"linked record, "
                             f"like group = \"item.category\".")
         by = rule.get("by")
         if not (isinstance(by, list) and by and all(isinstance(b, str) and b in BARS_BY for b in by)
@@ -1310,14 +1315,16 @@ def _check_timeline(file: str, module: str, table: Table, tables: dict[str, Tabl
     problems.extend(_unknown_keys(where, raw, TIMELINE_KEYS))
     before = len(problems)
     when = table.columns.get(raw.get("when")) if isinstance(raw.get("when"), str) else None
-    if when is None or when.type not in ("date", "datetime") or not when.required:
-        problems.append(f"{where}: 'when' must name a required date or date-and-time column of this table.")
+    if when is None or when.type not in ("date", "datetime") or not when.required or when.sensitive:
+        problems.append(f"{where}: 'when' must name a required date or date-and-time column of this table that is "
+                        f"not private.")
     per = raw.get("per")
     first, _, second = per.partition(".") if isinstance(per, str) else ("", "", "")
     link = table.columns.get(first)
-    if link is None or link.type != "link" or not link.required:
-        problems.append(f"{where}: 'per' must name a required link column, so each entry belongs to one record, "
-                        f"like per = \"pet\", or go through one link of this module, like per = \"treatment.pet\".")
+    if link is None or link.type != "link" or not link.required or link.sensitive:
+        problems.append(f"{where}: 'per' must name a required link column that is not private, so each entry "
+                        f"belongs to one record, like per = \"pet\", or go through one link of this module, like "
+                        f"per = \"treatment.pet\".")
     elif second:
         other, _, name = link.to.partition(".") if "." in link.to else (module, ".", link.to)
         hop = tables.get(name) if other == module else None

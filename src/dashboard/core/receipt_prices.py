@@ -72,7 +72,8 @@ def check(conn, registry: dict, proposal_id: int, price: dict) -> None:
 def keep_reason(conn, proposal_id: int, info, problems: dict[str, str]) -> None:
     """Write why the price was not saved on the waiting row, so the person sees it where they typed it. Nothing is
     added and the row keeps waiting."""
-    reason = "Nothing was added: the price was not saved. " + words(info, problems) + " Check it, or leave it blank."
+    # A helper reading its batch sees only that the row still waits (proposals.PRICE_NOT_SAVED, decision 0134).
+    reason = f"{proposals.PRICE_NOT_SAVED} " + words(info, problems) + " Check it, or leave it blank."
     with db.transaction(conn):
         conn.execute("UPDATE core__proposals SET reason = ? WHERE id = ? AND status = 'pending'",
                      (reason, proposal_id))
