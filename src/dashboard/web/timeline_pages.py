@@ -136,7 +136,7 @@ def _line(store: records.Records, formatter: display.Formatter, item: timeline.I
     if rule.get("change"):
         line["change"] = change_since(info, rule, item, style)
     line["href"], line["link_words"] = f"/t/{info.name}/{row['id']}", "Open"
-    line["label"] = f"Open this {one}, {_short_day(item.day, style)}"
+    line["label"] = f"Open this {one}, {line['when']}" + (f": {line['words']}" if line["words"] and not info.table.private else "")  # 0135: the time and words tell two on one day apart
     return line
 
 

@@ -24,7 +24,7 @@
   <tr id="{{ view.chart_id }}-row-{{ r.id }}">
     <td data-label="{{ view.x_label }}">{{ r.day }}{% if r.same %} <span class="muted">({{ r.same }})</span>{% endif %}</td>
     <td data-label="{{ view.y_label }}">{{ r.value }}</td>
-    <td data-label="Record"><a href="{{ r.href }}">Open this {{ view.entry_one }}</a>{% if r.mark %} <span class="muted">· {{ r.mark }}</span>{% endif %}</td>
+    <td data-label="Record"><a href="{{ r.href }}" aria-label="Open this {{ view.entry_one }}, {{ r.day }}, {{ r.value }}">Open this {{ view.entry_one }}</a>{% if r.mark %} <span class="muted">· {{ r.mark }}</span>{% endif %}</td>
   </tr>
   {% endfor %}
   </tbody>

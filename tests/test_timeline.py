@@ -185,7 +185,7 @@ class PetTimelineTests(TimelineTestCase):
             self.assertIn(f'<span class="tl-mark tl-{look}" aria-hidden="true">{symbol}</span>', part)
         self.assertNotIn("<script", part)
         self.assertIn(f'href="/daily/{FEED}?subject={self.rex}&amp;day=2026-11-24"', part)
-        self.assertIn('aria-label="Open this weigh-in, Tue 24 Nov"', part)
+        self.assertRegex(part, r'aria-label="Open this weigh-in, Tue 24 Nov[^"]*"')
         self.assertNotIn("missed", part.lower().replace("it does not mean anything was missed", ""))
 
     def test_a_pet_with_nothing_recorded_says_so(self):

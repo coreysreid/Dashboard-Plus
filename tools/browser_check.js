@@ -864,6 +864,7 @@ function expect(condition, message) { if (!condition) throw new Failed(message);
     // calendar and Jobs done per month (decision 0129) so they are checked wherever Garden is on (a 404 is skipped)
     const queue = ['/', '/to-do/year', '/calendar/garden__jobs', '/bars/garden__jobs/done'];
     const wide = [];
+    const repeated = [];
     while (queue.length && seen.size < plan.widths) {
       const path = queue.shift();
       if (seen.has(path)) continue;
@@ -872,10 +873,21 @@ function expect(condition, message) { if (!condition) throw new Failed(message);
       if (!response || !response.ok() || !(response.headers()['content-type'] || '').includes('html')) continue;
       const width = await page.evaluate(() => document.documentElement.scrollWidth);
       if (width > 320) wide.push(`${path} (${width}px)`);
+      // Decision 0135: a generic link word (Look at this, Fill this in, Open, See this day) must not lead to two places under one name.
+      const same = await page.evaluate(() => {
+        const names = {};
+        for (const a of document.querySelectorAll('a[href]')) {
+          const n = (a.getAttribute('aria-label') || a.textContent).replace(/\s+/g, ' ').trim();
+          if (/^(Look at this|Fill this in|Open|See this day|Open this .*|Add to .*)$/.test(n)) (names[n] ||= new Set()).add(a.getAttribute('href'));
+        }
+        return Object.entries(names).filter(([, hrefs]) => hrefs.size > 1).map(([n]) => n);
+      });
+      if (same.length) repeated.push(`${path}: ${same.join(', ')}`);
       const links = await page.evaluate(() => [...document.querySelectorAll('a[href^="/"]')].map((a) => a.getAttribute('href').split('#')[0]));
       for (const link of links) if (!seen.has(link) && !skip.test(link)) queue.push(link);
     }
     expect(!wide.length, `At 320px these pages are wider than the screen: ${wide.join(', ')}.`);
+    expect(!repeated.length, `The same link words lead to different places (a screen reader hears them alike): ${repeated.join('; ')}.`);
     expect(seen.has('/to-do/year'), 'The 320px sweep should have reached Things to do, This year.');
     await page.setViewportSize({ width: 1280, height: 900 });
     ok(`${plan.locale}: ${seen.size} pages fit a 320 pixel phone screen`);
