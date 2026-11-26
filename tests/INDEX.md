@@ -15,6 +15,7 @@ How to run them is in AGENTS.md.
 | test_module_bills_insurance.py | Tests for Bills and insurance (decision 0117): dated bills and policies beside Utilities, private details that never travel, and one reminder per vehicle policy. | changing bills, takes_over, moving a reminder or Transfer back |
 | test_records.py | Tests for saving, checking, linking, deleting and restoring records, and their history. | changing how records are saved |
 | test_schema.py | Tests for turning declared tables into SQL and generating the next migration. | changing table building |
+| test_speed_0136.py | Tests for the speed work (decision 0136): faster reads give exactly the answers the full reads gave, and pages stay within loose query limits. | changing how a timeline, calendar or bars chart reads history |
 | test_startup.py | Tests for preparing the database at start-up with the modules found. | changing start-up |
 | test_check_privacy.py | Tests for the privacy check. | changing privacy rules |
 | test_check_indexes.py | Tests for the index check. | changing index rules |
