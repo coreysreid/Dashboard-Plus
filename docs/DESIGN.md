@@ -1288,7 +1288,7 @@ after a restart (0092), and Settings, Helpers also shows it (decisions 0066 to
 0068, hardened by 0074, with a published description in 0084, a Review queue
 limit in 0085, a check that the address is really Dashboard in 0086, a new
 key for the same helper in 0093, and receipt lines and grouped suggestions in
-0097).
+0097, and the words for the lists added since in 0138).
 
 ### Authentication
 
@@ -1407,6 +1407,20 @@ a Stock in leaves its new item waiting. Imports never carry either.
   grant, per-table scope, a command-line tool, forgetting request keys, refs
   across requests, editing a suggestion on Review, and a receipt batch with
   "Choose item" and "Skip line" for lines a helper could not match.
+
+### What a helper can fill and what it never can (0138)
+
+The guide (`GET /api/v1/guide`), the connector's tool descriptions and `openapi-v1.json` say the same things.
+A helper may suggest into every list whose module allows suggestions and that needs no private, file or
+hidden-link field. Since 0116 that includes pet weigh-ins, feedings, odometer readings, routines and each time one
+was done or skipped, Garden jobs (a job already done takes `done` and `done_on`) and vehicle service estimates
+without their cost; `web/helper_examples.py` holds one invented example and warning for each, and a test sends
+them through the real checks. A list that needs a private detail (money back, important information) or that a
+person answers (readiness) is look only. A private list (medicine doses, 0120) is not visible. Prices, what was
+paid, quotes, bill amounts, money back, codes and account numbers are never for helpers: a send naming one is
+refused with `private_detail`, and the household types it in on its own computer. Calendars, bars and timelines
+are views for a person and have no route. A day is the household's own (0110): a time with no offset is its
+local time, one with an offset an exact moment. Numbers are in the field's unit and never converted (0111).
 
 ### Connecting an AI assistant (MCP)
 

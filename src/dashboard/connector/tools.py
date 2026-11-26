@@ -74,8 +74,11 @@ TOOLS = [
     Tool("dashboard_how_to_help", "How to help",
          "Read this first. A plain guide written for you from this household's lists: which lists this helper may "
          "use, each field and which are required, links to look up first, private fields only the person may type, "
-         "how to add a new Stock item with its starting amount in one entry, how to send, and today's limits. "
-         + REVIEW_NOTE + " It holds no records and never the key. Call again before each batch; its limits and "
+         "how to add a new Stock item with its starting amount in one entry, one invented example for each list with "
+         "its own ways of working (pet weigh-ins, feedings, vehicle odometer readings, a routine's done or skipped "
+         "times, Garden jobs), what is never for helpers (medicines, prices, money back, codes) and that the "
+         "person types those in themselves, how units and the household's own day apply, how to send, and today's "
+         "limits. " + REVIEW_NOTE + " It holds no records and never the key. Call again before each batch; its limits and "
          "grants may have changed since a copied guide.",
          NOTHING, "GET", lambda a: "/guide", about=GUIDE_NOTE),
     Tool("dashboard_me", "Who am I",
@@ -129,7 +132,17 @@ TOOLS = [
          "receipt: ask whether the purchase is already in the starting count before suggesting both. A bought product line you cannot match to a Stock item may be sent as "
          "{\"kind\": \"unmatched_product_line\", \"source\": {\"line\": ...}} with optional receipt_date, "
          "quantity_hint and unit_hint: the person chooses the item and amount on Review. Never send totals, tax, "
-         "discounts, payments or card numbers; say so in your conversation instead.",
+         "discounts, payments or card numbers; say so in your conversation instead. Some things are never for helpers: "
+         "anything about medicines taken or given, prices, what was paid, quotes and bill amounts, money back, "
+         "access codes and account numbers. A send naming a price, money back or another private field is refused "
+         "with private_detail and nothing in it is kept; leave it out, tell the person, and they type it in "
+         "Dashboard Plus on their own computer. A day means the household's own calendar day: a time with no offset "
+         "(2026-11-20T07:15) is the household's local time, and one with an offset is an exact moment. Numbers are "
+         "in the unit the field names (kg, km, g): never convert between units, and send an amount with its "
+         "unit. A suggested routine time does not move the routine's next date, and a Garden job already done "
+         "takes done true and its done_on day (leave the day out if unknown). Review marks a possible repeat "
+         "feeding, but it does not question an odometer reading that is lower than the last or in another unit, so "
+         "read the earlier readings first.",
          {"type": "object", "properties": {
              "request_key": {"type": "string", "minLength": 1, "maxLength": 100, "pattern": "^[A-Za-z0-9._:-]+$"},
              "why": {"type": "string", "minLength": 1, "maxLength": 300},
