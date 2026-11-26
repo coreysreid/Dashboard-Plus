@@ -91,6 +91,9 @@
     .chart-svg .chart-none-text { fill: var(--muted); font-style: italic; }
     .chart-table tr.bars-empty td:nth-child(2) { font-style: italic; color: var(--muted); }
     .bars-table summary { cursor: pointer; color: var(--accent); margin: .4rem 0; }
+    .add-fold { margin: 1rem 0; }  /* many "Add to" buttons folded under one summary (0135) */
+    .add-fold > summary { cursor: pointer; color: var(--accent); margin: .4rem 0; }
+    .add-list { list-style: none; padding: 0; margin: .4rem 0; display: flex; gap: .6rem; flex-wrap: wrap; }
     .panel-fold > summary { cursor: pointer; color: var(--accent); margin: .4rem 0; }  /* a folded panel (0131) */
     @media (max-width: 40rem) {  /* on a phone each row of a chart's table is a card, in the same order */
       .chart-table thead { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); }
@@ -207,7 +210,8 @@
         return;
       }
       var id = button.dataset.field, field = document.getElementById(id);
-      field.value = found.value; field.hidden = false;
+      if (field.type === "checkbox") field.checked = String(found.value) === "1"; else field.value = found.value;
+      field.hidden = false;
       var box = document.getElementById(id + "-box"); if (box) box.hidden = false;
       var keep = document.getElementById(id + "-keep"); if (keep) keep.remove();
       document.getElementById(id + "-closed").remove();

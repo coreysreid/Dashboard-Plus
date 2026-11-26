@@ -2,7 +2,7 @@
 {% block title %}Needs attention · Dashboard Plus
 <h2>Worth filling in</h2>
 {% if gaps %}
-<ul>{% for gap in gaps %}<li>{{ gap.message }} <a href="{{ gap.fix }}">Fill this in</a></li>{% endfor %}</ul>
+<ul>{% for gap in gaps %}<li>{{ gap.message }} <a href="{{ gap.fix }}" aria-label="Fill this in: {{ gap.message }}">Fill this in</a></li>{% endfor %}</ul>
 {% else %}<p class="muted">Nothing obvious is missing.</p>{% endif %}
 {% endblock %}
 {% block body %}
@@ -36,7 +36,7 @@
 
 <h2>Worth filling in</h2>
 {% if gaps %}
-<ul>{% for gap in gaps %}<li>{{ gap.message }} <a href="{{ gap.fix }}">Fill this in</a></li>{% endfor %}</ul>
+<ul>{% for gap in gaps %}<li>{{ gap.message }} <a href="{{ gap.fix }}" aria-label="Fill this in: {{ gap.message }}">Fill this in</a></li>{% endfor %}</ul>
 {% else %}<p class="muted">Nothing obvious is missing.</p>{% endif %}
 
 {% if asked %}

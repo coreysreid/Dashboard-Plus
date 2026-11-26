@@ -68,6 +68,7 @@ class Link:
     solid: bool                 # recorded by the household as a door, doorway or stairs, or a confirmed door out
     outside: bool = False       # a door to outside (whatever its destination)
     exit: bool = False          # a door to outside the household confirmed reaches outside
+    text: str = ""              # the words with the room it is seen from, "Door from Bedroom 2 to Hallway" (0135)
 
 
 @dataclass
@@ -344,6 +345,8 @@ def read(conn: sqlite3.Connection, registry: dict, number: str | None = None) ->
                                           how if solid else f"Other · {NEEDS_CHECKING.lower()}", solid))
             shown.add(c["id"])
     for room in rooms.values():
+        for link in room.links:  # the text version names both ends, so two doors that share a name read differently
+            link.text = link.words.replace(" to ", f" from {room.name} to ", 1)
         room.links.sort(key=lambda l: (not l.outside, (l.other_name or "").lower(), l.id))
         room.notes = _route_notes(rooms, room)
     facts = household(conn)

@@ -166,7 +166,12 @@
 </script>
 {% endif %}
 {% if related %}
+{% if related | length > 4 %}
+<details class="add-fold"><summary>Add something linked to {{ record_name }}…</summary>
+<ul class="add-list">{% for r in related %}<li><a class="button quiet" href="{{ r.href }}">{% if r.words %}{{ r.words }}{% else %}Add to {{ r.label | lower }}{% endif %}</a></li>{% endfor %}</ul></details>
+{% else %}
 <div class="actions">{% for r in related %}<a class="button quiet" href="{{ r.href }}">{% if r.words %}{{ r.words }}{% else %}Add to {{ r.label | lower }}{% endif %}</a>{% endfor %}</div>
+{% endif %}
 {% endif %}
 {% if record %}
 <form method="post" action="/t/{{ info.name }}/{{ record.id }}/delete" onsubmit="return confirm('Delete this record? It can be restored later.');">

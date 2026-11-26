@@ -15,6 +15,7 @@ How to run them is in AGENTS.md.
 | test_module_bills_insurance.py | Tests for Bills and insurance (decision 0117): dated bills and policies beside Utilities, private details that never travel, and one reminder per vehicle policy. | changing bills, takes_over, moving a reminder or Transfer back |
 | test_records.py | Tests for saving, checking, linking, deleting and restoring records, and their history. | changing how records are saved |
 | test_schema.py | Tests for turning declared tables into SQL and generating the next migration. | changing table building |
+| test_speed_0136.py | Tests for the speed work (decision 0136): faster reads give exactly the answers the full reads gave, and pages stay within loose query limits. | changing how a timeline, calendar or bars chart reads history |
 | test_startup.py | Tests for preparing the database at start-up with the modules found. | changing start-up |
 | test_check_privacy.py | Tests for the privacy check. | changing privacy rules |
 | test_check_indexes.py | Tests for the index check. | changing index rules |
@@ -27,6 +28,7 @@ How to run them is in AGENTS.md.
 | test_private_reveal.py | Tests for decision 0123: private calendars name nobody until Show, the Record a dose link copies nothing private, and Show on one private detail is a POST that is never cached. | changing private calendars, the Record a dose link or Show on a private detail |
 | test_bar_charts.py | Tests for bars over time (decision 0124): declarations, periods by the household's own day, one unit at a time, empty periods never missed, the drawing, private doses and modules switched off. | changing a bars chart, its periods, units or private Show |
 | test_refunds_and_review_price.py | Tests for money back on a priced Stock in, a price typed on Review and the read-only line total (decision 0133). | changing refunds, the price on Review or the line total |
+| test_privacy_review_0134.py | Tests for decision 0134: the privacy and security review of decisions 0119-0133, one test per finding fixed and the checks that held. | changing private pages, Show, private form fields, a helper's batch reasons or the calendar, bars and timeline checks |
 | test_purchase_prices.py | Tests for confirmed purchase prices on a Stock in and Spent per month (decision 0128): what a price means, its currency, privacy, the additive migration and the bars. | changing purchase prices, their privacy or the Spent chart |
 | test_calendars_rest.py | Tests for Documents, first aid kit checks, alarm tests and things lent out on the calendar, and Home care bars (decision 0125). | changing one of those calendars or Work done bars |
 | test_timeline.py | Tests for one record's timeline (decision 0126): the declaration, newest first by month, a symbol and words per kind, the change since the weigh-in before, feedings one line a day, Earlier paging, the empty words, modules switched off and private doses before and after Show. | changing a timeline, its declaration, paging or private Show |
@@ -79,3 +81,4 @@ How to run them is in AGENTS.md.
 | test_polish_0127.py | Tests that keep decision 0127's fixes in place: the narrow This year layout, the receipt group words and the Mac read-me words. | changing the This year page, receipt Review words or the Mac read-me |
 | test_receipt_review.py | Tests for receipts on Review (decision 0105): clearer group words, lines a helper could not match, and repeat receipts. | changing receipt lines, Finish receipt review or the repeat-receipt warning |
 | test_visual_tidy_0131.py | Tests for the hands-on visual check of decisions 0119 to 0130: Services done per month, folded bars, one "This month" (decision 0131). | changing the folded bars, the calendar's current-month link or the Add buttons on a record's page |
+| test_accessible_names_0135.py | Tests for decision 0135: link names that include their record, a way-out text that tells two doors apart, and the folded Add buttons. | changing link names, the Add buttons on a record's page or the way-out text |

@@ -136,7 +136,7 @@ def _line(store: records.Records, formatter: display.Formatter, item: timeline.I
     if rule.get("change"):
         line["change"] = change_since(info, rule, item, style)
     line["href"], line["link_words"] = f"/t/{info.name}/{row['id']}", "Open"
-    line["label"] = f"Open this {one}, {_short_day(item.day, style)}"
+    line["label"] = f"Open this {one}, {line['when']}" + (f": {line['words']}" if line["words"] and not info.table.private else "")  # 0135: the time and words tell two on one day apart
     return line
 
 
@@ -149,8 +149,11 @@ def timeline_view(store: records.Records, subject, subject_id: int, before: date
     """One page of a record's timeline: lines newest first under month headings, Earlier as a link, the empty
     words, and for private entries the counts only, until a pressed Show on the full page."""
     style = dates.household_style(store.conn)
-    found = timeline.items(store.conn, store.registry, subject, subject_id)
-    shown, earlier = timeline.page(found, before, timeline.PANEL if panel else timeline.PAGE)
+    limit = timeline.PANEL if panel else timeline.PAGE
+    found, cut = timeline.window(store.conn, store.registry, subject, subject_id, before, limit)
+    shown, earlier = timeline.page(found, before, limit, cut)
+    if not shown and before:  # nothing before that day: is there anything at all? (rare, so read everything)
+        found = timeline.items(store.conn, store.registry, subject, subject_id)
     name = display.display_name(subject, store.get(subject.name, subject_id), store)
     formatter = display.Formatter(store)
     months = []

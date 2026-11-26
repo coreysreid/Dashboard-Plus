@@ -107,7 +107,8 @@ is new: keep a copy of anything important somewhere else too. See
   week or month), in one unit at a time, such as grams or pouches, never added
   together or converted; a routine's page shows **Times done per month**; a
   person's page shows **Doses recorded per week**, every medicine together,
-  with each medicine's own bars only after **Show**. Every bar has its value in
+  with each medicine's own bars only after **Show**; until then the chart says
+  "this person" and its chooser lists people by number. Every bar has its value in
   words and the same values are in a table; a day, week or month with nothing
   written down says "nothing recorded", never "missed", and this week or month
   is striped and says "so far".

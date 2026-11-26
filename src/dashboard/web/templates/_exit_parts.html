@@ -53,7 +53,7 @@
   {% for room in rooms %}
   <li data-room="{{ room.id }}">{% if links %}<a href="/t/{{ f.PLACES }}/{{ room.id }}">{{ room.name }}</a>{% else %}{{ room.name }}{% endif %}{% if room.sleeping %} (sleeping room){% endif %}
     <ul>
-      {% for l in room.links %}<li data-connection="{{ l.id }}">{% if links %}<a href="/t/{{ f.CONNECTIONS }}/{{ l.id }}">{{ l.words }}</a>{% else %}{{ l.words }}{% endif %}.</li>{% endfor %}
+      {% for l in room.links %}<li data-connection="{{ l.id }}">{% if links %}<a href="/t/{{ f.CONNECTIONS }}/{{ l.id }}">{{ l.text }}</a>{% else %}{{ l.text }}{% endif %}.</li>{% endfor %}
       {% if room.window %}<li>{{ f.WINDOW }}.</li>{% endif %}
       {% for n in room.notes %}<li>{{ n }}</li>{% endfor %}
     </ul>

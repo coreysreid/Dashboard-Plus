@@ -24,10 +24,10 @@
   <div class="asked-one">
     <h2 style="margin:.3rem 0">{{ q.prompt.question }}</h2>
     <p class="muted" style="margin:.2rem 0">{{ review_words[q.review_reason] if q.state == "review" else q.prompt.why }}</p>
-    <div class="asked-actions"><a class="button" href="/questions/{{ q.module }}/{{ q.prompt.id }}">Look at this</a>
+    <div class="asked-actions"><a class="button" href="/questions/{{ q.module }}/{{ q.prompt.id }}" aria-label="Look at this: {{ q.prompt.question }}">Look at this</a>
       <form method="post" action="/questions/{{ q.module }}/{{ q.prompt.id }}/not-now">
         <input type="hidden" name="_csrf" value="{{ csrf_token }}"><input type="hidden" name="back" value="/">
-        <button type="submit" class="quiet">Not now</button></form></div>
+        <button type="submit" class="quiet" aria-label="Not now: {{ q.prompt.question }}">Not now</button></form></div>
   </div>
   {% endfor %}
   <p class="muted" style="margin-bottom:0"><a href="/questions/{{ asked[0].module }}">See all the questions</a></p>

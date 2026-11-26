@@ -295,6 +295,8 @@ def _day_page(table, show: bool):
         day = date.fromisoformat(day).isoformat() if day else today
     except ValueError:
         day = today
+    if day < "1900-01-02":
+        day = today  # a day before the calendars' earliest (decision 0119) is not a day anyone recorded (0134)
     day = min(day, today)
     view = day_view(store, info, chosen["id"], day, show=show)
     return render_template("daily.html", title=title, subjects=subjects, chosen=chosen, view=view, table=table,

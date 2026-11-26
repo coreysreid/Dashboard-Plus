@@ -4,7 +4,7 @@ from __future__ import annotations
 import json
 import sqlite3
 from dataclasses import dataclass, field
-from datetime import date, timedelta, tzinfo
+from datetime import datetime, date, timedelta, tzinfo
 
 from dashboard.core import checklist, daily, calendars_corrections, reminder_moves, watch
 from dashboard.core.schema import target_table
@@ -238,7 +238,7 @@ def _as_day(value) -> date | None:
         return None
 
 
-def _history(conn: sqlite3.Connection, info, column: str, zone: tzinfo | None
+def _history(conn: sqlite3.Connection, info, column: str, zone: tzinfo | None, window: tuple[date, date] | None = None
              ) -> tuple[dict[int, set[date]], dict[str, tuple[int, date]]]:
     """One pass over a table's history, in the order it was saved. Returns, for each record, the earlier dates
     `column` held (see `earlier_done`), and each dateless press (a one-step Mark done that did not set `column`)
@@ -247,31 +247,69 @@ def _history(conn: sqlite3.Connection, info, column: str, zone: tzinfo | None
     A press and the date typed after it are one completion when the date is the first one saved after the press,
     while every field the press set still holds the value the press gave it (the job still shows done), and before
     any other press of that record. A field the press set changed on the way (the job ticked not done again) starts
-    a new round, so a date typed then is its own completion and the press keeps its own day."""
-    values: dict[int, list[list]] = {}  # per record: [the date it held, the day it was saved, cleared by an Undo]
+    a new round, so a date typed then is its own completion and the press keeps its own day.
+
+    Each record is read on its own, so with a `window` (the first and last day wanted, decision 0136) a record that
+    never held a date inside it, and was never pressed, is left out: it could not add a day to the window. The
+    answer for every other record is the same as reading everything."""
+    if window is None:
+        return _scan(conn, info, column, zone, None, None)
+    pressed = {r[0] for r in conn.execute("SELECT DISTINCT record_id FROM core__audit WHERE table_name = ? "
+                                          "AND action = 'action'", (info.name,))}
+    held = {r[0] for r in conn.execute(
+        "SELECT DISTINCT record_id FROM core__audit WHERE table_name = ? AND action IN ('create', 'update') "
+        "AND CASE WHEN json_valid(after) THEN substr(json_extract(after, ?), 1, 10) END BETWEEN ? AND ?",
+        (info.name, f'$."{column}"', window[0].isoformat(), window[1].isoformat()))}
+    return _scan(conn, info, column, zone, pressed | held, window)
+
+
+def _scan(conn: sqlite3.Connection, info, column: str, zone: tzinfo | None, only: set[int] | None,
+          window: tuple[date, date] | None) -> tuple[dict[int, set[date]], dict[str, tuple[int, date]]]:
+    """`_history` reading the history lines of the table (only the records in `only`, when given). The date a line
+    saved is read inside the database; a line's whole text is read only for a press, or while a press is waiting
+    for its date. The day a line was saved is worked out only for a date inside `window` (decision 0136)."""
+    values: dict[int, list[list]] = {}  # per record: [the date it held, when it was saved, cleared by an Undo]
     last: dict[int, int | None] = {}  # the value the record's previous history entry saved, if it saved one
     waiting: dict[int, tuple[str, dict]] = {}  # a dateless press per record, until its date is typed
     belongs: dict[str, tuple[int, date]] = {}
-    for row in conn.execute("SELECT record_id, at, action, after FROM core__audit WHERE table_name = ? "
-                            "AND action IN ('create', 'update', 'action', 'undo') ORDER BY id", (info.name,)):
+    path = f'$."{column}"'
+    where, params = "", [path, path, info.name]
+    if only is not None:
+        if not only:
+            return {}, {}
+        where, params = " AND record_id IN (SELECT value FROM json_each(?))", params + [json.dumps(sorted(only))]
+    for row in conn.execute(
+            "SELECT id, record_id, at, action, CASE WHEN action IN ('action', 'undo') THEN after END AS after, "
+            "CASE WHEN json_valid(after) THEN json_type(after, ?) END AS kind, "
+            "CASE WHEN json_valid(after) THEN json_extract(after, ?) END AS value FROM core__audit "
+            f"WHERE table_name = ? AND action IN ('create', 'update', 'action', 'undo'){where} ORDER BY id", params):
         record_id, action = row["record_id"], row["action"]
-        try:
-            after = json.loads(row["after"]) if row["after"] else {}
-        except ValueError:
-            after = {}
-        after = after if isinstance(after, dict) else {}
+        after: dict = {}
+        if row["after"] is not None:
+            try:
+                after = json.loads(row["after"]) if row["after"] else {}
+            except ValueError:
+                after = {}
+            after = after if isinstance(after, dict) else {}
         saved_value = None
         if action in ("create", "update"):
-            if column in after:
+            if row["kind"] is not None:
                 try:
-                    saved = daily.local_day(row["at"], zone)
+                    datetime.fromisoformat(str(row["at"]))  # usable; its household day is worked out only if needed
+                    usable = True
                 except (TypeError, ValueError):
-                    saved = None
-                if saved is not None:
-                    values.setdefault(record_id, []).append([_as_day(after[column]), saved, False])
+                    usable = False
+                if usable:
+                    values.setdefault(record_id, []).append([_as_day(row["value"]), row["at"], False])
                     saved_value = len(values[record_id]) - 1
             press = waiting.get(record_id)
             if press is not None:
+                try:
+                    after = json.loads(conn.execute("SELECT after FROM core__audit WHERE id = ?",
+                                                    (row["id"],)).fetchone()[0] or "{}")
+                except ValueError:
+                    after = {}
+                after = after if isinstance(after, dict) else {}
                 if any(k in after and after[k] != v for k, v in press[1].items()):
                     del waiting[record_id]  # a new round: the press and a later date are two completions
                 elif _as_day(after.get(column)) is not None:
@@ -289,14 +327,23 @@ def _history(conn: sqlite3.Connection, info, column: str, zone: tzinfo | None
             else:
                 waiting.pop(record_id, None)
         last[record_id] = saved_value
+    return _earlier_days(values, zone, window), belongs
+
+
+def _earlier_days(values: dict[int, list[list]], zone: tzinfo | None, window: tuple[date, date] | None
+                  ) -> dict[int, set[date]]:
+    """From each record's dates in the order saved, the ones that count as earlier done days (decision 0129). The day
+    a line was saved is worked out here, and with a `window` only for a date inside it, the only ones wanted."""
     earlier: dict[int, set[date]] = {}
     for record_id, held in values.items():
         for (before, saved, _), (after, moved, by_undo) in zip(held, held[1:]):
-            if before is None or moved <= saved:
-                continue  # nothing was there, or it was changed again the same day it was typed
+            if before is None or (window is not None and not window[0] <= before <= window[1]):
+                continue  # nothing was there (or, with a window, nothing that is wanted)
+            if daily.local_day(moved, zone) <= daily.local_day(saved, zone):
+                continue  # changed again the same day it was typed
             if (after is None and not by_undo) or (after is not None and after > before):
                 earlier.setdefault(record_id, set()).add(before)
-    return earlier, belongs
+    return earlier
 
 
 def earlier_done(conn: sqlite3.Connection, info, column: str, zone: tzinfo | None) -> dict[int, set[date]]:
@@ -322,7 +369,7 @@ def done_days(conn: sqlite3.Connection, registry: dict, info, column: str, start
     for record_id, day in live.items():
         if day is not None:
             found[(record_id, day)] = "now"
-    earlier, belongs = _history(conn, info, column, daily.household_zone(conn))
+    earlier, belongs = _history(conn, info, column, daily.household_zone(conn), (start, end))
     for record_id, before in earlier.items():
         if record_id in live:
             for day in before:
