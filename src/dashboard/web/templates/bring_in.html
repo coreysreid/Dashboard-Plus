@@ -1,0 +1,140 @@
+{% extends "base.html" %}
+{% block title %}Bring in earlier {{ many }} · Dashboard Plus{% endblock %}
+{% block body %}
+<p class="muted"><a href="/">Home</a> · <a href="/t/{{ info.name }}">{{ title }}</a></p>
+<h1>Bring in earlier {{ many }}</h1>
+<p class="lead">Add {{ many }} you wrote down before, from your own spreadsheet saved as CSV. You see every row before anything is added, and one Undo takes them all off again.</p>
+<p class="notice" role="note" data-file-promise>Your file is read on this computer only. It is never saved to disk and never sent anywhere: between the steps it stays inside this page, and it is gone when you leave.</p>
+
+{% if step == "start" %}
+{% if error %}<p class="problem" role="alert">{{ error }}</p>{% endif %}
+{% if notice %}<p class="notice" role="status">{{ notice }}</p>{% endif %}
+{% if private and not shown %}
+<section class="card" data-private-start>
+  <p><strong>{{ title }} is private history.</strong> The next pages show the {{ many }} in your file, with their private details, on this page only.</p>
+  <form method="post" action="/bring-in/{{ info.name }}/show" class="actions">
+    <input type="hidden" name="_csrf" value="{{ csrf_token }}">
+    <button type="submit" data-show-bring-in>Show</button> <span class="muted">Press Show when nobody else is looking at the screen.</span>
+  </form>
+</section>
+{% else %}
+<form class="record" method="post" action="/bring-in/{{ info.name }}/read" enctype="multipart/form-data">
+  <input type="hidden" name="_csrf" value="{{ csrf_token }}">
+  {% if private %}<input type="hidden" name="shown" value="1">{% endif %}
+  <div><label for="bring-in-file">CSV file</label>
+    <input type="file" id="bring-in-file" name="file" accept=".csv,text/csv">
+    <p class="help">Up to {{ limit }} and {{ "{:,}".format(max_rows) }} rows. The first row should hold the column headings. Dates your usual way ({{ hint }}) or as 2027-05-20; a time like 8:00 am or 20:00, in the same column or its own. Times are read as this household's own clock.</p></div>
+  <div class="actions"><button type="submit">Read the file</button><a href="/t/{{ info.name }}">Cancel</a></div>
+</form>
+{% endif %}
+{% if recent %}
+<h2>Brought in before</h2>
+<ul style="list-style:none;padding:0">{% for r in recent %}
+  <li style="padding:.3rem 0;border-top:1px solid var(--line)">{{ r.day }}: {{ r.count }} {{ one if r.count == 1 else many }}{% if r.file %} from <bdi>{{ r.file }}</bdi>{% endif %}{% if r.undone %} · undone{% elif r.can_undo %} · <a href="/bring-in/{{ info.name }}/done/{{ r.id }}">Undo…</a>{% endif %}</li>
+{% endfor %}</ul>
+{% endif %}
+
+{% elif step == "match" %}
+<p><strong><bdi>{{ file_name }}</bdi></strong>: {{ row_count }} row{{ "" if row_count == 1 else "s" }} read. Nothing has been added.</p>
+{% if notice %}<p class="problem" role="alert">{{ notice }}</p>{% endif %}
+{% for p in problems %}<p class="problem" role="alert">{{ p }}</p>{% endfor %}
+
+<h2>The first rows of the file</h2>
+<div class="scroll"><table class="grid">
+  <thead><tr><th scope="col">Row</th>{% for c in columns %}<th scope="col"><bdi>{{ c.header }}</bdi></th>{% endfor %}</tr></thead>
+  <tbody>{% for number, cells in preview %}<tr><td>{{ number }}</td>{% for cell in cells %}<td><bdi style="white-space:pre-line">{{ cell }}</bdi></td>{% endfor %}</tr>{% endfor %}</tbody>
+</table></div>
+
+<form method="post" action="/bring-in/{{ info.name }}/check">
+  <input type="hidden" name="_csrf" value="{{ csrf_token }}">
+  {% if private %}<input type="hidden" name="shown" value="1">{% endif %}
+  <input type="hidden" name="file_name" value="{{ file_name }}">
+  <input type="hidden" name="data" value="{{ data }}">
+  <input type="hidden" name="checked" value="{{ checked }}">
+  <input type="hidden" name="count" value="{{ sending if run else -1 }}">
+  <input type="hidden" name="operation" value="{{ operation }}">
+  <h2>Match each column to a field</h2>
+  <p class="muted" style="margin-top:0">Guesses are made from the column headings. Change any of them, or skip a column.</p>
+  <div class="record" style="display:grid;gap:.8rem;max-width:36rem">
+  {% for c in columns %}
+    <div><label for="match_{{ c.index }}" style="font-weight:600">Column “<bdi>{{ c.header }}</bdi>”</label>
+      <select id="match_{{ c.index }}" name="match_{{ c.index }}">
+        <option value="">Skip this column</option>
+        {% for o in options %}<option value="{{ o.name }}" {% if o.name == c.chosen %}selected{% endif %}>{{ o.label }}{% if o.needed %} (needed){% endif %}</option>{% endfor %}
+      </select>
+    </div>
+  {% endfor %}
+  </div>
+
+  {% if picks %}
+  <h2>Names to match</h2>
+  <p class="muted" style="margin-top:0">These names in the file are not exactly the name of one record here. Choose which one each means, or leave its rows out. Nothing new is ever made: add it on its own page first if it is missing.</p>
+  <div class="record" style="display:grid;gap:.8rem;max-width:36rem">
+  {% for p in picks %}
+    <div><label for="pick_{{ p.key }}" style="font-weight:600">{{ p.label }} “<bdi>{{ p.text }}</bdi>”{% if p.context %} <bdi>{{ p.context }}</bdi>{% endif %}</label>
+      <select id="pick_{{ p.key }}" name="pick_{{ p.key }}">
+        <option value="">Choose…</option>
+        {% for id, words in p.candidates %}<option value="{{ id }}" {% if p.chosen == id | string %}selected{% endif %}>{{ words }}</option>{% endfor %}
+        <option value="skip" {% if p.chosen == "skip" %}selected{% endif %}>Leave these rows out</option>
+      </select>
+      <p class="help" style="margin:.2rem 0 0">{% if p.several %}This name matches more than one. {% elif not p.candidates %}There is nothing to choose from yet. {% endif %}Row{{ "" if p.rows | length == 1 else "s" }} {{ p.rows | join(", ") }}.</p>
+    </div>
+  {% endfor %}
+  </div>
+  {% endif %}
+
+  <div class="actions"><button type="submit"{% if run %} class="quiet"{% endif %}>{% if run %}Check again{% else %}Check the rows{% endif %}</button>
+    <a href="/bring-in/{{ info.name }}">Choose another file</a></div>
+
+  {% if run %}
+  <section class="card" aria-labelledby="preview">
+    <h2 id="preview" style="margin-top:0">{{ sending }} {{ one if sending == 1 else many }} to bring in{% if fixes %}, {{ fixes | length }} row{{ "" if fixes | length == 1 else "s" }} need{{ "s" if fixes | length == 1 else "" }} fixing{% endif %}</h2>
+    <p class="muted" style="margin:.2rem 0">Nothing has been added yet.{% if fixes %} Rows that need fixing are left out: fix them in your spreadsheet and bring them in on their own.{% endif %}{% if left_out %} {{ left_out | length }} row{{ "" if left_out | length == 1 else "s" }} left out as you chose.{% endif %}</p>
+    {% if fixes %}
+    <h3>Rows that need fixing</h3>
+    <ul>{% for number, messages in fixes %}<li>Row {{ number }}: {% for m in messages %}<bdi>{{ m }}</bdi>{% if not loop.last %} {% endif %}{% endfor %}</li>{% endfor %}</ul>
+    {% endif %}
+    {% if duplicates %}
+    <h3>Possible repeats</h3>
+    <p class="muted" style="margin:.2rem 0">These rows are skipped unless you tick Add anyway. Tick or untick, then press Check again to update the count.</p>
+    <ul style="list-style:none;padding:0">{% for d in duplicates %}
+      <li style="padding:.3rem 0;border-top:1px solid var(--line)"><label><input type="checkbox" name="add_{{ d.row }}" value="1"{% if d.row in add %} checked{% endif %}> Add anyway</label> Row {{ d.row }}: {% for cell in d.cells %}{% if cell %}{{ labels[loop.index0] }}: <bdi>{{ cell }}</bdi>{% if not loop.last %} · {% endif %}{% endif %}{% endfor %}. {{ d.duplicate }}</li>
+    {% endfor %}</ul>
+    {% endif %}
+    {% if unclear %}
+    <h3>Dates that could be read either way</h3>
+    <ul>{% for number, texts in unclear %}<li>Row {{ number }}: {% for t in texts %}<bdi>{{ t }}</bdi>{% if not loop.last %} {% endif %}{% endfor %}</li>{% endfor %}</ul>
+    <p style="margin:.4rem 0"><label><input type="checkbox" name="dates_ok" value="1"{% if dates_ok %} checked{% endif %}> These dates are read the way I meant</label></p>
+    {% endif %}
+    {% if ready %}
+    <h3>Every row ready to bring in</h3>
+    <div class="scroll"><table class="grid" data-bring-in-rows>
+      <thead><tr><th scope="col">Row</th>{% for l in labels %}<th scope="col">{{ l }}</th>{% endfor %}</tr></thead>
+      <tbody>{% for r in ready %}<tr><td>{{ r.row }}</td>{% for cell in r.cells %}<td><bdi style="white-space:pre-line">{{ cell }}</bdi></td>{% endfor %}</tr>{% endfor %}</tbody>
+    </table></div>
+    {% endif %}
+    {% set waiting_dates = unclear and not dates_ok %}
+    {% if waiting_dates %}<p class="notice" role="status" style="margin:.4rem 0">Tick "These dates are read the way I meant" above, then press Check again. Nothing has been added.</p>{% endif %}
+    <div class="actions"><button type="submit" formaction="/bring-in/{{ info.name }}/add"{% if waiting_dates or not sending %} disabled aria-disabled="true"{% endif %}>Bring in {{ sending }} {{ one if sending == 1 else many }}</button></div>
+    <p class="muted" style="margin:0">They are added straight away, each with its own history entry. One Undo on the next page takes them all off again.</p>
+  </section>
+  {% endif %}
+</form>
+
+{% else %}
+{% if error %}<p class="problem" role="alert">{{ error }}</p>{% endif %}
+{% if notice %}<p class="notice" role="status">{{ notice }}</p>{% endif %}
+<section class="card" data-bring-in-done>
+  <p><strong>{{ found.count }} {{ one if found.count == 1 else many }} brought in on {{ day }}{% if file %} from <bdi>{{ file }}</bdi>{% endif %}.</strong></p>
+  {% if found.undone %}<p class="muted">This was undone.</p>
+  {% elif can_undo %}
+  <form method="post" action="/bring-in/{{ info.name }}/undo" class="actions">
+    <input type="hidden" name="_csrf" value="{{ csrf_token }}">
+    <input type="hidden" name="bring_in" value="{{ found.id }}">
+    <button type="submit" class="quiet" data-undo-bring-in>Undo: take all {{ found.count }} off again</button>
+  </form>
+  {% elif why_not %}<p class="muted">{{ why_not }}</p>{% endif %}
+  <p class="actions"><a class="button" href="/t/{{ info.name }}">Go to {{ title }}</a> <a href="/bring-in/{{ info.name }}">Bring in another file</a></p>
+</section>
+{% endif %}
+{% endblock %}

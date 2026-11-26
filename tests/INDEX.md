@@ -6,6 +6,7 @@ How to run them is in AGENTS.md.
 | test_db.py | Tests for opening the database safely, transactions, statement splitting and backups. | changing the database layer |
 | test_migrations.py | Tests for numbered migrations: tracks, checksums, newer databases, rollback and backups. | changing migrations |
 | test_csv_import.py | Tests for Import from a spreadsheet: reading a CSV, matching columns, the dry run, staging for Review and Accept. | changing spreadsheet import |
+| test_bring_in_history.py | Tests for Bring in earlier entries (decision 0137): a person's own CSV of doses, weigh-ins or feedings, previewed, added at once and undone at once. | changing Bring in earlier entries |
 | test_modules.py | Tests for loading module folders and the plain-language problems they report. | changing module rules |
 | test_actions.py | Tests for actions: one-step buttons like Mark returned, the date order rule `not_before` (decision 0075), and the checks on actions that add a record (decision 0091). | changing actions or date order |
 | test_routine_checklists.py | Tests for Things to do and Routines (decision 0107): the eleven checks in Lane B's routine checklist draft, and more. | changing Things to do, Routines or repeats |

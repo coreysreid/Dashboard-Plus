@@ -33,7 +33,8 @@ class UploadRequest(Request):
     memory instead, and the request is refused above REQUEST_LIMIT before anything is read."""
 
     def _import(self) -> bool:
-        return self.path == PREFIX or self.path.startswith(PREFIX + "/")
+        # Import from a spreadsheet, and Bring in earlier entries (decision 0137), whose pages live under /bring-in/.
+        return self.path == PREFIX or self.path.startswith((PREFIX + "/", "/bring-in/"))
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -66,7 +67,8 @@ def _tables(store: records.Records) -> tuple[list[dict], list[str]]:
 def _choose(error: str | None = None, status: int = 200, table: str | None = None):
     store = _store()
     groups, refused = _tables(store)
-    return render_template("import.html", step="choose", groups=groups, refused=refused, error=error,
+    earlier = [{"name": i.name, "title": display.table_title(i)} for i in store.registry.values() if i.table.bring_in]
+    return render_template("import.html", step="choose", groups=groups, refused=refused, error=error, earlier=earlier,
                            chosen=table or request.args.get("table", ""), limit=csv_import.LIMIT_TEXT,
                            max_rows=csv_import.MAX_ROWS), status
 

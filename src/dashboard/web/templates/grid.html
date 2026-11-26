@@ -8,6 +8,7 @@
 {% if see_also %}<p class="muted">See: {% for s in see_also %}<a href="{{ s.href }}">{{ s.words }}</a>{% if not loop.last %} · {% endif %}{% endfor %}</p>{% endif %}
 <div class="actions">
   <a class="button" href="/t/{{ info.name }}/new">Add</a>
+  {% if info.table.bring_in %}<a class="button quiet" href="/bring-in/{{ info.name }}" data-bring-in-link>Bring in earlier entries</a>{% endif %}
   <span class="muted">{{ total }} record{{ "" if total == 1 else "s" }}</span>
 </div>
 {% if private and not private.show %}{# private history (decision 0121): only how many, until a pressed Show #}

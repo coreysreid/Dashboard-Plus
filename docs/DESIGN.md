@@ -820,6 +820,32 @@ change = "weight"           # optional: a number column with its own unit; "up 0
   with no id; only two medicines with the same words get "(1 of 2 with the same words)". `words` with every
   `{column}` empty says nothing.
 
+### 5.15 Bring in earlier entries (decision 0137)
+
+```toml
+[tables.weigh_ins.bring_in]
+when = "day"                # a required date or date-and-time column, not private
+per = "pet"                 # a required link, not private: what each entry is about
+entry = ["weigh-in", "weigh-ins"]   # optional; else the daily, timeline or calendar words, else "entry"
+```
+
+- The list page gets **Bring in earlier entries** (`/bring-in/<table>`); Settings, Import from a spreadsheet links to
+  each such list. Only the household's own pages reach it, never the helper API.
+- A list that is private, has a private column or a `link_rule` with `shows` starts with a pressed **Show**; every
+  step after it is a POST that carries the press, and nothing private is ever in an address.
+- The CSV is read in memory only (the Import reader and limits, decision 0080), carried in the page between steps,
+  checked again from the start on every step and never written anywhere. Columns are matched by label or key, with
+  "Date" and "Time" headings and a "time of day only" field for a separate time column. Times without an offset are
+  the household's own clock (0110); a number may carry only its column's own unit (0111).
+- Linked records are matched by exact name (ignoring capitals and spaces); a `shows` rule matches the person's own
+  allowed records by their private words. Anything else is the person's choice of an existing record, or "Leave
+  these rows out". Nothing is ever created.
+- The same `per` and `when` (minute or day) as a live entry or an earlier row is a possible repeat, skipped unless
+  ticked. Bring in needs the preview's fingerprint, its count and a one-use operation number, then adds every row
+  in one transaction through the ordinary create path, and writes one `bring_in` history entry (record 0) with the
+  new ids. **Undo** deletes exactly those ids in one transaction, refused if any changed since.
+- Refused at load: a list with `adjusts`, `total`, `pair`, `takes_over`, `price` or `refund`, or a required file.
+
 ## 6. Modules
 
 A module is a folder:
@@ -1146,6 +1172,9 @@ number and the core can load both for a transition period.
   treatments given), Pet feeding (one line a day) and Medicine doses (how
   many a day, the medicine only after Show) use it; decision 0130 adds Vehicle running log (readings, estimates),
   Home care (work done) and Routines (done or skipped).
+  **Bring in earlier entries (decision 0137, section 5.15):** Weigh-ins, Food
+  given, Medicine doses (after Show) and Odometer readings take a person's own
+  old spreadsheet, every row previewed, added at once with one Undo.
   Annotations and saved chart settings are still to come; a charting library
   (0004) may return for those.
 - **Analysis** (module, section 10.3).

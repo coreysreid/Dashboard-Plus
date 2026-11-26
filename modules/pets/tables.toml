@@ -72,6 +72,10 @@ columns.notes = { type = "text" }
 # of the range in words; a line between readings, broken where they are more than a year apart. The scale still
 # starts at zero, so a small change is not made to look large.
 chart = { kind = "dots", x = "day", y = "weight", per = "pet", what = ["weight", "weights"], entry = ["weigh-in", "weigh-ins"], subject = "pet", ranges = ["3m", "1y", "all"], change = true, line = { gap_days = 365 } }
+# Bring in earlier entries (decision 0137): weigh-ins from the household's own old spreadsheet, the pet matched by
+# its exact name or the person's choice, weights in kg only (another unit is never converted). The same pet on the
+# same day as a weigh-in already recorded is a possible repeat, skipped unless ticked. One Undo removes them all.
+bring_in = { when = "day", per = "pet", entry = ["weigh-in", "weigh-ins"] }
 
 [tables.vet_visits]
 title = "Vet visits"

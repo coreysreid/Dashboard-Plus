@@ -188,6 +188,7 @@ One record per decision, from `TEMPLATE.md`. Never deleted; reversed ones are ma
 | [0134](0134-privacy-review-of-0119-to-0133.md) | Privacy and security review of 0119-0133, worst first: the dose bars name nobody before Show (this person, people by number) like the Dose calendar; a helper's batch never reads why a typed price was not saved; the checker refuses a private `when`, `per` or `group` on a calendar, bars or timeline; private fields say `autocomplete="off"`; a saved private number, choice, date or tick stays closed and kept until Show; far-back dates in an address are a page, not a crash; everything else held (addresses, history, export, change log, helpers, logs, no-store, POST with session token, queries, scripts); a Content-Security-Policy, whether a refund's existence travels and the dose bars wording left for User 1 | Accepted (three questions for User 1) |
 | [0135](0135-accessible-names-and-a-folded-add-list.md) | Link names that include their record (Look at this, Fill this in, weigh-in Open links), way-out text "Door from Bedroom 2 to Hallway", more than four Add buttons folded under one details, an accessibility pass in three households and a browser-check guard | changing link names, the Add buttons on a record's page or the way-out text |
 | [0136](0136-speed-with-years-of-records.md) | Staying quick with years of records: `tools/time_pages.py` builds an invented household of about 19,000 records (three pets fed twice a day for five years, daily doses, cars, 40 routines, 2,000 priced Stock ins) and times every 0119-0133 page; all were under 35 ms at five years, so only the two costs that grow with history were cut: timelines read just the newest rows (the same lines, paging and "since" words), and earlier done days skip records that never held a date in the period drawn; no migration, nothing stored | Accepted |
+| [0137](0137-bring-in-earlier-entries.md) | Bring in earlier entries: a list opts in with `bring_in` (`when`, `per`; weigh-ins, feedings, medicine doses, odometer readings), the person's own CSV read in memory only, every row previewed with plain problems, names matched to existing records exactly or by the person's choice (never created; a medicine only among that person's own), repeats at the same time skipped unless ticked, Show first for a private list, then one transaction with a history entry each and one Undo for the whole bring-in; amends 0120 for the person only, never helpers | Accepted |
 | [TEMPLATE](TEMPLATE.md) | Blank record to copy for a new decision | recording a decision |
 
 ## docs/plans/  (summary: build plans for larger pieces of work, written before building)
@@ -405,7 +406,7 @@ Generate the next one with: python tools/make_migration.py medical --name <what_
 | Entry | What it is | Open it when |
 |---|---|---|
 | module.toml | Name, version, description; requires People | changing the module's details |
-| tables.toml | Medicine doses: a private table (no helpers, imports, Home or sheets), the medicine limited to the person's own medication details by `link_rule`, every column travels; `daily` totals per medicine the two-hour repeat question and a private month `calendar` per person (0121) | adding a field or changing the daily words |
+| tables.toml | Medicine doses: a private table (no helpers, Review imports, Home or sheets; the person may bring in earlier doses after Show, 0137), the medicine limited to the person's own medication details by `link_rule`, every column travels; `daily` totals per medicine the two-hour repeat question and a private month `calendar` per person (0121) | adding a field or changing the daily words |
 | labels.toml | Friendly labels, help text (check the pack; the amount is never copied), "I do not know" for the giver, form and list order | changing wording or order |
 | migrations/ | Numbered database changes | after changing tables.toml |
 
@@ -436,7 +437,7 @@ Generate the next one with: python tools/make_migration.py people --name <what_c
 | Entry | What it is | Open it when |
 |---|---|---|
 | module.toml | Name, version, description; requires Pets | changing the module's details |
-| tables.toml | Food given: one entry per bowl, refill or treat, food put out (not eaten); `daily` totals by the household's day, the possible-repeat rule and a month `calendar` per pet | adding a field or changing the daily words |
+| tables.toml | Food given: one entry per bowl, refill or treat, food put out (not eaten); `daily` totals by the household's day, the possible-repeat rule and a month `calendar` per pet; `bring_in` for earlier feedings (0137) | adding a field or changing the daily words |
 | labels.toml | Friendly labels, help text (put out, not eaten; units never converted), form and list order | changing wording or order |
 | migrations/ | Numbered database changes | after changing tables.toml |
 
@@ -451,7 +452,7 @@ Generate the next one with: python tools/make_migration.py pet_feeding --name <w
 | Entry | What it is | Open it when |
 |---|---|---|
 | module.toml | Name, version, description; requires People (for vets and owners) | changing the module's details |
-| tables.toml | Pets, treatments and medicine with next due, treatments given, weigh-ins (a dots chart with ranges, change words and a line), vet visits; due dates and gaps | adding a field, a choice or a gap question |
+| tables.toml | Pets, treatments and medicine with next due, treatments given, weigh-ins (a dots chart with ranges, change words and a line), vet visits; due dates and gaps; weigh-ins can be brought in from a spreadsheet (`bring_in`, 0137) | adding a field, a choice or a gap question |
 | labels.toml | Friendly labels, help text, form and list order | changing wording or order |
 | sheets.toml | Pet details sheet for a sitter, kennel or evacuation | changing what prints |
 | migrations/ | Numbered database changes | after changing tables.toml |
@@ -541,7 +542,7 @@ Generate the next one with: python tools/make_migration.py utilities --name <wha
 | Entry | What it is | Open it when |
 |---|---|---|
 | module.toml | Name, version, description; requires Vehicles (vehicles and services) and People (providers) | changing the module's details |
-| tables.toml | Odometer readings with their gentle lower and mixed-unit checks and dots chart, and service estimates with private amount and scope | adding a field or a check |
+| tables.toml | Odometer readings with their gentle lower and mixed-unit checks and dots chart, `bring_in` for earlier readings (0137), and service estimates with private amount and scope | adding a field or a check |
 | labels.toml | Friendly labels, help, form and list order, Add a reading, and the Cost estimates list on a service's page | changing wording or order |
 | migrations/ | Numbered database changes | after changing tables.toml |
 
@@ -650,7 +651,7 @@ Generate the next one with: python tools/make_migration.py wine --name <what_cha
 | optional_links.py | Links into an optional module (decision 0115): kept by exact ID while it is off, shown in neutral words, never guessed. | changing what an optional link shows when its module is off or its record is gone |
 | reminder_moves.py | One reminder per policy: a household chooses, row by row and by exact ID, to move an older list's reminder into a newer one, and can move it back (0117). | changing takes_over, Move, Keep, Transfer back or which record reminds |
 | sync.py | Permanent record IDs, revisions and the filtered change log (sync stage 1): nothing leaves this computer. | changing record IDs, the change log or what may travel to another computer |
-| csv_import.py | Read a spreadsheet saved as CSV, match its columns to a table's fields, and check every row before it goes to Review. | changing how spreadsheets are read or matched |
+| csv_*.py | Two parts of spreadsheets: "Read a spreadsheet saved as CSV, match its columns to a table's fields, and check every row before it goes to Review." (csv_import) and "Bring in earlier entries: a person's own spreadsheet of a dated log, checked row by row, added at once with one Undo." (csv_bring_in, decision 0137) | changing how spreadsheets are read or matched, or Bring in earlier entries: its matching, repeats, adding or Undo |
 
 ## src/dashboard/core/migrations/  (summary: the core's numbered database changes; never edit a released one)
 Add a new file with the next number instead of changing an old one.
@@ -692,6 +693,7 @@ Add a new file with the next number instead of changing an old one.
 | review.py | The Review screen: helpers' suggested new records and imported rows, waiting for a person to accept or reject each one. | changing the Review page |
 | receipt_line.py | Review, a receipt line the helper could not match: choose its Stock item or make a new one, then confirm amount and date. | changing Choose item for a receipt line |
 | csv_import.py | Settings, Import from a spreadsheet: choose a table, upload a CSV, match its columns, check the rows, send to Review. | changing the import screens |
+| bring_in.py | Bring in earlier entries: a list's own page to read a person's CSV, match it, preview every row, add them and Undo. | changing the Bring in earlier entries pages, their Show step or Undo (decision 0137) |
 | helper_guide.py | The starting message for a helper's assistant: what it may use, how to send, and its limits, from list and field names only. | changing the starting message or GET /api/v1/guide |
 | helper_settings.py | Settings, Helpers: give an assistant a key, choose what it may do, give it a new key, and turn its access off. | changing the Helpers settings page |
 | export_page.py | Settings, Export my records: a page and a button that downloads a zip of spreadsheet files. | changing the Export page |
@@ -717,6 +719,7 @@ Add a new file with the next number instead of changing an old one.
 | attention.html | Running low, expiring soon, days of cover with the working shown, and gaps worth filling in | changing the attention page |
 | count.html | Count this batch: the count, its review and what was saved | changing the stocktake wording |
 | import.html | Import from a spreadsheet: choose a list and file, match columns, see which rows are ready, send to Review | changing the import wording |
+| bring_in.html | Bring in earlier entries: Show for a private list, choose the file, match columns and names, every row previewed, possible repeats, then Undo | changing the Bring in earlier entries wording |
 | grid.html | A table's records, a page at a time, sortable; a private table's only a count until a pressed Show (0121) | changing the list of records |
 | private_record.html | One record of a private table (0121), such as a medicine dose, before Show: its number, "Private history — press Show to see it." and the Show button | changing what a private record shows before Show |
 | reveal.html | One private detail after a pressed Show without a page script (0123), never cached | changing the no-script Show page |
@@ -755,6 +758,7 @@ How to run them is in AGENTS.md.
 | test_db.py | Tests for opening the database safely, transactions, statement splitting and backups. | changing the database layer |
 | test_migrations.py | Tests for numbered migrations: tracks, checksums, newer databases, rollback and backups. | changing migrations |
 | test_csv_import.py | Tests for Import from a spreadsheet: reading a CSV, matching columns, the dry run, staging for Review and Accept. | changing spreadsheet import |
+| test_bring_in_history.py | Tests for Bring in earlier entries (decision 0137): a person's own CSV of doses, weigh-ins or feedings, previewed, added at once and undone at once. | changing Bring in earlier entries |
 | test_modules.py | Tests for loading module folders and the plain-language problems they report. | changing module rules |
 | test_actions.py | Tests for actions: one-step buttons like Mark returned, the date order rule `not_before` (decision 0075), and the checks on actions that add a record (decision 0091). | changing actions or date order |
 | test_routine_checklists.py | Tests for Things to do and Routines (decision 0107): the eleven checks in Lane B's routine checklist draft, and more. | changing Things to do, Routines or repeats |
@@ -849,7 +853,7 @@ How to run them is in AGENTS.md.
 | load_example.py | Load a made-up example household into an empty data folder, for demos, screenshots and testing. | demonstrating or testing with realistic data |
 | make_screenshots.py | Make the example screenshots: run each example household through every stage of using the dashboard. | the screens changed and the gallery needs remaking |
 | screenshots.js | Browser steps for make_screenshots.py (Node and Playwright) | changing how screenshots are taken |
-| browser_check.py | Click through the real dashboard in Chromium (setup, Set up my home, dates, stock in, stocktake, Mark returned, Mark done, Things to do, spreadsheet import, Review keys and buttons, readiness questions, Think it through drills, charts, the way-out sketch, pet feeding at 320px, calendars, weight trends, bars over time and the timeline at 320px, a 320px width sweep of the main pages in all three households, medicine doses at 320px, vehicle running log, Bills and a moved car insurance reminder, Utilities with Our home off, private details, closing) and fail loudly. | a screen or its browser code changed |
+| browser_check.py | Click through the real dashboard in Chromium (setup, Set up my home, dates, stock in, stocktake, Mark returned, Mark done, Things to do, spreadsheet import, Review keys and buttons, readiness questions, Think it through drills, charts, the way-out sketch, pet feeding at 320px, calendars, weight trends, bars over time and the timeline at 320px, a 320px width sweep of the main pages in all three households, medicine doses at 320px, bringing in earlier doses with Undo, vehicle running log, Bills and a moved car insurance reminder, Utilities with Our home off, private details, closing) and fail loudly. | a screen or its browser code changed |
 | browser_check.js | Browser steps for browser_check.py (Node and Playwright): what is clicked and checked | changing what the browser check clicks |
 | time_pages.py | Time the pages on a synthetic household with years of records, and report each page's speed and SQL query count (decision 0136). Not part of check_all.py: it takes about a minute. | checking the app stays quick, or after changing how a page reads its records |
 | make_project_map.py | Build PROJECT_MAP.md from every INDEX.md in the repository. | changing the map format |

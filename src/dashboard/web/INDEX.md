@@ -22,6 +22,7 @@
 | review.py | The Review screen: helpers' suggested new records and imported rows, waiting for a person to accept or reject each one. | changing the Review page |
 | receipt_line.py | Review, a receipt line the helper could not match: choose its Stock item or make a new one, then confirm amount and date. | changing Choose item for a receipt line |
 | csv_import.py | Settings, Import from a spreadsheet: choose a table, upload a CSV, match its columns, check the rows, send to Review. | changing the import screens |
+| bring_in.py | Bring in earlier entries: a list's own page to read a person's CSV, match it, preview every row, add them and Undo. | changing the Bring in earlier entries pages, their Show step or Undo (decision 0137) |
 | helper_guide.py | The starting message for a helper's assistant: what it may use, how to send, and its limits, from list and field names only. | changing the starting message or GET /api/v1/guide |
 | helper_settings.py | Settings, Helpers: give an assistant a key, choose what it may do, give it a new key, and turn its access off. | changing the Helpers settings page |
 | export_page.py | Settings, Export my records: a page and a button that downloads a zip of spreadsheet files. | changing the Export page |

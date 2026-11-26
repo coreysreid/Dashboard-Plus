@@ -36,7 +36,7 @@ MODULE_KEYS = ("name", "title", "version", "description", "core_api", "kind", "r
 MODULE_REQUIRED = ("name", "title", "version", "description", "core_api", "kind")
 TABLE_KEYS = ("title", "description", "columns", "watch", "adjusts", "parent", "total", "record_name", "actions",
               "pair", "suggestions", "chart", "daily", "confirm", "takes_over", "calendar", "private", "bars", "timeline",
-              "price", "refund")
+              "price", "refund", "bring_in")
 # One reminder per policy (decision 0117): records of an older list in another module (Vehicle insurance) that
 # the household may choose, one by one, to have reminded from this table instead. `where` is what such a record
 # is here (a vehicle policy), `copy` which of this table's columns take which of the other's, the date included.
@@ -84,6 +84,9 @@ BARS_BY = ("day", "week", "month")
 # that links to the record and declares `timeline`. Each kind has a fixed look (a symbol beside its words, never a
 # colour alone); `summarise = "day"` makes one line a day, as a private table must, so it says only how many.
 TIMELINE_KEYS = ("when", "per", "entry", "words", "look", "summarise", "change", "change_unit")
+# Bring in earlier entries (decision 0137): a person's own spreadsheet of a dated log, added at once with one Undo.
+# `when` is the entry's date or time and `per` what it is about; two rows with the same of both are possible repeats.
+BRING_IN_KEYS = ("when", "per", "entry")
 TIMELINE_LOOKS = ("recorded", "done", "measured", "visit")
 TIMELINE_WORD = re.compile(r"\{([^{}]*)\}")
 # A gentle check before a form saves, such as an odometer reading lower than the last one: Go back, or Save as
@@ -215,6 +218,7 @@ class Table:
     timeline: dict = field(default_factory=dict)  # checked `timeline`: its entries on a record's timeline (0126)
     price: dict = field(default_factory=dict)  # checked `price`: a confirmed purchase price on a Stock in (0128)
     refund: dict = field(default_factory=dict)  # checked `refund`: money back on a priced Stock in (0133)
+    bring_in: dict = field(default_factory=dict)  # checked `bring_in`: earlier entries from a spreadsheet (0137)
     # Decision 0120: every record is private history, such as medicine given. Never on Home, a sheet, a helper
     # or the spreadsheet export; made only on this program's own screens (suggestions = false is required).
     private: bool = False
@@ -1392,6 +1396,40 @@ def _check_timeline(file: str, module: str, table: Table, tables: dict[str, Tabl
             "summarise": summarise, "change": change, "change_unit": change_unit}
 
 
+def _check_bring_in(file: str, table: Table, raw, problems: list[str]) -> dict:
+    """Check `bring_in` (decision 0137): a dated log a person may fill from their own spreadsheet. `when` is a required
+    date or date-and-time column and `per` a required link, neither private, since they say which rows repeat; a list
+    whose records change an amount elsewhere, join two records or take over reminders is refused, because Undo of
+    the whole bring-in must remove exactly the rows it added."""
+    where = f"In {file}, table '{table.name}', bring_in"
+    if not isinstance(raw, dict):
+        problems.append(f'{where}: write it as [tables.weigh_ins.bring_in] with when = "day", per = "pet".')
+        return {}
+    problems.extend(_unknown_keys(where, raw, BRING_IN_KEYS))
+    before = len(problems)
+    when = table.columns.get(raw.get("when")) if isinstance(raw.get("when"), str) else None
+    if when is None or when.type not in ("date", "datetime") or not when.required or when.sensitive:
+        problems.append(f"{where}: 'when' must name a required date or date-and-time column of this table that is "
+                        f"not private.")
+    per = table.columns.get(raw.get("per")) if isinstance(raw.get("per"), str) else None
+    if per is None or per.type != "link" or not per.required or per.sensitive:
+        problems.append(f"{where}: 'per' must name a required link column of this table that is not private, such "
+                        f"as the pet or the person each entry is about.")
+    words = raw.get("entry")
+    if words is not None and not (isinstance(words, list) and len(words) == 2
+                                  and all(isinstance(w, str) and w.strip() for w in words)):
+        problems.append(f"{where}: 'entry' must be two words, singular then plural, like [\"weigh-in\", "
+                        f"\"weigh-ins\"].")
+    if table.adjusts or table.total or table.pair or table.takes_over or table.price or table.refund:
+        problems.append(f"{where}: a list whose records change amounts, join two records, move reminders or keep "
+                        f"prices can't bring in earlier entries, because one Undo must remove exactly what was added.")
+    if any(c.required and c.type == "file" for c in table.columns.values()):
+        problems.append(f"{where}: a list that needs a file can't bring in earlier entries from a spreadsheet.")
+    if len(problems) > before:
+        return {}
+    return {"when": raw["when"], "per": raw["per"], "entry": [w.strip() for w in words] if words else None}
+
+
 def _check_own_calendar(where: str, table: Table, raw: dict, problems: list[str]) -> dict:
     """Check a calendar of a table's own records, with no `per` (decision 0122): each record's one open due date
     from this table's own reminder, and the days it was done, from an optional date column (`when`, such as
@@ -1568,6 +1606,8 @@ def _check_tables(module: str, data: dict, requires: list[str], problems: list[s
             if "takes_over" in raw:
                 tables[tname].takes_over = _check_takes_over(file, tables[tname], raw["takes_over"], requires,
                                                              list(optional), problems)
+            if "bring_in" in raw:  # after the sections it may not be used with (decision 0137)
+                tables[tname].bring_in = _check_bring_in(file, tables[tname], raw["bring_in"], problems)
     for table in tables.values():  # decision 0122: one record's due date is on one calendar only
         rule = table.calendar
         if rule and rule.get("due") and rule.get("per"):
