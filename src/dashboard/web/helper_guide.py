@@ -1,8 +1,10 @@
 """The starting message for a helper's assistant: what it may use, how to send, and its limits, from list and field names only."""
 from __future__ import annotations
 
+import json
+
 from dashboard.core import helpers, receipts, records, schema
-from dashboard.web import api, display
+from dashboard.web import api, display, helper_examples
 
 GUIDE_ROUTE = "GET /api/v1/guide (the dashboard_how_to_help tool)"
 
@@ -80,6 +82,8 @@ def guide_text(conn, full_registry: dict, helper: helpers.Helper) -> str:
                   "a note instead of the link."]
     lines += _home_lines(allowed, helper)
     lines += _batch_lines(store, allowed, helper)
+    lines += _fill_lines(store, allowed, helper)
+    lines += _never_lines()
     if helper.may_suggest:
         lines += ["", "HOW TO SEND",
                   f"- At most {limits['entries_per_call']} entries in one send. Send small batches (10 to 20), read "
@@ -90,6 +94,13 @@ def guide_text(conn, full_registry: dict, helper: helpers.Helper) -> str:
                   "retry with the same request_key and the same entries; it can never be added twice.",
                   "- Dates are written 2027-05-20. Money is in whole units, like 12.50. Yes or no is true or false. "
                   "A choice takes its key (or its label).",
+                  "- A day means the household's own calendar day, not yours. A time like 2026-11-20T07:15 with no "
+                  "offset is the household's own local time: send the time as the person said it. A time with an "
+                  "offset (2026-11-20T07:15+01:00 or ...Z) is an exact moment, counted on the household day it falls "
+                  "in; use one only if you are sure of it.",
+                  "- A number is in the unit its field names (kg, km, g). Never convert between units. Where a unit "
+                  "is a choice (km or mi, g or ml or pouch), send the unit the paper or screen showed, and never "
+                  "add up or mix units yourself.",
                   "- Never guess. Ask the household, or leave an optional field out, for a date whose day and month "
                   "could be either way round (1/2/27), a yes or no you would infer from a name (such as whether water "
                   "is safe to drink now), and a unit or amount you would have to convert.",
@@ -123,6 +134,44 @@ def guide_text(conn, full_registry: dict, helper: helpers.Helper) -> str:
                      "row and why. If you cannot verify a status, say it is unknown. Sent does not mean accepted or "
                      "complete; never say the move is complete for them.")
     return "\n".join(lines)
+
+
+def _fill_lines(store: records.Records, allowed: dict, helper: helpers.Helper) -> list[str]:
+    """Which lists this helper may fill in, with one invented example and a warning each (decision 0138).
+
+    Built from the lists it was given, so a list that is look only, or needs a private detail, is never here."""
+    if not helper.may_suggest:
+        return []
+    found = []
+    for name, (entry, warning) in helper_examples.EXAMPLES.items():
+        info = allowed.get(name)
+        if info is None or not api.table_spec(info, store, True, set())["can_suggest"]:
+            continue
+        sent = json.dumps({"table": name, "values": entry}, ensure_ascii=False)
+        found.append(f"- {display.table_title(info)} ({name}). Example: {sent}. {warning}")
+    if not found:
+        return []
+    return ["", "LISTS WITH THEIR OWN WAYS OF WORKING",
+            "- Ids in the examples (like \"pet\": 3) stand for a record you read first from the linked list. Every "
+            "example is invented.", *found]
+
+
+def _never_lines() -> list[str]:
+    """What a helper never fills in, whatever it was given, and what the household does instead (decision 0138).
+
+    Plain words only: it names no list that is private, so it tells a helper nothing about what a household keeps."""
+    return ["", "NEVER FOR HELPERS (the household types these in Dashboard Plus on its own computer)",
+            "- Anything about medicines taken or given, and private medical details. A list like that is not shown "
+            "to you at all, so do not look for it or put it in a note.",
+            "- Prices, what was paid, quotes and bill amounts, and money back (refunds). A send that names one is "
+            "refused with private_detail and nothing in it is kept. A price read from a receipt goes only in "
+            "\"source\", for checking on Review; the person types the price themselves when they accept.",
+            "- Access or alarm codes, account and reference numbers, registrations, and anything else the guide "
+            "marks Private. Leave them out and tell the person which records still need them.",
+            "- Answers to the readiness questions and what happens in a practice drill: a person answers those.",
+            "- Calendars, bars and timelines are only ways for a person to look at the lists above. Read the lists "
+            "themselves; there is nothing to send to a calendar.",
+            "- You cannot press Mark done, Skip, Count this batch or Undo. A person does that. Tell them what you saw."]
 
 
 def _home_lines(allowed: dict, helper: helpers.Helper) -> list[str]:

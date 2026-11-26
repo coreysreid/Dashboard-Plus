@@ -224,7 +224,11 @@ is new: keep a copy of anything important somewhere else too. See
 - **Starting message for your assistant:** each helper in Settings, Helpers
   has a message to copy into the assistant's chat. It lists the lists that
   helper may use, their fields, what is private, how stock amounts work and
-  today's limits. It holds no records, private details or key. The assistant
+  today's limits. It gives one invented example for each list with its own ways
+  of working (pet weigh-ins, feedings, odometer readings, a routine's times, Garden
+  jobs) and says what is never for a helper (medicines, prices, money back, codes:
+  you type those in yourself), and that units and times follow your own day. It
+  holds no records, private details or key. The assistant
   can read the same guide itself (the `dashboard_how_to_help` tool). While
   moving records in, Review warns when a new item's amount and a Stock in for
   it would count twice, and when a suggestion's text holds a private detail
