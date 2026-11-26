@@ -14,6 +14,6 @@
 {% endif %}
 <h2>{% if chosen %}{{ chosen.name }}{% else %}{{ view.name }}{% endif %} · {{ view.title }}</h2>
 {% with bv = view, level = 3 %}{% include "_bars.html" %}{% endwith %}
-{% if subject_href %}<p><a href="{{ subject_href }}">{{ chosen.name }}'s page</a></p>{% endif %}
+{% if subject_href %}<p><a href="{{ subject_href }}">{% if view.private and not view.show %}Open the person's page{% else %}{{ chosen.name }}'s page{% endif %}</a></p>{% endif %}
 {% endif %}
 {% endblock %}

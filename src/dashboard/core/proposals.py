@@ -549,6 +549,17 @@ def _same_or_refuse(conn, stored, digest: str, registry: dict | None = None) -> 
     return batch_result(conn, stored["id"], registry=registry)
 
 
+# Why a price the person typed on Review was not saved (decision 0133). It is written on the waiting row for the
+# person, but a price is private (0128), so a helper reading its batch is told only that the row still waits.
+PRICE_NOT_SAVED = "Nothing was added: the price was not saved."
+PERSON_STILL_DECIDING = "Still waiting for the household to decide."
+
+
+def _helper_reason(reason: str | None) -> str | None:
+    """A row's reason as a helper may read it: never what the person was told about a price they typed (0134)."""
+    return PERSON_STILL_DECIDING if reason and reason.startswith(PRICE_NOT_SAVED) else reason
+
+
 def batch_result(conn: sqlite3.Connection, batch_id: int, detail: bool = False, registry: dict | None = None) -> dict:
     """One batch as the helper sees it: its rows with their state. `detail` adds record ids, reasons and dates.
     With `registry`, a new item's starting amount sent with a Stock in for it is named under `warnings`."""
@@ -563,7 +574,7 @@ def batch_result(conn: sqlite3.Connection, batch_id: int, detail: bool = False, 
         if depends:
             item["depends_on"] = depends
         if detail:
-            item.update(record_id=r["record_id"], reason=r["reason"], decided_at=r["decided_at"])
+            item.update(record_id=r["record_id"], reason=_helper_reason(r["reason"]), decided_at=r["decided_at"])
         proposals.append(item)
     waiting = sum(1 for r in rows if r["status"] == "pending")
     lines = sum(1 for r in rows if r["status"] == "pending" and r["entry_kind"] == "receipt_line")

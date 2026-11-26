@@ -180,11 +180,14 @@ def bars_view(store: records.Records, info, rule: dict, subject_id: int | None, 
     style = dates.household_style(store.conn)
     found = bars.build(store.conn, info, rule, subject_id, by, last_day, week_start(store.conn), today, group_id,
                        registry=store.registry)
-    if rule.get("per"):
+    if rule.get("per") and info.table.private and not show:
+        name = "this person"  # a private table names nobody until a pressed Show, as its calendar (0123, 0134)
+    elif rule.get("per"):
         subject_info = store.registry[target_table(info.module.name, info.table.columns[rule["per"]])]
         name = display.display_name(subject_info, store.get(subject_info.name, subject_id), store)
     else:
         name = info.module.title
+    lead = name[:1].upper() + name[1:]  # the name at the start of a sentence
     hidden = bool(rule.get("hidden")) and not show  # a private amount, until a pressed Show
     is_sum = rule["measure"] == "sum" and not hidden
     units = bars.units(rule, found) if is_sum else []
@@ -274,10 +277,10 @@ def bars_view(store: records.Records, info, rule: dict, subject_id: int | None, 
         empty = f"Nothing recorded for {name} in these {span}."
     if is_sum and total_n:
         if added:
-            summary = (f"{name} · {span} · {worded(total, chosen)} {rule['verb']}, from "
+            summary = (f"{lead} · {span} · {worded(total, chosen)} {rule['verb']}, from "
                        f"{_entries(added, rule)}")
         else:
-            summary = f"{name} · {span} · {_entries(total_n, rule)} recorded; no {rule['missing']} recorded"
+            summary = f"{lead} · {span} · {_entries(total_n, rule)} recorded; no {rule['missing']} recorded"
         if unmeasured:
             notes.append(f"{_entries(unmeasured, rule)} {'has' if unmeasured == 1 else 'have'} no "
                          f"{rule['missing']}, so {'it is' if unmeasured == 1 else 'they are'} counted but not "
@@ -293,7 +296,7 @@ def bars_view(store: records.Records, info, rule: dict, subject_id: int | None, 
             notes.append(f"Also refunded in another currency, not taken off and never converted: "
                          f"{_and([worded(v, u) for u, v in back_others.items()])}.")
     else:
-        summary = f"{name} · {span} · {_entries(total_n, rule)} recorded"
+        summary = f"{lead} · {span} · {_entries(total_n, rule)} recorded"
     unit_links = [{"words": f"In {u}", "current": u == chosen,
                    "href": _link(info, rule, subject_id, by=by, end=None if last.so_far else last.end.isoformat(),
                                  unit=u)} for u in units] if len(units) > 1 else []
@@ -323,7 +326,7 @@ def bars_view(store: records.Records, info, rule: dict, subject_id: int | None, 
         description = (f"{title} for {name}, {span}: one bar for each {by}"
                        + (f", in {chosen} only" if is_sum else "") + ", on a scale starting at 0. "
                        "The table lists the same values.")
-        chart = charts.period_chart(chart_id, f"{name}: {title.lower()}" if not panel else title, description,
+        chart = charts.period_chart(chart_id, f"{lead}: {title.lower()}" if not panel else title, description,
                                     drawn, axis, unit_words, whole=not is_sum)
     caveat = " ".join(c for c in (rule.get("caveat"), (
         "Each bar adds up the amounts written down, in one unit only; other units are never converted or added in."
@@ -382,9 +385,12 @@ def record_panels(store: records.Records, subject_info, record: dict) -> list[di
             if rule.get("per") and _applies(store, info, record["id"])]
 
 
+EARLIEST = date(1900, 1, 1)  # as the calendars (decision 0119): an older date in an address reads as this one
+
+
 def _end(text: str | None) -> date | None:
     try:
-        return date.fromisoformat(text) if text else None
+        return max(date.fromisoformat(text), EARLIEST) if text else None
     except ValueError:
         return None
 
@@ -422,8 +428,14 @@ def _bars_page(table, key, show: bool):
     subject_info = store.registry[target_table(info.module.name, info.table.columns[rule["per"]])]
     rows = [dict(r) for r in store.conn.execute(f"SELECT * FROM {subject_info.name} WHERE deleted_at IS NULL "
                                                  f"ORDER BY id")]
-    subjects = sorted(({"id": r["id"], "name": display.display_name(subject_info, r, store)} for r in rows
-                       if _applies(store, info, r["id"])), key=lambda s: (s["name"].lower(), s["id"]))
+    # A private table lists the people by number until Show, in number order so the order spells out nobody,
+    # as its calendar does (decisions 0123 and 0134).
+    hidden = info.table.private and not show
+    per = info.table.columns[rule["per"]]
+    subjects = sorted(({"id": r["id"], "name": display.private_subject_name(info, per, r["id"]) if hidden
+                        else display.display_name(subject_info, r, store)} for r in rows
+                       if _applies(store, info, r["id"])),
+                      key=lambda s: (s["id"],) if hidden else (s["name"].lower(), s["id"]))
     if not subjects:
         return render_template("bars.html", title=rule["title"], view=None, subjects=[], chosen=None, rule=rule,
                                add_subject=f"/t/{subject_info.name}/new",

@@ -1,6 +1,6 @@
 # 0124. Bars over time: how often and how much, per day, week or month
 
-- **Status:** Accepted
+- **Status:** Accepted (before Show the dose bars name nobody, as the Dose calendar: amended by 0134)
 - **Date:** 2026-11-25
 - **Decided by:** Claude (technical decision delegated by User 1)
 - **Builds on:** 0109 (charts drawn on the server), 0110 (the household's own day, food put out), 0111 (readings in
