@@ -22,6 +22,11 @@
   <div class="actions"><button type="submit">Read the file</button><a href="/settings">Cancel</a></div>
 </form>
 {% if refused %}<ul class="muted">{% for r in refused %}<li>{{ r }}</li>{% endfor %}</ul>{% endif %}
+{% if earlier %}
+<h2>Earlier entries of a dated log</h2>
+<p class="muted" style="margin-top:0">To bring in a history you kept before, such as weigh-ins, feedings or medicine doses, use Bring in earlier entries: you see every row, they are added at once without Review, and one Undo takes them all off again.</p>
+<ul data-bring-in-lists>{% for t in earlier %}<li><a href="/bring-in/{{ t.name }}">Bring in earlier entries: {{ t.title }}</a></li>{% endfor %}</ul>
+{% endif %}
 {% else %}
 <p><strong>{{ file_name }}</strong> into <strong>{{ title }}</strong>: {{ row_count }} row{{ "" if row_count == 1 else "s" }} read. Nothing has been saved.</p>
 {% if notice %}<p class="problem" role="alert">{{ notice }}</p>{% endif %}

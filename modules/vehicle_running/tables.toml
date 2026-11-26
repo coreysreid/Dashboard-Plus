@@ -66,3 +66,9 @@ per = "service.vehicle"
 entry = ["service estimate", "service estimates"]
 words = "{service} · {kind} · {provider}"
 look = "recorded"
+
+# Bring in earlier entries (decision 0137): odometer readings from the household's own old spreadsheet, the vehicle
+# matched by its exact name or the person's choice, km or mi as written (nothing is converted). One Undo removes them.
+[tables.readings.bring_in]
+when = "read_at"
+per = "vehicle"

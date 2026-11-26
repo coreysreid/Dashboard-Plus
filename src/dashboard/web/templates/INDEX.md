@@ -11,6 +11,7 @@
 | attention.html | Running low, expiring soon, days of cover with the working shown, and gaps worth filling in | changing the attention page |
 | count.html | Count this batch: the count, its review and what was saved | changing the stocktake wording |
 | import.html | Import from a spreadsheet: choose a list and file, match columns, see which rows are ready, send to Review | changing the import wording |
+| bring_in.html | Bring in earlier entries: Show for a private list, choose the file, match columns and names, every row previewed, possible repeats, then Undo | changing the Bring in earlier entries wording |
 | grid.html | A table's records, a page at a time, sortable; a private table's only a count until a pressed Show (0121) | changing the list of records |
 | private_record.html | One record of a private table (0121), such as a medicine dose, before Show: its number, "Private history — press Show to see it." and the Show button | changing what a private record shows before Show |
 | reveal.html | One private detail after a pressed Show without a page script (0123), never cached | changing the no-script Show page |

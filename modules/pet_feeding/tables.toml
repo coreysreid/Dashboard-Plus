@@ -62,3 +62,10 @@ per = "pet"
 entry = ["feeding", "feedings"]
 summarise = "day"
 look = "recorded"
+
+# Bring in earlier entries (decision 0137): feedings from the household's own old spreadsheet, each with its date
+# and time (a separate Time column is fine), read as the household's own local time. The same pet at the same minute
+# as a feeding already recorded is a possible repeat, skipped unless ticked. One Undo removes them all.
+[tables.servings.bring_in]
+when = "given_at"
+per = "pet"

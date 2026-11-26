@@ -248,9 +248,37 @@ is new: keep a copy of anything important somewhere else too. See
   (Settings). You see which rows are ready and what is wrong with the rest
   before anything is sent, and nothing is added until you accept it on the
   Review page.
+- **Bring in earlier entries:** weigh-ins, food given, medicine doses and
+  odometer readings you kept in an old spreadsheet can be added in one go
+  from that list's page, with every row shown first and one **Undo** for the
+  whole lot. See [Bringing in your old tracker](#bringing-in-your-old-tracker).
 - **Automatic backups**, every day and every time you close it safely, and
   **Restore from a backup** in Settings: check a backup and compare it with
   now, put it back, and undo that if it was the wrong one.
+
+## Bringing in your old tracker
+
+If you kept pets' weights, feedings or medicine doses in a spreadsheet before,
+you do not have to type them again:
+
+1. Add the pets and people first, and for doses each person's medicines
+   (People, Important details, kind Medication). Nothing new is made from the
+   file: a name has to match one you already have, or you choose it.
+2. In your spreadsheet, choose Save As, then "CSV UTF-8". A heading row such as
+   `Pet, Date, Weight` or `Date, Time, Given to, Medicine, Amount, Unit` works.
+   Dates your usual way or as 2026-02-13; times like 8:00 am or 20:00, in the
+   date column or their own. Weights in kg (nothing is converted).
+3. Open the list (for example Weigh-ins or Medicine doses) and press **Bring in
+   earlier entries**. For doses press **Show** first, when nobody else is
+   looking: the next pages show the medicines and amounts.
+4. Choose the file, check the matches, then look over every row: rows to fix,
+   names to choose, and possible repeats (the same pet or person at the same
+   time as an entry already there), which are skipped unless you tick
+   **Add anyway**.
+5. Press **Bring in**. The next page has **Undo** if anything looks wrong.
+
+The file is read on this computer only. It is never saved and never sent
+anywhere, and helpers can never use this.
 
 ## Using it on Windows
 

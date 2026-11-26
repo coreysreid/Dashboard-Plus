@@ -1,4 +1,4 @@
-"""Click through the real dashboard in Chromium (setup, Set up my home, dates, stock in, stocktake, Mark returned, Mark done, Things to do, spreadsheet import, Review keys and buttons, readiness questions, Think it through drills, charts, the way-out sketch, pet feeding at 320px, calendars, weight trends, bars over time and the timeline at 320px, a 320px width sweep of the main pages in all three households, medicine doses at 320px, vehicle running log, Bills and a moved car insurance reminder, Utilities with Our home off, private details, closing) and fail loudly."""
+"""Click through the real dashboard in Chromium (setup, Set up my home, dates, stock in, stocktake, Mark returned, Mark done, Things to do, spreadsheet import, Review keys and buttons, readiness questions, Think it through drills, charts, the way-out sketch, pet feeding at 320px, calendars, weight trends, bars over time and the timeline at 320px, a 320px width sweep of the main pages in all three households, medicine doses at 320px, bringing in earlier doses with Undo, vehicle running log, Bills and a moved car insurance reminder, Utilities with Our home off, private details, closing) and fail loudly."""
 from __future__ import annotations
 
 import argparse
@@ -71,7 +71,10 @@ US = {"household": "garcia", "locale": "en-US", "timezone": "America/Los_Angeles
       # Medicine doses (decision 0120): Rosa's one medication detail, hidden until Show; a second dose asks first.
       "doses": {"person": "Rosa Garcia", "secret": "Metformin",
                 "repeat": "A dose of this medicine is already recorded for this person near this time.",
-                "keep": "Keep this as another dose"}}
+                "keep": "Keep this as another dose"},
+      # Bring in earlier entries (decision 0137): an old tracker says only "Metformin", so Rosa's medicine is chosen.
+      "bringIn": {"person": "Rosa Garcia", "secret": "Metformin 500 mg", "typed": "Metformin",
+                  "text": "Date,Time,Given to,Medicine,Amount,Unit\n02/13/26,8:00 am,Rosa Garcia,Metformin,1,tablet\n"}}
 UK = {"household": "taylor", "locale": "en-GB", "timezone": "Europe/London",
       "dates": {"item": "Browser check tins", "typed": "20/05/27", "words": "20 May 2027",
                 "wrongOrder": "05/20/27", "hint": "Use DD/MM/YY"}}
@@ -209,7 +212,7 @@ def run_us(work: Path, executable: str | None) -> list[str]:
     try:
         done = drive({"base": base, "launch": launch, "locale": US["locale"], "timezone": US["timezone"],
                       "executablePath": executable, "dates": US["dates"], "optional": US["optional"],
-                      "bills": US["bills"], "doses": US["doses"], "widths": 60}, work, "main")
+                      "bills": US["bills"], "doses": US["doses"], "bringIn": US["bringIn"], "widths": 60}, work, "main")
         closed = True
     finally:
         stop_server(process, closed)
