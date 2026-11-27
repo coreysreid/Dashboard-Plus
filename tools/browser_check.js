@@ -482,6 +482,8 @@ function expect(condition, message) { if (!condition) throw new Failed(message);
       expect((await text('#as-text')).includes(e.room), `The text version should list ${e.room}.`);
       await page.focus('#read-as-text');
       await page.keyboard.press('Enter');
+      // Following an in-page link updates the address a moment later in newer Chromium; wait for it, then check.
+      await page.waitForFunction(() => location.hash === '#as-text', null, { timeout: 5000 }).catch(() => {});
       expect(page.url().endsWith('#as-text'), `"Read the connections as text" should go to the text version; the page is at ${page.url()}.`);
       for (const w of e.words) expect((await text('main')).includes(w), `The sketch page should say "${w}".`);
       await Promise.all([page.waitForNavigation(), page.click('#print-a4')]);
