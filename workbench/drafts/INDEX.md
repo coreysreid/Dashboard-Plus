@@ -35,3 +35,4 @@ and made-up example rows. Add a row here for each draft folder you create.
 | medication_plan/ | Planned doses on the dose calendar, "not recorded yet" and never "missed" | planning a medication plan |
 | pet_food_stock/ | Food put out using up a pet-food Stock item by choice, with double-count traps | linking Pet feeding to Stock |
 | week_at_a_glance/ | A Home panel of this week built only from existing calendars, with a text version | building the week panel |
+| demo_household/ | An invented fourth household with four years of weigh-ins, feedings, doses, routines and priced shopping | demonstrating charts and timelines |
