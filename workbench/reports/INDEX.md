@@ -56,3 +56,4 @@ expected, actual, severity (blocker, important, minor), suggested change.
 | 2026-11-27-calendars-check.md | Every calendar in three households at 320px, desktop, dark and print, worst first. | fixing calendar print and private-calendar words |
 | 2026-11-27-bar-charts-check.md | Seven bar charts against invented records, worst first, and the next three charts. | fixing chart words and planning charts |
 | 2026-11-27-private-lists-leak-audit.md | Every route tried for a private dose or medication value before Show, worst first. | reviewing private-list safety |
+| 2026-11-27-timeline-check.md | What happened timelines in three households and two stress copies, worst first, and visit ideas. | refining the timeline |
