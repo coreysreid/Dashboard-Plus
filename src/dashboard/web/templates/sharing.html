@@ -33,6 +33,13 @@
   <p>Helpers (assistants you gave a key) have their own permissions: <a href="/settings/helpers">Settings, Helpers</a>.</p>
 </div>
 
+{% if groups %}
+<nav aria-label="Parts of this page" data-sharing-jump>
+  <p>Jump to: {% for group in groups %}<a href="#sharing-{{ loop.index }}">{{ group.title }}</a>{% if not loop.last %} · {% endif %}{% endfor %}</p>
+</nav>
+{% if changed %}<p data-sharing-changed>You have changed {{ changed | length }} thing{{ "" if changed | length == 1 else "s" }} from the usual: {{ changed | join("; ") }}.</p>
+{% else %}<p class="muted" data-sharing-changed>Everything is as usual.</p>{% endif %}
+{% endif %}
 <form method="post" action="/settings/sharing" class="record">
   <input type="hidden" name="_csrf" value="{{ csrf_token }}">
   {% for group in groups %}
@@ -55,10 +62,10 @@
         <p class="help">A detail is only shared while its list is.</p>
         {% for detail in list.details %}
         {% if detail.fixed %}
-        <p><strong>{{ detail.label }}</strong>{% if detail.private %} (private){% endif %}: always only on this computer. {{ detail.fixed }}</p>
+        <p><strong>{{ detail.label }}</strong>: always only on this computer. {{ detail.fixed }}</p>
         {% else %}
         <fieldset>
-          <legend>{{ detail.label }}{% if detail.private %} (private){% endif %}</legend>
+          <legend>{{ detail.label }}</legend>
           <div class="choices">
             {% for option in detail.options %}
             <label><input type="radio" name="c:{{ detail.key }}" value="{{ option.value }}" {% if option.checked %}checked{% endif %}> {{ option.words }}</label>

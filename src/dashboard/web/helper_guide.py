@@ -3,7 +3,7 @@ from __future__ import annotations
 
 import json
 
-from dashboard.core import helpers, receipts, records, schema
+from dashboard.core import dates, helpers, receipts, records, schema
 from dashboard.web import api, display, helper_examples
 
 GUIDE_ROUTE = "GET /api/v1/guide (the dashboard_how_to_help tool)"
@@ -94,6 +94,7 @@ def guide_text(conn, full_registry: dict, helper: helpers.Helper) -> str:
                   "retry with the same request_key and the same entries; it can never be added twice.",
                   "- Dates are written 2027-05-20. Money is in whole units, like 12.50. Yes or no is true or false. "
                   "A choice takes its key (or its label).",
+                  _date_order_line(conn),
                   "- A day means the household's own calendar day, not yours. A time like 2026-11-20T07:15 with no "
                   "offset is the household's own local time: send the time as the person said it. A time with an "
                   "offset (2026-11-20T07:15+01:00 or ...Z) is an exact moment, counted on the household day it falls "
@@ -102,11 +103,13 @@ def guide_text(conn, full_registry: dict, helper: helpers.Helper) -> str:
                   "is a choice (km or mi, g or ml or pouch), send the unit the paper or screen showed, and never "
                   "add up or mix units yourself.",
                   "- Never guess. Ask the household, or leave an optional field out, for a date whose day and month "
-                  "could be either way round (1/2/27), a yes or no you would infer from a name (such as whether water "
-                  "is safe to drink now), and a unit or amount you would have to convert.",
+                  "could be either way round (1/2/27) on a paper from somewhere else, a use-by date offered as the "
+                  "day something was bought, a yes or no you would infer from a name (such as whether water is safe "
+                  "to drink now), and a unit or amount you would have to convert.",
                   "- Do not copy private facts into names, notes, why or receipt lines: access or alarm codes, "
                   "account, card or payment numbers, registrations, private medical details. Leave them out and tell "
-                  "the person; they type them in Dashboard Plus themselves.",
+                  "the person; they type them in Dashboard Plus themselves. A person's medicines go in their private "
+                  "medical details, which only they type.",
                   "- Read the whole answer. Its warnings (such as may_count_twice) need the person's attention: tell "
                   "them.",
                   "- Reading a receipt or a paper: an entry may carry \"source\": {\"line\": \"KIDNEY BEANS 400G x2\", "
@@ -134,6 +137,18 @@ def guide_text(conn, full_registry: dict, helper: helpers.Helper) -> str:
                      "row and why. If you cannot verify a status, say it is unknown. Sent does not mean accepted or "
                      "complete; never say the move is complete for them.")
     return "\n".join(lines)
+
+
+def _date_order_line(conn) -> str:
+    """Which way round this household writes short dates (decision 0143), from its own Settings."""
+    style = dates.household_style(conn)
+    if style == dates.DAY_FIRST:
+        return ("- This household writes dates day first (DD/MM/YY), so its 03/04/27 means 3 April 2027. Still send "
+                "dates as 2027-04-03.")
+    if style == dates.MONTH_FIRST:
+        return ("- This household writes dates month first (MM/DD/YY), so its 04/03/27 means April 3, 2027. Still send "
+                "dates as 2027-04-03.")
+    return "- This household writes dates year first (2027-04-03), the same way you send them."
 
 
 def _fill_lines(store: records.Records, allowed: dict, helper: helpers.Helper) -> list[str]:
@@ -169,7 +184,8 @@ def _never_lines() -> list[str]:
             "- Access or alarm codes, account and reference numbers, registrations, and anything else the guide "
             "marks Private. Leave them out and tell the person which records still need them.",
             "- Passwords, PINs, codes, full card or bank numbers, ID numbers or copies of ID: Dashboard Plus never "
-            "keeps these at all, for anyone. A full card number anywhere in a send is refused with payment_detail. "
+            "keeps these at all, for anyone. A full card number anywhere in a send is refused with payment_detail; a code or password after its word "
+            "(alarm code 4321), a full bank account or an ID number with never_kept. "
             "Write who to ask or where it is kept, or only the last 4 digits (like ••••1234).",
             "- Answers to the readiness questions and what happens in a practice drill: a person answers those.",
             "- Calendars, bars and timelines are only ways for a person to look at the lists above. Read the lists "

@@ -194,6 +194,7 @@ One record per decision, from `TEMPLATE.md`. Never deleted; reversed ones are ma
 | [0140](0140-sharing-permissions.md) | What your other computers get (core migration 0011): a consent-based sharing choice for every list (Shared, Shared but not the amount or private details, Only on this computer) and detail, starting from each module's `travels` rule so nothing changes until chosen; Money back starts kept here (`travels = "never"` on the table); `travels_fixed` codes never travel; keeping here is immediate and cleans the waiting change log, sharing something private asks first, counts from now on, is in history with Undo; enforced in `sync.record` and `sync.snapshot`; helpers stay separate | Accepted |
 | [0142](0142-batch-22-checks-acted-on.md) | Batch 22 checks acted on: calendar day lists and the shown dose timeline print properly, private calendars say "Person 1" not a record number, loan and bar wording fixed, bars open on the subject with the latest entry, waiting suggestions are said not counted, and the Stock name hint and example no longer carry a medicine | changing print rules, private subject names, due words or bar defaults |
 | [0141](0141-no-fraud-grade-details.md) | No fraud-grade details (User 1's rule): no module may declare a password, PIN, code, full card, bank, policy or ID number or a copy of ID (checked at load); Home layout's codes box, Utilities' account number and Bills' reference are retired for "who to ask or where it is kept" and the last 4 digits; a full card number in any text, helper send or spreadsheet is refused without echo; Tidy sensitive details lists what was saved before, hidden until tidied, with a backup, Undo and Forget | Accepted |
+| [0143](0143-batch-23-privacy-checks-acted-on.md) | Batch 23 privacy checks acted on: a card number is found however it is spaced or typed (non-breaking or thin spaces, dots, slashes, line breaks, full-width digits) but never in a date, permanent ID or IMEI; a code after its word, a full bank account and a tax, social security or health card number are refused in every text and helper send, naming the entry and field (`never_kept`); the guide says the household's date order; Review checks a future Stock in; sharing says "(private)" once, with a jump list | Accepted |
 | [TEMPLATE](TEMPLATE.md) | Blank record to copy for a new decision | recording a decision |
 
 ## docs/plans/  (summary: build plans for larger pieces of work, written before building)
@@ -777,8 +778,7 @@ Add a new file with the next number instead of changing an old one.
 | restore_*.html | Settings, Backups: the list of backups, the check-and-compare page, the result, and the shared Undo restore box | changing the restore pages |
 | tidy.html | Tidy sensitive details (decision 0141): saved codes and full numbers by list and field, Show, the three choices per detail, Undo and Forget the old values | changing the Tidy sensitive details wording |
 
-## tests/  (summary: automatic tests; synthetic data only)
-How to run them is in AGENTS.md.
+## tests/  (summary: automatic tests; synthetic data only; AGENTS.md says how to run them)
 | Entry | What it is | Open it when |
 |---|---|---|
 | support.py | Shared helpers for tests: temporary folders and made-up (synthetic) modules. | writing a new test |
@@ -867,6 +867,7 @@ How to run them is in AGENTS.md.
 | test_csp_0139.py | Tests for decision 0139: a strict Content-Security-Policy on every response, and no inline scripts or event handlers left in any page. | changing the security headers or adding a script to a page |
 | test_helper_guide_0138.py | Tests for decision 0138: the helper guide, connector words and published description say which lists a helper may fill, which it never may, and how units and the household's day apply. All data is invented. | changing the helper guide, its examples or the connector words |
 | test_no_fraud_grade_data_0141.py | Tests for decision 0141: no fraud-grade details are kept, and what was saved before can be tidied with Undo. | changing the card check, guarded or retired fields, or Tidy sensitive details |
+| test_lane_b_batch23_privacy.py | Tests for decision 0143: Lane B's batch 23 privacy findings: card spacing, codes, bank and ID numbers, helpers, Review and sharing words. | changing the card, code, bank or ID checks, helper refusals, Review date checks or the sharing page |
 
 ## tools/  (summary: scripts that check, lock and build the project; run by CI)
 | Entry | What it is | Open it when |

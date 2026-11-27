@@ -1073,7 +1073,7 @@
             }
           },
           "400": {
-            "description": "The body could not be read (`bad_request`), or contains something that looks like a helper key (`looks_like_a_key`) or hidden characters (`hidden_characters`), or a number shaped like a payment card (`payment_detail`). None of it is kept or repeated.",
+            "description": "The body could not be read (`bad_request`), or contains something that looks like a helper key (`looks_like_a_key`) or hidden characters (`hidden_characters`), or a number shaped like a payment card (`payment_detail`), or a code or password after its word, a full bank account or an ID number (`never_kept`). The message names the entry and field, never the value. None of it is kept or repeated.",
             "content": {
               "application/json": {
                 "schema": {
@@ -1101,7 +1101,13 @@
                   "payment_detail": {
                     "value": {
                       "error": "payment_detail",
-                      "message": "This request contains a long number shaped like a payment card number. Leave card, loyalty and account numbers out of receipt lines and send it again."
+                      "message": "Entry 0, notes: this looks like a full card number. Dashboard Plus never keeps card numbers. Write only the last 4 digits, e.g. \u2022\u2022\u2022\u20221234, or leave it out."
+                    }
+                  },
+                  "never_kept": {
+                    "value": {
+                      "error": "never_kept",
+                      "message": "Entry 0, notes: this looks like it holds a code, PIN or password. Dashboard Plus never keeps codes or passwords. Write who to ask or where it is kept, and leave the code itself out."
                     }
                   }
                 }
@@ -1824,6 +1830,7 @@
               "looks_like_a_key",
               "hidden_characters",
               "payment_detail",
+              "never_kept",
               "not_allowed",
               "private_detail",
               "look_only",
@@ -1839,7 +1846,7 @@
               "refused",
               "server_error"
             ],
-            "description": "A short code to act on: `no_key`: The key is missing, wrong or turned off. `from_a_web_page`: The request carried an Origin header, so it came from a web page. `forbidden`: The request named a host other than this computer. `bad_request`: The request could not be read, or a field of it is missing or the wrong kind. `looks_like_a_key`: Some text looked like a helper key. It is never kept or repeated. `hidden_characters`: Some text had hidden or text-reversing characters. Line breaks are fine. `payment_detail`: Some text held a number shaped like a payment card number. Leave card, loyalty and account numbers out. `not_allowed`: A field links into a part of the records this helper was not given. `private_detail`: A suggestion named a private detail, which helpers never share. `look_only`: This helper may look but not suggest. `not_found`: No such table, record or batch for this helper. A table in a part the helper was not given answers exactly like one that does not exist. `method_not_allowed`: That address does not accept this method. `request_key_reused`: The request key was already used for different suggestions. `too_large`: The body is over 65,536 bytes. `needs_json`: The body must be JSON with Content-Type application/json. `invalid`: Some values could not be used. Nothing was saved. `problems` names entry, table and field. `daily_limit`: The helper has already sent its suggestions for today (the household's day). Stop and ask the household: only they can allow more, on the Review page. `review_queue_full`: Too many of this helper's suggestions are already waiting on Review. Nothing was saved. No Retry-After: the wait is for a person, not a clock. `too_many_requests`: More requests in a minute than allowed. See the Retry-After header. `refused`: Any other refusal the web server itself makes. `server_error`: Something went wrong. Nothing was changed."
+            "description": "A short code to act on: `no_key`: The key is missing, wrong or turned off. `from_a_web_page`: The request carried an Origin header, so it came from a web page. `forbidden`: The request named a host other than this computer. `bad_request`: The request could not be read, or a field of it is missing or the wrong kind. `looks_like_a_key`: Some text looked like a helper key. It is never kept or repeated. `hidden_characters`: Some text had hidden or text-reversing characters. Line breaks are fine. `payment_detail`: Some text held a number shaped like a payment card number. Leave card, loyalty and account numbers out. `never_kept`: Some text held a code or password after its word, a full bank account or a tax, social security or health card number. Leave it out; the message names the entry and field. `not_allowed`: A field links into a part of the records this helper was not given. `private_detail`: A suggestion named a private detail, which helpers never share. `look_only`: This helper may look but not suggest. `not_found`: No such table, record or batch for this helper. A table in a part the helper was not given answers exactly like one that does not exist. `method_not_allowed`: That address does not accept this method. `request_key_reused`: The request key was already used for different suggestions. `too_large`: The body is over 65,536 bytes. `needs_json`: The body must be JSON with Content-Type application/json. `invalid`: Some values could not be used. Nothing was saved. `problems` names entry, table and field. `daily_limit`: The helper has already sent its suggestions for today (the household's day). Stop and ask the household: only they can allow more, on the Review page. `review_queue_full`: Too many of this helper's suggestions are already waiting on Review. Nothing was saved. No Retry-After: the wait is for a person, not a clock. `too_many_requests`: More requests in a minute than allowed. See the Retry-After header. `refused`: Any other refusal the web server itself makes. `server_error`: Something went wrong. Nothing was changed."
           },
           "message": {
             "type": "string",

@@ -13,7 +13,7 @@ import sqlite3
 from datetime import date, datetime, time, timezone
 from decimal import Decimal, InvalidOperation
 
-from dashboard.core import db, helpers, move_in, receipts
+from dashboard.core import db, fraud_guard, helpers, move_in, receipts
 from dashboard.core.records import Records, ValidationError
 from dashboard.core.schema import target_table
 from dashboard.errors import PlainError
@@ -31,6 +31,7 @@ MAX_UNIT_HINT = 30
 MAX_SHOP_LABEL = 80
 UNMATCHED_LINE = receipts.UNMATCHED_LINE
 LINE_KEYS = {"kind", "source", "receipt_date", "quantity_hint", "unit_hint"}
+ENTRY_PARTS = {"table", "source"} | LINE_KEYS  # the parts of an entry a refusal may name (decision 0143)
 REQUEST_KEY = re.compile(r"^[A-Za-z0-9._:-]+$")
 # Something shaped like a helper key (decision 0066). Keys belong only in the Authorization header.
 KEY_LIKE = re.compile(re.escape(helpers.KEY_PREFIX) + r"[A-Za-z0-9_-]{8,}")
@@ -161,10 +162,43 @@ def _screen(body) -> None:
         raise ProposalError(400, "hidden_characters",
                             "This request contains hidden control characters, such as marks that turn text "
                             "around on screen. Remove them and send it again. Line breaks are fine.")
-    if any(receipts.looks_like_a_card(t) for t in texts):
-        raise ProposalError(400, "payment_detail",
-                            "This request contains a long number shaped like a payment card number. Leave card, "
-                            "loyalty and account numbers out of receipt lines and send it again.")
+    # Decision 0141, widened by 0143: a card number, a code or password after its word, a full bank account or an
+    # ID number is refused wherever it is (values, notes, why, receipt lines), naming the entry and field only.
+    for where, text in _places(body):
+        refused = fraud_guard.in_any_text(text)
+        if refused == fraud_guard.CARD:
+            raise ProposalError(400, "payment_detail", f"{where}: this {refused}")
+        if refused:
+            raise ProposalError(400, "never_kept", f"{where}: this {refused}")
+
+
+_FIELD_NAME = re.compile(r"[a-z][a-z0-9_]{0,59}")
+
+
+def _places(body):
+    """Each piece of text in a request with where it is, in words a helper can find: "Entry 0, notes", "Why".
+
+    Only a plain field name is ever repeated; a value never is."""
+    if not isinstance(body, dict):
+        yield from (("This request", t) for t in _texts(body))
+        return
+    for key, value in body.items():
+        if key == "entries" and isinstance(value, list):
+            for position, entry in enumerate(value):
+                if not isinstance(entry, dict):
+                    yield from ((f"Entry {position}", t) for t in _texts(entry))
+                    continue
+                for part, inner in entry.items():
+                    if part == "values" and isinstance(inner, dict):
+                        for field, text in inner.items():
+                            named = field if isinstance(field, str) and _FIELD_NAME.fullmatch(field) else "a field"
+                            yield from ((f"Entry {position}, {named}", t) for t in _texts({field: text}))
+                    else:
+                        yield from ((f"Entry {position}, {part if part in ENTRY_PARTS else 'a part'}", t)
+                                    for t in _texts({part: inner}))
+        else:
+            where = {"why": "Why", "receipt_context": "Receipt details", "request_key": "request_key"}.get(key)
+            yield from ((where or "This request", t) for t in _texts({key: value}))
 
 
 def _read_source(source) -> dict:

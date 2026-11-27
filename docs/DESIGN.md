@@ -98,11 +98,15 @@ section 12) and `help` text.
 **Never fraud-grade details** (decision 0141). A text column may say `guard =
 "last_digits"` (only up to 4 digits, kept as "••••1234") or `guard =
 "where_kept"` (who to ask or where a code is kept; four digits in a row or a
-secret after its word, such as "PIN 4821", are refused), optionally only while
-a choice holds listed values (`guard_when = { kind = ["access"] }`). Every text
-value anywhere is refused if it holds a full payment card number (13 to 19
-digits starting 2 to 6 that pass the card check digit; a shop barcode with a
-valid barcode check digit is not one). A column that used to invite such a
+secret after its word, such as "PIN 4821", are refused, but a phone number is
+who to ask), optionally only while a choice holds listed values (`guard_when =
+{ kind = ["access"] }`). Every text value anywhere, on forms, helper sends and
+imports, is refused if it holds a full payment card number (13 to 19 digits
+starting 2 to 6 that pass the card check digit, however it is spaced or typed;
+a shop barcode, a pet microchip or a phone's IMEI is not one), a code, PIN or
+password after its word ("alarm code 4321"), a full bank account (IBAN, or a
+BSB, sort code or routing number with its account) or a tax, social security
+or health card number after its word (decision 0143). A column that used to invite such a
 detail is kept for what was saved with `retired = { replaced_by = "…", note_to
 = "…", label = "…" }` (private, never travelling): it is taken out of the
 table's columns when the module loads, so no page, sheet, export, helper or
