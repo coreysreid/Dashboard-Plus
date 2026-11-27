@@ -5,7 +5,7 @@ import json
 
 from flask import Blueprint, current_app, redirect, render_template, request, url_for
 
-from dashboard.core import csv_import, dates, helpers, move_in, proposals, receipts, records, receipt_prices
+from dashboard.core import csv_import, daily, dates, helpers, move_in, proposals, receipts, records, receipt_prices
 from dashboard.core.proposals import HIDDEN_CHARACTERS
 from dashboard.core.units import unit_for
 from dashboard.errors import PlainError
@@ -387,6 +387,19 @@ def private_words(store: records.Records, hits: list[tuple[str, str]]) -> str | 
             f"private field, typed by you. Reject this, or accept it and then remove that text.")
 
 
+def future_words(store: records.Records, item: dict, today: str) -> str | None:
+    """A gentle check under a suggested Stock in or out dated after today (decision 0143): it is for something that
+    already happened, and a use-by date is easily read as the day it was bought. It only warns."""
+    info = store.registry.get(item["table_name"])
+    column = info.table.columns.get("happened_on") if info is not None else None
+    when = item["values"].get("happened_on")
+    if column is None or column.type != "date" or not isinstance(when, str) or not dates.is_stored(when) \
+            or when <= today:
+        return None
+    return (f"This date is after today. A {noun(info, item['values'])} is for something that already happened: "
+            f"check the date before accepting (a use-by date is not the day it was bought).")
+
+
 @review_pages.get("/review")
 def review():
     conn, store = current_app.config["CONNECT"](), _store()
@@ -394,6 +407,7 @@ def review():
     # Private text the household already keeps, compared in memory for this page only (decision 0112).
     known = move_in.private_values(conn, store.registry) if batches else {}
     style = dates.household_style(conn)
+    today = daily.today(conn).isoformat()
     same = {}  # one look at each table's names, for imported rows that repeat one
     number = 0  # each row's place on the page, for the keys (Up, Down, A, R, Space)
     on_review = {b["id"] for b in batches}
@@ -411,6 +425,7 @@ def review():
             item["exists"] = _already_there(store, same, item) if batch["kind"] == "import" else None
             item["price_offer"] = receipt_prices.offer(conn, store.registry.get(item["table_name"]), item["values"])
             item["repeat"] = review_note(store, item)  # a feeding that may be sent twice (decision 0110)
+            item["future"] = future_words(store, item, today)
             item["source"] = {k: visible(v) for k, v in item["source"].items()} if item["source"] else None
             item["needs"] = sorted({ref for ref in item["refs"].values() if ref in waiting})
             item["needed_by"] = _needing(batch["proposals"], item["position"])
