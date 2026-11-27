@@ -16,7 +16,7 @@
   <tr>
     <td>{{ when(c.made) }}</td><td>{{ c.kind }}</td><td>{{ c.where }}</td><td>{{ size(c.size) }}</td>
     <td>{% if c.usable %}Check passed{% if c.state == "update" %} (older version){% endif %}{% else %}<span style="color:var(--bad)">Cannot use this copy</span>{% endif %}</td>
-    <td><a href="/settings/backups/{{ c.place }}/{{ c.name }}" aria-label="Look at the backup made {{ when(c.made) }}">Look</a></td>
+    <td><a href="/settings/backups/{{ c.place }}/{{ c.name }}" aria-label="See what is in the backup made {{ when(c.made) }}">See what is in it</a></td>
   </tr>{% endfor %}</tbody>
 </table></div>
 {% else %}

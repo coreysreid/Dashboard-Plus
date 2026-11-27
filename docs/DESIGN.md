@@ -619,7 +619,7 @@ stored by the page.
   year are under "Still to decide". A record with no date is under No date yet.
 - A row's button comes from the table's own `actions`: an action with `adds`
   opens its form; a one-step action whose `set` takes the row out of `where`
-  is pressed at once; otherwise "Open record to update". Forms and buttons
+  is pressed at once; otherwise "Open to update". Forms and buttons
   return to Things to do (only to its own addresses) with their notice and Undo.
 - Week, month and year are calendar ranges; the week starts on the household's
   setting `household.week_starts` (Monday, Sunday or Saturday; unset, Sunday
@@ -1106,7 +1106,7 @@ number and the core can load both for a transition period.
   date, last done, paused, notes) and done or skipped (the routine, done or
   skipped this time, the date it was planned for, the day it happened, who,
   notes). Behaviour: due from a week before the next date while not paused;
-  **Mark this occurrence done** and **Skip this time** each ask for the next
+  **Mark done** and **Skip this time** each ask for the next
   date, offered from the repeat and never chosen for the person; Undo straight
   after. Shown with every other due date on Things to do (section 5.9).
 - **Readiness** (declarative; the home of the prompts in section 10.5).

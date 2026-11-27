@@ -6,6 +6,7 @@
 | test_migrations.py | Tests for numbered migrations: tracks, checksums, newer databases, rollback and backups. | changing migrations |
 | test_csv_import.py | Tests for Import from a spreadsheet: reading a CSV, matching columns, the dry run, staging for Review and Accept. | changing spreadsheet import |
 | test_bring_in_history.py | Tests for Bring in earlier entries (decision 0137): a person's own CSV of doses, weigh-ins or feedings, previewed, added at once and undone at once. | changing Bring in earlier entries |
+| test_lane_b_batch23_fixes.py | Tests for decision 0144: Lane B's batch 23 findings 112, 113, 124 and 126 (Bring in dates, skip links, read-me words). | changing those words or Bring in dates |
 | test_modules.py | Tests for loading module folders and the plain-language problems they report. | changing module rules |
 | test_actions.py | Tests for actions: one-step buttons like Mark returned, the date order rule `not_before` (decision 0075), and the checks on actions that add a record (decision 0091). | changing actions or date order |
 | test_routine_checklists.py | Tests for Things to do and Routines (decision 0107): the eleven checks in Lane B's routine checklist draft, and more. | changing Things to do, Routines or repeats |

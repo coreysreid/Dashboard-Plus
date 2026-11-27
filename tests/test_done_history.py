@@ -14,7 +14,7 @@ TODAY = date(2026, 11, 20)
 CARS, SERVICES = "vehicles__vehicles", "vehicles__services"
 EQUIPMENT, LOANS, GARDEN = "home_layout__equipment", "lent_out__loans", "garden__jobs"
 SECRET = "SECRET-SENTINEL-5520"
-EARLIER = "(an earlier time, from its history)"
+EARLIER = "(an earlier date you recorded)"
 
 
 def main(page: str) -> str:

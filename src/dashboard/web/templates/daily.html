@@ -1,7 +1,7 @@
 {% extends "base.html" %}
 {% block title %}{{ view.heading if view else title }} · Dashboard Plus{% endblock %}
 {% block body %}
-<p class="muted"><a href="/">Home</a> · <a href="/t/{{ table }}">List of every entry</a></p>
+<p class="muted"><a href="/">Home</a> · <a href="/t/{{ table }}">All entries in this list</a></p>
 {% if no_subject %}
 <h1>{{ title }}</h1>
 <p role="status"><strong>{{ no_subject }}</strong></p>

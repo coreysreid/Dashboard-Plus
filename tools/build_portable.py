@@ -32,7 +32,7 @@ cd /d "%~dp0"
 pause
 """
 
-README_TXT = """Dashboard Plus
+README_TXT = r"""Dashboard Plus
 ==============
 
 Look after what your household has.
@@ -41,8 +41,20 @@ To start:   double-click "Open Dashboard".
 To stop:    click "Save and exit" on the page (or double-click "Save and exit Dashboard")
             before you unplug a USB drive.
 
-Your records are kept in the "data" folder next to these files. Nothing is sent
-anywhere. To update the program, replace everything except the "data" folder.
+Your records are kept in the "data" folder next to these files. Dashboard Plus
+does not send them to an online service by itself. If you connect an online
+helper, what you allow it to read may be sent by that helper: check Settings,
+Helpers first.
+
+To update, click Save and exit, then replace everything except the "data"
+folder. The next start backs up your records first. Backups are in data\backups
+and in %LOCALAPPDATA%\Dashboard Plus\backups.
+
+Moving to a new computer? Copy the whole Dashboard Plus folder, data included,
+or see Restore from a backup in Settings.
+
+Before unzipping, right-click the zip, choose Properties, tick Unblock and click
+OK. Only for a zip from this project's GitHub page.
 
 The first time you open it, Windows may say "Windows protected your PC" because
 this free program is not signed by a paid certificate. Choose "More info", then

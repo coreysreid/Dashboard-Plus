@@ -26,7 +26,7 @@
 {% for g in groups %}
 {% set gc = coverage.groups | selectattr("key", "equalto", g.key) | first %}
 <section aria-labelledby="group-{{ g.key }}">
-  <h2 id="group-{{ g.key }}">{{ g.title }} <span class="muted" style="font-weight:400;font-size:1rem">{% if gc.fit %}{{ gc.looked_at }} of {{ gc.fit }} looked at{% else %}none fit your settings{% endif %}</span></h2>
+  <h2 id="group-{{ g.key }}">{{ g.title }}{% if not gc.fit %}:{% endif %} <span class="muted" style="font-weight:400;font-size:1rem">{% if gc.fit %}{{ gc.looked_at }} of {{ gc.fit }} looked at{% else %}none of these fit your settings{% endif %}</span></h2>
   {% if g.questions %}
   <ul class="question-list">
     {% for q in g.questions %}

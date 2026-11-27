@@ -1,4 +1,4 @@
-// Load the next page of rows as the person scrolls near the end, or when they press "Show more".
+// Load the next page of rows as the person scrolls near the end, or when they press "Next 50 rows".
 (function () {
   var button = document.getElementById("more");
   var wrap = document.getElementById("more-wrap");

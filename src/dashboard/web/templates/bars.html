@@ -1,7 +1,7 @@
 {% extends "base.html" %}
 {% block title %}{{ title }}{% if view %} · {{ view.heading }}{% endif %} · Dashboard Plus{% endblock %}
 {% block body %}
-<p class="muted"><a href="/">Home</a>{% if list_href %} · <a href="{{ list_href }}">List of every entry</a>{% endif %}</p>
+<p class="muted"><a href="/">Home</a>{% if list_href %} · <a href="{{ list_href }}">All entries in this list</a>{% endif %}</p>
 <h1>{{ title }}</h1>
 {% if no_subject %}
 <p class="chart-empty" role="status"><strong>{{ no_subject }}</strong></p>

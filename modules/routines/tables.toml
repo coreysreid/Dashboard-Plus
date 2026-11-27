@@ -18,11 +18,11 @@ columns.last_done = { type = "date" }
 columns.paused = { type = "boolean", default = false }
 columns.notes = { type = "longtext" }
 
-# Mark this occurrence done: one save adds a Done or skipped record (keeping the planned date), sets Last done
+# Mark done: one save adds a Done or skipped record (keeping the planned date), sets Last done
 # and the next date the person chooses; Undo puts the open date back while nothing has changed since.
 [[tables.routines.actions]]
 key = "done"
-label = "Mark this occurrence done"
+label = "Mark done"
 title = "Mark “{record}” done"
 intro = "Record that it was done and choose the next date. Nothing changes until you save."
 done = "Marked done on {done_on}."
