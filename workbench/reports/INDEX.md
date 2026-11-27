@@ -65,3 +65,4 @@ expected, actual, severity (blocker, important, minor), suggested change.
 | 2026-11-27-sharing-choices-check.md | Settings, What your other computers get (0140), at 320px with keep, share, confirm and Undo, worst first. | refining sharing choices |
 | 2026-11-27-store-what-must-not-be-stored.md | Card, bank, password and ID values tried against 0141's checks, with gaps and false alarms, worst first. | hardening the fraud-grade guard |
 | 2026-11-27-read-me-check.md | Windows and Mac read-me, README and Getting started sentences against today's app, with replacements. | updating the read-me files |
+| 2026-11-27-words-audit.md | One agreed word per idea from every page's headings, buttons and empty states, worst first. | applying consistent words |
