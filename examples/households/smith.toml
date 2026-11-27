@@ -163,7 +163,7 @@ detail = "Lactose intolerant."
 [[people.important_info]]
 person = "Bob Jones"
 kind = "access"
-detail = "Spare front door key. The side gate code is 1-9-8-4."
+detail = "Spare front door key. Ask Bob for the side gate code; it is never written down here."
 
 # ---- Pets -------------------------------------------------------------------
 
@@ -739,6 +739,8 @@ name = "Laundry back door"
 floor = "Ground floor"
 place = "Laundry"
 route = "Through the kitchen and the laundry, out to the backyard and the side gate."
+# Who to ask, never the code itself (decision 0141).
+access_hint = "Ask Bob Jones next door for the side gate code"
 
 [[home_layout.shutoffs]]
 name = "Water main"
@@ -981,7 +983,7 @@ tasted_on = "today-5"
 notes = "Remembered the fruit flavour; one bottle opened, count updated separately."
 
 # ---- Utilities ----------------------------------------------------------------
-# Invented provider and fault line; the number lives in People, and the account reference is made up.
+# Invented provider and fault line; the number lives in People, and only the made-up last 4 digits of the account are kept (decision 0141).
 
 [[people.people]]
 name = "Example Energy AU"
@@ -996,7 +998,7 @@ name = "Home electricity"
 kind = "electricity"
 provider = "Example Energy AU"
 fault_contact = "Example Energy Faults AU"
-account_number = "DEMO-AU-ACCOUNT-01"
+account_last4 = "0101"
 meter = "Electricity meter"
 
 # ---- Bills and insurance ------------------------------------------------------
@@ -1013,7 +1015,7 @@ frequency = "monthly"
 next_due = "today+24"
 place = "Kitchen"
 covers = "Example household electricity service"
-reference = "DEMO-SMITH-POWER"
+reference_last4 = "4417"
 
 # ---- Readiness ----------------------------------------------------------------
 # Answers to "Have you thought about…?" questions (modules/readiness/prompts.toml). Not yet answers say

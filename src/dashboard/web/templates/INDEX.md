@@ -41,3 +41,4 @@
 | export.html | Settings, Export my records: what is in the export and the download button | changing the Export page |
 | moves*.html | One reminder per policy (0117): Review and move with each record's ID, and the Nothing was moved page | changing the reminder move screens |
 | restore_*.html | Settings, Backups: the list of backups, the check-and-compare page, the result, and the shared Undo restore box | changing the restore pages |
+| tidy.html | Tidy sensitive details (decision 0141): saved codes and full numbers by list and field, Show, the three choices per detail, Undo and Forget the old values | changing the Tidy sensitive details wording |

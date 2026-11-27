@@ -426,11 +426,12 @@ class TravelRuleTests(SyncTestCase):
         rows = {}
         for table in ("exits", "shutoffs", "equipment", "meters"):
             name = f"home_layout__{table}"
-            values = {"name": f"Invented {table}", "access_details": f"SENTINEL-{table.upper()}-c41d"}
+            values = {"name": f"Invented {table}"}
             if "kind" in self.registry[name].table.columns:
                 values["kind"] = self.first_choice(name, "kind")
             rows[name] = self.records.create(name, values)
-            sentinels[name] = values["access_details"]
+            sentinels[name] = f"SENTINEL-{table.upper()}-c41d"  # a code saved before decision 0141, now retired
+            self.conn.execute(f"UPDATE {name} SET access_details = ? WHERE id = ?", (sentinels[name], rows[name]))
         rows["vehicles__vehicles"] = self.records.create("vehicles__vehicles", {"name": "Invented van",
                                                                               "registration": "SENTINEL-REG-44d1"})
         sentinels["vehicles__vehicles"] = "SENTINEL-REG-44d1"
@@ -459,7 +460,8 @@ class TravelRuleTests(SyncTestCase):
         self.assertFalse([m for m in captured if any(v in m for v in sentinels.values())])
         for name, record_id in rows.items():  # still kept, unchanged, on this computer
             column = "registration" if name.startswith("vehicles") else "access_details"
-            self.assertEqual(self.records.get(name, record_id)[column], sentinels[name])
+            self.assertEqual(self.conn.execute(f"SELECT {column} FROM {name} WHERE id = ?", (record_id,))
+                             .fetchone()[0], sentinels[name])
         for entry in self.log():
             columns = self.registry[entry["table_name"]].table.columns if entry["table_name"] in self.registry else {}
             self.assertTrue(all(isinstance(w, str) and w in columns for w in entry["withheld"]))
@@ -568,7 +570,7 @@ columns.body = { type = "text", sensitive = true%s }
         detail = registry["people__important_info"].table.columns["detail"]
         self.assertEqual((detail.travels, sorted(detail.travels_when["kind"])), ("when", sorted(MEDICAL)))
         for table in ("exits", "shutoffs", "equipment", "meters"):
-            self.assertEqual(registry[f"home_layout__{table}"].table.columns["access_details"].travels, "never")
+            self.assertEqual(registry[f"home_layout__{table}"].table.retired["access_details"].travels, "never")
         self.assertEqual(registry["vehicles__vehicles"].table.columns["registration"].travels, "never")
         self.assertEqual(registry["pets__pets"].table.columns["microchip"].travels, "always")
         self.assertEqual(sync.unreviewed(registry), [])

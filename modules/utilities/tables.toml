@@ -5,7 +5,10 @@ columns.name = { type = "text", required = true }
 columns.kind = { type = "choice", required = true, choices = ["electricity", "gas", "water", "internet", "phone", "other"] }
 columns.provider = { type = "link", to = "people.people", on_delete = "clear" }
 columns.fault_contact = { type = "link", to = "people.people", on_delete = "clear" }
-columns.account_number = { type = "text", sensitive = true, travels = "never" }
+# Decision 0141: only the last 4 digits of the account number are kept, so a stolen copy cannot be used to
+# take over the account. The old full number column is retired: what was saved stays, unseen, until tidied.
+columns.account_last4 = { type = "text", guard = "last_digits", sensitive = true, travels = "never" }
+columns.account_number = { type = "text", sensitive = true, travels = "never", retired = { replaced_by = "account_last4", note_to = "notes", label = "Account number" } }
 columns.meter = { type = "link", to = "home_layout.meters", on_delete = "clear", with_place = "place" }
 columns.notes = { type = "longtext", sensitive = true, travels = "never" }
 

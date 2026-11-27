@@ -84,7 +84,7 @@ class EveryWritableTableTests(GuideCase):
                 if column.sensitive:
                     checked += 1
                     self.assertNotIn(f"\n- {column.name}: ", block, match.group(1))
-        self.assertGreater(checked, 20)
+        self.assertGreater(checked, 15)  # four fewer since Home layout codes were retired (decision 0141)
 
     def test_a_send_naming_a_price_money_back_or_a_dose_is_refused(self):
         for table, values in (("stock__movements", {"price": "3.50"}), ("stock__refunds", {"amount": "2.00"}),

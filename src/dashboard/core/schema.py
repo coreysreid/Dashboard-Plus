@@ -127,7 +127,9 @@ def next_migration_sql(module: Module) -> str | None:
         if name not in expected_tables:
             problems.append(f"the table '{name}' exists in earlier migrations but is no longer in tables.toml")
             continue
-        declared = {c.name for c in expected_tables[name].columns.values() if c.type != "links"}
+        # A retired column (decision 0141) is still declared: its saved values stay until a person tidies them.
+        declared = {c.name for c in expected_tables[name].columns.values() if c.type != "links"} | \
+            set(expected_tables[name].retired)
         for column in columns:
             if column not in declared and column not in SYSTEM_COLUMN_NAMES:
                 problems.append(f"the column '{name}.{column}' is no longer in tables.toml")

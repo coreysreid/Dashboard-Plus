@@ -11,7 +11,7 @@ from datetime import date, datetime, timezone
 from decimal import Decimal, InvalidOperation
 from typing import Callable
 
-from dashboard.core import dates, db, sync
+from dashboard.core import dates, db, fraud_guard, sync
 from dashboard.core.modules import Column, Module, Table
 from dashboard.core.schema import join_table_name, table_name, target_table
 from dashboard.errors import PlainError
@@ -60,6 +60,13 @@ class TableInfo:
     @property
     def name(self) -> str:
         return table_name(self.module.name, self.table.name)
+
+
+def _without_retired(info: TableInfo, row: dict) -> dict:
+    """A stored row without its retired columns (decision 0141): only Tidy sensitive details ever reads those."""
+    for name in info.table.retired:
+        row.pop(name, None)
+    return row
 
 
 def build_registry(modules: list[Module]) -> dict[str, TableInfo]:
@@ -111,7 +118,7 @@ class Records:
         row = self.conn.execute(f"SELECT * FROM {info.name} WHERE id = ?", (record_id,)).fetchone()
         if row is None or (row["deleted_at"] and not include_deleted):
             raise RecordNotFound(f"That {info.table.title.lower()} record does not exist or has been deleted.")
-        result = dict(row)
+        result = _without_retired(info, dict(row))
         for column in info.table.columns.values():
             if column.type == "links":
                 join = join_table_name(info.module.name, info.table.name, column.name)
@@ -141,7 +148,7 @@ class Records:
         rows = self.conn.execute(
             f"SELECT * FROM {info.name}{where} ORDER BY {order_by} {direction}, id {direction} LIMIT ? OFFSET ?",
             (limit, max(0, int(offset))))
-        return [dict(r) for r in rows]
+        return [_without_retired(info, dict(r)) for r in rows]
 
     def after(self, name: str, after_id: int = 0, limit: int = 50) -> list[dict]:
         """Records with an id above `after_id`, oldest first, deleted ones left out (for paging by id)."""
@@ -171,7 +178,12 @@ class Records:
         if value is None or value == "" or value == []:
             return [] if kind == "links" else None
         if kind in ("text", "longtext"):
-            return str(value)
+            # Decision 0141: a full card number anywhere, and a guarded field's own rule, are refused; the message
+            # never repeats what was typed. A guard that depends on another field is checked with the whole record.
+            refused = fraud_guard.check(str(value), None if column.guard_when else column.guard)
+            if refused:
+                raise ValueError(refused)
+            return fraud_guard.stored_last_digits(str(value)) if column.guard == "last_digits" else str(value)
         if kind == "file":
             text = str(value).replace("\\", "/")
             if text.startswith("/") or ".." in text.split("/") or re.match(r"^[A-Za-z]:", text):
@@ -449,6 +461,22 @@ class Records:
         cleaned.update(worked_out)
 
     @staticmethod
+    def _check_guard_when(info: TableInfo, record: dict, changed: dict) -> None:
+        """A guard that applies only while another field holds a listed choice (decision 0141), such as an access
+        detail, which says who to ask and never the code. Checked when the value or that choice changes."""
+        problems = {}
+        for column in info.table.columns.values():
+            if not column.guard_when or record.get(column.name) in (None, ""):
+                continue
+            (other, allowed), = column.guard_when.items()
+            if record.get(other) in allowed and (column.name in changed or other in changed):
+                refused = fraud_guard.check(str(record[column.name]), column.guard)
+                if refused:
+                    problems[column.name] = refused
+        if problems:
+            raise ValidationError(problems)
+
+    @staticmethod
     def _check_required_when(info: TableInfo, record: dict) -> None:
         """Refuse a record that leaves blank a field its other answers make necessary (e.g. "Safe to drink")."""
         problems = {c.name: "Please choose one." for c in info.table.columns.values()
@@ -652,6 +680,7 @@ class Records:
         self._check_price(info, cleaned, None)
         self._check_refund(info, cleaned, None, None)
         self._check_required_when(info, cleaned)
+        self._check_guard_when(info, cleaned, cleaned)
         self._check_date_order(info, cleaned)
         self._check_nesting(info, None, cleaned)
         self._check_pair(info, None, cleaned)
@@ -939,6 +968,8 @@ class Records:
         self._check_price(info, cleaned, current)
         self._check_refund(info, cleaned, current, record_id)
         self._check_required_when(info, dict(current, **cleaned))
+        self._check_guard_when(info, dict(current, **cleaned),
+                               {k: v for k, v in cleaned.items() if current.get(k) != v})
         self._check_date_order(info, dict(current, **cleaned))
         self._check_nesting(info, record_id, cleaned)
         self._check_pair(info, record_id, dict(current, **cleaned))

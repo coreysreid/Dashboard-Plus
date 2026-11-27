@@ -10,7 +10,7 @@ from dataclasses import dataclass, field
 from datetime import date
 from pathlib import Path
 
-from dashboard.core import prompts as prompt_files
+from dashboard.core import fraud_guard, prompts as prompt_files
 from dashboard.core.settings import HOUSEHOLD_CHOICES
 from dashboard.core.migrations import Migration, load_track, MigrationError
 from dashboard.errors import PlainError
@@ -133,7 +133,8 @@ WATCH_KEYS = ("running_low", "expiring", "supply", "gaps")
 GAP_KEYS = ("missing", "none", "where", "message")
 COLUMN_KEYS = ("type", "required", "required_when", "default", "min", "max", "unit", "choices", "help", "sensitive",
                "to", "on_delete", "not_before", "travels", "travels_when", "with_place", "default_from",
-               "link_rule")
+               "link_rule", "guard", "guard_when", "retired")
+RETIRED_KEYS = ("replaced_by", "note_to", "label")  # decision 0141: where a retired value may go; its old name
 LABEL_TABLE_KEYS = ("title", "columns", "form", "list", "empty", "home", "actions", "add_button", "under",
                     "takes_over")
 # A table's records listed on the page of the record they link to, like a service's quotes (decision 0111).
@@ -191,6 +192,13 @@ class Column:
     # Decision 0120: which linked records may be chosen, checked on every save, like a medicine dose's medication,
     # which must be a `kind = medication` detail of the same person: {"where": {...}, "same": {...}, "shows": ...}.
     link_rule: dict = field(default_factory=dict)
+    # Decision 0141: "last_digits" keeps only the last 4 digits; "where_kept" says who to ask or where a code is
+    # kept, never the code. `guard_when` applies it only while one choice column holds a listed choice.
+    guard: str | None = None
+    guard_when: dict = field(default_factory=dict)
+    # Decision 0141: a column kept in the database for data already saved, never shown, sent, printed or exported
+    # until a person tidies it: {"replaced_by": column, "note_to": column}. Kept in Table.retired, not columns.
+    retired: dict | None = None
 
 
 @dataclass
@@ -222,6 +230,9 @@ class Table:
     # Decision 0120: every record is private history, such as medicine given. Never on Home, a sheet, a helper
     # or the spreadsheet export; made only on this program's own screens (suggestions = false is required).
     private: bool = False
+    # Decision 0141: columns retired because they invited fraud-grade details. Their saved values stay in the
+    # database until a person tidies them, and nothing else in the program ever reads them.
+    retired: dict = field(default_factory=dict)
 
 
 @dataclass
@@ -385,6 +396,25 @@ def _check_travels_when(file: str, table: Table, problems: list[str]) -> None:
             column.travels, column.travels_when, column.travels_reviewed = "never", {}, False
 
 
+def _check_retired(where: str, retired: dict[str, Column], columns: dict[str, Column], problems: list[str]) -> None:
+    """A retired column's value may be tidied into a guarded column of the same table (decision 0141)."""
+    for name, column in retired.items():
+        into = columns.get(column.retired.get("replaced_by", ""))
+        note = columns.get(column.retired.get("note_to", ""))
+        if "replaced_by" in column.retired and (into is None or into.guard is None):
+            problems.append(f"{where}, column '{name}': replaced_by must name a column of this table with a guard.")
+        if "note_to" in column.retired and (note is None or note.type not in ("text", "longtext")):
+            problems.append(f"{where}, column '{name}': note_to must name a text column of this table.")
+    for column in columns.values():
+        if column.guard_when:
+            (other, allowed), = column.guard_when.items()
+            target = columns.get(other)
+            if target is None or target.type != "choice" or not set(allowed) <= {c.key for c in target.choices}:
+                problems.append(f"{where}, column '{column.name}': guard_when must name a choice column of this "
+                                f"table and some of its choices.")
+                column.guard_when = {}
+
+
 def _parse_column(file: str, table: str, name: str, raw, problems: list[str]) -> Column | None:
     where = f"In {file}, table '{table}', column '{name}'"
     if not NAME.match(name):
@@ -460,7 +490,44 @@ def _parse_column(file: str, table: str, name: str, raw, problems: list[str]) ->
                                 "shows": rule.get("shows")}
     if "unit" in raw and kind not in ("measure", "decimal", "integer"):
         problems.append(f"{where}: 'unit' only applies to number columns.")
+    _parse_guard(where, raw, column, problems)
     return column
+
+
+def _parse_guard(where: str, raw: dict, column: Column, problems: list[str]) -> None:
+    """Decision 0141: `guard`, `guard_when` and `retired`, and the refusal of a field that asks for a password, PIN,
+    code, full card or bank number, ID number or copy of an ID. A retired column is the only one that may still be
+    named like that, because it exists only so that what was saved before can be tidied."""
+    if "guard" in raw:
+        if raw["guard"] not in fraud_guard.GUARDS or column.type not in ("text", "longtext"):
+            problems.append(f"{where}: guard must be \"last_digits\" or \"where_kept\", on a text column.")
+        else:
+            column.guard = raw["guard"]
+    if "guard_when" in raw:
+        rule = raw["guard_when"]
+        values = next(iter(rule.values()), None) if isinstance(rule, dict) and len(rule) == 1 else None
+        if column.guard is None or not isinstance(values, list) or not values \
+                or not all(isinstance(v, str) for v in values):
+            problems.append(f"{where}: guard_when names one choice column and the choices that turn the guard on, "
+                            f"like {{ kind = [\"access\"] }}, beside a guard.")
+        else:
+            column.guard_when = {next(iter(rule)): list(values)}
+    if "retired" in raw:
+        rule = raw["retired"]
+        if not isinstance(rule, dict) or set(rule) - set(RETIRED_KEYS) \
+                or not all(isinstance(v, str) and v for v in rule.values()):
+            problems.append(f"{where}: retired names where a saved value may be tidied into, like "
+                            f"{{ replaced_by = \"account_last4\", note_to = \"notes\" }}.")
+        elif not column.sensitive or column.travels != "never" or column.required or column.type not in \
+                ("text", "longtext") or "default" in raw:
+            problems.append(f"{where}: a retired column must be text, private (sensitive = true), never travel "
+                            f"(travels = \"never\"), and have no default or required.")
+        else:
+            column.retired = dict(rule)
+        return
+    what = fraud_guard.forbidden_field(column.name)
+    if what:
+        problems.append(fraud_guard.forbidden_problem(where, what))
 
 
 def _number(value) -> bool:
@@ -1536,9 +1603,13 @@ def _check_tables(module: str, data: dict, requires: list[str], problems: list[s
             column = _parse_column(file, tname, cname, craw, problems)
             if column:
                 columns[cname] = column
+        retired = {n: c for n, c in columns.items() if c.retired is not None}
+        columns = {n: c for n, c in columns.items() if c.retired is None}
+        _check_retired(f"In {file}, table '{tname}'", retired, columns, problems)
         watch = _check_watch(file, tname, raw.get("watch", {}), columns, problems)
         tables[tname] = Table(tname, str(raw.get("title", tname)), raw.get("description"), columns, watch,
                               raw.get("adjusts", {}))
+        tables[tname].retired = retired
         if "suggestions" in raw:
             if isinstance(raw["suggestions"], bool):
                 tables[tname].suggestions = raw["suggestions"]
@@ -2142,6 +2213,10 @@ def _check_labels(data: dict, tables: dict[str, Table], problems: list[str]) -> 
                 problems.append(f"{where}: there is no column '{cname}'.{_suggest(cname, list(known))}")
             elif isinstance(craw, dict):
                 problems.extend(_unknown_keys(f"{where}, column '{cname}'", craw, LABEL_COLUMN_KEYS))
+                what = fraud_guard.forbidden_field(craw.get("label")) if isinstance(craw.get("label"), str) \
+                    and known[cname].guard is None else None
+                if what:
+                    problems.append(fraud_guard.forbidden_problem(f"{where}, column '{cname}'", what))
                 if "optional" in craw:
                     _check_optional_words(f"{where}, column '{cname}'", tables[tname].columns.get(cname),
                                           craw["optional"], problems)

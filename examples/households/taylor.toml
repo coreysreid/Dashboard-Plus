@@ -402,7 +402,7 @@ tasted_on = "today-3"
 notes = "Light and easy to remember."
 
 # ---- Utilities ----------------------------------------------------------------
-# Invented provider and fault line; the number lives in People, and the account reference is made up.
+# Invented provider and fault line; the number lives in People, and only the made-up last 4 digits of the account are kept (decision 0141).
 
 [[people.people]]
 name = "Example Water UK"
@@ -423,7 +423,7 @@ name = "Flat water"
 kind = "water"
 provider = "Example Water UK"
 fault_contact = "Example Water Faults UK"
-account_number = "DEMO-UK-ACCOUNT-01"
+account_last4 = "0103"
 meter = "Flat water meter"
 
 # ---- Bills and insurance ------------------------------------------------------
@@ -438,7 +438,7 @@ frequency = "yearly"
 next_due = "today+18"
 vehicle = "Small car"
 covers = "Example vehicle cover description; check the policy for exclusions"
-reference = "DEMO-TAYLOR-CAR"
+reference_last4 = "6639"
 
 # ---- Readiness ----------------------------------------------------------------
 # Answers to "Have you thought about…?" questions (modules/readiness/prompts.toml). Not yet answers say

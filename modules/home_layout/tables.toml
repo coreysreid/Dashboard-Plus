@@ -1,7 +1,8 @@
 # Every "place" here is one of the household's own Places (Household stock), so a path such as
 # Kitchen › Pantry › Shelf 3 means the same everywhere and no records had to move (decision 0054).
-# Codes and key-safe numbers go in the private access_details column, never in a route or notes, so they never
-# print on Our home (decision 0077).
+# Codes and key-safe numbers are never kept (decision 0141): access_hint says who to ask or where the code is kept,
+# never the code. The old private access_details column is retired: its saved values stay, unseen, until a person
+# tidies them on Tidy sensitive details.
 # No dates are worked out and no check interval is assumed: the household enters its own.
 
 [tables.exits]
@@ -12,7 +13,8 @@ columns.floor = { type = "text" }
 columns.place = { type = "link", to = "stock.places", on_delete = "restrict" }
 columns.route = { type = "longtext" }
 columns.notes = { type = "text" }
-columns.access_details = { type = "text", sensitive = true, travels = "never" }
+columns.access_hint = { type = "text", guard = "where_kept" }
+columns.access_details = { type = "text", sensitive = true, travels = "never", retired = { replaced_by = "access_hint", label = "Codes or access details" } }
 
 [tables.exits.watch]
 [[tables.exits.watch.gaps]]
@@ -36,7 +38,8 @@ columns.kind = { type = "choice", required = true, choices = [
 columns.place = { type = "link", to = "stock.places", on_delete = "restrict" }
 columns.how_to_find = { type = "longtext" }
 columns.notes = { type = "text" }
-columns.access_details = { type = "text", sensitive = true, travels = "never" }
+columns.access_hint = { type = "text", guard = "where_kept" }
+columns.access_details = { type = "text", sensitive = true, travels = "never", retired = { replaced_by = "access_hint", label = "Codes or access details" } }
 
 [tables.shutoffs.watch]
 # Water and power are asked about because nearly every home has them. Gas is not: many homes have none.
@@ -69,7 +72,8 @@ columns.last_tested = { type = "date" }
 columns.battery_changed = { type = "date" }
 columns.next_check = { type = "date" }
 columns.notes = { type = "text" }
-columns.access_details = { type = "text", sensitive = true, travels = "never" }
+columns.access_hint = { type = "text", guard = "where_kept" }
+columns.access_details = { type = "text", sensitive = true, travels = "never", retired = { replaced_by = "access_hint", label = "Codes or access details" } }
 
 [tables.equipment.watch]
 expiring = { date = "next_check", warn_days = 30, wording = "due", what = "check" }
@@ -94,7 +98,8 @@ columns.name = { type = "text", required = true }
 columns.kind = { type = "choice", required = true, choices = ["electricity", "gas", "water", "other"] }
 columns.place = { type = "link", to = "stock.places", on_delete = "restrict" }
 columns.how_to_find = { type = "text" }
-columns.access_details = { type = "text", sensitive = true, travels = "never" }
+columns.access_hint = { type = "text", guard = "where_kept" }
+columns.access_details = { type = "text", sensitive = true, travels = "never", retired = { replaced_by = "access_hint", label = "Codes or access details" } }
 
 [tables.meters.watch]
 [[tables.meters.watch.gaps]]

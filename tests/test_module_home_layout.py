@@ -140,24 +140,34 @@ class HomeLayoutModuleTests(TempDirTestCase):
         for private in ("Key is with Person B", "Needs the long spanner", "Bought second-hand"):
             self.assertNotIn(private, page)
 
-    def test_access_details_are_private_and_never_on_the_sheet_or_a_list_before_show(self):
-        """Decision 0077: a code goes in the private box, which is hidden until Show and never printed."""
+    def test_codes_are_never_kept_and_a_code_saved_before_is_retired_unseen(self):
+        """Decision 0141 (replacing 0077's private box): who to ask is kept, never the code; an old code stays unseen."""
+        module = modules.load_module(ROOT / "modules" / "home_layout")
         for table in ("exits", "shutoffs", "equipment", "meters"):
-            column = modules.load_module(ROOT / "modules" / "home_layout").tables[table].columns["access_details"]
-            self.assertTrue(column.sensitive, table)
+            self.assertNotIn("access_details", module.tables[table].columns, table)
+            old = module.tables[table].retired["access_details"]
+            self.assertEqual((old.sensitive, old.travels), (True, "never"), table)
+            self.assertEqual(module.tables[table].columns["access_hint"].guard, "where_kept", table)
         sheet_text = (ROOT / "modules" / "home_layout" / "sheets.toml").read_text(encoding="utf-8")
         self.assertNotIn("access_details", sheet_text)
         garage = self.place("Garage")
+        with self.assertRaises(records.ValidationError):
+            self.records.create("home_layout__exits", {"name": "Back door", "place": garage, "access_details": CODE})
+        with self.assertRaises(records.ValidationError):
+            self.records.create("home_layout__exits", {"name": "Back door", "place": garage, "access_hint": "4417"})
         ids = {
             "exits": self.records.create("home_layout__exits", {"name": "Front door", "place": garage,
-                                                               "access_details": CODE + "-door"}),
+                                                               "access_hint": "Ask Alex next door"}),
             "shutoffs": self.records.create("home_layout__shutoffs", {"name": "Water main", "kind": "water",
-                                                                      "place": garage, "access_details": CODE + "-water"}),
+                                                                      "place": garage}),
             "equipment": self.records.create("home_layout__equipment", {"name": "Alarm panel", "kind": "other",
-                                                                        "place": garage, "access_details": CODE + "-alarm"}),
+                                                                        "place": garage}),
             "meters": self.records.create("home_layout__meters", {"name": "Electricity meter", "kind": "electricity",
-                                                                  "place": garage, "access_details": CODE + "-meter"}),
+                                                                  "place": garage}),
         }
+        for table, record in ids.items():  # saved before decision 0141
+            self.conn.execute(f"UPDATE home_layout__{table} SET access_details = ? WHERE id = ?", (CODE, record))
+        self.conn.commit()
         settings.put(self.conn, "setup.done", True)
         app = create_app("t", lambda: None, self.report, data_dir=self.data, session_key="k")
         app.config["PORT"] = PORT
@@ -169,11 +179,11 @@ class HomeLayoutModuleTests(TempDirTestCase):
             with self.subTest(path=path):
                 self.assertNotIn(CODE, client.get(path, base_url=BASE).get_data(as_text=True))
         for table, record in ids.items():
-            shown = client.post(f"/t/home_layout__{table}/{record}/reveal", data={"column": "access_details", "_csrf": client.application.config["CSRF_TOKEN"]}, base_url=BASE, headers={"Accept": "application/json"}).get_json()
-            self.assertEqual(shown["value"], f"{CODE}-{ {'exits': 'door', 'shutoffs': 'water', 'equipment': 'alarm', 'meters': 'meter'}[table] }")
+            shown = client.post(f"/t/home_layout__{table}/{record}/reveal", data={"column": "access_details", "_csrf": client.application.config["CSRF_TOKEN"]}, base_url=BASE, headers={"Accept": "application/json"})
+            self.assertEqual(shown.status_code, 404)
         form = client.get(f"/t/home_layout__exits/{ids['exits']}", base_url=BASE).get_data(as_text=True)
-        self.assertIn("Codes or access details (private)", form)
-        self.assertIn("Hidden until you press Show and left off Our home.", form)
+        self.assertIn("Who to ask, or where the code is kept", form)
+        self.assertIn("Ask Alex next door", form)
 
     def test_moving_a_cupboard_updates_the_sheet(self):
         """Lane B check 4: move the parent and every path shown follows; nothing else changes."""
