@@ -1,0 +1,11 @@
+[tables.visits]
+empty = "Open a person's page and choose Add a visit. Write why in your own short words; never copy test results or ID numbers."
+form = ["person", "day", "kind", "seen_by", "reason", "follow_up", "notes"]
+list = ["day", "person", "kind", "seen_by", "follow_up"]
+columns.person = { label = "Who went", help = "The person who was seen." }
+columns.day = { label = "Day of the visit" }
+columns.kind = { label = "Kind of visit" }
+columns.seen_by = { label = "Who they saw", help = "Optional. Choose the clinic or doctor from People, or leave it blank.", blank = "Not written down" }
+columns.reason = { label = "Why, in your words", help = "A few words, like Check-up or Sore knee. Never test results, scan reports or ID, Medicare, NHS, insurance or card numbers." }
+columns.follow_up = { label = "Go back by", help = "Optional. The date the clinic said to come back or call. It shows once on the person's page; it is never called missed." }
+columns.notes = { label = "Notes", help = "Optional and private. What you want to remember. Keep results and numbers with the clinic's own letters, not here." }

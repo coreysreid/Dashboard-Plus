@@ -30,3 +30,9 @@ and made-up example rows. Add a row here for each draft folder you create.
 | macos/ | Researched app-bundle build, data location and release checks | preparing a Mac release |
 | phone/ | Android and iOS member app options, first screens and acceptance checks | designing mobile sync |
 | helper_move_in/ | First-time helper move checklist and remaining traps | guiding household imports |
+| person_visits/ | Private record of a person's doctor, dentist and other visits, with timeline and follow-up design | planning people's visits |
+
+| medication_plan/ | Planned doses on the dose calendar, "not recorded yet" and never "missed" | planning a medication plan |
+| pet_food_stock/ | Food put out using up a pet-food Stock item by choice, with double-count traps | linking Pet feeding to Stock |
+| week_at_a_glance/ | A Home panel of this week built only from existing calendars, with a text version | building the week panel |
+| demo_household/ | An invented fourth household with four years of weigh-ins, feedings, doses, routines and priced shopping | demonstrating charts and timelines |

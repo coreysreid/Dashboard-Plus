@@ -1,0 +1,28 @@
+# One row is one visit a person made to a doctor, dentist, specialist, hospital or other clinician (batch 23 item 118).
+# The whole table is private, like Medicine doses (decisions 0120, 0121): counts only until a pressed Show, never on
+# Home, a sheet, the spreadsheet export or a helper. It never holds test results, ID, Medicare, NHS, insurance or
+# card numbers: the form says so and the fields give no place for them. Every column says travels = "never": by
+# consent (decision 0140), a household's other computers get visits only after the household chooses to share them.
+# Once 0140 is on main, the table itself should say travels = "never" so not even a visit's existence travels.
+[tables.visits]
+title = "Visits"
+description = "When someone saw a doctor, dentist or other clinician, and when to go back."
+private = true
+suggestions = false
+columns.person = { type = "link", to = "people.people", required = true, on_delete = "restrict", travels = "never" }
+columns.day = { type = "date", required = true, default = "today", travels = "never" }
+columns.kind = { type = "choice", required = true, choices = [{ key = "gp", label = "GP or family doctor" }, "dentist", "specialist", { key = "hospital", label = "Hospital or emergency department" }, { key = "allied_health", label = "Physio, podiatrist or other allied health" }, "optometrist", { key = "mental_health", label = "Counsellor or psychologist" }, "other"], travels = "never" }
+columns.seen_by = { type = "link", to = "people.people", on_delete = "clear", travels = "never" }
+columns.reason = { type = "text", required = true, sensitive = true, travels = "never" }
+columns.follow_up = { type = "date", travels = "never" }
+columns.notes = { type = "longtext", sensitive = true, travels = "never" }
+
+# On the person's timeline, one line a day; before Show it says only how many visits that day (decision 0126's
+# private rule, as doses). After Show each says its kind of visit; the reason stays on the visit's own page.
+[tables.visits.timeline]
+when = "day"
+per = "person"
+entry = ["visit", "visits"]
+words = "{kind}"
+summarise = "day"
+look = "visit"

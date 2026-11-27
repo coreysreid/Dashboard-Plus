@@ -58,3 +58,11 @@ expected, actual, severity (blocker, important, minor), suggested change.
 | 2026-11-27-private-lists-leak-audit.md | Every route tried for a private dose or medication value before Show, worst first. | reviewing private-list safety |
 | 2026-11-27-timeline-check.md | What happened timelines in three households and two stress copies, worst first, and visit ideas. | refining the timeline |
 | 2026-11-27-spending-check.md | Three-household Stock spending and refund check at phone and desktop widths, with local-price coverage limit. | reviewing Spent per month |
+| 2026-11-27-rewalk-after-tidy.md | 320px keyboard and screen-reader-tree re-walk after 0131 to 0136, worst first. | fixing focus and heading order |
+| bring_in_2026_11_27/ | Three invented messy old trackers used for the item 113 check. | reproducing Bring in findings |
+| 2026-11-27-bring-in-messy-trackers.md | Three messy invented trackers through Bring in earlier entries, worst first (a crash). | fixing Bring in |
+| 2026-11-27-be-a-helper.md | An invented move-in using only the generated helper guide, and what Review showed, worst first. | improving the helper guide and Review |
+| 2026-11-27-sharing-choices-check.md | Settings, What your other computers get (0140), at 320px with keep, share, confirm and Undo, worst first. | refining sharing choices |
+| 2026-11-27-store-what-must-not-be-stored.md | Card, bank, password and ID values tried against 0141's checks, with gaps and false alarms, worst first. | hardening the fraud-grade guard |
+| 2026-11-27-read-me-check.md | Windows and Mac read-me, README and Getting started sentences against today's app, with replacements. | updating the read-me files |
+| 2026-11-27-words-audit.md | One agreed word per idea from every page's headings, buttons and empty states, worst first. | applying consistent words |

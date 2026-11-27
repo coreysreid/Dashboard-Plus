@@ -178,7 +178,8 @@ class AcceptanceTests(RunningTestCase):
         found = [e for e in watch.expiring(self.conn, self.registry) if e.table == "vehicles__services"]
         self.assertEqual(len(found), 1)
         self.assertIn("in 12 days", found[0].detail)
-        attention = self.page("/attention")
+        # Only the page's own words: the random session token after <main> can hold "km" by chance.
+        attention = self.page("/attention").split("<main>", 1)[1].split("</main>", 1)[0]
         self.assertIn("Routine service", attention)
         self.assertIn("in 12 days", attention)
         for claim in ("48,500", "48500", "km", "410", "estimate", "Service due at"):
@@ -347,7 +348,7 @@ class EstimatesAreNotCostsTests(RunningTestCase):
         client = self.client()
         for path in (f"/t/{ESTIMATES}", f"/t/vehicles__services/{self.service}", f"/t/vehicles__vehicles/{self.car}",
                      "/", "/attention", "/to-do"):
-            text = self.page(path, client)
+            text = self.page(path, client).split("<main>", 1)[1].split("</main>", 1)[0]  # not the random token
             for word in ("740", "Total", "total cost", "paid", "spent", "Cost paid"):
                 self.assertNotIn(word, text, f"{path}: {word}")
         module = modules.load_module(ROOT / "modules" / "vehicle_running")
