@@ -29,6 +29,12 @@ chart had an SVG title and description naming the same values as the table, and 
 
 ## Findings, worst first
 
+### Important: a dose bar called one medicine can contain two medicines
+
+- **Where:** Garcia, Rosa's Doses recorded bars after pressing **Show**. Before Show, the chart names no person or medicine.
+- **What happens:** The heading promises **“Each medication on its own”**, but the single group is a People medication-detail row whose text starts “Metformin 500 mg twice a day with meals; lisinopril 10 mg each morning” and continues with a pill-organiser location. Both invented dose entries link to that one detail. Its one bar cannot say which of the two medicines was given, and the full directions and location are repeated as a chart heading.
+- **Suggested words now:** **“Each medication detail on its own”** and a short **“Medication detail #3”** heading after Show, with the full detail available by deliberately opening it. A genuine per-medicine trend needs one medicine per record or a household-confirmed short label, and a household choice assigning old doses from a combined detail. Never split free text automatically.
+
 ### Important: a chart page opens on an empty subject while others have records
 
 - **Where:** `/bars/routines__times/done` in all three households, `/bars/home_care__work_done/done` in Taylor.
@@ -67,13 +73,6 @@ chart had an SVG title and description naming the same values as the table, and 
 - **Suggested words:** **"Each bar counts the days something was marked done. Undone presses and days you took off
   the calendar are not counted."**
 
-### Minor: a person's own page calls them "This person"
-
-- **Where:** Garcia, Rosa's page: the dose bars say **"This person · 12 weeks …"** and the chart page heading says
-  **"Given to #4"**. Decision 0124 says the person's own name shows on their own page before Show.
-- **Suggested change:** on the person's own page use their name ("Rosa Garcia · 12 weeks …"); on the shared chart
-  page use the wording from item 106 ("Person 1 of 2").
-
 ### Minor: a `by` the chart does not offer is ignored silently
 
 `?by=day` on Times done (offered: month, week) shows months with no word. Acceptable; no change needed unless
@@ -88,15 +87,18 @@ Ranked by how often a household would look, and whether the records already exis
    `per` = the planting's bed or crop, `by = ["month", "week"]`, `verb = "picked"`. One unit at a time, as Food put out.
    Why: the garden household's question is "was it worth it?", and the data is already typed.
 2. **Distance driven per month** for each vehicle. Records: `vehicle_running__readings` (`vehicle`, `read_at`,
-   `distance`, `unit`). Needs a new measure: the **difference between two readings**, split across the months
-   between them in proportion to days, or said as "between 02/10 and 15/11: 1,240 km" when readings are far apart.
-   Never guess before the first reading or after the last. Why: service is due by distance, and the readings are
-   now brought in from spreadsheets (decision 0137).
+   `distance`, `unit`). Needs a new measure: the **difference between two readings in the same unit**. When the
+   readings cross a month boundary, say **“between 02/10 and 15/11: 1,240 km”** in a dated interval table; do not
+   allocate distance to either month or split it evenly across days, because the actual travel dates are unknown.
+   Never guess before the first reading or after the last. A true monthly bar needs dated trip or movement records.
+   The readings can now be brought in from spreadsheets (0137), but decision 0111 still does not promise a
+   distance-based service reminder.
 3. **Drinking water on hand, week by week.** Records: `stock__movements` (`happened_on`, `amount`, `reason`)
-   for items with `drinking = true`, plus each item's present `quantity`, worked backwards. Needs: a balance
-   measure (closing amount per week), the household size on each date (not stored today: say "using today's
-   household size"), and items' units converted only where the catalogue gives litres. Why: it is the first
-   promise of the app (days of water), and today Home shows only the current number.
+   for items marked safe to drink, plus lots and corrections. Needs dated balance snapshots or a complete,
+   versioned starting balance and movement history; the present quantity alone cannot be worked backwards after
+   a stocktake correction or a changed drinking answer. Days of cover also need the person/pet count and basis on
+   each date; if missing, show litres only, never apply today's household size to a past date. Why: it is the
+   first promise of the app (days of water), and today Home shows only the current number.
 
 Considered and placed lower: Stock used per month by category (useful, but "used" amounts are in many units);
 meter readings (no meter readings table exists; Home layout meters are locations only).
@@ -105,3 +107,5 @@ meter readings (no meter readings table exists; Home layout meters are locations
 
 Spending (0128) was opened at both widths but its prices, refunds and currencies are left to item 110. No real
 screen reader was used; the SVG names and table were read from the page.
+The dose bars' “This person” wording before Show follows decision 0134's privacy rule; this check does not ask to
+replace it with a name on an unshown page. Item 106 covers the remaining “Given to #4” chooser wording.
