@@ -21,7 +21,9 @@ MASK = "••••"
 # page, the browser or Review. A value holding it is refused like the number itself.
 LEFT_OUT = "[card number left out]"
 
-_RUN = re.compile(r"(?<![\d])\d(?:[ -]?\d){12,18}(?![\d])")  # 13 to 19 digits, single spaces or dashes between
+# 13 to 19 digits, single spaces or dashes between. Not part of a longer word or dashed identifier, so the
+# digit groups of a record's permanent ID (a UUID such as 12345678-1234-...) are never taken for a card.
+_RUN = re.compile(r"(?<![0-9A-Za-z-])\d(?:[ -]?\d){12,18}(?![0-9A-Za-z])(?!-[0-9A-Za-z])")
 
 CARD = ("looks like a full card number. Dashboard Plus never keeps card numbers. Write only the last 4 digits, "
         f"e.g. {MASK}1234, or leave it out.")

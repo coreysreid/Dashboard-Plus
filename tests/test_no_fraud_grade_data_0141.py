@@ -3,6 +3,7 @@
 The card check on forms, the helper API and imports, retired fields hidden, Tidy sensitive details with a backup and
 Undo, and no module may declare such a field. Every value is invented."""
 import io
+import unittest
 import json
 import shutil
 import zipfile
@@ -265,3 +266,14 @@ class TidyTests(FraudGuardTestCase):
         self.assertEqual([i.column for i in tidy.find(self.store)], ["access_details"])
         stale = self.post(client, "/tidy/do", key=f"people__people|{self.bob}|notes", choice="last4")
         self.assertEqual(stale.status_code, 409)
+
+
+class PermanentIdTests(unittest.TestCase):
+    def test_a_permanent_id_with_all_digit_groups_is_not_a_card(self):
+        from dashboard.core import fraud_guard
+        # Every group digits only, and the 16 digits of the first three groups pass the card check digit.
+        self.assertTrue(fraud_guard.has_card_number("4111 1111 1111 1111"))
+        for value in ("41111111-1111-1111-1234-567890123456", "a1b2c3d4-4111-1111-1111-111100000000",
+                      "2:41111111-1111-1111-1234-567890123456"):
+            self.assertFalse(fraud_guard.has_card_number(value), value)
+        self.assertTrue(fraud_guard.has_card_number("card 4111-1111-1111-1111 expired"))
