@@ -1,0 +1,8 @@
+name = "person_visits"
+title = "Doctor and other visits"
+version = "0.1.0"
+description = "Write down when someone saw a doctor, dentist or other clinician, why in your own words, and when to go back. Private until Show."
+core_api = "1"
+kind = "declarative"
+requires = ["people"]
+outbound_hosts = []
