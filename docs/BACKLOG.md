@@ -8,6 +8,7 @@ sessions read this page first. Newest at the top of each section.
 
 | Date | Feedback | Plan |
 |---|---|---|
+| 2026-11-27 | Answers: bring doses in from a spreadsheet after Show, yes (merged, 0137). Extra browser protection (Content-Security-Policy), yes. Dose chart says "this person" before Show, keep. Refunds and syncing: "Again all the info should have a sharing permission set up." | 0137 merged. Lane A builds the browser protection (0139) and a sharing permission for every kind of information, chosen by the household, with safe defaults (0140). |
 | 2026-11-20 | Sync "similar to Anki's sync or maybe even like git": push, pull, merge requests; internet-based through the key process; "not a Fort Knox vault for your passwords, ID documents and gold bars". | Direction recorded in decision 0089: one main, members push requests to Review, a private device network (Tailscale or WireGuard), private details never travel in v1, two computers first, home server later. Built in stages after a security review. User 1 also wants a macOS build and Android and iOS apps soon, joining as sync members (ROADMAP M3 and M3b). |
 | 2026-11-16 | "There is still a lot to add and update, manage." | Lane B batch 3 (docs/WORKSTREAMS.md) drafts the next modules and content; Lane A polishes and integrates; then a UX round with User 1. |
 
