@@ -62,3 +62,4 @@ expected, actual, severity (blocker, important, minor), suggested change.
 | bring_in_2026_11_27/ | Three invented messy old trackers used for the item 113 check. | reproducing Bring in findings |
 | 2026-11-27-bring-in-messy-trackers.md | Three messy invented trackers through Bring in earlier entries, worst first (a crash). | fixing Bring in |
 | 2026-11-27-be-a-helper.md | An invented move-in using only the generated helper guide, and what Review showed, worst first. | improving the helper guide and Review |
+| 2026-11-27-sharing-choices-check.md | Settings, What your other computers get (0140), at 320px with keep, share, confirm and Undo, worst first. | refining sharing choices |
