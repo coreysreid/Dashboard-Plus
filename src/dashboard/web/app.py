@@ -250,6 +250,7 @@ def create_app(shutdown_token: str, on_shutdown: Callable[[], None], report=None
     from dashboard.web.api import helper_api
     from dashboard.web.checklist import checklist_pages
     from dashboard.web.export_page import export_pages
+    from dashboard.web.sharing_page import sharing_pages
     from dashboard.web.csv_import import imports
     from dashboard.web.helper_settings import helper_settings
     from dashboard.web.home_setup import home_setup
@@ -266,6 +267,7 @@ def create_app(shutdown_token: str, on_shutdown: Callable[[], None], report=None
     app.register_blueprint(home_setup)
     app.register_blueprint(helper_settings)
     app.register_blueprint(export_pages)
+    app.register_blueprint(sharing_pages)
     app.register_blueprint(imports)
     app.register_blueprint(review_pages)
     app.register_blueprint(line_pages)

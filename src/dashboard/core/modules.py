@@ -36,7 +36,7 @@ MODULE_KEYS = ("name", "title", "version", "description", "core_api", "kind", "r
 MODULE_REQUIRED = ("name", "title", "version", "description", "core_api", "kind")
 TABLE_KEYS = ("title", "description", "columns", "watch", "adjusts", "parent", "total", "record_name", "actions",
               "pair", "suggestions", "chart", "daily", "confirm", "takes_over", "calendar", "private", "bars", "timeline",
-              "price", "refund", "bring_in")
+              "price", "refund", "bring_in", "travels")
 # One reminder per policy (decision 0117): records of an older list in another module (Vehicle insurance) that
 # the household may choose, one by one, to have reminded from this table instead. `where` is what such a record
 # is here (a vehicle policy), `copy` which of this table's columns take which of the other's, the date included.
@@ -132,8 +132,8 @@ TOTAL_KEYS = ("link", "amount", "into", "earliest", "starts_from")
 WATCH_KEYS = ("running_low", "expiring", "supply", "gaps")
 GAP_KEYS = ("missing", "none", "where", "message")
 COLUMN_KEYS = ("type", "required", "required_when", "default", "min", "max", "unit", "choices", "help", "sensitive",
-               "to", "on_delete", "not_before", "travels", "travels_when", "with_place", "default_from",
-               "link_rule")
+               "to", "on_delete", "not_before", "travels", "travels_when", "travels_fixed", "with_place",
+               "default_from", "link_rule")
 LABEL_TABLE_KEYS = ("title", "columns", "form", "list", "empty", "home", "actions", "add_button", "under",
                     "takes_over")
 # A table's records listed on the page of the record they link to, like a service's quotes (decision 0111).
@@ -184,6 +184,9 @@ class Column:
     travels: str = "always"
     travels_when: dict = field(default_factory=dict)
     travels_reviewed: bool = True  # False for a private column that does not say; it is then kept local
+    # Decision 0140: why this value can never travel, whatever the household chooses (codes, like passwords).
+    # Only with travels = "never"; every other column's rule is just where the household's choice starts.
+    travels_fixed: str | None = None
     # For a link into a module listed under optional_requires (decision 0115): that module may be off or not
     # installed, so the link is hidden and kept as saved instead of being shown, changed or cleared.
     optional: bool = False
@@ -222,6 +225,9 @@ class Table:
     # Decision 0120: every record is private history, such as medicine given. Never on Home, a sheet, a helper
     # or the spreadsheet export; made only on this program's own screens (suggestions = false is required).
     private: bool = False
+    # Decision 0140: "never" starts the whole list as Only on this computer (money back): no change-log line at
+    # all until the household chooses to share it. "always" (the default) starts it shared.
+    travels: str = "always"
 
 
 @dataclass
@@ -412,6 +418,13 @@ def _parse_column(file: str, table: str, name: str, raw, problems: list[str]) ->
     if "required_when" in raw and (not isinstance(raw["required_when"], dict) or len(raw["required_when"]) != 1):
         problems.append(f"{where}: required_when names one choice column and a value, like {{ category = \"water\" }}.")
     _parse_travels(where, raw, column, problems)
+    if "travels_fixed" in raw:  # decision 0140
+        reason = raw["travels_fixed"]
+        if not isinstance(reason, str) or not reason.strip() or raw.get("travels") != "never":
+            problems.append(f"{where}: travels_fixed is a plain sentence saying why this value can never leave this "
+                            f"computer, and goes with travels = \"never\".")
+        else:
+            column.travels_fixed = reason.strip()
     for bound in ("min", "max"):
         if bound in raw:
             if kind not in NUMERIC_TYPES:
@@ -1544,6 +1557,13 @@ def _check_tables(module: str, data: dict, requires: list[str], problems: list[s
                 tables[tname].suggestions = raw["suggestions"]
             else:
                 problems.append(f"{where}: 'suggestions' must be true or false.")
+        if "travels" in raw:  # decision 0140: where the household's sharing choice for this list starts
+            if raw["travels"] in TRAVELS:
+                tables[tname].travels = raw["travels"]
+            else:
+                problems.append(f"{where}: travels must be \"always\" or \"never\" (never keeps the whole list on "
+                                f"this computer until the household chooses to share it).")
+                tables[tname].travels = "never"
         if "private" in raw:  # decision 0120: the whole table is private history
             if not isinstance(raw["private"], bool):
                 problems.append(f"{where}: 'private' must be true or false.")

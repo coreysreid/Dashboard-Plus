@@ -1,0 +1,99 @@
+{% extends "base.html" %}
+{% block title %}What your other computers get · Dashboard Plus{% endblock %}
+{% block body %}
+<p class="muted"><a href="/settings">Settings</a></p>
+<h1>What your other computers get</h1>
+<p class="lead">Choose, list by list, what your household's other computers get from this one when your computers are paired.</p>
+
+{% if problem %}<p class="problem" role="alert">{{ problem }}</p>{% endif %}
+{% if undone %}<p class="notice" role="status">Undone. Those things are kept on this computer again.</p>{% endif %}
+{% for entry in just_saved %}
+<div class="notice" role="status">
+  <p>Saved. From now on:</p>
+  <ul>{% for line in entry.lines %}<li>{{ line }}</li>{% endfor %}</ul>
+  {% if entry.can_undo %}
+  <form method="post" action="/settings/sharing/undo">
+    <input type="hidden" name="_csrf" value="{{ csrf_token }}">
+    <input type="hidden" name="entry" value="{{ entry.id }}">
+    <button type="submit" class="quiet">Undo</button>
+  </form>
+  {% endif %}
+</div>
+{% endfor %}
+
+<div class="card">
+  <h2>How these choices work</h2>
+  <ul>
+    <li>Nothing is sent yet. Pairing your computers is not built yet; these choices decide what is kept ready to go to them.</li>
+    <li>Keeping something on this computer happens at once, and anything already waiting to go is held back too.</li>
+    <li>Starting to share something private asks you first, says what will start going, and can be undone.</li>
+    <li>Choices count from now on. Anything another computer already has is not taken back from it. When your computers are paired, the first full copy they get follows the choices you have then.</li>
+    <li>Each list starts the way its part of the program set it up, marked "Usual" below. Codes and access details are never shared.</li>
+  </ul>
+  <p>Helpers (assistants you gave a key) have their own permissions: <a href="/settings/helpers">Settings, Helpers</a>.</p>
+</div>
+
+<form method="post" action="/settings/sharing" class="record">
+  <input type="hidden" name="_csrf" value="{{ csrf_token }}">
+  {% for group in groups %}
+  <section aria-labelledby="sharing-{{ loop.index }}">
+    <h2 id="sharing-{{ loop.index }}">{{ group.title }}</h2>
+    {% for list in group.lists %}
+    <div class="card">
+      <fieldset>
+        <legend><strong>{{ list.title }}</strong>{% if list.private %} <span class="muted">(has private details)</span>{% endif %}</legend>
+        <div class="choices">
+          {% for option in list.options %}
+          <label><input type="radio" name="c:{{ list.key }}" value="{{ option.value }}" {% if option.checked %}checked{% endif %}> {{ option.words }}</label>
+          {% endfor %}
+        </div>
+        <p class="help">Usual: {{ list.usual }}.{% if list.changed %} You changed this.{% endif %}
+          {% if list.kept_back %}"{{ list.options[1].words }}" keeps {{ list.kept_back | join(", ") }} on this computer.{% endif %}</p>
+      </fieldset>
+      <details>
+        <summary>Details of {{ list.title }} ({{ list.details | length }})</summary>
+        <p class="help">A detail is only shared while its list is.</p>
+        {% for detail in list.details %}
+        {% if detail.fixed %}
+        <p><strong>{{ detail.label }}</strong>{% if detail.private %} (private){% endif %}: always only on this computer. {{ detail.fixed }}</p>
+        {% else %}
+        <fieldset>
+          <legend>{{ detail.label }}{% if detail.private %} (private){% endif %}</legend>
+          <div class="choices">
+            {% for option in detail.options %}
+            <label><input type="radio" name="c:{{ detail.key }}" value="{{ option.value }}" {% if option.checked %}checked{% endif %}> {{ option.words }}</label>
+            {% endfor %}
+          </div>
+          {% if detail.changed %}<p class="help">You changed this. Usual: {{ detail.usual }}.</p>{% endif %}
+        </fieldset>
+        {% endif %}
+        {% endfor %}
+      </details>
+    </div>
+    {% endfor %}
+    <div class="actions"><button type="submit">Save sharing choices</button></div>
+  </section>
+  {% else %}
+  <p class="muted">Nothing is switched on yet, so there is nothing to share.</p>
+  {% endfor %}
+</form>
+
+<h2>Earlier sharing choices</h2>
+{% if history %}
+<ul class="history">
+  {% for entry in history %}
+  <li>{{ entry.on }}{% if entry.undo %} (Undo){% endif %}: {{ entry.lines | join("; ") }}
+    {% if entry.can_undo %}
+    <form method="post" action="/settings/sharing/undo">
+      <input type="hidden" name="_csrf" value="{{ csrf_token }}">
+      <input type="hidden" name="entry" value="{{ entry.id }}">
+      <button type="submit" class="quiet">Undo this</button>
+    </form>
+    {% endif %}
+  </li>
+  {% endfor %}
+</ul>
+{% else %}
+<p class="muted">No choices yet: everything follows the usual rules.</p>
+{% endif %}
+{% endblock %}

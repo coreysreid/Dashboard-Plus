@@ -874,8 +874,9 @@ function expect(condition, message) { if (!condition) throw new Failed(message);
     const skip = /^\/(close|export|restore|helpers\/|static)|\.(zip|csv|json|ics)$|\/print|\/(accept|reject|delete|undo|new)$/;
     const seen = new Set();
     // Home first, then every page its links reach; This year is named because it was once too wide, and the Garden
-    // calendar and Jobs done per month (decision 0129) so they are checked wherever Garden is on (a 404 is skipped)
-    const queue = ['/', '/to-do/year', '/calendar/garden__jobs', '/bars/garden__jobs/done'];
+    // calendar and Jobs done per month (decision 0129) so they are checked wherever Garden is on (a 404 is skipped),
+    // and What your other computers get (decision 0140), the longest Settings page, with every list and detail
+    const queue = ['/', '/to-do/year', '/calendar/garden__jobs', '/bars/garden__jobs/done', '/settings/sharing'];
     const wide = [];
     const repeated = [];
     while (queue.length && seen.size < plan.widths) {
