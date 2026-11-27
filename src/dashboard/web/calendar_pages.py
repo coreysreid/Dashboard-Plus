@@ -48,6 +48,12 @@ def month_words(year: int, month: int) -> str:
     return f"{dates.MONTHS[month - 1]} {year}"
 
 
+def _cell_day(when: date, style: str) -> str:
+    """A grid cell's spoken name in the household's own order: "26 November", or "November 26" for month-first."""
+    month = dates.MONTHS[when.month - 1]
+    return f"{month} {when.day}" if style == dates.MONTH_FIRST else f"{when.day} {month}"
+
+
 def _short_day(when: date, style: str) -> str:
     """"Mon 16 Nov", or "Mon Nov 16" where dates are written month first."""
     name, month = DAY_NAMES[when.weekday()][:3], dates.MONTHS[when.month - 1][:3]
@@ -61,6 +67,7 @@ class Words:
         self.info, self.rule = info, info.table.calendar
         self.store, self.formatter = store, display.Formatter(store)
         self.one, self.many = self.rule["entry"]
+        self.not_done = self.rule.get("not_done") or "not recorded as done yet"  # the list's own words (decision 0142)
         state = info.table.columns.get(self.rule.get("state") or "")
         self.labels: dict[str, str] = {}
         if state is not None:
@@ -84,7 +91,7 @@ class Words:
 
     def legend(self, look: str) -> str:
         if look == "due":
-            return "Due, not recorded as done yet: shown once, on its own date"
+            return f"Due, {self.not_done}: shown once, on its own date"
         if look == "planned":
             return "Planned date"
         return self.labels[look]
@@ -94,7 +101,7 @@ class Words:
         if look in CALENDAR_ENTRY_LOOKS and not self.rule.get("state"):  # "2 feedings recorded", "1 job done"
             return f"{n} {self.one if n == 1 else self.many} {look}"
         if look == "due":
-            words = "Due today" if day is not None and day == today else "Due, not recorded as done yet"
+            words = "Due today" if day is not None and day == today else f"Due, {self.not_done}"
         elif look == "planned":
             words = "Planned"
         else:
@@ -106,7 +113,7 @@ class Words:
         if look in CALENDAR_ENTRY_LOOKS and not self.rule.get("state"):
             return self.count(look, n)
         if look in ("due", "planned"):
-            return f"{'Due, not recorded as done yet' if look == 'due' else 'Planned'}: {n}"
+            return f"{f'Due, {self.not_done}' if look == 'due' else 'Planned'}: {n}"
         return f"{self.labels.get(look, look.capitalize())}: {n}"
 
     def _row(self, record_id: int) -> dict:
@@ -130,7 +137,7 @@ class Words:
         if mark.kind == "due":
             target = calendars.subject_table(self.store.registry, self.info)
             when = ("due today" if mark.day == today else
-                    f"due since {dates.show(mark.day, style)}, not recorded as done yet" if mark.day < today
+                    f"due since {dates.show(mark.day, style)}, {self.not_done}" if mark.day < today
                     else "planned")
             if calendars.own(self.info):  # "Hatchback: registration or vehicle tax due today" (decision 0122)
                 what = watch.what_for(self.info.table.watch.get("expiring") or {}, self._row(mark.subject_id))
@@ -205,7 +212,7 @@ def month_view(store: records.Records, info, year: int, month: int, today: date,
             anchor = f"{cal_id}-d-{cell.day.isoformat()}"
             row.append({"day": cell.day.day, "iso": cell.day.isoformat(), "today": cell.day == today,
                         "chips": chips, "anchor": anchor if chips else None,
-                        "label": f"{cell.day.day} {dates.MONTHS[month - 1]}" + (", today" if cell.day == today else "")
+                        "label": _cell_day(cell.day, style) + (", today" if cell.day == today else "")
                                  + (f": {said}" if said else "")})
             if chips:
                 extra = totals_by_day.get(cell.day.isoformat())
@@ -329,11 +336,11 @@ def _calendar_page(table, show: bool):
     rows = [dict(r) for r in store.conn.execute(f"SELECT * FROM {subject_info.name} WHERE deleted_at IS NULL "
                                                  f"ORDER BY id")]
     hidden = info.table.private and not show  # names wait for Show, so the people are listed by number (0123)
-    per = info.table.columns[rule["per"]] if hidden else None  # a private calendar always has `per` (0122, 0123)
-    subjects = sorted(({"id": r["id"], "name": display.private_subject_name(info, per, r["id"]) if hidden
-                        else display.display_name(subject_info, r, store)} for r in rows
-                       if _applies(store, info, r["id"])),
+    subjects = sorted(({"id": r["id"], "name": "" if hidden else display.display_name(subject_info, r, store)}
+                       for r in rows if _applies(store, info, r["id"])),
                       key=lambda s: (s["id"],) if hidden else (s["name"].lower(), s["id"]))
+    if hidden:
+        subjects = display.private_subject_names(subjects)  # "Person 1", never a record number (decision 0142)
     wanted = request.values.get("subject", type=int)
     chosen = next((s for s in subjects if s["id"] == wanted), None)
     if rule["show"] == "one" and chosen is None:
@@ -484,7 +491,7 @@ def together_view(store: records.Records, infos: list, year: int, month: int, to
             anchor = f"{cal_id}-d-{day.isoformat()}"
             row.append({"day": day.day, "iso": day.isoformat(), "today": day == today, "chips": chips,
                         "anchor": anchor if chips else None,
-                        "label": f"{day.day} {dates.MONTHS[month - 1]}" + (", today" if day == today else "")
+                        "label": _cell_day(day, style) + (", today" if day == today else "")
                                  + (f": {said}" if said else "")})
             if chips:
                 items = []

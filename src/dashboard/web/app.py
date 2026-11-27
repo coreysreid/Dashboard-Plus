@@ -24,6 +24,11 @@ SESSION_COOKIE = "dashboard_session"
 # Paths that work without the session cookie: the health check, the safe-close
 # call (which has its own token), and the page that explains how to get in.
 OPEN_PATHS = {"/api/ping", "/api/shutdown", "/start"}
+# The Content-Security-Policy sent on every response (decision 0139). Scripts run only from this program's own
+# /static/ files. Styles may also be inline, because pages carry style attributes and small style blocks.
+CONTENT_SECURITY_POLICY = ("default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; "
+                           "img-src 'self' data:; object-src 'none'; base-uri 'none'; form-action 'self'; "
+                           "frame-ancestors 'none'")
 
 
 def create_app(shutdown_token: str, on_shutdown: Callable[[], None], report=None,
@@ -185,6 +190,7 @@ def create_app(shutdown_token: str, on_shutdown: Callable[[], None], report=None
     def home():
         groups, attention, last_backup, asked, my_home, to_do = [], None, None, [], None, None
         daily_cards = []  # food put out today, one line per pet (decision 0110)
+        to_tidy = 0  # codes and full numbers saved before decision 0141, waiting on Tidy sensitive details
         if app.config["DATA_DIR"] is not None:
             last_backup = backups.latest(app.config["DATA_DIR"])
         if app.config["DATA_DIR"] is not None and registry():
@@ -202,13 +208,15 @@ def create_app(shutdown_token: str, on_shutdown: Callable[[], None], report=None
             to_do = home_summary(conn, registry(), app.config["TODAY"]())
             from dashboard.web.daily_pages import home_cards
             daily_cards = home_cards(conn, registry(), app.config["NOW"]() if app.config.get("NOW") else None)
+            from dashboard.core import tidy
+            to_tidy = tidy.waiting(records.Records(conn, registry()))
         from dashboard.web.setup import backup_report
         tables = [t for group in groups for t in group["main"] + group["more"]]
         return render_template("home.html", report=report, groups=groups, tables=tables, attention=attention,
                                last_backup=last_backup, backup=backup_report(app.config["DATA_DIR"]),
                                suggestions=waiting_suggestions(), asked=asked,
                                review_words=REVIEW_WORDS, my_home=my_home, to_do=to_do,
-                               daily_cards=daily_cards)
+                               daily_cards=daily_cards, to_tidy=to_tidy)
 
     @app.get("/attention")
     def attention_page():
@@ -245,6 +253,7 @@ def create_app(shutdown_token: str, on_shutdown: Callable[[], None], report=None
     from dashboard.web.api import helper_api
     from dashboard.web.checklist import checklist_pages
     from dashboard.web.export_page import export_pages
+    from dashboard.web.sharing_page import sharing_pages
     from dashboard.web.csv_import import imports
     from dashboard.web.helper_settings import helper_settings
     from dashboard.web.home_setup import home_setup
@@ -261,6 +270,7 @@ def create_app(shutdown_token: str, on_shutdown: Callable[[], None], report=None
     app.register_blueprint(home_setup)
     app.register_blueprint(helper_settings)
     app.register_blueprint(export_pages)
+    app.register_blueprint(sharing_pages)
     app.register_blueprint(imports)
     app.register_blueprint(review_pages)
     app.register_blueprint(line_pages)
@@ -286,6 +296,8 @@ def create_app(shutdown_token: str, on_shutdown: Callable[[], None], report=None
     app.register_blueprint(drill_pages)
     from dashboard.web.exit_sketch import exit_pages
     app.register_blueprint(exit_pages)
+    from dashboard.web.tidy_pages import tidy_pages  # Tidy sensitive details (decision 0141)
+    app.register_blueprint(tidy_pages)
 
     def for_helpers() -> bool:
         return request.path.startswith("/api/v1/")
@@ -313,6 +325,7 @@ def create_app(shutdown_token: str, on_shutdown: Callable[[], None], report=None
         # Household pages are private: never kept in the browser's cache, never shown inside another site.
         response.headers.setdefault("Cache-Control", "no-store")
         response.headers.setdefault("X-Frame-Options", "DENY")
+        response.headers.setdefault("Content-Security-Policy", CONTENT_SECURITY_POLICY)
         response.headers.setdefault("X-Content-Type-Options", "nosniff")
         # "same-origin" tells other sites nothing about where a link came from, yet lets our own forms say
         # they came from here. With "no-referrer" current browsers send "Origin: null" and every save is refused.

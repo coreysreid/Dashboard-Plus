@@ -5,7 +5,7 @@ import re
 
 from flask import abort, redirect, render_template, request, url_for
 
-from dashboard.core import actions, dates, records
+from dashboard.core import actions, dates, fraud_guard, records
 from dashboard.web import display
 from dashboard.web.pages import _info, _render_form, _store, pages
 
@@ -145,7 +145,8 @@ def save_action_form(table, record_id, key):
         past = errors.pop("_past", None)
         chosen = next_date if request.form.get("next_choice") == "date" else \
             actions.offer(action, record, values.get((action.get("latest") or {}).get("date")))
-        return _render(info, store, action, record, other, raw, errors, True, status=422, past=past,
+        return _render(info, store, action, record, other, fraud_guard.unechoed(raw, errors), errors, True,
+                       status=422, past=past,
                        past_ok=chosen if past else None, **keep)
     back = back_to()
     if back:

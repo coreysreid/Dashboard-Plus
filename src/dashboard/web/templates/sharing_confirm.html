@@ -1,0 +1,30 @@
+{% extends "base.html" %}
+{% block title %}Start sharing? · Dashboard Plus{% endblock %}
+{% block body %}
+<p class="muted"><a href="/settings/sharing">What your other computers get</a></p>
+<h1>Start sharing these private things?</h1>
+{% if kept_now %}<p class="notice" role="status">The things you chose to keep on this computer are already saved.</p>{% endif %}
+<p class="lead">If you say yes, your household's other computers will get these from now on, once your computers are paired:</p>
+<div class="card">
+  <ul>
+    {% for item in starts %}
+    <li><strong>{{ item.title }}</strong>:
+      {% if item.list_starts %}that its records exist{% if item.details %}, and {% endif %}{% endif %}{{ item.details | join(", ") }}.</li>
+    {% endfor %}
+  </ul>
+  <p>Anyone using those computers will be able to see them. A copy another computer gets cannot be taken back later.
+  Undo stops sharing them again from then on.</p>
+</div>
+<form method="post" action="/settings/sharing/confirm" class="record">
+  <input type="hidden" name="_csrf" value="{{ csrf_token }}">
+  {% for item in items %}
+  <input type="hidden" name="want:{{ item.key }}" value="{{ item.want }}">
+  <input type="hidden" name="was:{{ item.key }}" value="{{ item.was }}">
+  {% endfor %}
+  <p>You chose: {% for item in items %}{{ item.name }}: {{ item.words }}{% if not loop.last %}; {% endif %}{% endfor %}.</p>
+  <div class="actions">
+    <button type="submit" name="confirm" value="yes">Yes, start sharing these</button>
+    <a href="/settings/sharing">Go back without sharing</a>
+  </div>
+</form>
+{% endblock %}

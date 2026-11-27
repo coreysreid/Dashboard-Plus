@@ -1,6 +1,7 @@
 """Tests for the hands-on visual check of decisions 0119 to 0130: Services done per month, folded bars, one "This month" (decision 0131)."""
 import re
 
+from support import ROOT
 from test_bar_charts import FEED, BarsTestCase
 from test_done_history import HistoryCase, SERVICES, main
 from dashboard.core import bars
@@ -32,7 +33,8 @@ class FoldedBarsTests(BarsTestCase):
         folded = folded[:folded.index("</details>\n", folded.index("bars-table"))]
         self.assertIn('class="chart-svg"', folded)  # the drawing is inside the fold, not removed
         self.assertIn(f'href="/bars/{FEED}/food?subject={self.rex}&amp;by=week&amp;unit=g"', folded)
-        self.assertIn("beforeprint", page)  # opened for the paper, so a printout has every part
+        self.assertIn('<script src="/static/common.js" defer></script>', page)  # opened for the paper (beforeprint), so a printout has every part
+        self.assertIn("beforeprint", (ROOT / "src" / "dashboard" / "web" / "static" / "common.js").read_text(encoding="utf-8"))
 
     def test_the_calendar_and_the_timeline_stay_open(self):
         page = self.page(f"/t/pets__pets/{self.rex}")

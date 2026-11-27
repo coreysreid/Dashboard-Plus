@@ -9,7 +9,7 @@ columns.window_exit = { label = "Possible window exit, checked locally", help = 
 
 [tables.items]
 home = "main"
-columns.name = { help = "Start typing to pick from common goods, or type your own.", suggest_from = "catalogue.csv", fills = { category = "category", unit = "unit", drinking = "counts_as_drinking_water" } }
+columns.name = { help = "Start typing to pick from common goods, or type your own. Stock is ordinary information: it shows on Home, printed sheets, the spreadsheet and to helpers. Keep a medicine's name, strength and who takes it in that person's medication details, not here; name the item in general words, like \"Prescription tablets\".", suggest_from = "catalogue.csv", fills = { category = "category", unit = "unit", drinking = "counts_as_drinking_water" } }
 empty = "Add a few things from the pantry."
 form = ["name", "category", "drinking", "quantity", "unit", "minimum", "place", "expires", "notes"]
 list = ["name", "category", "quantity", "unit", "minimum", "expires"]

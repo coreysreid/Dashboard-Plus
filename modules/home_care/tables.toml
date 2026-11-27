@@ -76,7 +76,7 @@ when = "done_on"
 per = "job"
 measure = "count"
 by = ["month", "week"]
-entry = ["time done", "times done"]
+entry = ["work done", "work done"]
 subject = "job"
 
 # On the job's own page (decision 0130): each time the job was done, newest first, and who did it.

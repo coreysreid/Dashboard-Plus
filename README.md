@@ -24,6 +24,14 @@ is new: keep a copy of anything important somewhere else too. See
 
 ## What it does today
 
+- **No passwords, codes or full numbers, ever:** Dashboard Plus never keeps
+  passwords, PINs, alarm or door codes, full card or bank account numbers, ID
+  numbers or copies of ID, so a copy of your records cannot be used for major
+  fraud. It asks instead who to ask, where it is kept ("In the password
+  manager"), or only the last 4 digits (••••1234), and refuses a full card
+  number typed anywhere. Anything like that saved before is hidden until you
+  tidy it on **Tidy sensitive details** (Home tells you), with a backup first
+  and Undo.
 - **People:** who lives here, family, neighbours, the doctor and the vet; *Who
   to call*, in order; important details such as allergies, hidden on screen
   until you choose to show them.
@@ -176,8 +184,8 @@ is new: keep a copy of anything important somewhere else too. See
   optionally a vehicle or a place. Thirty days before, Needs attention and
   Things to do say "bill check due", "policy check due" or "vehicle insurance
   review or renewal due"; nothing works out the next date and nothing says a
-  bill was paid or cover is active. The amount, what it covers, the reference
-  and notes stay private on this computer. If Vehicles already reminds you
+  bill was paid or cover is active. The amount, what it covers, the last 4
+  digits of the policy or account and notes stay private on this computer. If Vehicles already reminds you
   about car insurance, nothing moves until you choose **Keep reminders in
   Vehicles** or **Review and move to Bills**, one policy at a time, with
   **Transfer back** to undo; each policy keeps one reminder.
@@ -252,6 +260,14 @@ is new: keep a copy of anything important somewhere else too. See
   odometer readings you kept in an old spreadsheet can be added in one go
   from that list's page, with every row shown first and one **Undo** for the
   whole lot. See [Bringing in your old tracker](#bringing-in-your-old-tracker).
+- **What your other computers get:** in Settings, every list and each of its
+  details says whether it will be **Shared with your other computers** or kept
+  **Only on this computer** (and, for a list with private details, **Shared,
+  but not the amount**). Everything starts as it always was; Money back starts
+  on this computer only, and codes and access details are never shared.
+  Keeping something here happens at once; starting to share something private
+  asks first, says what will start going, and has **Undo**. Nothing is sent
+  yet: this decides what your computers get once they can be paired.
 - **Automatic backups**, every day and every time you close it safely, and
   **Restore from a backup** in Settings: check a backup and compare it with
   now, put it back, and undo that if it was the wrong one.

@@ -121,13 +121,12 @@ class ExportTests(TempDirTestCase):
         self.assertNotIn(SECRET.encode(), raw)
         for name, content in files.items():
             self.assertNotIn(SECRET.encode(), content, name)
-        header, _ = self.table(files, "home_layout__exits")
-        self.assertNotIn("Codes or access details (private)", header)
         manifest = json.loads(files["manifest.json"])
         exits = next(t for t in manifest["tables"] if t["table"] == "exits" and t["module"] == "home_layout")
-        self.assertEqual(exits["left_out_as_private"], ["Codes or access details (private)"])
-        self.assertNotIn("access_details", {c["key"] for c in exits["columns"]})
-        self.assertIn("Codes or access details (private)", files["README.txt"].decode())
+        self.assertNotIn("access_details", {c["key"] for c in exits["columns"]})  # retired (decision 0141)
+        services = next(t for t in manifest["tables"] if t["table"] == "services" and t["module"] == "utilities")
+        self.assertIn("Last 4 digits of the account", services["left_out_as_private"])
+        self.assertIn("Last 4 digits of the account", files["README.txt"].decode())
 
     def test_secrets_folder_is_never_read(self):
         (self.data / "secrets").mkdir(exist_ok=True)

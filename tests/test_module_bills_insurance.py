@@ -26,7 +26,7 @@ INSURANCE = "vehicles__insurance"
 TODAY = date.today()
 AMOUNT, COVERS = "43.21", "Invented cover sentinel 8812"
 STORED = 4321  # money is kept in cents
-REFERENCE, NOTE = "DEMO-REF-SENTINEL-55", "Invented private bill note 6603"
+REFERENCE, NOTE = "••••0055", "Invented private bill note 6603"
 VEHICLE_NOTE = "Invented vehicles note marker 7719"
 NEEDS_CHOICE = "Choose first where vehicle insurance reminders are kept"
 
@@ -187,7 +187,7 @@ class BillsModuleTests(BillsCase):
         self.assertEqual(self.store().get(BILLS, bill)["next_due"], soon(-8))
 
     def test_5_private_details_are_behind_show_and_out_of_lists_sheets_exports_helpers_and_the_change_log(self):
-        bill = self.bill(amount=AMOUNT, covers=COVERS, reference=REFERENCE, notes=NOTE, next_due=soon(3))
+        bill = self.bill(amount=AMOUNT, covers=COVERS, reference_last4=REFERENCE, notes=NOTE, next_due=soon(3))
         client = self.client()
         sentinels = (COVERS, REFERENCE, NOTE, "43.21")
         for path in ("/", "/attention", "/to-do", f"/t/{BILLS}", f"/t/{BILLS}/{bill}",
@@ -196,7 +196,7 @@ class BillsModuleTests(BillsCase):
             for private in sentinels:
                 with self.subTest(path=path, private=private):
                     self.assertNotIn(private, text)
-        shown = client.post(f"/t/{BILLS}/{bill}/reveal", data={"column": "reference", "_csrf": client.application.config["CSRF_TOKEN"]}, base_url=BASE, headers={"Accept": "application/json"}).get_json()
+        shown = client.post(f"/t/{BILLS}/{bill}/reveal", data={"column": "reference_last4", "_csrf": client.application.config["CSRF_TOKEN"]}, base_url=BASE, headers={"Accept": "application/json"}).get_json()
         self.assertEqual(shown["value"], REFERENCE)
         for name, text in self.export_files().items():
             for private in sentinels:
@@ -209,7 +209,7 @@ class BillsModuleTests(BillsCase):
             self.assertNotIn(private, reply)
         log = sync.changes(self.conn, 0, limit=100000)
         created = next(e for e in log if e["table_name"] == BILLS and e["action"] == "create")
-        self.assertEqual(sorted(created["withheld"]), ["amount", "covers", "notes", "reference"])
+        self.assertEqual(sorted(created["withheld"]), ["amount", "covers", "notes", "reference_last4"])
         snap = sync.snapshot(self.conn, self.store().registry)
         for private in sentinels + (str(STORED),):
             self.assertNotIn(private, str(log))
@@ -217,16 +217,16 @@ class BillsModuleTests(BillsCase):
         backups.daily(self.data, today=date(2026, 6, 1))
         kept = sqlite3.connect(self.data / "backups" / "daily-2026-06-01.db")
         self.addCleanup(kept.close)
-        self.assertEqual(kept.execute(f"SELECT amount, covers, reference, notes FROM {BILLS}").fetchone(),
+        self.assertEqual(kept.execute(f"SELECT amount, covers, reference_last4, notes FROM {BILLS}").fetchone(),
                          (STORED, COVERS, REFERENCE, NOTE))
         module = modules.load_module(ROOT / "modules" / "bills_insurance")
         columns = module.tables["commitments"].columns
         self.assertEqual({n for n, c in columns.items() if c.travels == "never"},
-                         {"amount", "covers", "reference", "notes"})
-        self.assertEqual({n for n, c in columns.items() if c.sensitive}, {"amount", "covers", "reference", "notes"})
+                         {"amount", "covers", "reference_last4", "notes"})
+        self.assertEqual({n for n, c in columns.items() if c.sensitive}, {"amount", "covers", "reference_last4", "notes"})
 
     def test_6_a_member_copy_sees_the_due_date_but_no_private_detail_and_an_edit_never_sends_a_blank(self):
-        bill = self.bill(amount=AMOUNT, covers=COVERS, reference=REFERENCE, notes=NOTE)
+        bill = self.bill(amount=AMOUNT, covers=COVERS, reference_last4=REFERENCE, notes=NOTE)
         seen = sync.changes(self.conn, 0, limit=100000)[-1]["seq"]
         self.store().update(BILLS, bill, {"amount": "43.22"})
         self.store().update(BILLS, bill, {"next_due": soon(9)})
@@ -238,10 +238,10 @@ class BillsModuleTests(BillsCase):
         row = next(r for r in sync.snapshot(self.conn, self.store().registry)["records"] if r["table"] == BILLS)
         self.assertEqual(row["values"]["name"], "Home electricity")
         self.assertEqual(row["values"]["next_due"], soon(9))
-        self.assertEqual(set(row["withheld"]), {"amount", "covers", "reference", "notes"})
+        self.assertEqual(set(row["withheld"]), {"amount", "covers", "reference_last4", "notes"})
 
     def test_7_the_sheet_prints_no_money_or_reference_and_says_when_it_is_not_complete(self):
-        self.bill(amount=AMOUNT, reference=REFERENCE, provider=self.store().create(
+        self.bill(amount=AMOUNT, reference_last4=REFERENCE, provider=self.store().create(
             "people__people", {"name": "Example Provider With A Very Long Name For Printing Tests"}))
         sheet = self.page("/sheet/bills_insurance/upcoming_bills_and_policies")
         self.assertIn("Home electricity", sheet)
@@ -319,7 +319,7 @@ class BillsModuleTests(BillsCase):
             proposals.submit(self.conn, self.store().registry, helper, {
                 "request_key": "k-2", "why": "Invented.",
                 "entries": [{"table": BILLS, "values": {"name": "x", "kind": "bill", "category": "gas",
-                                                        "reference": REFERENCE}}]})
+                                                        "reference_last4": REFERENCE}}]})
         car = self.car()
         self.insurance(car)
         with self.assertRaises(ProposalError) as caught:
@@ -333,7 +333,7 @@ class BillsModuleTests(BillsCase):
         module = modules.load_module(ROOT / "modules" / "bills_insurance")
         from dashboard.core.schema import next_migration_sql
         self.assertIsNone(next_migration_sql(module))
-        sql = (ROOT / "modules" / "bills_insurance" / "migrations" / "0001_initial.sql").read_text()
+        sql = (ROOT / "modules" / "bills_insurance" / "migrations" / "0001_initial.sql").read_text(encoding="utf-8")
         self.assertIn("provider INTEGER REFERENCES people__people", sql)
         self.assertIn("vehicle INTEGER,", sql)
         self.assertIn("place INTEGER,", sql)
@@ -408,7 +408,7 @@ class OneReminderTests(BillsCase):
         row = self.store().get(BILLS, target)
         self.assertEqual((row["vehicle"], row["name"], row["next_due"], row["kind"], row["category"]),
                          (car, "Comprehensive cover", soon(12), "policy", "vehicle"))
-        for private in ("amount", "covers", "reference", "notes", "provider", "frequency"):
+        for private in ("amount", "covers", "reference_last4", "notes", "provider", "frequency"):
             self.assertIsNone(row[private], private)
         self.assertEqual(self.store().get(INSURANCE, policy)["notes"], VEHICLE_NOTE)  # stays in the earlier row
         self.assertEqual(self.due(), [(BILLS, target, f"vehicle insurance review or renewal due "
@@ -635,9 +635,9 @@ class ExampleTests(TempDirTestCase):
                     rule = reminder_moves.rule_for(registry, BILLS)
                     self.assertEqual(reminder_moves.show_choice(conn, rule), asked)
                     self.assertEqual(conn.execute("SELECT COUNT(*) FROM core__reminder_moves").fetchone()[0], 0)
-                    rows = conn.execute(f"SELECT name, reference FROM {BILLS}").fetchall()
+                    rows = conn.execute(f"SELECT name, reference_last4 FROM {BILLS}").fetchall()
                     self.assertEqual(len(rows), 1)
-                    self.assertTrue(rows[0]["reference"].startswith("DEMO-"))
+                    self.assertTrue(rows[0]["reference_last4"].startswith("••••"))
                 finally:
                     conn.close()
 

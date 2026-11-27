@@ -263,7 +263,7 @@ class PetTimelineTests(TimelineTestCase):
         css = (ROOT / "src" / "dashboard" / "web" / "templates" / "base.html").read_text(encoding="utf-8")
         for rule in (".tl-item { display: flex; gap: .45rem; align-items: baseline; margin: .35rem 0; "
                      "overflow-wrap: anywhere; }", "@media (forced-colors: active) { .tl-mark { border-color: "
-                     "CanvasText; } }", "@media print { .tl-nav, .timeline form { display: none; }",
+                     "CanvasText; } }", "@media print { .tl-nav, .timeline form, .timeline a[data-hide-details]",
                      ".tl-measured { background: var(--cal-due);"):
             self.assertIn(rule, css)
 

@@ -31,7 +31,7 @@ class ModuleLoadingTests(TempDirTestCase):
     def test_a_module_name_must_be_a_safe_name(self):
         folder = self.tmp / "modules" / "my-mod"
         shutil.copytree(self.make_module(labels=None), folder)
-        (folder / "module.toml").write_text((folder / "module.toml").read_text().replace('name = "demo"', 'name = "my-mod"'))
+        (folder / "module.toml").write_text((folder / "module.toml").read_text(encoding="utf-8").replace('name = "demo"', 'name = "my-mod"'))
         _, failures = modules.discover(self.tmp / "modules")
         self.assertIn("lower-case letters", " ".join(failures["my-mod"]))
 

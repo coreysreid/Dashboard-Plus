@@ -1,12 +1,12 @@
 [tables.services]
 empty = "Add one household service and who to contact about a fault."
-form = ["name", "kind", "provider", "fault_contact", "account_number", "meter", "notes"]
+form = ["name", "kind", "provider", "fault_contact", "account_last4", "meter", "notes"]
 list = ["name", "kind", "provider", "fault_contact", "meter"]
 columns.name = { label = "Service name", help = "For example, Home electricity or Apartment water." }
 columns.kind = { label = "Service" }
 columns.provider = { label = "Provider", help = "Add the provider as a People contact, then choose it here." }
 columns.fault_contact = { label = "Outage or fault line", help = "Keep its current phone number in People so it can be updated once." }
-columns.account_number = { label = "Account number", help = "Optional and private. Hidden from lists and print sheets; check the provider's own bill when needed." }
+columns.account_last4 = { label = "Last 4 digits of the account", help = "Optional and private. Only the last 4 digits, such as ••••1234, so you can tell accounts apart. The full number stays on the provider's own bill." }
 # Decision 0115: Home layout (Our home) is optional. These are the words when it is off, or a saved meter is gone.
 columns.meter = { label = "Meter in Our home", help = "Choose a meter from Our home. Leave blank for a service without a household meter, such as internet.", optional = { off_help = "Meter places are available if you switch on Our home. You can save this service without one.", kept_help = "A meter link is saved. Switch on Our home to see or change it.", kept = "Meter link saved; switch on Our home to see it.", none = "No meter place linked.", gone = "The linked meter is no longer there.", missing = "The linked meter is no longer there. Choose another, or leave it blank." } }
 columns.notes = { help = "Private household notes. Avoid passwords, login codes and payment card details." }

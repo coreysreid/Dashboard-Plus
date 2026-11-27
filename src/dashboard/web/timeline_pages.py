@@ -51,7 +51,7 @@ def change_since(info, rule: dict, item: timeline.Item, style: str) -> str | Non
             return None
         unit = next((c.label for c in unit_column.choices if c.key == row.get(unit_column.name)), "")
     words = change_words(column, {"value": before[column.name]}, {"value": row[column.name]}, unit)
-    when = _since(before["_day"], item.day, style)
+    when = "the earlier one that day" if before["_day"] == item.day else _since(before["_day"], item.day, style)
     if words.startswith("no change"):
         return f"no change since {when}{words[len('no change'):]}"
     head, _, rest = words.partition(", ")
@@ -119,6 +119,8 @@ def _line(store: records.Records, formatter: display.Formatter, item: timeline.I
             result = daily.add_up(daily_rule, item.day.isoformat(), item.rows)
             if result.totals:
                 said += " · " + daily.totals_words(daily_rule, result)
+            else:
+                said += ", no amount written down"  # as the day page and the bars say it (decision 0142)
         line["words"] = said
         if same:
             line["href"] = f"/daily/{info.name}?" + urlencode({"subject": subject_id, "day": item.day.isoformat()})

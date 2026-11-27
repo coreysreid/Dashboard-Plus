@@ -11,7 +11,7 @@ import io
 import re
 from dataclasses import dataclass, field
 
-from dashboard.core import dates, naming
+from dashboard.core import dates, fraud_guard, naming
 from dashboard.core.modules import Column
 from dashboard.core.proposals import HIDDEN_CHARACTERS
 from dashboard.core.records import Records, TableInfo
@@ -65,17 +65,21 @@ class DryRun:
 # ----- reading the file ---------------------------------------------------------------------------------
 
 def decode(data: bytes) -> str:
-    """The file's text, or FileProblem. UTF-8 with or without a byte order mark; nothing is ever replaced."""
+    """The file's text, or FileProblem. UTF-8 with or without a byte order mark.
+
+    The one thing replaced is a full card number (decision 0141): it becomes "[card number left out]" at once, so it
+    never reaches a page, the browser or Review, and the row holding it is refused with what to write instead."""
     if len(data) > MAX_BYTES:
         raise FileProblem(f"This file is {len(data) / 1_000_000:.1f} MB. The limit is {LIMIT_TEXT}: "
                           f"split it into smaller files and import each one.")
     if not data.strip():
         raise FileProblem("This file is empty.")
     try:
-        return data.decode("utf-8-sig")
+        text = data.decode("utf-8-sig")
     except UnicodeDecodeError:
         raise FileProblem("This file is not saved as UTF-8 text, so some letters could be read wrongly. "
                           "In your spreadsheet choose Save As, then \"CSV UTF-8\", and try again.") from None
+    return fraud_guard.leave_out_cards(text)
 
 
 def _delimiter(text: str) -> str:

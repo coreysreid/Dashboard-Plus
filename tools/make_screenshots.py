@@ -200,7 +200,7 @@ LOCALES = {"smith": ("en-AU", "Australia/Sydney"), "garcia": ("en-US", "America/
 FEATURED = {
     "smith": {"person": "Emily Smith", "item": "Adrenaline auto-injector (Emily)", "pet": "Rex",
               "vehicle": "Family car", "service": "Routine service"},
-    "garcia": {"person": "Rosa Garcia", "item": "Metformin 500 mg (Rosa)", "pet": "Luna",
+    "garcia": {"person": "Rosa Garcia", "item": "Prescription tablets (blister packs)", "pet": "Luna",
                "vehicle": "Household car", "service": "Oil change and inspection"},
     "taylor": {"person": "Sam Taylor", "item": "Bottled water (6 x 2 L)", "vehicle": "Small car",
                "service": "MOT test"},

@@ -275,9 +275,7 @@ def _day_page(table, show: bool):
         from dashboard.web import private_daily
         subjects = [s for s in subjects if private_daily.applies(store, info, s["id"])]
         if not show:  # names wait for Show, so the people are listed by number (decision 0123)
-            per = info.table.columns[rule["per"]]
-            subjects = sorted(({"id": s["id"], "name": display.private_subject_name(info, per, s["id"])}
-                               for s in subjects), key=lambda s: s["id"])
+            subjects = display.private_subject_names(subjects)  # "Person 1", never a record number (decision 0142)
     subject_info = _subject_info(store, info)
     title = f"{rule['what']} by day"
     if not subjects:

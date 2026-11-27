@@ -39,7 +39,7 @@ columns.code = { type = "text", sensitive = true }
 [tables.safes]
 title = "Key safes"
 columns.name = { type = "text", required = true }
-columns.combination = { type = "text", required = true, sensitive = true }
+columns.where_kept = { type = "text", required = true, sensitive = true }
 '''
 
 
@@ -319,7 +319,7 @@ class CsvImportTests(TempDirTestCase):
         self.assertNotIn("1 row ready", plain(page))
         response = self.post("/settings/import/send", dict(self.form(page), match_1="code"))
         self.assertEqual(self.count("core__proposals"), 0)
-        response = self.upload("name,combination\nShed,1234\n", table="keys__safes")
+        response = self.upload("name,where_kept\nShed,Blue folder\n", table="keys__safes")
         self.assertEqual(response.status_code, 400)
         self.assertIn("Choose the list to import into.", response.get_data(as_text=True))
 

@@ -107,6 +107,9 @@ def prepare(data_dir: Path, modules_dir: Path | None = None) -> StartupReport:
         from dashboard.core import questions  # decision 0113: older answers' checks become field stamps
         questions.upgrade_loaded(conn, found)
         stopped = helpers.stop_unfinished_key_changes(conn, data_dir)  # decision 0093
+        from dashboard.core import sync_sharing  # decision 0142: no full card number in a waiting change line
+        sync_sharing.mask_waiting_cards(conn)
+        conn.commit()
         version = conn.execute("PRAGMA user_version").fetchone()[0]
     finally:
         conn.close()

@@ -376,7 +376,7 @@ class DoseBarsTests(DoseTestCase):
         reply = self.post(self.web, self.path, subject=str(self.rosa), by="week")
         self.assertEqual(reply.status_code, 200)
         text = words(reply.get_data(as_text=True))
-        self.assertIn("Each medicine on its own", text)
+        self.assertIn("Each medicine detail on its own", text)
         self.assertIn(SECRET, text)
         self.assertIn("Invented eye drops", text)
         self.assertIn("Week from 16/11/26 to 22/11/26 (so far) 2 doses recorded", text)

@@ -122,7 +122,7 @@ class MoreCalendarsCase(TempDirTestCase):
                                          "next_due": "2026-12-15"})
         self.bill = create(BILLS, {"name": "Example electricity", "kind": "bill", "category": "electricity",
                                    "next_due": "2026-11-20", "amount": AMOUNT, "covers": COVERS,
-                                   "reference": REFERENCE, "notes": NOTE})
+                                   "reference_last4": REFERENCE[-4:], "notes": NOTE})
 
     def client(self):
         settings.put(self.conn, "setup.done", True)
@@ -220,7 +220,7 @@ class TogetherTests(MoreCalendarsCase):
         page = self.page("/to-do/calendar")
         part = page[page.index('class="cal-wrap"'):page.index("</section>", page.index('class="cal-wrap"'))]
         self.assertNotIn("<script", part)
-        self.assertIn('<details class="cal-list" open>', part)
+        self.assertIn('<details class="cal-list" data-print-open open>', part)
         self.assertEqual(part.count('aria-current="date"'), 1)
         self.assertIn('href="#cal-together-d-2026-11-20"', part)
 

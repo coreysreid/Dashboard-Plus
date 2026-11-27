@@ -15,7 +15,7 @@ from pathlib import Path
 from flask import Blueprint, Response, current_app, g, request
 
 from dashboard import __version__
-from dashboard.core import hello, helpers, proposals, records, schema, watch
+from dashboard.core import fraud_guard, hello, helpers, proposals, records, schema, watch
 from dashboard.core.proposals import MAX_ENTRIES, MAX_WAITING, ProposalError
 from dashboard.web import display
 
@@ -159,7 +159,7 @@ def _out(column, value):
         return float(Decimal(int(value)) / 100)
     if column.type == "boolean":
         return bool(value)
-    return value
+    return fraud_guard.mask_cards(value)  # a card number saved before decision 0141 is sent only as ••••1234
 
 
 def record_out(info: records.TableInfo, row: dict, hidden: set[str]) -> dict:
