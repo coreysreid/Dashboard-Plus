@@ -12,7 +12,7 @@ columns.floor = { type = "text" }
 columns.place = { type = "link", to = "stock.places", on_delete = "restrict" }
 columns.route = { type = "longtext" }
 columns.notes = { type = "text" }
-columns.access_details = { type = "text", sensitive = true, travels = "never" }
+columns.access_details = { type = "text", sensitive = true, travels = "never", travels_fixed = "Codes and access details work like passwords, so they never leave the computer where they were typed." }
 
 [tables.exits.watch]
 [[tables.exits.watch.gaps]]
@@ -36,7 +36,7 @@ columns.kind = { type = "choice", required = true, choices = [
 columns.place = { type = "link", to = "stock.places", on_delete = "restrict" }
 columns.how_to_find = { type = "longtext" }
 columns.notes = { type = "text" }
-columns.access_details = { type = "text", sensitive = true, travels = "never" }
+columns.access_details = { type = "text", sensitive = true, travels = "never", travels_fixed = "Codes and access details work like passwords, so they never leave the computer where they were typed." }
 
 [tables.shutoffs.watch]
 # Water and power are asked about because nearly every home has them. Gas is not: many homes have none.
@@ -69,7 +69,7 @@ columns.last_tested = { type = "date" }
 columns.battery_changed = { type = "date" }
 columns.next_check = { type = "date" }
 columns.notes = { type = "text" }
-columns.access_details = { type = "text", sensitive = true, travels = "never" }
+columns.access_details = { type = "text", sensitive = true, travels = "never", travels_fixed = "Codes and access details work like passwords, so they never leave the computer where they were typed." }
 
 [tables.equipment.watch]
 expiring = { date = "next_check", warn_days = 30, wording = "due", what = "check" }
@@ -94,7 +94,7 @@ columns.name = { type = "text", required = true }
 columns.kind = { type = "choice", required = true, choices = ["electricity", "gas", "water", "other"] }
 columns.place = { type = "link", to = "stock.places", on_delete = "restrict" }
 columns.how_to_find = { type = "text" }
-columns.access_details = { type = "text", sensitive = true, travels = "never" }
+columns.access_details = { type = "text", sensitive = true, travels = "never", travels_fixed = "Codes and access details work like passwords, so they never leave the computer where they were typed." }
 
 [tables.meters.watch]
 [[tables.meters.watch.gaps]]

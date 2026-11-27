@@ -27,6 +27,7 @@
 | helper_examples.py | One short invented example and a plain warning for each list a helper may fill in, used by the helper's guide (decision 0138). | adding a list a helper should be shown how to fill |
 | helper_settings.py | Settings, Helpers: give an assistant a key, choose what it may do, give it a new key, and turn its access off. | changing the Helpers settings page |
 | export_page.py | Settings, Export my records: a page and a button that downloads a zip of spreadsheet files. | changing the Export page |
+| sharing_page.py | Settings, What your other computers get: each list and its details shared or kept here, a confirmation before sharing anything private, and Undo (decision 0140). | changing the sharing page, its confirmation or Undo |
 | chart*.py | Charts drawn on the server as SVG, labelled bars, dated dots and bars over time (charts, decision 0124), and the pages showing today's drinking water and one pet's recorded weights (chart_pages, decision 0109) | changing a chart or its empty words |
 | daily_pages.py | Daily totals pages (decision 0110): one subject's day, a dated sheet, the Home lines, the record panel and Review's repeat note. | changing the feeding log pages, its sheet or its Home card |
 | calendar_pages.py | Month calendars (decision 0119): a colour-coded grid with a symbol for every state, a legend and the same days in words. | changing a calendar page, its words, the Things to do Calendar tab (every list together, 0122), the record panel or a private calendar's Show (0121) |

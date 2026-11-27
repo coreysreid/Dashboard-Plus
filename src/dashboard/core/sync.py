@@ -6,7 +6,9 @@ create, change, delete and restore also writes a line to `core__sync_changes`, i
 the record's permanent ID, its table, the revision before and after, the names of the changed fields and
 the values that may travel to another computer of the household later. A value whose column says
 `travels = "never"` (or whose `travels_when` rule does not allow it for this row) is never written there:
-only its field name is listed as withheld. `core__audit` stays the local history and is never this format.
+only its field name is listed as withheld. The household's sharing choices (decision 0140,
+`sync_sharing.py`) start from exactly these rules and can keep more here, or share more once confirmed.
+`core__audit` stays the local history and is never this format.
 
 The ID and revision columns are added to module tables by `prepare`, which the core runs after each
 module's own migrations, under that module's own confinement rule (decision 0055), so it can only touch
@@ -22,6 +24,7 @@ from datetime import datetime, timezone
 from typing import Callable
 
 from dashboard.core import db, migrations
+from dashboard.core import sync_sharing as sharing
 from dashboard.core.modules import Column, Module
 from dashboard.core.schema import join_table_name, table_name, target_table
 from dashboard.errors import PlainError
@@ -216,8 +219,13 @@ def after_restore(conn, found: list[Module], previous: dict | None, undo: bool =
 
 # ----- the travel rule ---------------------------------------------------------------------------------
 
-def travels(column: Column, row: dict, held: bool = False) -> bool:
-    """May this column's value in this row travel to another computer of the household? (decision 0100)"""
+def travels(column: Column, row: dict, held: bool = False, rules: "sharing.Rules | None" = None) -> bool:
+    """May this column's value in this row travel to another computer of the household? (decision 0100)
+
+    With `rules`, the household's sharing choices for its list decide (decision 0140); with none saved they
+    are exactly the module's rule below."""
+    if rules is not None:
+        return rules.allows(column, row, held)
     if column.travels == "never":
         return False
     if column.travels == "when":
@@ -247,13 +255,14 @@ def _id_of(conn, name: str, local_id, give: bool = True) -> str | None:
     return found
 
 
-def _project(conn, info, row: dict, names, held: set, give: bool = True) -> tuple[dict, list[str]]:
+def _project(conn, info, row: dict, names, held: set, give: bool = True,
+             rules: "sharing.Rules | None" = None) -> tuple[dict, list[str]]:
     """The values of `names` that may travel ({field: value}, links as permanent IDs) and the names of
     those that stay on this computer. Many-to-many links are logged as pairs instead."""
     patch, withheld = {}, []
     for name in names:
         column = info.table.columns[name]
-        if not travels(column, row, name in held):
+        if not travels(column, row, name in held, rules):
             withheld.append(name)
         elif column.type == "link":
             patch[name] = _id_of(conn, target_table(info.module.name, column), row.get(name), give)
@@ -307,9 +316,16 @@ def record(conn, info, record_id: int, action: str, before, after, effect: bool 
         return
     row = dict(found)
     global_id = row[ID] or _id_of(conn, info.name, record_id)
-    operation = db.current_operation(conn) or new_id().replace("-", "")
     declared = info.table.columns
     now_changed = {k for k in (after or {}) if k in declared} if action in ("create", "update") else set()
+    shared = sharing.rules(conn, info)  # the household's choices, or the module's rule (decision 0140)
+    if shared.list == "local":
+        # Only on this computer: no line at all, so another computer does not even learn the record exists.
+        # A value typed under a kind that stays here is still held, in case the list is shared later.
+        if action == "update":
+            _note_kind_changes(conn, info, global_id, row, before or {}, now_changed)
+        return
+    operation = db.current_operation(conn) or new_id().replace("-", "")
     prior = conn.execute(f"SELECT * FROM {LOG} WHERE operation_id = ? AND table_name = ? AND global_id = ? "
                          f"AND target_id = ''", (operation, info.name, global_id)).fetchone()
     if prior is not None:
@@ -332,7 +348,7 @@ def record(conn, info, record_id: int, action: str, before, after, effect: bool 
         names = sorted(changed)
     else:
         names = []
-    patch, withheld = _project(conn, info, row, names, held)
+    patch, withheld = _project(conn, info, row, names, held, rules=shared)
     when = at or _now()
     values = (action, json.dumps(sorted(changed)), json.dumps(patch, sort_keys=True), json.dumps(withheld),
               int(effect))
@@ -345,15 +361,17 @@ def record(conn, info, record_id: int, action: str, before, after, effect: bool 
                      f"VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
                      (state["epoch"], operation, info.name, global_id, base, revision) + values +
                      (EXCHANGE_SCHEMA, when))
-    _record_pairs(conn, info, row, global_id, operation, state, base, revision, before, after, now_changed, when)
+    _record_pairs(conn, info, row, global_id, operation, state, base, revision, before, after, now_changed, when,
+                  shared)
 
 
-def _record_pairs(conn, info, row, global_id, operation, state, base, revision, before, after, changed, when):
+def _record_pairs(conn, info, row, global_id, operation, state, base, revision, before, after, changed, when,
+                  rules=None):
     """A many-to-many link (such as a document's copy places) is logged pair by pair, as the two records'
     permanent IDs; adding a pair that is already there adds nothing."""
     for name in sorted(changed):
         column = info.table.columns[name]
-        if column.type != "links" or not travels(column, row):
+        if column.type != "links" or not travels(column, row, rules=rules):
             continue
         old, new = set((before or {}).get(name) or []), set((after or {}).get(name) or [])
         join, target = join_table_name(info.module.name, info.table.name, name), target_table(info.module.name, column)
@@ -391,7 +409,8 @@ def snapshot(conn, registry) -> dict:
     state = read_state(conn) or {}
     records, pairs = [], []
     for name, info in registry.items():
-        if not has_identity(conn, name):
+        shared = sharing.rules(conn, info)  # decision 0140: a list kept on this computer is not in the copy
+        if not has_identity(conn, name) or shared.list == "local":
             continue
         held: dict[str, set] = {}
         for r in conn.execute("SELECT global_id, column_name FROM core__sync_held WHERE table_name = ?", (name,)):
@@ -401,11 +420,12 @@ def snapshot(conn, registry) -> dict:
         for found in conn.execute(f"SELECT * FROM {name} ORDER BY id").fetchall():
             row = dict(found)
             ids[row["id"]] = row[ID]
-            values, withheld = _project(conn, info, row, names, held.get(row[ID], set()), give=False)
+            values, withheld = _project(conn, info, row, names, held.get(row[ID], set()), give=False,
+                                        rules=shared)
             records.append({"table": name, "id": row[ID], "revision": row[REVISION],
                             "deleted": bool(row["deleted_at"]), "values": values, "withheld": withheld})
         for column in info.table.columns.values():
-            if column.type != "links" or column.travels == "never":
+            if column.type != "links" or not travels(column, {}, rules=shared):
                 continue
             join = join_table_name(info.module.name, info.table.name, column.name)
             target = target_table(info.module.name, column)
