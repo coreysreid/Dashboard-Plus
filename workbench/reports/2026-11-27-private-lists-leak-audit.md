@@ -29,6 +29,23 @@ Every route was then searched for the markers **before Show** was pressed.
 The private list itself held. Its guards (POST-only Show, `no-store`, no suggestions, no export, no helper
 access, counts only on Home, calendars, bars and timelines) all worked.
 
+## Other sensitive fields checked
+
+Focused synthetic checks on the same main revision also passed for Home layout access details, Vehicle plate,
+Bills amount/coverage/reference/notes, Vehicle quote amount/scope/notes, Stock prices and refunds, and an export
+sentinel in every sensitive column. The ordinary list and sheet responses kept those values closed; export and
+helper reads omitted sensitive columns, while a private sheet required its pressed Show action. The relevant
+regression coverage is `tests/test_module_home_layout.py`, `test_module_vehicles.py`,
+`test_module_bills_insurance.py`, `test_module_vehicle_running.py`, `test_purchase_prices.py` and
+`test_export.py` (six focused tests passed). These checks did not find a new pre-Show private-column leak.
+
+**Paired-computer exception:** decision 0111 was amended on 24 November: a Vehicle quote's amount and scope are
+private on screen but deliberately `travels = "always"` to paired computers; its notes stay local. Bills details,
+Stock price values, refund amounts, plates and Home access codes remain local under their declarations; a refund
+record's existence and date can still appear in the filtered change log (decision 0134 leaves that policy open).
+“Private until Show”
+therefore describes the local screen, not a promise that every private value stays on one computer.
+
 ## Findings, worst first
 
 ### Important: the same medicine, typed as a Stock item, travels everywhere the private list does not
@@ -67,3 +84,6 @@ Real browser history and autofill on a household's own browser profile (the cont
 MCP connector process (the same `/api/v1` routes it calls were tried directly), and other computers (sync stage 2
 is not built). Screenshots are not attached because the markers are the evidence; the rows above can be
 reproduced by loading Garcia and editing the three values.
+Review can display text a helper itself supplied in `why` or receipt source lines; exact-match warnings cannot
+guarantee removal of a paraphrase. That is a trust-boundary limit of free text, not a confirmed private-column
+escape in this audit.
