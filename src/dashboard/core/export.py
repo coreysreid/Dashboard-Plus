@@ -11,7 +11,7 @@ from datetime import datetime, timezone
 from decimal import Decimal
 from typing import Callable
 
-from dashboard.core import optional_links, reminder_moves
+from dashboard.core import fraud_guard, optional_links, reminder_moves
 from dashboard.core.records import Records, TableInfo
 from dashboard.core.schema import join_table_name, target_table
 from dashboard.web import display
@@ -158,7 +158,9 @@ def _value(column, value):
         return _number(value)
     if kind == "choice":
         return _guard(next((c.label for c in column.choices if c.key == value), str(value)))
-    return _guard(str(value))  # text, longtext, date, datetime, file: dates and times stay as stored (ISO)
+    # text, longtext, date, datetime, file: dates and times stay as stored (ISO); a card number saved before
+    # decision 0141 is written only as ••••1234
+    return _guard(fraud_guard.mask_cards(str(value)))
 
 
 def _optional_link_cols(snap: _Snapshot, info: TableInfo, column, label: str) -> list[Col]:

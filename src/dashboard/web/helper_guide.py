@@ -168,6 +168,9 @@ def _never_lines() -> list[str]:
             "\"source\", for checking on Review; the person types the price themselves when they accept.",
             "- Access or alarm codes, account and reference numbers, registrations, and anything else the guide "
             "marks Private. Leave them out and tell the person which records still need them.",
+            "- Passwords, PINs, codes, full card or bank numbers, ID numbers or copies of ID: Dashboard Plus never "
+            "keeps these at all, for anyone. A full card number anywhere in a send is refused with payment_detail. "
+            "Write who to ask or where it is kept, or only the last 4 digits (like ••••1234).",
             "- Answers to the readiness questions and what happens in a practice drill: a person answers those.",
             "- Calendars, bars and timelines are only ways for a person to look at the lists above. Read the lists "
             "themselves; there is nothing to send to a calendar.",

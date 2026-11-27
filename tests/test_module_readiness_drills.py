@@ -219,7 +219,9 @@ class DrillCheckTests(DrillTestCase):
         house = self.place("Laundry")
         cupboard = self.place("Under-sink cupboard", inside=house)
         tap = self.store.create("home_layout__shutoffs", {"name": "Mains water tap", "kind": "water",
-                                                          "place": cupboard, "access_details": CODE})
+                                                          "place": cupboard})
+        self.conn.execute("UPDATE home_layout__shutoffs SET access_details = ? WHERE id = ?", (CODE, tap))
+        self.conn.commit()  # a code saved before decision 0141, retired and never read
         page = self.page(self.step_path("pipe-in-wall", run_id, number), client)
         self.assertNotIn("You haven&#39;t recorded where your water shut-off is.", page)
         self.assertIn("Laundry › Under-sink cupboard", page)

@@ -18,7 +18,7 @@ import sqlite3
 from dataclasses import dataclass, field
 from datetime import datetime, timezone
 
-from dashboard.core import db
+from dashboard.core import db, fraud_guard
 from dashboard.core.modules import Column
 from dashboard.core.schema import join_table_name
 from dashboard.errors import PlainError
@@ -335,6 +335,27 @@ def scrub(conn, registry, tables, after_seq: int = 0) -> int:
                              (json.dumps(patch, sort_keys=True), json.dumps(sorted(withheld | gone)), line["seq"]))
                 touched += 1
     return touched
+
+
+def mask_waiting_cards(conn, after_seq: int = 0) -> int:
+    """Decision 0142: a full card number that reached a waiting (unsent) change-log line before decision 0141 is
+    replaced there by its last four digits (••••1234), whichever field it sits in. Stage 1 sends nothing, so every
+    line after `after_seq` is waiting. Returns how many lines changed."""
+    try:
+        lines = conn.execute(f"SELECT seq, patch FROM {LOG} WHERE seq > ?", (after_seq,)).fetchall()
+    except sqlite3.OperationalError:
+        return 0
+    changed = 0
+    for line in lines:
+        try:
+            patch = json.loads(line["patch"])
+        except ValueError:
+            continue
+        cleaned = {k: fraud_guard.mask_cards(v) if isinstance(v, str) else v for k, v in patch.items()}
+        if cleaned != patch:
+            conn.execute(f"UPDATE {LOG} SET patch = ? WHERE seq = ?", (json.dumps(cleaned, sort_keys=True), line["seq"]))
+            changed += 1
+    return changed
 
 
 # ----- history and Undo ------------------------------------------------------------------------------------

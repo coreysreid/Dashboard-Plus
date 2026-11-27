@@ -190,6 +190,7 @@ def create_app(shutdown_token: str, on_shutdown: Callable[[], None], report=None
     def home():
         groups, attention, last_backup, asked, my_home, to_do = [], None, None, [], None, None
         daily_cards = []  # food put out today, one line per pet (decision 0110)
+        to_tidy = 0  # codes and full numbers saved before decision 0141, waiting on Tidy sensitive details
         if app.config["DATA_DIR"] is not None:
             last_backup = backups.latest(app.config["DATA_DIR"])
         if app.config["DATA_DIR"] is not None and registry():
@@ -207,13 +208,15 @@ def create_app(shutdown_token: str, on_shutdown: Callable[[], None], report=None
             to_do = home_summary(conn, registry(), app.config["TODAY"]())
             from dashboard.web.daily_pages import home_cards
             daily_cards = home_cards(conn, registry(), app.config["NOW"]() if app.config.get("NOW") else None)
+            from dashboard.core import tidy
+            to_tidy = tidy.waiting(records.Records(conn, registry()))
         from dashboard.web.setup import backup_report
         tables = [t for group in groups for t in group["main"] + group["more"]]
         return render_template("home.html", report=report, groups=groups, tables=tables, attention=attention,
                                last_backup=last_backup, backup=backup_report(app.config["DATA_DIR"]),
                                suggestions=waiting_suggestions(), asked=asked,
                                review_words=REVIEW_WORDS, my_home=my_home, to_do=to_do,
-                               daily_cards=daily_cards)
+                               daily_cards=daily_cards, to_tidy=to_tidy)
 
     @app.get("/attention")
     def attention_page():
@@ -293,6 +296,8 @@ def create_app(shutdown_token: str, on_shutdown: Callable[[], None], report=None
     app.register_blueprint(drill_pages)
     from dashboard.web.exit_sketch import exit_pages
     app.register_blueprint(exit_pages)
+    from dashboard.web.tidy_pages import tidy_pages  # Tidy sensitive details (decision 0141)
+    app.register_blueprint(tidy_pages)
 
     def for_helpers() -> bool:
         return request.path.startswith("/api/v1/")

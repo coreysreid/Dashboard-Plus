@@ -16,6 +16,8 @@ Lane B checked every calendar, bar chart and timeline and the private lists. Thi
 - **Timeline and links.** Back links say "Back to herbs", never "herbs's page". A weigh-in after another on the same day says "since the earlier one that day". A day of feedings with no amounts says "no amount written down".
 - **Stock names.** The Garcia example item is "Prescription tablets (blister packs)" with notes "Refill at 30.". The Stock item name field now says Stock is ordinary information (Home, printed sheets, the spreadsheet, helpers) and that a medicine's name, strength and who takes it belong in the person's medication details. Typing is never blocked.
 
+- **Old card numbers (follows decision 0141).** Show on a private field that still holds a full card number answers only ••••1234, as an ordinary page does, and Tidy sensitive details lists that value. On startup, and after each tidy, `sync_sharing.mask_waiting_cards` replaces a full card number in any waiting (unsent) change-log line with its last four digits, so the old number does not sit there waiting to travel.
+
 ## Why we chose it
 - Paper is where a household shows a page to someone else, so it must never lose its words or print buttons that do nothing.
 - A database number tells a reader how the program counts records and means nothing to a household; "Person 1" says the same thing in household words.

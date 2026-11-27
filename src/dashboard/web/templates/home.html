@@ -65,6 +65,7 @@
   {% if my_home.rooms %}<p style="margin:.2rem 0"><a href="/exit-sketch">Our way-out sketch</a></p>{% endif %}
 </div>
 {% endif %}
+{% if to_tidy %}<p class="notice" role="status">{{ to_tidy }} saved code{{ "" if to_tidy == 1 else "s" }} or full number{{ "" if to_tidy == 1 else "s" }} from before are no longer kept here, and are hidden until you choose what to do. <a href="/tidy">Tidy sensitive details</a></p>{% endif %}
 {% if attention and (attention.low or attention.expiring or attention.supplies or attention.gaps) %}
 <div class="tables">
   {% for s in attention.supplies %}

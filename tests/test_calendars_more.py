@@ -122,7 +122,7 @@ class MoreCalendarsCase(TempDirTestCase):
                                          "next_due": "2026-12-15"})
         self.bill = create(BILLS, {"name": "Example electricity", "kind": "bill", "category": "electricity",
                                    "next_due": "2026-11-20", "amount": AMOUNT, "covers": COVERS,
-                                   "reference": REFERENCE, "notes": NOTE})
+                                   "reference_last4": REFERENCE[-4:], "notes": NOTE})
 
     def client(self):
         settings.put(self.conn, "setup.done", True)

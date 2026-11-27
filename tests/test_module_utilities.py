@@ -17,7 +17,7 @@ import load_example
 
 PORT = 5137
 BASE = f"http://127.0.0.1:{PORT}"
-ACCOUNT = "DEMO-ACCT-7731"
+ACCOUNT = "••••7731"
 PRIVATE_NOTE = "Invented private note 4412"
 NO_CONTACT = "Who would you contact about a fault with Home electricity? Add a People contact if you have one."
 NO_PHONE = "What is the fault-line number for Home electricity? Add it to the People contact."
@@ -125,7 +125,7 @@ class UtilitiesModuleTests(UtilitiesTestCase):
         self.assertIsNone(self.records.get("stock__places", shed)["deleted_at"])
 
     def test_6_the_account_reference_and_note_stay_off_lists_sheets_pages_attention_exports_and_helpers_until_shown(self):
-        service = self.service(account_number=ACCOUNT, notes=PRIVATE_NOTE)
+        service = self.service(account_last4=ACCOUNT, notes=PRIVATE_NOTE)
         client = self.client()
         paths = ["/", "/attention", "/t/utilities__services", f"/t/utilities__services/{service}",
                  "/sheet/utilities/utility_contacts", "/sheet/home_layout/our_home", "/t/people__people"]
@@ -134,7 +134,7 @@ class UtilitiesModuleTests(UtilitiesTestCase):
                 text = self.page(path, client)
                 for private in (ACCOUNT, PRIVATE_NOTE):
                     self.assertNotIn(private, text)
-        shown = client.post(f"/t/utilities__services/{service}/reveal", data={"column": "account_number", "_csrf": client.application.config["CSRF_TOKEN"]}, base_url=BASE, headers={"Accept": "application/json"}).get_json()
+        shown = client.post(f"/t/utilities__services/{service}/reveal", data={"column": "account_last4", "_csrf": client.application.config["CSRF_TOKEN"]}, base_url=BASE, headers={"Accept": "application/json"}).get_json()
         self.assertEqual(shown["value"], ACCOUNT)  # only the Show button's request returns it
         self.assertEqual(client.post(f"/t/utilities__services/{service}/reveal", data={"column": "name", "_csrf": client.application.config["CSRF_TOKEN"]}, base_url=BASE, headers={"Accept": "application/json"}).status_code, 404)
         for name, text in self.export().items():
@@ -150,10 +150,10 @@ class UtilitiesModuleTests(UtilitiesTestCase):
             self.assertNotIn(private, reply.get_data(as_text=True))
         module = modules.load_module(ROOT / "modules" / "utilities")
         columns = module.tables["services"].columns
-        self.assertEqual({n for n, c in columns.items() if c.sensitive}, {"account_number", "notes"})
+        self.assertEqual({n for n, c in columns.items() if c.sensitive}, {"account_last4", "notes"})
         self.assertEqual({n for n in columns if re.search(r"password|login|code|card|pin", n)}, set())
         form = self.page("/t/utilities__services/new", client)
-        self.assertIn("Hidden from lists and print sheets", form)
+        self.assertIn("Only the last 4 digits", form)
         self.assertIn("Avoid passwords, login codes and payment card details", form)
 
     def test_7_missing_contact_and_missing_phone_are_each_asked_and_adding_clears_them(self):
@@ -169,13 +169,13 @@ class UtilitiesModuleTests(UtilitiesTestCase):
     def test_8_the_sheet_prints_service_kind_provider_contact_phone_and_meter_and_never_private_values(self):
         long_name = "Example long-named provider of electricity for a very big household " * 3
         self.records.update("people__people", self.provider, {"name": long_name.strip()})
-        self.service(account_number=ACCOUNT, notes=PRIVATE_NOTE)
+        self.service(account_last4=ACCOUNT, notes=PRIVATE_NOTE)
         self.service("Home internet", kind="internet", meter=None)
         sheet = self.page("/sheet/utilities/utility_contacts")
         for shown in ("Check it with your provider before relying on this page", "Home electricity", "Electricity",
                       long_name.strip(), "Example Energy Faults", "0491 570 162", "Electricity meter", "Home internet"):
             self.assertIn(shown, sheet)
-        for left_out in (ACCOUNT, PRIVATE_NOTE, "<th>Account number", "<th>Notes"):
+        for left_out in (ACCOUNT, PRIVATE_NOTE, "<th>Last 4 digits", "<th>Notes"):
             self.assertNotIn(left_out, sheet)
 
     def test_9_deleting_a_contact_or_meter_clears_the_link_keeps_the_service_and_undo_adds_no_duplicate(self):
@@ -197,7 +197,7 @@ class UtilitiesModuleTests(UtilitiesTestCase):
         self.assertEqual(count, 1)
 
     def test_10_switching_it_off_hides_it_and_switching_on_returns_every_link_and_changes_no_other_module(self):
-        self.service(account_number=ACCOUNT)
+        self.service(account_last4=ACCOUNT)
         client = self.client()
         self.assertIn("/t/utilities__services", self.page("/", client))
         before = self.snapshot()
@@ -281,11 +281,11 @@ class UtilitiesExampleAndBackupTests(TempDirTestCase):
                 conn = db.connect(data / "dashboard.db")
                 self.addCleanup(conn.close)
                 rows = conn.execute(
-                    "SELECT s.name, m.name AS meter, p.name AS place, f.phone, s.account_number "
+                    "SELECT s.name, m.name AS meter, p.name AS place, f.phone, s.account_last4 "
                     "FROM utilities__services s JOIN home_layout__meters m ON m.id = s.meter "
                     "JOIN stock__places p ON p.id = m.place JOIN people__people f ON f.id = s.fault_contact").fetchall()
                 self.assertEqual([tuple(r)[:4] for r in rows], [(service, meter, place, phone)])
-                self.assertTrue(rows[0]["account_number"].startswith("DEMO-"))
+                self.assertTrue(rows[0]["account_last4"].startswith("••••"))
                 self.assertEqual(conn.execute("SELECT COUNT(*) FROM home_layout__meters WHERE name = ?", (meter,)).fetchone()[0], 1)
                 self.assertEqual(conn.execute("SELECT COUNT(*) FROM home_layout__meters").fetchone()[0], 1)
 
@@ -296,20 +296,20 @@ class UtilitiesExampleAndBackupTests(TempDirTestCase):
         backups.daily(data, today=date(2026, 6, 1))
         conn = db.connect(data / "dashboard.db")
         store = records.Records(conn, records.build_registry(report.loaded))
-        row = conn.execute("SELECT id, meter, account_number FROM utilities__services").fetchone()
-        self.assertEqual(row["account_number"], "DEMO-AU-ACCOUNT-01")
-        store.update("utilities__services", row["id"], {"meter": None, "account_number": "DEMO-AU-ACCOUNT-02"})
+        row = conn.execute("SELECT id, meter, account_last4 FROM utilities__services").fetchone()
+        self.assertEqual(row["account_last4"], "••••0101")
+        store.update("utilities__services", row["id"], {"meter": None, "account_last4": "••••0102"})
         conn.close()
 
         def saved():
             c = db.connect(data / "dashboard.db")
             try:
-                return tuple(c.execute("SELECT meter, account_number FROM utilities__services").fetchone())
+                return tuple(c.execute("SELECT meter, account_last4 FROM utilities__services").fetchone())
             finally:
                 c.close()
 
         chosen = restore.get({"data": data / "backups"}, "data", "daily-2026-06-01.db")
         restore.restore(data, chosen, report.loaded)
-        self.assertEqual(saved(), (row["meter"], "DEMO-AU-ACCOUNT-01"))
+        self.assertEqual(saved(), (row["meter"], "••••0101"))
         restore.undo(data, report.loaded)
-        self.assertEqual(saved(), (None, "DEMO-AU-ACCOUNT-02"))
+        self.assertEqual(saved(), (None, "••••0102"))

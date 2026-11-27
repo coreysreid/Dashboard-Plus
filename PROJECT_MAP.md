@@ -193,6 +193,7 @@ One record per decision, from `TEMPLATE.md`. Never deleted; reversed ones are ma
 | [0139](0139-content-security-policy.md) | A strict Content-Security-Policy on every response (scripts only from the program's own /static/ files, nothing third-party, no frames, no plugins); every inline script and on... handler moved into eight static files; styles keep inline because of 240 style attributes | changing the security headers or adding a script to a page |
 | [0140](0140-sharing-permissions.md) | What your other computers get (core migration 0011): a consent-based sharing choice for every list (Shared, Shared but not the amount or private details, Only on this computer) and detail, starting from each module's `travels` rule so nothing changes until chosen; Money back starts kept here (`travels = "never"` on the table); `travels_fixed` codes never travel; keeping here is immediate and cleans the waiting change log, sharing something private asks first, counts from now on, is in history with Undo; enforced in `sync.record` and `sync.snapshot`; helpers stay separate | Accepted |
 | [0142](0142-batch-22-checks-acted-on.md) | Batch 22 checks acted on: calendar day lists and the shown dose timeline print properly, private calendars say "Person 1" not a record number, loan and bar wording fixed, bars open on the subject with the latest entry, waiting suggestions are said not counted, and the Stock name hint and example no longer carry a medicine | changing print rules, private subject names, due words or bar defaults |
+| [0141](0141-no-fraud-grade-details.md) | No fraud-grade details (User 1's rule): no module may declare a password, PIN, code, full card, bank, policy or ID number or a copy of ID (checked at load); Home layout's codes box, Utilities' account number and Bills' reference are retired for "who to ask or where it is kept" and the last 4 digits; a full card number in any text, helper send or spreadsheet is refused without echo; Tidy sensitive details lists what was saved before, hidden until tidied, with a backup, Undo and Forget | Accepted |
 | [TEMPLATE](TEMPLATE.md) | Blank record to copy for a new decision | recording a decision |
 
 ## docs/plans/  (summary: build plans for larger pieces of work, written before building)
@@ -304,6 +305,7 @@ Generate the next one with: python tools/make_migration.py bills_insurance --nam
 | Entry | What it is | Open it when |
 |---|---|---|
 | 0001_initial.sql | The commitments table and its link and date indexes, generated from tables.toml (optional links without a database rule) | checking how bills and policies are stored |
+| 0002_last_four_digits.sql | Adds "Last 4 digits of the account or policy"; the old full reference is kept, unseen, until tidied (decision 0141) | checking the upgrade |
 
 ## modules/documents/  (summary: the Important documents module, files only; built on Lane B's draft, linking to People and Household stock)
 | Entry | What it is | Open it when |
@@ -372,6 +374,7 @@ Generate the next one with: python tools/make_migration.py home_layout --name <w
 |---|---|---|
 | 0001_first_tables.sql | The module's first tables, generated from tables.toml | checking how the tables are stored |
 | 0002_private_access_details.sql | Adds a private codes-or-access-details box to ways out, shut-offs, alarms and meters | checking the upgrade |
+| 0003_who_to_ask_instead_of_codes.sql | Adds "Who to ask, or where the code is kept" to ways out, shut-offs, alarms and meters; the old codes box is kept, unseen, until tidied (decision 0141) | checking the upgrade |
 
 ## modules/lent_out/  (summary: the Things lent out module, files only; built on Lane B's draft, linking to People and Household stock)
 | Entry | What it is | Open it when |
@@ -541,6 +544,7 @@ Generate the next one with: python tools/make_migration.py utilities --name <wha
 | Entry | What it is | Open it when |
 |---|---|---|
 | 0001_initial.sql | The module's first table, generated from tables.toml | checking how services are stored |
+| 0002_last_four_digits.sql | Adds "Last 4 digits of the account"; the old full account number is kept, unseen, until tidied (decision 0141) | checking the upgrade |
 
 ## modules/vehicle_running/  (summary: odometer readings and service estimates beside Vehicles, files only; built on Lane B's draft)
 | Entry | What it is | Open it when |
@@ -623,7 +627,7 @@ Generate the next one with: python tools/make_migration.py wine --name <what_cha
 | backups.py | Automatic backups: one a day, one at every safe close, kept in two places. | changing when or where backups are made |
 | restore.py | Restore from a backup: check copies without changing them, put one back safely, and undo it. | changing how a backup is checked, put back or undone |
 | db.py | Open the SQLite database with settings that are safe on USB drives. | changing how the data file is opened or backed up |
-| dates.py | Dates the household's way: typed and shown as 20/05/27 or 05/20/27, always stored as 2027-05-20. | changing how dates are typed or shown |
+| da*.py | Two parts about days: "Dates the household's way: typed and shown as 20/05/27 or 05/20/27, always stored as 2027-05-20." (dates) and "Daily totals by the household's own day: accepted entries only, amounts added only in matching units (decision 0110)." (daily) | changing how dates are typed or shown, the household day, daily totals or the possible-repeat match |
 | naming.py | What to call a record wherever it appears: its name, or for a batch "Kidney beans, 3 tins". | changing how records are named |
 | units.py | Say an amount of 1 with its unit in the singular: "1 tube", not "1 tubes". | changing how amounts and units read |
 | migrations.py | Apply numbered migrations, one track for the core and one per module. | changing how database changes are applied |
@@ -641,13 +645,11 @@ Generate the next one with: python tools/make_migration.py wine --name <what_cha
 | suggest.py | Suggestions while typing: a household's own records first, then a module's list of common things. | changing how picking from a list matches |
 | watch.py | Work out what is running low, what expires soon, how many days of supplies are on hand, and what is worth filling in. | changing running low, expiring, days of cover or gaps |
 | checklist.py | Things to do: Today, This week, This month and This year over the due dates modules already keep (decision 0107). | changing which tasks show, their windows, week start or what counts as done |
-| daily.py | Daily totals by the household's own day: accepted entries only, amounts added only in matching units (decision 0110). | changing the household day, daily totals or the possible-repeat match |
 | calendars*.py | Two parts of month calendars: "Month calendars from a table's dated or timed records by the household's own day; an empty day is never called missed (decision 0119), earlier done days read from history (0129, corrected by 0132)." (calendars) and "Not a done day (decision 0132): a household takes an earlier done day off a calendar, kept as a history entry and put back the same way." (calendars_corrections) | changing the calendar grid, its looks, which records and due dates it shows, a calendar of a table's own records (0122), earlier done days from history (0129), or Not a done day, a cleared date kept and a press with its typed date counted once (0132) |
 | bars.py | Bars over time: how often, or how much in one unit, per day, week or month by the household's own day; an empty period is never called missed (decision 0124). | changing which records a bars chart counts, its periods or how amounts add up (a whole list, a category group or money: 0128) |
 | timeline.py | One record's timeline: dated entries from every table that links to it and declares `timeline`, newest first, by the household's own day (decision 0126). | changing which entries a timeline lists, their order, a day's summary or its pages |
 | startup.py | Prepare the database at start-up: load modules, back up if needed, migrate, and give permanent record IDs. | changing what happens at start-up |
-| helper*.py | Two parts of helpers: "The small address file a connector reads to find Dashboard after a restart: only the address and a run ID (0092)." (helper_address) and "Helpers the household has given a key to: making a key, checking it, replacing it, and turning it off." (helpers) | changing how a connector finds Dashboard, or how helper keys work |
-| hello.py | Proof that an address is the real Dashboard Plus, worked out from a key without ever sending it (decision 0086). | changing the check the connector makes before sending a key |
+| he*.py | Three parts of helpers: "The small address file a connector reads to find Dashboard after a restart: only the address and a run ID (0092)." (helper_address), "Helpers the household has given a key to: making a key, checking it, replacing it, and turning it off." (helpers) and "Proof that an address is the real Dashboard Plus, worked out from a key without ever sending it (decision 0086)." (hello) | changing how a connector finds Dashboard, how helper keys work, or the check made before sending a key |
 | receipt*.py | Two parts of Review: "Receipt lines a helper could not match, and receipts sent twice: kept on Review, decided only by a person (0105)." (receipts) and "A price a person types while accepting a Stock in on Review (decision 0133): checked first, saved only with their press of Accept, never read from a helper's receipt text." (receipt_prices) | changing receipt lines, Finish receipt review, the repeat-receipt warning or a price typed on Review |
 | proposals.py | Suggestions from helpers and rows imported from a spreadsheet: checked, kept waiting, added only when a person accepts. | changing suggestions, limits or accepting |
 | move_in.py | Move-in checks on helper suggestions: a starting amount counted twice, a link sent as a name, private details copied into text. | changing the double-count warning, name matches in refusals or the private-copy warning on Review |
@@ -656,6 +658,8 @@ Generate the next one with: python tools/make_migration.py wine --name <what_cha
 | reminder_moves.py | One reminder per policy: a household chooses, row by row and by exact ID, to move an older list's reminder into a newer one, and can move it back (0117). | changing takes_over, Move, Keep, Transfer back or which record reminds |
 | sync*.py | Two parts of sync: "Permanent record IDs, revisions and the filtered change log (sync stage 1): nothing leaves this computer." (sync) and "What your other computers get: the household's sharing choice for each list and detail, starting from each module's own travel rule (decision 0140)." (sync_sharing) | changing record IDs, the change log or what may travel to another computer, or a household's sharing choices, their confirmation, Undo or how the waiting change log is cleaned |
 | csv_*.py | Two parts of spreadsheets: "Read a spreadsheet saved as CSV, match its columns to a table's fields, and check every row before it goes to Review." (csv_import) and "Bring in earlier entries: a person's own spreadsheet of a dated log, checked row by row, added at once with one Undo." (csv_bring_in, decision 0137) | changing how spreadsheets are read or matched, or Bring in earlier entries: its matching, repeats, adding or Undo |
+| fraud_guard.py | Keep fraud-grade details out (decision 0141): full card numbers, codes and passwords are refused, never stored. | changing the card check, last 4 digits, where-it-is-kept rule or the fields a module may not declare |
+| tidy.py | Tidy sensitive details (decision 0141): find codes, full numbers and card numbers saved before, and tidy each one. | changing what Tidy sensitive details finds, does, undoes or forgets |
 
 ## src/dashboard/core/migrations/  (summary: the core's numbered database changes; never edit a released one)
 Add a new file with the next number instead of changing an old one.
@@ -713,6 +717,7 @@ Add a new file with the next number instead of changing an old one.
 | private_daily.py | Private daily history (decision 0120), such as medicine doses: counts and times until Show, per-medicine totals after it. | changing the dose panel, Record a dose or Show details on Dose history |
 | restore.py | Settings, Backups: the list of backups, a preview of one, putting it back, and Undo restore. | changing the restore pages |
 | openapi-v1.json | The published OpenAPI 3.1 description of the helper API, served at GET /api/v1/openapi.json. | changing a helper route, reply or error code (edit it too) |
+| tidy_pages.py | Tidy sensitive details (decision 0141): the page that lists saved codes and full numbers and tidies each one. | changing the Tidy sensitive details page |
 
 ## src/dashboard/web/static/  (summary: the program's own browser scripts, served at /static/; no third-party code)
 | Entry | What it is | Open it when |
@@ -770,6 +775,7 @@ Add a new file with the next number instead of changing an old one.
 | sharing*.html | What your other computers get (decision 0140): every list and detail with its choice, usual rule and history with Undo (sharing), and Start sharing these private things? (sharing_confirm) | changing the sharing page wording |
 | moves*.html | One reminder per policy (0117): Review and move with each record's ID, and the Nothing was moved page | changing the reminder move screens |
 | restore_*.html | Settings, Backups: the list of backups, the check-and-compare page, the result, and the shared Undo restore box | changing the restore pages |
+| tidy.html | Tidy sensitive details (decision 0141): saved codes and full numbers by list and field, Show, the three choices per detail, Undo and Forget the old values | changing the Tidy sensitive details wording |
 
 ## tests/  (summary: automatic tests; synthetic data only)
 How to run them is in AGENTS.md.
@@ -860,6 +866,7 @@ How to run them is in AGENTS.md.
 | test_lane_b_batch22_fixes.py | Tests for decision 0142: the fixes from Lane B's batch 22 checks (calendars, bars, timeline, private lists, Stock names), one test per finding fixed. | changing print rules, private subject names, due words, bar defaults or the Stock name hint |
 | test_csp_0139.py | Tests for decision 0139: a strict Content-Security-Policy on every response, and no inline scripts or event handlers left in any page. | changing the security headers or adding a script to a page |
 | test_helper_guide_0138.py | Tests for decision 0138: the helper guide, connector words and published description say which lists a helper may fill, which it never may, and how units and the household's day apply. All data is invented. | changing the helper guide, its examples or the connector words |
+| test_no_fraud_grade_data_0141.py | Tests for decision 0141: no fraud-grade details are kept, and what was saved before can be tidied with Undo. | changing the card check, guarded or retired fields, or Tidy sensitive details |
 
 ## tools/  (summary: scripts that check, lock and build the project; run by CI)
 | Entry | What it is | Open it when |

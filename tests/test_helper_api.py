@@ -31,7 +31,7 @@ running_low = { quantity = "quantity", minimum = "minimum" }
 [tables.vault]
 title = "Vault"
 columns.label = { type = "text", required = true }
-columns.pin = { type = "text", required = true, sensitive = true }
+columns.where_kept = { type = "text", required = true, sensitive = true }
 '''
 LABELS = '''[tables.items]
 title = "Stock items"

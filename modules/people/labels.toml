@@ -14,4 +14,4 @@ columns.priority = { label = "Call order", help = "Enter 1 for the first person 
 form = ["person", "kind", "detail"]
 list = ["person", "kind", "detail"]
 columns.kind = { label = "What kind" }
-columns.detail = { help = "For medical safety, write what someone may need to know, such as “Allergic to penicillin”. For access, write who to ask or where instructions are kept. Keep passwords and key codes in a place you trust. This detail stays hidden until you choose Show." }
+columns.detail = { help = "For medical safety, write what someone may need to know, such as “Allergic to penicillin”. For access, write who to ask or where instructions are kept, such as “Ask Alex next door”; a code, PIN or password is refused. This detail stays hidden until you choose Show." }

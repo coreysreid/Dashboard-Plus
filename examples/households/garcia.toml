@@ -198,7 +198,7 @@ detail = "Vegetarian."
 [[people.important_info]]
 person = "Mei Chen"
 kind = "access"
-detail = "Spare apartment key. The building's front door code is with the building manager."
+detail = "Spare apartment key. Ask the building manager for the front door code."
 
 # ---- Medicine doses (decision 0120) ---------------------------------------------
 # A shape example only: not a claim that a dose was given, a prescription or a recommended time. The medicine is
@@ -837,7 +837,7 @@ due_on = "today+5"
 done = false
 
 # ---- Utilities ----------------------------------------------------------------
-# Invented provider and fault line; the number lives in People, and the account reference is made up.
+# Invented provider and fault line; the number lives in People, and only the made-up last 4 digits of the account are kept (decision 0141).
 
 [[people.people]]
 name = "Example Power US"
@@ -858,7 +858,7 @@ name = "Apartment electricity"
 kind = "electricity"
 provider = "Example Power US"
 fault_contact = "Example Power Faults US"
-account_number = "DEMO-US-ACCOUNT-01"
+account_last4 = "0102"
 meter = "Apartment electricity meter"
 
 # ---- Bills and insurance ------------------------------------------------------
@@ -873,7 +873,7 @@ amount = 210
 frequency = "yearly"
 next_due = "today+42"
 covers = "Broad example contents description; check the policy for limits"
-reference = "DEMO-GARCIA-CONTENTS"
+reference_last4 = "5528"
 
 # ---- Readiness ----------------------------------------------------------------
 # Answers to "Have you thought about…?" questions (modules/readiness/prompts.toml). Not yet answers say

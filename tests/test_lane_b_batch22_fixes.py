@@ -1,12 +1,14 @@
 """Tests for decision 0142: the fixes from Lane B's batch 22 checks (calendars, bars, timeline, private lists, Stock names), one test per finding fixed."""
+import json
 import re
 from datetime import date
 
 from support import ROOT, TempDirTestCase
-from dashboard.core import bars, settings
+from dashboard.core import bars, settings, sync_sharing, tidy
 from dashboard.web import display
 from test_calendars_rest import RestCase, LOANS, main as rest_main
 from test_module_medicine_doses import TABLE as DOSES
+from test_no_fraud_grade_data_0141 import BASE, CARD, FraudGuardTestCase
 from test_module_pet_feeding import FeedingTestCase, TABLE as FEED
 from test_private_lists_and_dose_calendar import CAL, PrivateDoseCase
 
@@ -110,3 +112,41 @@ class StockExampleTests(TempDirTestCase):
     def test_the_stock_name_field_explains_where_medicines_belong(self):
         labels = (ROOT / "modules" / "stock" / "labels.toml").read_text()
         self.assertIn("Keep a medicine's name, strength and who takes it in that person's medication details", labels)
+
+
+class OldCardNumberTests(FraudGuardTestCase):
+    """Values saved before decision 0141 that hold a full card number: never shown in full by Show, and cleaned out
+    of the waiting (unsent) change log."""
+
+    def setUp(self):
+        super().setUp()
+        self.conn.execute("UPDATE utilities__services SET notes = ? WHERE id = ?", (f"Paid with {CARD}", self.service))
+        self.conn.commit()
+
+    def test_show_gives_only_the_last_four_digits(self):
+        client = self.client()
+        for accept in ("application/json", "text/html"):
+            reply = client.post(f"/t/utilities__services/{self.service}/reveal",
+                                data={"_csrf": client.csrf, "column": "notes"}, base_url=BASE,
+                                headers={"Accept": accept})
+            text = json.loads(reply.get_data(as_text=True))["text"] if accept == "application/json" else reply.get_data(as_text=True)
+            self.assertEqual(reply.status_code, 200)
+            self.assertNotIn("4111 1111", text)
+            self.assertNotIn(CARD.replace(" ", ""), text)
+            self.assertIn("••••1111", text)
+
+    def test_the_tidy_page_lists_it(self):
+        found = [(i.record_id, i.column, i.kind) for i in tidy.find(self.store)]
+        self.assertIn((self.service, "notes", "card"), found)
+
+    def test_a_card_number_in_a_waiting_change_line_is_masked(self):
+        self.conn.execute(
+            "INSERT INTO core__sync_changes (epoch, operation_id, action, table_name, global_id, base_revision, "
+            "revision, patch, exchange_schema, at) VALUES (1, 'op-card', 'update', 'people__people', 'g-1', 1, 2, ?, 1, "
+            "'2026-11-27T00:00:00Z')", (json.dumps({"notes": f"Card {CARD}", "name": "Bob Example"}),))
+        self.conn.commit()
+        self.assertGreaterEqual(sync_sharing.mask_waiting_cards(self.conn), 1)
+        lines = " ".join(str(json.loads(r[0]).get("notes") or "") for r in self.conn.execute("SELECT patch FROM core__sync_changes"))
+        self.assertNotIn("4111 1111", lines)
+        self.assertIn("••••1111", lines)
+        self.assertEqual(sync_sharing.mask_waiting_cards(self.conn), 0, "nothing left to change")

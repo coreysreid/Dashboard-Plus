@@ -41,7 +41,7 @@ class RestCase(TempDirTestCase):
                                  "notes": SECRET})
         self.check = create(CHECKS, {"kit": self.kit, "checked_on": "2026-11-05", "notes": SECRET})
         self.alarm = create(EQUIPMENT, {"name": "Hall smoke alarm", "kind": "smoke_alarm", "last_tested": "2026-11-02",
-                                        "next_check": "2026-11-22", "access_details": SECRET})
+                                        "next_check": "2026-11-22", "notes": SECRET})
         neighbour = create("people__people", {"name": "Example Neighbour"})
         self.drill = create(LOANS, {"name": "Example drill", "borrower": neighbour, "lent_on": "2026-11-01",
                                     "due_back": "2026-11-25", "status": "out", "notes": SECRET})
