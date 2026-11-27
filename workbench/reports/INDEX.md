@@ -58,3 +58,4 @@ expected, actual, severity (blocker, important, minor), suggested change.
 | 2026-11-27-private-lists-leak-audit.md | Every route tried for a private dose or medication value before Show, worst first. | reviewing private-list safety |
 | 2026-11-27-timeline-check.md | What happened timelines in three households and two stress copies, worst first, and visit ideas. | refining the timeline |
 | 2026-11-27-spending-check.md | Three-household Stock spending and refund check at phone and desktop widths, with local-price coverage limit. | reviewing Spent per month |
+| 2026-11-27-rewalk-after-tidy.md | 320px keyboard and screen-reader-tree re-walk after 0131 to 0136, worst first. | fixing focus and heading order |
