@@ -17,6 +17,7 @@
 | exit_drawing.py | Draw the way-out sketch as SVG on the server: room boxes by floor, labelled lines, doors out and the meeting place, split into pages. | changing how the sketch is laid out, drawn or split into pages |
 | sheets.py | One-page printable sheets declared by modules, such as the emergency sheet. | changing printable sheets |
 | display.py | Turn declared tables and stored values into friendly labels, form fields and text. | changing how values look |
+| static/ | The program's own browser scripts (no inline scripts anywhere, decision 0139) | changing what a page does in the browser |
 | templates/ | The HTML pages | changing what a page looks like |
 | api.py | The helper API (/api/v1): programs the household gave a key to can look at records and suggest new ones. | changing what helpers can read or send |
 | review.py | The Review screen: helpers' suggested new records and imported rows, waiting for a person to accept or reject each one. | changing the Review page |

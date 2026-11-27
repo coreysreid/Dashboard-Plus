@@ -229,11 +229,10 @@ class ChecksThatHeldTests(PrivateDoseCase):
             for link in re.findall(r'href="([^"]*)"', text):
                 self.assertNotIn("show", link.lower(), f"{path}: {link}")
                 self.assertNotRegex(link, r"^(https?:)?//", f"{path}: {link}")
-            self.assertNotRegex(text, r'<script[^>]+src=', path)
+            self.assertNotRegex(text, r'<script[^>]+src="(?!/static/)', path)  # only the program's own files (0139)
 
     def test_the_print_script_in_every_page_loads_nothing_and_sends_nothing(self):
-        base = (ROOT / "src" / "dashboard" / "web" / "templates" / "base.html").read_text(encoding="utf-8")
-        script = base[base.rindex("<script>"):base.rindex("</script>")]
+        script = (ROOT / "src" / "dashboard" / "web" / "static" / "common.js").read_text(encoding="utf-8")
         self.assertIn("beforeprint", script)
         self.assertNotIn("src=", script)
         self.assertEqual(script.count("fetch("), 1, "only Show's own POST to this program")

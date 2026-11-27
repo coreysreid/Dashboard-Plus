@@ -41,7 +41,7 @@
   <p><strong>{{ f.LAYOUT_WARNING }}</strong></p>
   {% if pages > 1 %}<p id="pages-needed">This sketch needs {{ pages }} pages to show every recorded place and connection. Print all pages or choose the text version.</p>{% endif %}
   <div class="actions">
-    <button type="button" onclick="window.print()">Print</button>
+    <button type="button" data-print>Print</button>
     {% for key, words in papers.items() %}{% if key != paper %}<a href="/exit-sketch/print?paper={{ key }}">Use {{ words }} paper</a>{% else %}<span class="muted">{{ words }} paper</span>{% endif %}{% endfor %}
     <a href="/exit-sketch/text">Print as text</a>
   </div>

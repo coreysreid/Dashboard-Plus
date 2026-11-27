@@ -24,6 +24,11 @@ SESSION_COOKIE = "dashboard_session"
 # Paths that work without the session cookie: the health check, the safe-close
 # call (which has its own token), and the page that explains how to get in.
 OPEN_PATHS = {"/api/ping", "/api/shutdown", "/start"}
+# The Content-Security-Policy sent on every response (decision 0139). Scripts run only from this program's own
+# /static/ files. Styles may also be inline, because pages carry style attributes and small style blocks.
+CONTENT_SECURITY_POLICY = ("default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; "
+                           "img-src 'self' data:; object-src 'none'; base-uri 'none'; form-action 'self'; "
+                           "frame-ancestors 'none'")
 
 
 def create_app(shutdown_token: str, on_shutdown: Callable[[], None], report=None,
@@ -313,6 +318,7 @@ def create_app(shutdown_token: str, on_shutdown: Callable[[], None], report=None
         # Household pages are private: never kept in the browser's cache, never shown inside another site.
         response.headers.setdefault("Cache-Control", "no-store")
         response.headers.setdefault("X-Frame-Options", "DENY")
+        response.headers.setdefault("Content-Security-Policy", CONTENT_SECURITY_POLICY)
         response.headers.setdefault("X-Content-Type-Options", "nosniff")
         # "same-origin" tells other sites nothing about where a link came from, yet lets our own forms say
         # they came from here. With "no-referrer" current browsers send "Origin: null" and every save is refused.

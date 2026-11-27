@@ -170,7 +170,7 @@ class SheetPageTests(TempDirTestCase):
         self.assertIn("Neighbour</td>", page)
         self.assertIn('<td data-label="Person">Neighbour C</td><td data-label="Phone">555 0199</td>', page.replace("\n", "").replace("  ", ""))
         self.assertNotIn("private details", page)
-        self.assertIn("window.print()", page)
+        self.assertIn("data-print", page)
 
     def test_sheet_with_private_column_says_so(self):
         self.app.config["LOADED"][0].sheets[0]["sections"].append(
@@ -183,11 +183,11 @@ class SheetPageTests(TempDirTestCase):
             {"title": "Medical", "table": "important_info", "where": {}, "columns": ["detail"], "order_by": "id"})
         asked = self.get("/sheet/people/emergency?show=1").get_data(as_text=True)
         self.assertIn("Show private sheet", asked)
-        self.assertNotIn("window.print()", asked)
+        self.assertNotIn("data-print", asked)
         self.assertEqual(self.client.post("/sheet/people/emergency", data={}, base_url=BASE).status_code, 400,
                          "the button's form carries the page's own token")
         shown = self.post("/sheet/people/emergency", {}).get_data(as_text=True)
-        self.assertIn("window.print()", shown, "the revealed sheet still prints")
+        self.assertIn("data-print", shown, "the revealed sheet still prints")
 
     def test_cross_module_column_prints_the_linked_contacts_phone(self):
         self.make_module("loans", module=LOANS_MODULE, tables=LOANS_TABLES, labels=None)

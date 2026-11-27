@@ -62,13 +62,4 @@
   </div>
 </form>
 {% endif %}
-<script>
-  // Save once: a second click while the first is on its way does nothing (the server also refuses a repeat).
-  document.querySelectorAll("form[data-once]").forEach(function (form) {
-    form.addEventListener("submit", function (e) {
-      if (form.dataset.sent) { e.preventDefault(); return; }
-      form.dataset.sent = "1";
-    });
-  });
-</script>
 {% endblock %}

@@ -190,6 +190,7 @@ One record per decision, from `TEMPLATE.md`. Never deleted; reversed ones are ma
 | [0136](0136-speed-with-years-of-records.md) | Staying quick with years of records: `tools/time_pages.py` builds an invented household of about 19,000 records (three pets fed twice a day for five years, daily doses, cars, 40 routines, 2,000 priced Stock ins) and times every 0119-0133 page; all were under 35 ms at five years, so only the two costs that grow with history were cut: timelines read just the newest rows (the same lines, paging and "since" words), and earlier done days skip records that never held a date in the period drawn; no migration, nothing stored | Accepted |
 | [0137](0137-bring-in-earlier-entries.md) | Bring in earlier entries: a list opts in with `bring_in` (`when`, `per`; weigh-ins, feedings, medicine doses, odometer readings), the person's own CSV read in memory only, every row previewed with plain problems, names matched to existing records exactly or by the person's choice (never created; a medicine only among that person's own), repeats at the same time skipped unless ticked, Show first for a private list, then one transaction with a history entry each and one Undo for the whole bring-in; amends 0120 for the person only, never helpers | Accepted |
 | [0138](0138-helper-guide-brought-up-to-date.md) | The helper guide, connector words and published API description brought up to date: which new lists (weigh-ins, feedings, odometer readings, routines, Garden jobs) a helper can fill with an example each, what is never for helpers (medicines, prices, money back, codes) and what the household does instead, units and the household's own day, and the double-count guards | changing what the guide says a helper may do |
+| [0139](0139-content-security-policy.md) | A strict Content-Security-Policy on every response (scripts only from the program's own /static/ files, nothing third-party, no frames, no plugins); every inline script and on... handler moved into eight static files; styles keep inline because of 240 style attributes | changing the security headers or adding a script to a page |
 | [TEMPLATE](TEMPLATE.md) | Blank record to copy for a new decision | recording a decision |
 
 ## docs/plans/  (summary: build plans for larger pieces of work, written before building)
@@ -689,6 +690,7 @@ Add a new file with the next number instead of changing an old one.
 | exit_drawing.py | Draw the way-out sketch as SVG on the server: room boxes by floor, labelled lines, doors out and the meeting place, split into pages. | changing how the sketch is laid out, drawn or split into pages |
 | sheets.py | One-page printable sheets declared by modules, such as the emergency sheet. | changing printable sheets |
 | display.py | Turn declared tables and stored values into friendly labels, form fields and text. | changing how values look |
+| static/ | The program's own browser scripts (no inline scripts anywhere, decision 0139) | changing what a page does in the browser |
 | templates/ | The HTML pages | changing what a page looks like |
 | api.py | The helper API (/api/v1): programs the household gave a key to can look at records and suggest new ones. | changing what helpers can read or send |
 | review.py | The Review screen: helpers' suggested new records and imported rows, waiting for a person to accept or reject each one. | changing the Review page |
@@ -707,6 +709,18 @@ Add a new file with the next number instead of changing an old one.
 | private_daily.py | Private daily history (decision 0120), such as medicine doses: counts and times until Show, per-medicine totals after it. | changing the dose panel, Record a dose or Show details on Dose history |
 | restore.py | Settings, Backups: the list of backups, a preview of one, putting it back, and Undo restore. | changing the restore pages |
 | openapi-v1.json | The published OpenAPI 3.1 description of the helper API, served at GET /api/v1/openapi.json. | changing a helper route, reply or error code (edit it too) |
+
+## src/dashboard/web/static/  (summary: the program's own browser scripts, served at /static/; no third-party code)
+| Entry | What it is | Open it when |
+|---|---|---|
+| common.js | On every page: Show for private details, folded panels opened for printing, Print buttons, delete confirmations, send-once forms | changing Show, printing or a confirmation |
+| form-helpers.js | The forms' typing help: name suggestions, linked lists, typed-date previews, fields that follow a choice | changing how a form helps while typing |
+| action-form.js | The reminder form: typing a date picks "Choose a date", and the repeat's offered date | changing the reminder form |
+| more-rows.js | "Show more" and scroll-to-load on a list | changing how a long list loads |
+| review-keys.js | Review's keyboard keys and ticked count | changing Review's keys |
+| setup.js | Set-up questions: add a pet or person, country and state lists, time zone guess | changing the first-run or settings questions |
+| copy-key.js | The Copy button for a helper's new access key | changing the helper key page |
+| copy-block.js | The Copy buttons for a helper's starting messages | changing the helper connection page |
 
 ## src/dashboard/web/templates/  (summary: HTML pages; base.html holds the shared look)
 | Entry | What it is | Open it when |
@@ -837,6 +851,7 @@ How to run them is in AGENTS.md.
 | test_receipt_review.py | Tests for receipts on Review (decision 0105): clearer group words, lines a helper could not match, and repeat receipts. | changing receipt lines, Finish receipt review or the repeat-receipt warning |
 | test_visual_tidy_0131.py | Tests for the hands-on visual check of decisions 0119 to 0130: Services done per month, folded bars, one "This month" (decision 0131). | changing the folded bars, the calendar's current-month link or the Add buttons on a record's page |
 | test_accessible_names_0135.py | Tests for decision 0135: link names that include their record, a way-out text that tells two doors apart, and the folded Add buttons. | changing link names, the Add buttons on a record's page or the way-out text |
+| test_csp_0139.py | Tests for decision 0139: a strict Content-Security-Policy on every response, and no inline scripts or event handlers left in any page. | changing the security headers or adding a script to a page |
 | test_helper_guide_0138.py | Tests for decision 0138: the helper guide, connector words and published description say which lists a helper may fill, which it never may, and how units and the household's day apply. All data is invented. | changing the helper guide, its examples or the connector words |
 
 ## tools/  (summary: scripts that check, lock and build the project; run by CI)
