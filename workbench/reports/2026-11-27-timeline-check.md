@@ -11,6 +11,13 @@ and Taylor, at 320px and 1280px, and in print media. Two copies with made-up ext
 
 ## Findings, worst first
 
+### Important: a shown dose timeline becomes unreadable on paper
+
+- **Where:** Garcia, Rosa's full timeline after a deliberate **Show**, printed to A4 in Chromium. The before-Show copy prints on one page without a medicine name.
+- **What happens:** The two invented long medication-detail lines sit beside the day summary as flex siblings. In print, the day summary collapses to letters stacked one per line and spills onto a second page. The **Hide details** link is also printed, where it has no action. `pdftotext -layout` on the disposable PDF confirmed the vertical letters; the pet timeline stayed readable.
+- **Expected:** A deliberately shown private copy keeps the day and medicine lines legible in order and warns that it contains private details. A printout must not contain dead controls.
+- **Suggested change:** In print CSS, stack the dose entries below a full-width day summary and hide **Hide details**, **Open** and **See this day** action links. Keep the existing pressed Show gate; a fresh GET still returns to counts only. Verify one-page and long-detail A4 and Letter output before claiming print is ready.
+
 ### Minor: two weigh-ins on one day say "since 25 Nov" on 25 Nov
 
 - **Where:** Rex's full timeline. **"Weigh-in · Wed 25 Nov · 20.9 kg · down 0.4 kg since 25 Nov, from 21.3 kg to
@@ -56,22 +63,23 @@ windowsill herbs"** (see also item 107).
 - **Empty states:** "Nothing recorded yet for Maria Garcia." and "Nothing recorded yet for Water the windowsill
   herbs." The gap sentence never says "missed".
 - **Width:** 320px on every page, panel and full timeline.
-- **Print:** the Earlier/Newest links and the Show form are hidden; every line prints with its words.
+- **Print before Show:** the Earlier/Newest links and Show form were hidden, and the day lines printed with their words. The after-Show dose layout and dead links are the important finding above.
 
 ## What vet and doctor visits should add to it
 
 Pets already have **Vet visits** (■, "Vet visit · Mon 28 Sep · Limping on the front left leg"). From walking these
 timelines, a household would want to add:
 
-1. **A follow-up date on a vet visit** ("Recheck in 2 weeks"), shown as its own line on the day it falls
-   ("Follow-up planned · Sat 12 Dec · from the vet visit on 28 Sep"), and once on Things to do, never "overdue
-   visit".
+1. **A follow-up date on a vet visit** ("Recheck in 2 weeks"), shown once on Things to do as a plan. It belongs
+   on What happened only after someone records that the follow-up actually occurred; a due date is not an event.
 2. **Who they saw**, already a link (`vet`): show the clinic's name on the line, not the cost.
 3. **Vaccinations as their own kind of visit**, because they set a due date for the next one (Pets already have a
    due date; the timeline should say "Vaccination given · next due Nov 2027").
-4. **For people, a Visits record** (designed in item 118): who, when, why in the household's own short words, and a
-   follow-up date. Private like doses before Show (the reason can be sensitive), and never test results, ID or
-   Medicare/insurance numbers.
+4. **For people, a Visits record** (a future design): person, occurred date/time, clinician link if known, reason
+   and outcome in the household's own short words, and an optional follow-up date. Private like doses before
+   Show (the reason can be sensitive); never put test results, ID or Medicare/insurance numbers on the timeline.
+   A planned appointment belongs in Things to do until it is marked as having occurred. Before promotion, decide
+   what travels to members and what print, export and helpers can see.
 5. **What was given at the visit** (a treatment started), linking to the existing Treatments given line rather
    than typing it twice.
 
@@ -79,4 +87,6 @@ Cost stays off the timeline (it is money; spending has its own bars).
 
 ## Limits
 
-Taylor has no pets and no person timeline (Medicine doses is off). No real screen reader was used.
+Taylor has no pets and no person timeline (Medicine doses is off). No real screen reader was used. The focused
+print finding used the invented Garcia household and Chromium's A4 PDF; Letter and long multi-day prints remain
+to be checked after the layout change.
