@@ -20,6 +20,16 @@ function expect(condition, message) { if (!condition) throw new Failed(message);
   page.on('console', (msg) => {
     if (msg.type() === 'error' && !expected(msg.text())) problems.push(`console error on ${page.url()}: ${msg.text()}`);
   });
+  // Content-Security-Policy (decision 0139): any refused script, style or request is a failure, named as such.
+  await page.exposeFunction('reportCspViolation', (what) => problems.push(`Content-Security-Policy refused ${what} on ${page.url()}`));
+  await page.addInitScript(() => {
+    document.addEventListener('securitypolicyviolation', (e) => {
+      window.reportCspViolation(`${e.violatedDirective} for ${e.blockedURI || 'inline code'}`);
+    });
+  });
+  page.on('console', (msg) => {
+    if (/Refused to|Content Security Policy/i.test(msg.text())) problems.push(`Content-Security-Policy message on ${page.url()}: ${msg.text()}`);
+  });
   page.on('pageerror', (error) => problems.push(`script error on ${page.url()}: ${error.message}`));
   page.on('response', (response) => {
     if (response.status() >= 400 && !expected(String(response.status()))) {
@@ -30,6 +40,9 @@ function expect(condition, message) { if (!condition) throw new Failed(message);
   const goto = async (path) => {
     const response = await page.goto(base + path);
     expect(response && response.ok(), `Opening ${path} answered ${response ? response.status() : 'nothing'}.`);
+    const policy = response.headers()['content-security-policy'] || '';
+    expect(policy.includes("script-src 'self'") && !policy.includes("script-src 'self' 'unsafe"),
+           `${path} was sent without the strict Content-Security-Policy.`);
   };
   const submit = async (selector) => {
     const [response] = await Promise.all([page.waitForNavigation(), page.click(selector)]);
@@ -597,7 +610,7 @@ function expect(condition, message) { if (!condition) throw new Failed(message);
       expect(/Weigh-in/.test(tlText) && / since /.test(tlText), 'A weigh-in after another should say the change since it in words.');
       await Promise.all([page.waitForNavigation(), page.click('section.timeline a:has-text("Open the whole timeline")')]);
       await fits(`${c.pet}'s whole timeline`);
-      expect(!(await html()).includes('<script src'), 'The timeline page should need no script of its own.');
+      expect(!(await html()).match(/<script src="(?!\/static\/common\.js")/), 'The timeline page should need no script of its own beyond the shared one.');
       ok(`calendars at 320px: ${c.pet}'s feeding month with today in words and a symbol, keyboard reaches the day, routines legend of 5, weights for the last year with the change in words, food put out by day and by week (0124), and what happened with symbols, months and the change since the weigh-in before (0126)`);
     } finally {
       await page.setViewportSize({ width: 1280, height: 720 });

@@ -69,7 +69,7 @@
   {% if mode == "settings" and home_setup %}<p style="margin-top:0"><a href="/set-up-home">Set up my home: rooms and areas, storage spots inside them, and which rooms connect</a></p>{% endif %}
   {% set other = values.country_is_other or (values.country and values.country not in countries) %}
   <div class="{% if errors.country %}has-error{% endif %}"><label for="country">Country</label>
-    <select id="country" name="country"><option value="">(choose)</option>
+    <select id="country" name="country" data-regions='{{ regions | tojson }}' data-guesses='{{ timezone_guess | tojson }}' data-guess="{{ 'yes' if mode == 'setup' else 'no' }}"><option value="">(choose)</option>
       {% for c in countries %}<option value="{{ c }}" {% if not other and values.country == c %}selected{% endif %}>{{ c }}</option>{% endfor %}
       <option value="other" {% if other %}selected{% endif %}>Somewhere else</option>
     </select>
@@ -166,51 +166,5 @@
     {% if mode == "settings" %}<a href="/">Cancel</a>{% endif %}
   </div>
 </form>
-<script>
-  (function () {
-    var button = document.getElementById("add-pet");
-    if (!button) return;
-    button.addEventListener("click", function () {
-      var next = document.querySelector(".pet-slot[hidden]");
-      if (next) { next.hidden = false; next.querySelector("input").focus(); }
-      if (!document.querySelector(".pet-slot[hidden]")) button.hidden = true;
-    });
-  })();
-  (function () {
-    var button = document.getElementById("add-person");
-    if (!button) return;
-    button.addEventListener("click", function () {
-      var next = document.querySelector(".person-slot[hidden]");
-      if (next) { next.hidden = false; next.querySelector("input").focus(); }
-      if (!document.querySelector(".person-slot[hidden]")) button.hidden = true;
-    });
-  })();
-  var zone = "";
-  try { zone = Intl.DateTimeFormat().resolvedOptions().timeZone || ""; document.getElementById("timezone").value = zone; } catch (e) {}
-  (function () {
-    // Country and state: the state list follows the country, and a first guess comes from the time zone.
-    var regions = {{ regions | tojson }}, guesses = {{ timezone_guess | tojson }};
-    var country = document.getElementById("country"), region = document.getElementById("region");
-    if (!country || !region) return;
-    function show(id, on) { document.getElementById(id).hidden = !on; }
-    function fill(chosen) {
-      var keep = region.value;
-      region.innerHTML = '<option value="">(choose)</option>';
-      (regions[country.value] || []).forEach(function (name) {
-        var option = document.createElement("option");
-        option.value = option.textContent = name;
-        if (name === (chosen || keep)) option.selected = true;
-        region.appendChild(option);
-      });
-      var other = country.value === "other";
-      show("country-other", other); show("region-other", other); show("region-list", !other);
-    }
-    country.addEventListener("change", function () { show("place-guess", false); fill(""); });
-    if ({{ "true" if mode == "setup" else "false" }} && !country.value && guesses[zone]) {
-      country.value = guesses[zone][0];
-      fill(guesses[zone][1]);
-      show("place-guess", true);
-    }
-  })();
-</script>
+<script src="/static/setup.js" defer></script>
 {% endblock %}

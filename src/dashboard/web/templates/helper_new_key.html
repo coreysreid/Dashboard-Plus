@@ -11,13 +11,5 @@
 <p>In your assistant app's MCP settings, replace only <code>DASHBOARD_PLUS_KEY</code> with this key, then restart or reconnect that assistant's Dashboard Plus tool. Keep the key out of chats and emails. Suggestions already waiting on Review are still there.</p>
 {% include "helper_connect.html" %}
 <div class="actions"><a class="button" href="/settings/helpers?changed={{ helper.id }}">Done</a></div>
-<script>
-  document.getElementById("copy-key").addEventListener("click", function () {
-    var box = document.getElementById("helper-key");
-    box.select();
-    var say = function (text) { document.getElementById("copied").textContent = text; };
-    if (navigator.clipboard) { navigator.clipboard.writeText(box.value).then(function () { say("Copied."); }, function () { say("Select the key and copy it."); }); }
-    else { say("Select the key and copy it."); }
-  });
-</script>
+<script src="/static/copy-key.js" defer></script>
 {% endblock %}

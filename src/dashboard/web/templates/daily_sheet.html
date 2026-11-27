@@ -45,7 +45,7 @@
 <div class="problem" role="alert"><p style="margin:0">{{ too_long.words }}</p></div>
 {% if too_long.pieces %}<p>Shorter ranges:</p><ul>{% for p in too_long.pieces %}<li><a href="{{ p.href }}">{{ p.words }}</a></li>{% endfor %}</ul>{% endif %}
 {% else %}
-<div class="actions no-print"><button type="button" onclick="window.print()">Print</button>
+<div class="actions no-print"><button type="button" data-print>Print</button>
   <span class="muted">Every entry in the range is on this sheet.</span></div>
 <div class="sheet">
   <h1>{{ title }}: {{ chosen.name }}</h1>
