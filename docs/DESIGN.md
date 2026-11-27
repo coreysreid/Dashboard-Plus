@@ -121,6 +121,20 @@ yet reviewed. People's Important details travel for the medical kinds and stay
 local for access instructions and "other"; Home layout's retired access details and
 vehicle registration never travel; a pet's microchip does (decision 0089).
 
+**The household's sharing choice** (decision 0140): these rules are only where
+each household starts. Settings, *What your other computers get*
+(`/settings/sharing`, `core/sync_sharing.py`, table `core__sharing_choices`) lets the
+household choose per list (`shared`, `shared_not_private`, `local`) and per
+detail (`shared` or `local`; `kinds` or `local` for a `travels_when` detail).
+A table may say `travels = "never"` to start the whole list kept here (Money
+back does), and a `travels = "never"` column may add `travels_fixed = "<why>"`
+to be never shareable (Home layout's codes and access details). A list kept
+here writes no change-log line at all; a tighter choice also cleans lines still
+waiting; a looser one counts from then on and, for anything private, needs the
+person's confirmation; every choice is in history, with Undo for one that
+shared more. `sync.record` and `sync.snapshot` apply the choices; nothing is
+stored until the household chooses, so the log is otherwise unchanged.
+
 Dropdown values are stored by stable key (`dry_food`), shown by label
 ("Dry food"). Renaming a label never changes stored data.
 

@@ -108,6 +108,7 @@ These would change a privacy or security rule, so they are described and left as
 - **A Content-Security-Policy.** The program sends none. One would tell the browser to run only the program's own
   scripts, a second wall if anything were ever slipped into a page. It means moving every script in the pages
   (about ten, plus the Print buttons) into files first. Worth doing as its own piece of work if User 1 agrees.
+  **Answered: User 1 agreed; done in [0139](0139-content-security-policy.md).**
 - **Whether a refund's existence travels.** The change log keeps a money back record's link to its Stock in and its
   day (the amount, currency, tick and notes never travel), and a change to a price is logged as "these private
   fields changed", by name only, as 0100 decided for every private field. Whether another computer should even learn

@@ -19,7 +19,8 @@ import make_migration
 MODULES_DIR = ROOT / "modules"
 SYNC_TABLES = ("core__sync_state", "core__sync_epochs", "core__sync_tables", "core__sync_changes", "core__sync_held")
 LATER_CORE_TABLES = ("core__helper_allowances",  # core 0008 (decision 0101), released after stage 1
-                     "core__reminder_moves")  # core 0010 (decision 0117)
+                     "core__reminder_moves",  # core 0010 (decision 0117)
+                     "core__sharing_choices")  # core 0011 (decision 0140)
 LATER_CORE_COLUMNS = {"core__proposals": ("entry_kind",),  # core 0009 (decision 0105), released after stage 1
                       "core__helper_batches": ("receipt_json", "finished_at", "repeat_ok_json")}
 MEDICAL = ("allergy", "condition", "medication", "care_need", "dietary")

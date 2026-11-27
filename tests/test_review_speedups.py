@@ -297,8 +297,10 @@ class LayoutTests(SpeedTestCase):
         self.assertIn('id="review-keys" hidden', page)  # shown by the script, so it never promises keys without it
         self.assertIn("<kbd>A</kbd> accept · <kbd>R</kbd> reject · <kbd>Space</kbd> tick", page)
         self.assertIn("<kbd>J</kbd> <kbd>K</kbd>", page)
-        self.assertNotRegex(page, r"<script[^>]+src=")
-        self.assertIn('target.closest("input, textarea, select, [contenteditable]")', page)  # never while typing
+        self.assertNotRegex(page, r'<script[^>]+src="(?!/static/)')  # only the program's own file (0139)
+        self.assertIn('<script src="/static/review-keys.js" defer></script>', page)
+        script = (ROOT / "src" / "dashboard" / "web" / "static" / "review-keys.js").read_text(encoding="utf-8")
+        self.assertIn('target.closest("input, textarea, select, [contenteditable]")', script)  # never while typing
         self.assertIn('<form id="ticked" method="post" action="/review/ticked/accept">', page)
         self.assertIn('formaction="/review/ticked/reject"', page)
 

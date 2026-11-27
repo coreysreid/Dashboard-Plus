@@ -154,17 +154,6 @@
 {% else %}<p class="muted">None recorded yet.</p>{% endif %}
 </section>
 {% endfor %}
-{% if under %}
-<script>
-  // One press shows every private cell of that list, each still fetched on its own (decision 0059).
-  document.addEventListener("click", function (event) {
-    var all = event.target.closest("[data-reveal-all]");
-    if (!all) return;
-    document.getElementById(all.dataset.revealAll).querySelectorAll("[data-reveal]").forEach(function (b) { b.click(); });
-    all.remove();
-  });
-</script>
-{% endif %}
 {% if related %}
 {% if related | length > 4 %}
 <details class="add-fold"><summary>Add something linked to {{ record_name }}…</summary>
@@ -174,7 +163,7 @@
 {% endif %}
 {% endif %}
 {% if record %}
-<form method="post" action="/t/{{ info.name }}/{{ record.id }}/delete" onsubmit="return confirm('Delete this record? It can be restored later.');">
+<form method="post" action="/t/{{ info.name }}/{{ record.id }}/delete" data-confirm="Delete this record? It can be restored later.">
   <input type="hidden" name="_csrf" value="{{ csrf_token }}">
   <button type="submit" class="danger">Delete</button>
 </form>

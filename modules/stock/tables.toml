@@ -155,6 +155,9 @@ counts = { more = "counted_more", less = "counted_less", note = "notes" }
 title = "Money back"
 description = "Money you got back for a Stock in you had saved a price on: a refund. It never changes the stock amount; if the goods went back to the shop, also record a Stock out."
 record_name = "Money back on {movement}"
+# Decision 0140: the whole list starts as Only on this computer, so another computer does not even learn that
+# money came back, until the household chooses to share it on Settings, What your other computers get.
+travels = "never"
 columns.movement = { type = "link", to = "movements", required = true, on_delete = "restrict" }
 columns.happened_on = { type = "date", required = true, default = "today" }
 # Private like a price, and kept on this computer (decisions 0128 and 0133): never on a list, a sheet, the export,

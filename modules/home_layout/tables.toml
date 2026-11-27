@@ -14,7 +14,7 @@ columns.place = { type = "link", to = "stock.places", on_delete = "restrict" }
 columns.route = { type = "longtext" }
 columns.notes = { type = "text" }
 columns.access_hint = { type = "text", guard = "where_kept" }
-columns.access_details = { type = "text", sensitive = true, travels = "never", retired = { replaced_by = "access_hint", label = "Codes or access details" } }
+columns.access_details = { type = "text", sensitive = true, travels = "never", travels_fixed = "Codes and access details work like passwords, so they never leave the computer where they were typed.", retired = { replaced_by = "access_hint", label = "Codes or access details" } }
 
 [tables.exits.watch]
 [[tables.exits.watch.gaps]]
@@ -39,7 +39,7 @@ columns.place = { type = "link", to = "stock.places", on_delete = "restrict" }
 columns.how_to_find = { type = "longtext" }
 columns.notes = { type = "text" }
 columns.access_hint = { type = "text", guard = "where_kept" }
-columns.access_details = { type = "text", sensitive = true, travels = "never", retired = { replaced_by = "access_hint", label = "Codes or access details" } }
+columns.access_details = { type = "text", sensitive = true, travels = "never", travels_fixed = "Codes and access details work like passwords, so they never leave the computer where they were typed.", retired = { replaced_by = "access_hint", label = "Codes or access details" } }
 
 [tables.shutoffs.watch]
 # Water and power are asked about because nearly every home has them. Gas is not: many homes have none.
@@ -73,7 +73,7 @@ columns.battery_changed = { type = "date" }
 columns.next_check = { type = "date" }
 columns.notes = { type = "text" }
 columns.access_hint = { type = "text", guard = "where_kept" }
-columns.access_details = { type = "text", sensitive = true, travels = "never", retired = { replaced_by = "access_hint", label = "Codes or access details" } }
+columns.access_details = { type = "text", sensitive = true, travels = "never", travels_fixed = "Codes and access details work like passwords, so they never leave the computer where they were typed.", retired = { replaced_by = "access_hint", label = "Codes or access details" } }
 
 [tables.equipment.watch]
 expiring = { date = "next_check", warn_days = 30, wording = "due", what = "check" }
@@ -99,7 +99,7 @@ columns.kind = { type = "choice", required = true, choices = ["electricity", "ga
 columns.place = { type = "link", to = "stock.places", on_delete = "restrict" }
 columns.how_to_find = { type = "text" }
 columns.access_hint = { type = "text", guard = "where_kept" }
-columns.access_details = { type = "text", sensitive = true, travels = "never", retired = { replaced_by = "access_hint", label = "Codes or access details" } }
+columns.access_details = { type = "text", sensitive = true, travels = "never", travels_fixed = "Codes and access details work like passwords, so they never leave the computer where they were typed.", retired = { replaced_by = "access_hint", label = "Codes or access details" } }
 
 [tables.meters.watch]
 [[tables.meters.watch.gaps]]

@@ -260,6 +260,14 @@ is new: keep a copy of anything important somewhere else too. See
   odometer readings you kept in an old spreadsheet can be added in one go
   from that list's page, with every row shown first and one **Undo** for the
   whole lot. See [Bringing in your old tracker](#bringing-in-your-old-tracker).
+- **What your other computers get:** in Settings, every list and each of its
+  details says whether it will be **Shared with your other computers** or kept
+  **Only on this computer** (and, for a list with private details, **Shared,
+  but not the amount**). Everything starts as it always was; Money back starts
+  on this computer only, and codes and access details are never shared.
+  Keeping something here happens at once; starting to share something private
+  asks first, says what will start going, and has **Undo**. Nothing is sent
+  yet: this decides what your computers get once they can be paired.
 - **Automatic backups**, every day and every time you close it safely, and
   **Restore from a backup** in Settings: check a backup and compare it with
   now, put it back, and undo that if it was the wrong one.

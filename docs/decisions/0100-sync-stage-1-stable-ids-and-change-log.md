@@ -1,6 +1,6 @@
 # 0100. Sync stage 1: permanent record IDs, revisions and a filtered change log (nothing leaves the computer)
 
-- **Status:** Accepted
+- **Status:** Accepted; amended by [0140](0140-sharing-permissions.md): the household's sharing choices start from these `travels` rules and can keep more here or, once confirmed, share more
 - **Date:** 2026-11-21
 - **Decided by:** Claude (technical shape delegated by User 1 under decision 0089); product rules from User 1 in 0089
 - **Builds on:** 0089 (household sync, stage 1), 0055 (modules confined to their own tables), 0032 (one checked path for every record change), 0079 (restore), `workbench/drafts/sync/STAGE1.md`
