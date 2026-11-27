@@ -26,6 +26,6 @@
 <h2>{{ bv.title }}</h2>
 {% with level = 3 %}{% include "_bars.html" %}{% endwith %}
 {% endfor %}
-{% if subject_href %}<p><a href="{{ subject_href }}">{% if view.name_hidden %}Open the person's page{% else %}{{ chosen.name }}'s page{% endif %}</a></p>{% endif %}
+{% if subject_href %}<p><a href="{{ subject_href }}">{% if view.name_hidden %}Open the person's page{% else %}Back to {{ chosen.name }}{% endif %}</a></p>{% endif %}
 {% endif %}
 {% endblock %}

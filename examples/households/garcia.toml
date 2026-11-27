@@ -439,14 +439,14 @@ place = "Kitchen cabinets"
 expires = "today+200"
 
 [[stock.items]]
-name = "Metformin 500 mg (Rosa)"
+name = "Prescription tablets (blister packs)"
 category = "first_aid"
 quantity = 20
 unit = "tablets"
 minimum = 30
 place = "Kitchen cabinets"
 expires = "today+300"
-notes = "Two a day. Refill at 30 so a week's outage never runs it out."
+notes = "Refill at 30."
 
 [[stock.items]]
 name = "Lisinopril 10 mg (Rosa)"
@@ -586,14 +586,14 @@ price = 2.58
 price_basis = "total"
 
 [[stock.movements]]
-item = "Metformin 500 mg (Rosa)"
+item = "Prescription tablets (blister packs)"
 reason = "bought"
 amount = 60
 happened_on = "today-25"
 notes = "Monthly refill from Bayview Pharmacy."
 
 [[stock.movements]]
-item = "Metformin 500 mg (Rosa)"
+item = "Prescription tablets (blister packs)"
 reason = "used"
 amount = 40
 happened_on = "today-5"

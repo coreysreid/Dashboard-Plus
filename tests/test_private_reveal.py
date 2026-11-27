@@ -45,7 +45,7 @@ class PrivateCalendarNamesTests(PrivateDoseCase):
             self.assertNotIn(SECRET, text, path)
         text = self.page(f"{CAL}?subject={self.rosa}&month=2026-11", self.web)
         self.assertIn("2 doses recorded", text)
-        self.assertIn(f"Given to #{self.rosa}", text)
+        self.assertIn(f"Person 1", text)
         self.assertNotIn("See the person", text)
         self.assertIn("Open the person's page", text)
         shown = self.shown(CAL, subject=str(self.rosa), month="2026-11")

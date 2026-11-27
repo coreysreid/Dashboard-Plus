@@ -154,7 +154,7 @@
     @media (max-width: 24rem) { .cal td { height: 3rem; padding: 1px; } .cal-chip { min-width: 0; padding: 0 1px; } }
     @media (forced-colors: active) { .cal-chip { border-color: CanvasText; } .cal td.cal-today { outline-color: Highlight; } }
     @media print {
-      .cal-nav { display: none; } .cal-list[open] summary { list-style: none; color: #000; }
+      .cal-nav, .cal-wrap form.actions, .cal-wrap a[data-hide-details] { display: none; } .cal-list[open] summary { list-style: none; color: #000; }
       .cal td { border-color: #000; } .cal-chip { color: #000; } table.cal { max-width: none; }
     }
     /* One record's timeline (decision 0126): each kind has its own symbol beside its words, so a colour is only
@@ -173,7 +173,8 @@
     .tl-month { font-size: 1.05rem; margin: 1rem 0 .2rem; }
     .tl-nav ul { list-style: none; padding: 0; display: flex; flex-wrap: wrap; gap: .3rem 1rem; }
     @media (forced-colors: active) { .tl-mark { border-color: CanvasText; } }
-    @media print { .tl-nav, .timeline form { display: none; } .tl-mark { color: #000; } .tl-item { break-inside: avoid; } }
+    @media print { .tl-nav, .timeline form, .timeline a[data-hide-details], .timeline .tl-text a { display: none; } .tl-mark { color: #000; } .tl-item { break-inside: avoid; }
+                   .tl-item { flex-wrap: wrap; } .tl-text { flex: 1 1 100%; } .tl-entries { flex: 1 1 100%; } }
     footer { color: var(--muted); font-size: .85rem; max-width: var(--wide); margin: 0 auto; padding: 0 1rem 2rem; }
   </style>
 </head>

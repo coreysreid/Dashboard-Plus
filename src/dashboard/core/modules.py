@@ -59,7 +59,7 @@ CHART_SCALES = ("zero", "fitted")
 # the table says `due = true`, and an empty day is never called missed. Without `per` it is a calendar of the
 # table's own records (decision 0122): each one's own open due date, and when each was done. `history = true` also
 # shows each earlier date its `when` column was moved on from, read from the record's saved history (decision 0129).
-CALENDAR_KEYS = ("when", "per", "show", "title", "entry", "state", "looks", "look", "due", "history")
+CALENDAR_KEYS = ("when", "per", "show", "title", "entry", "state", "looks", "look", "due", "history", "not_done")
 CALENDAR_ENTRY_LOOKS = ("recorded", "done", "skipped")
 CALENDAR_SHOW = ("one", "all")
 # Bars over time (decision 0124): how often (`measure = "count"`) or how much of one number column in one unit
@@ -1478,6 +1478,10 @@ def _check_own_calendar(where: str, table: Table, raw: dict, problems: list[str]
         problems.append(f"{where}: 'entry' must be two words, singular then plural, like [\"job\", \"jobs\"].")
     if raw.get("look", "done") not in CALENDAR_ENTRY_LOOKS:
         problems.append(f"{where}: 'look' must be \"recorded\", \"done\" or \"skipped\", not {raw['look']!r}.")
+    not_done = raw.get("not_done", "not recorded as done yet")
+    if not (isinstance(not_done, str) and not_done.strip()):
+        problems.append(f"{where}: 'not_done' must be the words for a date that has passed with nothing recorded, "
+                        f"like \"not marked returned yet\".")
     history = raw.get("history", False)
     if not isinstance(history, bool):
         problems.append(f"{where}: 'history' must be true or false.")
@@ -1488,7 +1492,8 @@ def _check_own_calendar(where: str, table: Table, raw: dict, problems: list[str]
         return {}
     return {"when": when, "per": None, "show": "all", "title": raw["title"].strip(),
             "entry": [w.strip() for w in raw["entry"]], "state": None, "looks": {},
-            "look": raw.get("look", "done"), "due": True, "history": history}
+            "look": raw.get("look", "done"), "due": True, "history": history,
+            "not_done": str(not_done).strip()}
 
 
 def _check_record_name(file: str, table: Table, tables: dict[str, Table], template, problems: list[str]) -> str | None:

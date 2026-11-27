@@ -1,6 +1,7 @@
 """Bars over time: how often, or how much in one unit, per day, week or month by the household's own day; an empty period is never called missed (decision 0124)."""
 from __future__ import annotations
 
+import json
 import sqlite3
 from dataclasses import dataclass, field
 from datetime import date, timedelta, tzinfo
@@ -21,6 +22,7 @@ class Period:
     end: date
     entries: list[dict] = field(default_factory=list)
     so_far: bool = False  # the period has not finished yet: it includes today
+    waiting: int = 0  # suggestions on Review for this period: never counted, only said (decision 0142)
 
     @property
     def count(self) -> int:
@@ -148,7 +150,51 @@ def build(conn: sqlite3.Connection, info, rule: dict, subject_id: int | None, by
             if period.start <= entry["_day"] <= period.end:
                 period.entries.append(entry)
                 break
+    if not rule.get("history") and group_id is None:
+        _count_waiting(conn, info, rule, subject_id, found, daily.household_zone(conn))
     return found
+
+
+def _count_waiting(conn: sqlite3.Connection, info, rule: dict, subject_id: int | None, found: list[Period],
+                   zone: tzinfo | None) -> None:
+    """Say how many suggestions waiting on Review fall in each period, so "Nothing recorded" can add that one is
+    waiting. They are not entries: no bar, total or amount ever includes them."""
+    when = info.table.columns[rule["when"]]
+    for values_json, in conn.execute("SELECT values_json FROM core__proposals WHERE status = 'pending' "
+                                     "AND entry_kind = 'record' AND table_name = ?", (info.name,)):
+        try:
+            values = json.loads(values_json)
+            if rule.get("per") and int(values.get(rule["per"])) != subject_id:
+                continue
+            if any(str(values.get(c)) != str(v) for c, v in (rule.get("where") or {}).items()):
+                continue
+            raw = values.get(rule["when"])
+            day = (daily.local(raw, zone).date() if when.type == "datetime" else date.fromisoformat(str(raw)[:10]))
+        except (TypeError, ValueError, AttributeError):
+            continue
+        for period in found:
+            if period.start <= day <= period.end:
+                period.waiting += 1
+                break
+
+
+def most_recent_subject(conn: sqlite3.Connection, registry: dict, info, rule: dict, subject_ids: list[int]):
+    """The subject whose latest accepted entry is the most recent, or None when none has an entry (the page then
+    keeps its first subject). Read fresh from the records, as the chart is (decision 0142)."""
+    best, best_day = None, ""
+    for subject_id in subject_ids:
+        if rule.get("history"):
+            days = [d["_day"].isoformat() for d in done_days(conn, registry, info, rule, subject_id,
+                                                              date(1900, 1, 1), date(9999, 12, 31))]
+            day = max(days) if days else ""
+        else:
+            clause, params = subject_clause(rule, subject_id, None, info)
+            row = conn.execute(f"SELECT MAX({rule['when']}) FROM {info.name} WHERE deleted_at IS NULL "
+                               f"AND review_status = 'confirmed'{clause}", params).fetchone()
+            day = str(row[0] or "")[:10]
+        if day and day > best_day:
+            best, best_day = subject_id, day
+    return best
 
 
 def unit_of(rule: dict, entry: dict) -> str:

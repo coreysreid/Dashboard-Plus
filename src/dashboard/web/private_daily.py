@@ -49,13 +49,13 @@ def _links(info: records.TableInfo) -> list:
 
 def group_words(store: records.Records, info: records.TableInfo, group_id, show: bool) -> str:
     """What a group is called: after Show, its private words (the medication detail as the household wrote it);
-    otherwise only its kind and number, "Medication #3"."""
+    otherwise only its kind and number, "Medication detail #3"."""
     rule = info.table.daily
     column = info.table.columns[rule["group"]]
     target = store.registry.get(target_table(info.module.name, column))
     words = " ".join(next((c.label for c in target.table.columns[k].choices if c.key == v), v)
                      for k, v in column.link_rule.get("where", {}).items()) if target is not None else ""
-    plain = f"{words or display.column_label(info, column)} #{group_id}"
+    plain = f"{words or display.column_label(info, column)} detail #{group_id}"
     shows = column.link_rule.get("shows")
     if not show or not shows or target is None:
         return plain
@@ -137,7 +137,7 @@ def view(store: records.Records, info: records.TableInfo, subject_id: int, day: 
             "heading": f"{rule['what']} for {name} · {dates.show(day, style)}",
             "summary": daily.count_words(rule, result, _day_words(day, today, style)), "rows": rows,
             "groups": groups, "show": show, "hide_href": here,
-            "group_title": f"Each {display.column_label(info, group).lower()} on its own, this day" if group else None,
+            "group_title": f"Each {display.column_label(info, group).lower()} detail on its own, this day" if group else None,
             "waiting": 0, "is_today": day == today, "today": today,
             "before": before, "after": after if after <= today else None,
             "add": add_link(store, info, subject_id), "first_add": first_add(store, info, subject_id),

@@ -124,10 +124,11 @@ def display_name(info: TableInfo, row: dict, records: Records | None = None) -> 
     return str(value) if value not in (None, "") else f"{table_title(info)} #{row['id']}"
 
 
-def private_subject_name(info: TableInfo, column: Column, subject_id: int) -> str:
-    """Who a private log or calendar is for, before Show: only the kind and number, "Recipient #3", never the
-    person's name (decision 0123). `column` is the link that points at the person."""
-    return f"{column_label(info, column)} #{subject_id}"
+def private_subject_names(subjects: list[dict]) -> list[dict]:
+    """Who a private log or calendar is for, before Show: "Person 1", "Person 2" in the order shown, never the
+    person's name and never a database number (decisions 0123 and 0142). The record number stays only in the link."""
+    ordered = sorted(subjects, key=lambda s: s["id"])
+    return [{**s, "name": f"Person {n}"} for n, s in enumerate(ordered, 1)]
 
 
 def money_text(cents) -> str:

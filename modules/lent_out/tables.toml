@@ -46,3 +46,4 @@ entry = ["return", "returns"]
 when = "returned_on"
 history = true  # also each earlier date this was moved on from, from its history (decision 0129)
 due = true
+not_done = "not marked returned yet"  # a loan is not "done": its action is Mark returned (decision 0142)

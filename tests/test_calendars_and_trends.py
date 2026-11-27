@@ -326,7 +326,7 @@ class StructureTests(CalendarTestCase):
         self.assertIn('<span class="vh">20 November, today</span>', table)
         self.assertIn(f'href="#cal-{FEED}-{self.rex}-d-2026-11-18"', table)
         self.assertIn(f'<li id="cal-{FEED}-{self.rex}-d-2026-11-18">', page)
-        self.assertIn('<details class="cal-list" open>', page)
+        self.assertIn('<details class="cal-list" data-print-open open>', page)
         self.assertIn('aria-label="Choose the month: Feeding calendar"', page)
         self.assertNotIn("<script", page[page.index('class="cal-wrap"'):page.index("</section>",
                                                                                      page.index('class="cal-wrap"'))])
@@ -346,7 +346,7 @@ class StructureTests(CalendarTestCase):
         self.feed("2026-11-20T07:15")
         page = self.page(f"/t/pets__pets/{self.rex}")
         self.assertIn("<h2>Feeding calendar</h2>", page)
-        self.assertIn('<details class="cal-list">', page, "on the pet's page the words are one tap away")
+        self.assertIn('<details class="cal-list" data-print-open>', page, "on the pet's page the words are one tap away")
         self.assertIn(f'href="/calendar/{FEED}?subject={self.rex}">Open the feeding calendar</a>', page)
         self.assertIn(f"/calendar/{FEED}?subject={self.rex}&amp;month=2026-11", self.page(f"/daily/{FEED}"))
 

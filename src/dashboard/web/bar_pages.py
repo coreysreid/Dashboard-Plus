@@ -86,6 +86,15 @@ def _entries(n: int, rule: dict) -> str:
     return f"{n:,} {one if n == 1 else many}"
 
 
+def _waiting_words(waiting: int) -> str:
+    return f"{waiting} waiting on Review, not counted yet"
+
+
+def _nothing_accepted(waiting: int) -> str:
+    """"Nothing recorded", or, when a suggestion is waiting, "Nothing accepted yet; 1 waiting on Review"."""
+    return f"Nothing accepted yet; {waiting} waiting on Review" if waiting else "Nothing recorded"
+
+
 def _amount(value: Decimal, unit: str) -> str:
     """"1,680 g", "2 pouches": an amount in its own unit, with thousands separators."""
     words = daily.amount_words(value, unit)
@@ -115,7 +124,7 @@ def group_name(store: records.Records, info, rule: dict, group_id, show: bool) -
         return display.Formatter(store).text(info, column, group_id)
     kind = " ".join(next((c.label for c in target.table.columns[k].choices if c.key == v), v)
                     for k, v in column.link_rule.get("where", {}).items() if k in target.table.columns)
-    plain = f"{kind or display.column_label(info, column)} #{group_id}"
+    plain = f"{kind or display.column_label(info, column)} detail #{group_id}"  # a detail can name several (0142)
     shows = column.link_rule.get("shows")
     if not show or not shows or shows not in target.table.columns:
         return plain
@@ -227,13 +236,15 @@ def bars_view(store: records.Records, info, rule: dict, subject_id: int | None, 
             elif mine:
                 text, said = "nothing spent", "Nothing spent"
             else:
-                text, said = "nothing recorded", "Nothing recorded"
+                text, said = "nothing recorded", _nothing_accepted(period.waiting)
             if mine:
                 said += f", less {mine:,.2f} refunded" if n else f", {mine:,.2f} refunded"
                 text += f", less {mine:,.2f} refunded" if n else ""
             for other, amount in returned.items():
                 if other != chosen:
                     details.append(f"also {_money(amount, other)} refunded, not in this chart")
+            if period.waiting and "waiting on Review" not in said:
+                details.append(_waiting_words(period.waiting))
             if n:
                 details.append(f"{_entries(n, rule)} recorded")
             if part.unmeasured:
@@ -243,7 +254,7 @@ def bars_view(store: records.Records, info, rule: dict, subject_id: int | None, 
         else:
             value = float(n) if n else None
             text = f"{n:,}" if n else "nothing recorded"
-            said = f"{_entries(n, rule)} recorded" if n else "Nothing recorded"
+            said = f"{_entries(n, rule)} recorded" if n else _nothing_accepted(period.waiting)
         href = None
         if group_id is not None:
             pass  # one group's rows sit under the whole chart, whose rows carry the links
@@ -364,7 +375,8 @@ def bars_view(store: records.Records, info, rule: dict, subject_id: int | None, 
             and group_id is None,
             "hidden": bool(rule.get("hidden")), "hidden_words": HIDDEN_WORDS, "pressed": pressed,
             "show_action": f"/bars/{info.name}/{rule['key']}", "groups": groups,
-            "group_title": f"Each {_group_word(store, info, rule)} on its own" if rule.get("group") else None,
+            "group_title": (f"Each {_group_word(store, info, rule)}{' detail' if info.table.private else ''} on its own"
+                            if rule.get("group") else None),
             "hide": (_link(info, rule, subject_id, by=by, end=keep_end, unit=chosen or None)
                      if show and group_id is None else None)}
 
@@ -431,19 +443,25 @@ def _bars_page(table, key, show: bool):
     # A private table lists the people by number until Show, in number order so the order spells out nobody,
     # as its calendar does (decisions 0123 and 0134).
     hidden = info.table.private and not show
-    per = info.table.columns[rule["per"]]
-    subjects = sorted(({"id": r["id"], "name": display.private_subject_name(info, per, r["id"]) if hidden
-                        else display.display_name(subject_info, r, store)} for r in rows
-                       if _applies(store, info, r["id"])),
+    subjects = sorted(({"id": r["id"], "name": "" if hidden else display.display_name(subject_info, r, store)}
+                       for r in rows if _applies(store, info, r["id"])),
                       key=lambda s: (s["id"],) if hidden else (s["name"].lower(), s["id"]))
+    if hidden:
+        subjects = display.private_subject_names(subjects)  # "Person 1", never a record number (decision 0142)
     if not subjects:
         return render_template("bars.html", title=rule["title"], view=None, subjects=[], chosen=None, rule=rule,
                                add_subject=f"/t/{subject_info.name}/new",
                                no_subject=f"Add a {rule['subject']} before showing its {rule['title'].lower()}.")
     wanted = request.values.get("subject", type=int)
-    chosen = next((s for s in subjects if s["id"] == wanted), subjects[0])
+    chosen = next((s for s in subjects if s["id"] == wanted), None)
+    latest_first = False
+    if chosen is None:  # no one chosen: open on whoever has the most recent entry, else the first (decision 0142)
+        recent = None if info.table.private else bars.most_recent_subject(
+            store.conn, store.registry, info, rule, [s["id"] for s in subjects])
+        chosen = next((s for s in subjects if s["id"] == recent), subjects[0])
+        latest_first = recent is not None and len(subjects) > 1
     view = bars_view(store, info, rule, chosen["id"], request.values.get("by"), _end(request.values.get("end")),
                      request.values.get("unit"), show=show)
     return render_template("bars.html", title=rule["title"], view=view, subjects=subjects, chosen=chosen, rule=rule,
                            no_subject=None, subject_href=f"/t/{subject_info.name}/{chosen['id']}",
-                           list_href=f"/t/{info.name}")
+                           latest_first=latest_first, list_href=f"/t/{info.name}")

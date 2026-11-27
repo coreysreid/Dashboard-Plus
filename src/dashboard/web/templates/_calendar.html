@@ -34,7 +34,7 @@
   <button type="submit" class="quiet" data-show-calendar>Show</button> <span class="muted">Shows each day's entries, on that page only.</span>
 </form>{% endif %}{% endif %}
 {% endif %}
-<details class="cal-list"{% if open_list %} open{% endif %}>
+<details class="cal-list" data-print-open{% if open_list %} open{% endif %}>
   <summary>{{ cal.heading }} in words, day by day</summary>
   {% if cal.days %}
   <ol>

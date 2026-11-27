@@ -35,7 +35,7 @@ class PrivateBarsNameNobodyTests(PrivateDoseCase):
             text = self.page(path, self.web)
             for words in (NAME, "Sofia Garcia", GIVER, SECRET, AMOUNT):
                 self.assertNotIn(words, text, f"{path}: {words}")
-            self.assertIn(f"Given to #{self.rosa}", text)
+            self.assertIn(f"Person 1", text)
             self.assertIn("this person", text)
             self.assertIn("Open the person's page", text)
         shown = self.shown(BARS, subject=str(self.rosa))

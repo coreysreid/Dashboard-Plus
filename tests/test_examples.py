@@ -59,7 +59,7 @@ class ExampleHouseholdTests(TempDirTestCase):
     def test_garcia_household(self):
         result = self.summary("garcia")
         self.assertEqual((result["days"], result["need"]), (1.9, 13))
-        self.assertIn("Metformin 500 mg (Rosa)", result["low"])
+        self.assertIn("Prescription tablets (blister packs)", result["low"])
         self.assertEqual(result["expiring"], ["Hand sanitizer", "Luna", "Kidney support tablets", "Sort the recycling", "Tortillas",
                                               "Check pot", "Folding trolley", "Blood glucose test strips", "Apartment first aid kit",
                                               "Household car: Auto insurance", "Earthquake go-bags"])
@@ -88,7 +88,7 @@ class ExampleHouseholdTests(TempDirTestCase):
 
     def test_amounts_end_where_the_file_says_after_stock_in_and_out(self):
         _, conn, _ = self.open("garcia")
-        row = conn.execute("SELECT quantity FROM stock__items WHERE name = 'Metformin 500 mg (Rosa)'").fetchone()
+        row = conn.execute("SELECT quantity FROM stock__items WHERE name = 'Prescription tablets (blister packs)'").fetchone()
         self.assertEqual(row["quantity"], 20)
         moves = conn.execute("SELECT COUNT(*) FROM stock__movements WHERE deleted_at IS NULL").fetchone()[0]
         self.assertEqual(moves, 6)
