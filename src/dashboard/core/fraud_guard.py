@@ -215,12 +215,25 @@ def _aba(digits: str) -> bool:
     return sum(int(d) * w for d, w in zip(digits, (3, 7, 1) * 3)) % 10 == 0
 
 
+# Each country's IBAN length (the published IBAN registry). A random code or fingerprint that happens to start with
+# two letters and two digits, such as a hash "de12...", is not an IBAN unless its country and length both fit.
+_IBAN_LENGTHS = {
+    "AD": 24, "AE": 23, "AL": 28, "AT": 20, "AZ": 28, "BA": 20, "BE": 16, "BG": 22, "BH": 22, "BR": 29, "BY": 28,
+    "CH": 21, "CR": 22, "CY": 28, "CZ": 24, "DE": 22, "DK": 18, "DO": 28, "EE": 20, "EG": 29, "ES": 24, "FI": 18,
+    "FO": 18, "FR": 27, "GB": 22, "GE": 22, "GI": 23, "GL": 18, "GR": 27, "GT": 28, "HR": 21, "HU": 28, "IE": 22,
+    "IL": 23, "IQ": 23, "IS": 26, "IT": 27, "JO": 30, "KW": 30, "KZ": 20, "LB": 28, "LC": 32, "LI": 21, "LT": 20,
+    "LU": 20, "LV": 21, "MC": 27, "MD": 24, "ME": 22, "MK": 19, "MR": 27, "MT": 31, "MU": 30, "NL": 18, "NO": 15,
+    "PK": 24, "PL": 28, "PS": 29, "PT": 25, "QA": 29, "RO": 24, "RS": 22, "SA": 24, "SC": 31, "SE": 24, "SI": 19,
+    "SK": 24, "SM": 27, "ST": 25, "SV": 28, "TL": 23, "TN": 24, "TR": 26, "UA": 29, "VA": 22, "VG": 24, "XK": 20,
+}
+
+
 def _iban(candidate: str) -> bool:
     """True if an IBAN-shaped piece of text, or a shorter piece of it ending at a space, passes the IBAN check."""
     pieces = candidate.split(" ")
     for end in range(len(pieces), 0, -1):
         code = "".join(pieces[:end])
-        if not 15 <= len(code) <= 34:
+        if _IBAN_LENGTHS.get(code[:2]) != len(code):  # a real country code with that country's exact length
             continue
         moved = code[4:] + code[:4]
         if int("".join(str(int(ch, 36)) for ch in moved)) % 97 == 1:
@@ -228,8 +241,19 @@ def _iban(candidate: str) -> bool:
     return False
 
 
+def _upper_after_country(text: str) -> str:
+    """The text with every letter in capitals except a two-letter word start, so the IBAN pattern (two capitals,
+    two digits, then letters or digits) still finds an IBAN typed partly in lower case but keeps its country code
+    as written."""
+    return re.sub(r"(?<![0-9A-Za-z])([A-Za-z]{2})(\d{2})([ A-Za-z0-9]+)",
+                  lambda m: m.group(1) + m.group(2) + m.group(3).upper(), text)
+
+
 def _bank(plain: str) -> bool:
-    if any(_iban(m.group(0)) for m in _IBAN.finditer(plain.upper())):
+    # The country code must be written in capitals, as banks print it, so a lower-case fingerprint such as
+    # "ad46c0..." is never read as an Andorran account; the rest may be typed in either case.
+    if any(m.group(0)[:2].isupper() and _iban(m.group(0).upper())
+           for m in _IBAN.finditer(_upper_after_country(plain))):
         return True
     if _BRANCH_AND_ACCOUNT.search(plain):
         return True

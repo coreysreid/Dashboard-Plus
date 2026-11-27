@@ -185,3 +185,20 @@ class SharingWordsTests(HouseholdTestCase):
 
 if __name__ == "__main__":
     unittest.main()
+
+
+class FingerprintIsNotAnIbanTests(unittest.TestCase):
+    """A readiness answer's record fingerprint ("2:" and 24 lower-case hex letters) once read as an Andorran IBAN."""
+
+    def test_fingerprints_and_ids_are_not_bank_accounts(self):
+        import hashlib
+        from dashboard.core import fraud_guard, questions
+        for seed in range(20000):
+            value = questions.CHECK_PREFIX + hashlib.sha256(str(seed).encode()).hexdigest()[:24]
+            self.assertIsNone(fraud_guard.check(value, None), value)
+        self.assertIsNone(fraud_guard.check("2:ad46c082e9244c0cddbd168b", None))
+
+    def test_real_ibans_are_still_refused(self):
+        from dashboard.core import fraud_guard
+        for text in ("GB82 WEST 1234 5698 7654 32", "DE89 3704 0044 0532 0130 00", "GB82 west 1234 5698 7654 32"):
+            self.assertIsNotNone(fraud_guard.check(text, None), text)
