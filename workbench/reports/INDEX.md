@@ -53,3 +53,4 @@ expected, actual, severity (blocker, important, minor), suggested change.
 | 2026-11-21-mac-preview-readthrough.md | Exact household wording changes and physical-Mac checks for the unsigned preview. | improving Mac preview guidance |
 | 2026-11-21-routine-checklists-ux.md | Three-household, four-tab phone and desktop walk of Things to do, including done and Undo. | fixing the year-view overflow |
 | 2026-11-21-drills-ux.md | Three complete 320px drills, exact missing words, local numbers and private-answer checks. | accepting the shipped Think it through screens |
+| 2026-11-27-read-me-check.md | Windows and Mac read-me, README and Getting started sentences against today's app, with replacements. | updating the read-me files |
