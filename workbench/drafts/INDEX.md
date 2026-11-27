@@ -30,3 +30,4 @@ and made-up example rows. Add a row here for each draft folder you create.
 | macos/ | Researched app-bundle build, data location and release checks | preparing a Mac release |
 | phone/ | Android and iOS member app options, first screens and acceptance checks | designing mobile sync |
 | helper_move_in/ | First-time helper move checklist and remaining traps | guiding household imports |
+| demo_household/ | An invented fourth household with four years of weigh-ins, feedings, doses, routines and priced shopping | demonstrating charts and timelines |
