@@ -61,3 +61,4 @@ expected, actual, severity (blocker, important, minor), suggested change.
 | 2026-11-27-rewalk-after-tidy.md | 320px keyboard and screen-reader-tree re-walk after 0131 to 0136, worst first. | fixing focus and heading order |
 | bring_in_2026_11_27/ | Three invented messy old trackers used for the item 113 check. | reproducing Bring in findings |
 | 2026-11-27-bring-in-messy-trackers.md | Three messy invented trackers through Bring in earlier entries, worst first (a crash). | fixing Bring in |
+| 2026-11-27-be-a-helper.md | An invented move-in using only the generated helper guide, and what Review showed, worst first. | improving the helper guide and Review |
