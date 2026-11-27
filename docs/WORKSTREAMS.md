@@ -769,6 +769,86 @@ seeing results visually: pets' weights, medication, colour-coded calendars.
     equivalent, health water notices, power outage pages), so a pack never
     favours one region. Cite and date each.
 
+### Batch 23: a big push for the next few days (M2, M3) — after batch 22
+
+User 1 (27 November) wants Lane B used as much as possible over the next few
+days. Do batch 22 (106 to 111) first, then these, one pull request each,
+worst findings first, made-up data only. Built since batch 22 was written:
+remaining calendars (0125), timelines (0126, 0130), phone checks (0127),
+prices and Spent per month (0128), earlier done days (0129), a visual check
+(0131), Not a done day (0132), money back (0133), a privacy review (0134),
+accessible names (0135), speed (0136), Bring in earlier entries from a
+spreadsheet (0137) and the helper guide (0138). Lane A is now building a
+Content-Security-Policy (0139), a sharing permission for every kind of
+information (0140) and a rule that the app never stores passwords, ID
+copies or full card or bank numbers (0141). User 1's words: "the data
+should be consent based. Share whatever between users, but don't store
+sensitive info in the app - passwords and digital copies of ID full credit
+card or bank account details etc."
+
+112. **Re-walk after the tidy.** Once 0131 to 0136 are on `main`, re-walk a
+     pet, a person, Home, Needs attention and Things to do at 320px with a
+     keyboard and a screen reader's eyes: the folded bars and Add lists, the
+     new link names, Not a done day and its Undo. Worst first.
+113. **Bring in a messy old tracker.** Invent three realistic old trackers
+     (a phone notes export, a hand-kept spreadsheet, a vet clinic printout
+     typed up) with mixed date styles, 12/24-hour times, lb and kg, typos in
+     pet and medicine names and repeats. Run each through 0137. List every
+     row the page got wrong or explained badly, with exact better words.
+114. **Be a helper.** Using only the generated guide (0138), act as an
+     assistant moving an invented household's notes in: what was clear, what
+     you misread, what Review then showed. Exact replacement sentences.
+115. **Sharing permissions, checked.** Once 0140 is on `main`: is every list
+     and detail there, in words a household understands? Does starting to
+     share something private say clearly what will travel, and does Undo
+     work? Is consent always asked before anything new travels?
+116. **Try to store what must not be stored.** Once 0141 is on `main`, try
+     to put a card number, bank account, password, alarm code, passport or
+     licence number into every text field, every import and the helper API,
+     in different spacings and formats. Report anything that gets through,
+     and any false alarm on ordinary values (phone numbers, meter readings).
+117. **The household guide, brought up to date.** Update
+     `workbench/drafts/guide/` for everything from 0119 to 0141: calendars,
+     bars, timelines, prices, money back, Show, Bring in, sharing choices,
+     and what the app will never keep. Plain words, short, one page per
+     task.
+118. **Doctor and vet visits for people.** Design a person's visits record
+     (who, when, why, follow-up date, never test results or ID numbers),
+     how it joins the person's timeline, its privacy and sharing defaults,
+     and the household's words. Say what the core must add.
+119. **A medication plan, not just a log.** Design planned doses (what,
+     when, for whom) that show as Planned on the dose calendar and a gentle
+     "not recorded yet" line, never "missed", with privacy before Show and
+     no helper writes. Exact words, empty states and checks.
+120. **Pet food in the cupboard.** Design how food put out (Pet feeding)
+     could, by the household's choice, use up a pet-food Stock item, without
+     ever counting food put out as eaten. Exact words and the double-count
+     traps.
+121. **Week at a glance.** Design a Home panel that shows this week visually
+     (due, done, recorded) across lists, built only from existing calendars,
+     with an accessible text version. Phone and desktop sketches in words.
+122. **Pairing two computers, with consent.** From 0089, 0100 and 0140,
+     design sync stage 2's first-pairing screens: what each computer will
+     share by the household's choices, how each person consents, what
+     changes need a fresh yes, and how to stop sharing. Exact words.
+123. **Restore on a new computer, drilled.** Write a step-by-step practice
+     for restoring a backup onto a second computer (Windows and Mac), with
+     what to check afterwards, and where today's words or screens would
+     confuse a household.
+124. **The read-me files, against today's app.** Check the Windows portable
+     and Mac preview read-me words and Getting started against what the app
+     now does; list every out-of-date or overpromising sentence with a
+     replacement.
+125. **A household with years of data, for demos.** Draft an invented fourth
+     example household (`workbench/drafts/`) with two to five years of
+     weigh-ins, doses, feedings, routines, services and priced shopping, so
+     the charts and timelines can be shown honestly. Fiction-reserved phones
+     and example.com only.
+126. **Words audit, everywhere.** Read every page's headings, buttons and
+     empty states in all three households and list words that are
+     technical, inconsistent (Show/Reveal, Bring in/Import, Undo/Take back)
+     or blaming, with one agreed word for each.
+
 ## Brief for Lane B, batch 3 (done)
 
 > You are Lane B, the checker and drafter. You have full internet access for
