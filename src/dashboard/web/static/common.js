@@ -51,3 +51,7 @@ document.addEventListener("submit", function (event) {
     form.dataset.sent = "1";
   }
 });
+
+// After "Not a done day" or its Undo, the notice (with Undo next to it) takes focus, so a keyboard or screen reader
+// user lands beside the Undo button instead of at the top of the page (decision 0144).
+(function () { var notice = document.querySelector("[data-focus-here]"); if (notice) notice.focus(); })();

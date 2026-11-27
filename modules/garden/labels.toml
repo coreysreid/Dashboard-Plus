@@ -33,5 +33,5 @@ empty = "Add a garden job if you want a reminder."
 form = ["title", "bed", "due_on", "done", "done_on", "notes"]
 list = ["title", "bed", "due_on", "done", "done_on"]
 columns.due_on = { label = "Due on", help = "A date you choose. The dashboard reminds you two weeks before, only while the job is not done." }
-columns.done = { label = "Done?", help = "Tick when the job is finished. A finished job is never a reminder." }
+columns.done = { label = "Done", help = "Tick when the job is finished. A finished job is never a reminder." }
 columns.done_on = { label = "Done on", help = "The day the job was done. Mark done fills in today; change it if it was another day. Jobs done before this field existed have no date." }

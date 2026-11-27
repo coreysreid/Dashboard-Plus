@@ -23,4 +23,4 @@ columns.outcome = { label = "Done or skipped" }
 columns.planned_for = { label = "Was planned for" }
 columns.done_on = { label = "On", help = "The day it was done, or the day you decided to skip it." }
 columns.done_by = { label = "Who did it", help = "Optional. Choose one of your People." }
-columns.notes = { help = "Adding an entry here by hand changes no routine dates. To mark the next time done, use Mark this occurrence done on the routine." }
+columns.notes = { help = "Adding an entry here by hand changes no routine dates. To mark the next time done, use Mark done on the routine." }

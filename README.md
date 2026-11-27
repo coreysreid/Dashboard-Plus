@@ -11,15 +11,16 @@ get gentle questions that help you understand *why* numbers change. The habit
 of looking after what you have is what makes a home resilient.
 
 Everything stays on your own computer. Nothing is sent anywhere unless you
-switch on an optional outside source.
+choose to: connect a helper (an AI assistant you give a key) or, later, pair
+another computer of your own.
 
 **See it first:** [`docs/EXAMPLES.md`](docs/EXAMPLES.md) shows three made-up
 households (a family with pets in Australia, three generations in the United
 States, one person in the United Kingdom) at every stage, from the first start
 to saving and exiting.
 
-**Status: an early test version of the first release (M1).** It works, but it
-is new: keep a copy of anything important somewhere else too. See
+**Status: an early test version.** It works, but it is new: keep a copy of
+anything important somewhere else too. See
 [`docs/ROADMAP.md`](docs/ROADMAP.md) for what comes next.
 
 ## What it does today
@@ -57,12 +58,12 @@ is new: keep a copy of anything important somewhere else too. See
   jobs, alarm and kit checks, pet treatments, vehicle dates, document reviews,
   things lent out, and **Routines**, your own repeating tasks such as watering
   the pot plants or putting the bins out. Each task is finished the same way
-  as on its own page (Home care's Mark done, Garden's Mark done, or Open record
+  as on its own page (Home care's Mark done, Garden's Mark done, or Open
   to update). Something late shows once, as "Due since", never as a pile of
   missed days or a streak; a repeat only ever offers the next date, and Undo
   puts a tick (or a press of Mark done or Mark returned) back straight after.
   Weeks start on the day you choose in Settings.
-- **The first charts:** *What is counted* on Home's water card shows each
+- **Charts:** *What is counted* on Home's water card shows each
   water item behind the days of drinking water, as a bar with its litres, and
   every item left out with the reason (not safe to drink, or not in litres).
   A pet's page shows its recorded weights as dots by date, and you can choose
@@ -85,15 +86,14 @@ is new: keep a copy of anything important somewhere else too. See
   **Reject this copy**.
 - **Calendars and trends:** a pet's page shows a **Feeding calendar**: the
   month as a grid where each day with a feeding shows ● and how many, and
-  Previous month and Next month. **Things to do** has a **Calendar** tab for
-  Routines: ✓ Done and – Skipped on the day it happened, and each routine's
+  Previous month and Next month. **Things to do → Calendar** shows every dated list together: ✓ Done and – Skipped on the day it happened, and each routine's
   next date once, ○ Due or ◇ Planned. Every mark has its own symbol as well
   as a colour, there is a legend, and the same days are listed in words. A
   blank day only means nothing was recorded; nothing is ever called missed.
   A pet's weights can be shown for the last 3 months, the last year or all
   dates, with "Since the reading before: up 0.3 kg, from 4.4 kg to 4.7 kg" in
   words and a line between readings, on a scale that still starts at zero.
-  The **Calendar** tab now shows every dated list together: Home care's work
+  It shows Home care's work
   done and Do again by dates, Garden jobs marked done and their due dates,
   each vehicle's registration, insurance and service dates, and each bill or
   policy's check date, each paper's review or renewal date, first aid kit
@@ -131,8 +131,9 @@ is new: keep a copy of anything important somewhere else too. See
   by itself. **Spent per month** (on Household stock) counts your Stock ins;
   **Show** adds up the prices, overall and for each category, one currency at
   a time. A Stock in without a price is counted, never read as zero, and the
-  page says it covers only prices that were typed in. Prices stay on this
-  computer and are never on lists, sheets, the export or a helper's screen.
+  page says it covers only prices that were typed in. Prices are never on
+  lists, sheets, the export or a helper's screen. They stay on this computer
+  unless you choose to share them with your other computers.
 - **Money back and a price on Review:** on a Stock in with a price, **Record
   money back** saves a refund tied to it, in the same currency and never more
   than was paid unless you tick that it is. **Spent per month** says it in
@@ -215,7 +216,8 @@ is new: keep a copy of anything important somewhere else too. See
 - **Helpers (early):** give an assistant, such as an AI program, a key in
   Settings so it can look at the parts of your records you choose and suggest
   new ones. Nothing is added until you accept it on the Review page. Private
-  details are never shared with helpers. A helper reading a receipt can show
+  details (the fields marked private) are never shared with helpers. Do not type
+  codes or medicines into ordinary notes. A helper reading a receipt can show
   the line and price each row came from (for checking only, never saved), and
   can send a new Stock item with its first Stock in as one group: accepting
   the Stock in adds the item too, rejecting the item rejects both. A new Stock
@@ -299,7 +301,8 @@ anywhere, and helpers can never use this.
 ## Using it on Windows
 
 You need Windows 10 or 11. Nothing is installed, no administrator rights are
-needed, and no settings on the computer are changed. It runs happily from a
+needed, and no settings on the computer are changed. A second backup copy is kept in
+your account's local app data folder. It runs happily from a
 USB stick.
 
 1. **Get the zip.** Until the first release is published, the latest build is
@@ -356,6 +359,7 @@ Dashboard` in the folder. It makes a backup and finishes writing before it stops
   your data before changing anything.
 - To **start a fresh copy** for someone else, copy the folder without its
   `data` folder; they get their own setup questions.
+- To **move to a new computer**, copy the whole folder with its `data` folder.
 
 ### If something goes wrong
 

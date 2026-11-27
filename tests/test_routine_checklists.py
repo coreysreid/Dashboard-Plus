@@ -138,7 +138,7 @@ class AcceptanceChecks(ChecklistTestCase):
                                               "place": self.place, "next_check": self.day()})
         client = self.client()
         html = self.page(client, "/to-do")
-        self.assertIn(f'href="/t/{EQUIPMENT}/{alarm}" aria-label="Open record to update: Hall smoke alarm"', html)
+        self.assertIn(f'href="/t/{EQUIPMENT}/{alarm}" aria-label="Open to update: Hall smoke alarm"', html)
         self.page(client, f"/t/{EQUIPMENT}/{alarm}")  # opened, not changed
         self.assertIn((EQUIPMENT, alarm), self.keys())
         self.assertIn(EQUIPMENT, [i.table for i in watch.expiring(self.conn, self.registry, self.today)])
@@ -365,9 +365,9 @@ class AcceptanceChecks(ChecklistTestCase):
         body = html.split("<h1>Things to do</h1>", 1)[1].split("</main>", 1)[0]
         self.assertNotIn("<script", body)  # every action is a link or a small form: no script needed
         first = body.index('class="todo-row')
-        words, button = body.index("todo-when", first), body.index("Mark this occurrence done", first)
+        words, button = body.index("todo-when", first), body.index("Mark done", first)
         self.assertLess(words, button)  # the date and source come before the button in reading order
-        self.assertIn('aria-label="Mark this occurrence done: Routine', body)
+        self.assertIn('aria-label="Mark done: Routine', body)
 
 
 class SwitchingAndHouseholds(ChecklistTestCase):
@@ -392,7 +392,7 @@ class SwitchingAndHouseholds(ChecklistTestCase):
         self.routine("Water the pot plants", 1, "days")
         html = self.page(self.client(), "/")
         self.assertIn('<a href="/to-do">Things to do</a>', html)
-        self.assertIn("2 due or late today", html)
+        self.assertIn("2 due today or before", html)
 
     def test_settings_week_start(self):
         client = self.client()

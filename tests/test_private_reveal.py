@@ -38,7 +38,7 @@ class PrivateCalendarNamesTests(PrivateDoseCase):
         for path in before:
             text = self.page(path.split("#")[0], self.web)
             if path.startswith("/t/people"):
-                text = text[text.index("Dose calendar"):]  # the person's own page names them in its heading; the panel must not
+                text = text[text.index("<h2>Dose calendar"):]  # the person's own page names them in its heading; the panel must not
                 text = text[:text.index("</section>")]
             self.assertNotIn(NAME, text, path)
             self.assertNotIn(GIVER, text, path)

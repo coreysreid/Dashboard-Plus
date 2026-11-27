@@ -191,6 +191,34 @@ def _number(column: Column, text: str) -> str:
     return csv_import._number(column, text)
 
 
+def _unit_in_amount(info: TableInfo, column: Column, text: str, mapping: list[str], values: dict) -> None:
+    """"120g" or "0.5 pouch" in an amount cell, when the list has a unit field that no column was matched to: the
+    unit must be one of the list's own units, and is never converted (decision 0144)."""
+    rule = info.table.daily or {}
+    unit_column = info.table.columns.get(rule.get("unit", ""))
+    if rule.get("amount") != column.name or unit_column is None or not unit_column.choices \
+            or unit_column.name in mapping:
+        return
+    found = _NUMBER_UNIT.match(text)
+    if not found or not found.group(2):
+        return
+    unit = found.group(2).strip()
+    words = [c.key for c in unit_column.choices]
+    chosen = next((w for w in words if w.casefold() == unit.casefold()), None)
+    if chosen is None:
+        raise ValueError(f"has “{text}”, and “{unit}” is not one of this list's units ({', '.join(words)}). Nothing "
+                         f"is converted: change it in your spreadsheet, or leave this row out.")
+    values[column.name] = found.group(1)
+    values[unit_column.name] = chosen
+
+
+def _not_after_today(store: Records, column: Column, value: str, zone) -> bool:
+    """Whether an earlier entry's date, or date and time, is not later than the household's today."""
+    if column.type == "date":
+        return str(value)[:10] <= daily.today(store.conn).isoformat()
+    return daily.local(value, zone).isoformat(timespec="minutes") <= daily.now_text(store.conn)
+
+
 def _key(text: str) -> str:
     return " ".join(str(text or "").split()).casefold()
 
@@ -337,9 +365,13 @@ def plan(store: Records, info: TableInfo, sheet: csv_import.Sheet, mapping: list
             text = cell(position).replace("\r\n", "\n").replace("\r", "\n")
             if column.type not in ("text", "longtext"):
                 text = text.strip()
-            if not text.strip():
-                continue
             name = csv_import.label(info, column)
+            if not text.strip():
+                if column is when_column:  # decision 0144: an entry's date is never filled in as today
+                    problems.append(f"{name} is empty. Every earlier entry needs its own "
+                                    f"{'date' if when_column.type == 'date' else 'date and time'}; it is never "
+                                    f"filled in as today.")
+                continue
             if HIDDEN_CHARACTERS.search(text) or (column.name == when_column.name and HIDDEN_CHARACTERS.search(
                     cell(time_at))):
                 problems.append(f"{name}: contains a hidden character, such as a tab. Remove it in your spreadsheet.")
@@ -359,6 +391,7 @@ def plan(store: Records, info: TableInfo, sheet: csv_import.Sheet, mapping: list
                             csv_import.unclear_date_text(name, text, reading, style))
                 elif column.type in ("integer", "decimal", "measure", "money"):
                     values[column.name] = _number(column, text)
+                    _unit_in_amount(info, column, text, mapping, values)
                 elif column.type == "link":
                     outcome = _link(names, info, column, values, text, picks, found_picks, number)
                     if outcome == SKIP:
@@ -385,6 +418,10 @@ def plan(store: Records, info: TableInfo, sheet: csv_import.Sheet, mapping: list
         if skipped:
             result.left_out.append(number)
             continue
+        if when_column.name in values and not _not_after_today(store, when_column, values[when_column.name], zone):
+            shown = dates.show(str(values[when_column.name])[:10], style)
+            problems.append(f"{shown} is after today. Earlier entries must be on or before today: check the date "
+                            f"order.")
         if waiting:
             problems.append("A name in this row needs your choice under “Names to match” above, or leave its rows out.")
         if problems:

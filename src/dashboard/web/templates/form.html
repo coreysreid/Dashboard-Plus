@@ -41,6 +41,17 @@
   <button type="submit">Restore it</button>
 </form>
 {% else %}
+{% if record and (batches or charts or feeding or month_calendars or period_bars or what_happened or under) %}{# decision 0144: a record page is mostly to look at, so its parts can be jumped to #}
+<nav class="muted" aria-label="Skip to" id="skip-to"><strong>Skip to:</strong>
+  {% for b in batches %}<a href="#sec-batch-{{ loop.index }}">{{ b.title }}</a>{% if not loop.last or charts or feeding or month_calendars or period_bars or what_happened or under %} · {% endif %}{% endfor %}
+  {% for c in charts %}<a href="#sec-chart-{{ loop.index }}">{{ c.title }}</a>{% if not loop.last or feeding or month_calendars or period_bars or what_happened or under %} · {% endif %}{% endfor %}
+  {% for view in feeding %}<a href="#sec-feeding-{{ loop.index }}">{{ view.rule.what }} today</a>{% if not loop.last or month_calendars or period_bars or what_happened or under %} · {% endif %}{% endfor %}
+  {% for cal in month_calendars %}<a href="#sec-calendar-{{ loop.index }}">{{ cal.title }}</a>{% if not loop.last or period_bars or what_happened or under %} · {% endif %}{% endfor %}
+  {% for bv in period_bars %}<a href="#sec-bars-{{ loop.index }}">{{ bv.title }}</a>{% if not loop.last or what_happened or under %} · {% endif %}{% endfor %}
+  {% if what_happened %}<a href="#sec-what-happened">{{ what_happened.title }}</a>{% if under %} · {% endif %}{% endif %}
+  {% for u in under %}<a href="#under-{{ u.table }}">{{ u.title }}</a>{% if not loop.last %} · {% endif %}{% endfor %}
+</nav>
+{% endif %}
 {% if actions %}
 <div class="actions">{# one-step buttons declared in tables.toml, such as Mark returned (decision 0075) #}
   {% for a in actions %}
@@ -69,7 +80,7 @@
   <input type="hidden" name="_csrf" value="{{ csrf_token }}">
   {% if confirm and then %}<input type="hidden" name="_then" value="{{ then }}">{% endif %}
   {% for f in fields %}
-  {% with first = loop.first %}{% include "_field.html" %}{% endwith %}
+  {% with first = loop.first and not record %}{% include "_field.html" %}{% endwith %}
   {% endfor %}
   <div class="actions">
     {% if record %}
@@ -90,7 +101,7 @@
 <p data-line-total>Line total (worked out from the price, not typed): {{ reveal_button(line_total.url, line_total.column, "Show the line total", "cell", None, "Show") }}</p>
 {% endif %}
 {% for b in batches %}
-<h2>{{ b.title }}</h2>
+<span id="sec-batch-{{ loop.index }}" tabindex="-1"></span><h2>{{ b.title }}</h2>
 <p><strong>{{ b.summary }}</strong></p>
 {% if b.rows %}<ul>{% for r in b.rows %}<li><a href="{{ r.href }}">{{ r.name }}</a>{% if r.count %} · <a href="{{ r.count }}" aria-label="Count {{ r.name }}">Count</a>{% endif %}</li>{% endfor %}</ul>
 {% else %}<p class="muted">None recorded yet.</p>{% endif %}
@@ -101,12 +112,12 @@
 <div class="actions"><a class="button" href="{{ count_href }}">Count this batch</a></div>
 {% endif %}
 {% for c in charts %}
-<h2>{{ c.title }}</h2>
+<span id="sec-chart-{{ loop.index }}" tabindex="-1"></span><h2>{{ c.title }}</h2>
 {% with view = c.view %}{% include "_dot_chart.html" %}{% endwith %}
 <p><a href="{{ c.href }}">Choose dates for this chart</a></p>
 {% endfor %}
 {% for view in feeding %}
-<h2>{{ view.rule.what }} today</h2>
+<span id="sec-feeding-{{ loop.index }}" tabindex="-1"></span><h2>{{ view.rule.what }} today</h2>
 {% if view.private %}{# private history (decision 0120): no amounts or medicine until Show, and no sheet #}
 {% include "_daily_private_panel.html" %}
 <p><a href="{{ view.href }}">{{ view.rule.sheet }}</a></p>
@@ -116,11 +127,11 @@
 {% endif %}
 {% endfor %}
 {% for cal in month_calendars %}
-<h2>{{ cal.title }}</h2>
+<span id="sec-calendar-{{ loop.index }}" tabindex="-1"></span><h2>{{ cal.title }}</h2>
 {% with open_list = false %}{% include "_calendar.html" %}{% endwith %}
 {% endfor %}
 {% for bv in period_bars %}
-<h2>{{ bv.title }}</h2>
+<span id="sec-bars-{{ loop.index }}" tabindex="-1"></span><h2>{{ bv.title }}</h2>
 {% if month_calendars %}{# a page with a calendar already says when; the bars fold under their own summary so the page stays short (decision 0131) #}
 <details class="panel-fold" data-print-open><summary>Show the bars: {{ bv.summary or bv.empty }}</summary>
 {% with level = 3 %}{% include "_bars.html" %}{% endwith %}
@@ -130,7 +141,7 @@
 {% endif %}
 {% endfor %}
 {% if what_happened %}{# one timeline of every dated entry that links here (decision 0126) #}
-<h2>{{ what_happened.title }}</h2>
+<span id="sec-what-happened" tabindex="-1"></span><h2>{{ what_happened.title }}</h2>
 {% with tl = what_happened, level = 3 %}{% include "_timeline.html" %}{% endwith %}
 {% endif %}
 {% for u in under %}{# another list's records that point here, like a service's quotes (labels.toml `under`, 0111) #}
@@ -175,7 +186,7 @@
 <ul class="history">
   {% for h in history %}
   <li><span class="muted">{{ h.at }}</span> · {{ h.who }} {{ h.action }}{% if h.changes %}:
-    {% for c in h.changes %}{{ c.label }} {% if c.sensitive %}(private){% else %}from "{{ c.before }}" to "{{ c.after }}"{% endif %}{% if not loop.last %}; {% endif %}{% endfor %}{% endif %}{% if h.put_back %}{# Undo of "Not a done day" (decision 0132) #}
+    {% for c in h.changes %}{{ c.label }} {% if c.sensitive %}(private){% elif h.added %}{{ c.after }}{% else %}from "{{ c.before }}" to "{{ c.after }}"{% endif %}{% if not loop.last %}; {% endif %}{% endfor %}{% endif %}{% if h.put_back %}{# Undo of "Not a done day" (decision 0132) #}
     <form method="post" action="{{ h.put_back.href }}" style="display:inline;margin-left:.5rem"><input type="hidden" name="_csrf" value="{{ csrf_token }}"><input type="hidden" name="op" value="{{ h.put_back.op }}"><input type="hidden" name="back" value="record"><button type="submit" class="quiet">Put back on the calendar</button></form>{% endif %}</li>
   {% endfor %}
 </ul>

@@ -87,7 +87,7 @@ def _row_actions(task, back: str) -> list[dict]:
         elif action in task.source.presses:
             shown.append({"label": label, "href": href, "post": True, "quiet": False})
     if not shown:
-        shown.append({"label": "Open record to update", "href": f"/t/{info.name}/{row['id']}", "post": False,
+        shown.append({"label": "Open to update", "href": f"/t/{info.name}/{row['id']}", "post": False,
                       "quiet": True})
     shown.sort(key=lambda a: a["quiet"])
     return shown
@@ -165,7 +165,7 @@ def _view(window: str):
 
 def _groups(window, rows, today, start, end, first_day, style) -> list[dict]:
     """The rows in the draft's order: still to decide, late, today, then later (by week in a month)."""
-    words = {"earlier": "Still to decide (from an earlier year)", "late": "Late", "today": "Today",
+    words = {"earlier": "Still to decide (from an earlier year)", "late": "From before today", "today": "Today",
              "undated": "No date yet",
              "later": {"week": "Later this week", "year": "Coming up this year"}.get(window, "Later this month")}
     groups = []

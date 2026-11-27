@@ -292,7 +292,8 @@ class WeighInAndFeedingTests(BringInTestCase):
         _reply, page = self.check(WEIGHS, "Pet,Date,Weight\nRex,20/01/26,30\n")
         self.assertIn("Names to match", page)
         self.assertIn("0 weigh-ins to bring in", plain(page))
-        self.assertRegex(page, r'formaction="/bring-in/pets__weigh_ins/add" disabled')
+        self.assertNotIn("/bring-in/pets__weigh_ins/add", page)
+        self.assertIn("Nothing is ready to bring in yet.", plain(page))
         self.assertEqual(self.live("pets__pets"), 1)
 
     def test_feedings_with_a_date_and_time_or_a_separate_time_column_by_the_households_clock(self):
