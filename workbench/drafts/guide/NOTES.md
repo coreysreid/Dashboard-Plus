@@ -1,5 +1,16 @@
-# Getting-started guide hand-off
+# Guide hand-off
 
-This draft follows the shipped Windows path in `README.md`, the generated `docs/EXAMPLES.md` gallery and the actual Smith screenshots. Checked **2026-11-17** against `main` at `435a2e9`. All example screens and names are synthetic. The screenshot links are relative from this workbench folder; change them to `screenshots/...` if promoting the page into `docs/`.
+`GETTING_STARTED.md` was first checked **2026-11-17** against `main` at `435a2e9`. It was brought up to date on
+**2026-11-27** (batch 23 item 117): batches and **Count this batch** replace "correct the Amount on hand", restore is
+described, the Mac preview is mentioned, and a Next section links eight one-task pages.
 
-The first-use guide deliberately describes current behaviour: one date per Stock item, a local find box for Stock in, and a Safe to drink box that must be checked on water. The [batch 4 UX report](../../reports/2026-11-17-picking-water-ux.md) asks the core to require an explicit answer for newly named water and to count only confirmed litres. When Lane A changes those screens or ships lots and household-formatted dates, update these paragraphs and regenerate the screenshots before promotion. The current core also has no household-facing restore flow; the guide does not promise one. No external preparedness claim is introduced; the download, backup and update instructions come from the local README, and the water basis is shown in the current Home screenshot.
+The eight pages were written on 2026-11-27 from the app as checked in items 106 to 116:
+- CALENDARS, CHARTS, TIMELINE, PRICES, PRIVATE_AND_SHOW and BRING_IN describe decisions 0119 to 0138, which are on
+  `main`.
+- SHARING (0140) and NEVER_KEPT (0141) describe Lane A's branch at `ac08f9d`, which is not yet on `main`. Publish
+  them only once those decisions merge.
+
+Known differences to fix when Lane A acts on the findings: if "Late" becomes "From before today", or "Show more"
+becomes "Next 50 rows" (item 126), change CALENDARS.md. If Bring in gains "Food for rows without one" (item 113),
+shorten BRING_IN.md's tips. No screenshots are linked from the new pages yet; add them from `docs/screenshots/` when
+promoting. All names are synthetic.

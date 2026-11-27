@@ -1,6 +1,6 @@
 # Getting started with Dashboard Plus
 
-Dashboard Plus is a notebook for your household: people to call, things you keep, where they are, and what needs attention. It runs on **Windows 10 or 11** from a folder on your computer or a USB stick. This is an early test version. Keep another copy of anything important while you get used to it. Your records stay in its `data` folder, which is **not encrypted**; keep that folder or USB stick somewhere private.
+Dashboard Plus is a notebook for your household: people to call, things you keep, where they are, and what needs attention. It runs on **Windows 10 or 11** from a folder on your computer or a USB stick, and there is an early, unsigned Mac preview (see the README). This is an early test version. Keep another copy of anything important while you get used to it. Your records stay in its `data` folder, which is **not encrypted**; keep that folder or USB stick somewhere private.
 
 ## Download and open it
 
@@ -21,9 +21,9 @@ For water, enter the **total litres**, not the number of bottles. The **Safe to 
 
 ## Your first stocktake and later shopping
 
-To do a stocktake, go to **Stock items**, choose **Add**, type the first letters of a good and pick it from the short list. If you already have that item, open it and correct its **Amount on hand**. If it is new, save the name you chose. Add its place and optional **Use by** date from the package. **Save and add another** keeps you on the add form. Look at [Stock items](../../../docs/screenshots/smith/12-stock.png) and [one item's page](../../../docs/screenshots/smith/13-stock-item.png).
+To do a stocktake, go to **Stock items**, choose **Add**, type the first letters of a good and pick it from the short list. If you already have that item, open it and use **Count this batch** to record what you counted; the difference is kept in Stock in and out. If it is new, save the name you chose with its amount. Add its place and optional **Use by** date from the package. **Save and add another** keeps you on the add form. Look at [Stock items](../../../docs/screenshots/smith/12-stock.png) and [one item's page](../../../docs/screenshots/smith/13-stock-item.png).
 
-After shopping, use **Stock in and out** for an item you already record. Use the find box to choose it, choose **Bought or added**, enter how many in the item's own unit, and save. Its amount updates. If you cannot find it, the form offers a way to add a new Stock item first. Use the same page for things used, expired or thrown away. [See Stock in](../../../docs/screenshots/smith/14-stock-in.png). Today, an item has one Use by date; separate dates for different batches are planned, so check the package dates yourself.
+After shopping, use **Stock in and out** for an item you already record. Use the find box to choose it, choose **Bought or added**, enter how many in the item's own unit, and save. Its amount updates. If you cannot find it, the form offers a way to add a new Stock item first. Use the same page for things used, expired or thrown away. [See Stock in](../../../docs/screenshots/smith/14-stock-in.png). Each batch of an item keeps its own Use by date: when you buy more with a different date, it becomes a new batch.
 
 ## Print a sheet to keep handy
 
@@ -33,8 +33,12 @@ From **Home**, choose **Print: Emergency sheet (fridge copy)**. Check the names 
 
 Choose **Save and exit** at the top of the page, then **Save and exit now**. Wait for the **Saved and closed** message before unplugging a USB stick. The program makes a final backup when it closes. You can also use **Save and exit Dashboard** in the folder. [See the close screen](../../../docs/screenshots/smith/22-close.png) and [the final message](../../../docs/screenshots/smith/23-closed.png).
 
-Your records live in the **`data` folder inside Dashboard Plus**. Backups are also kept in `data\backups` and, if you chose the extra copy, on this computer under `%LOCALAPPDATA%\Dashboard Plus\backups`. You can see backup status under **Settings**. Keep your own copy of the folder before a major change; do not put someone else's private `data` folder in a shared copy.
+Your records live in the **`data` folder inside Dashboard Plus**. Backups are also kept in `data\backups` and, if you chose the extra copy, on this computer under `%LOCALAPPDATA%\Dashboard Plus\backups`. Settings shows how the last backup went, and **Restore from a backup** can put one back, with Undo. Keep your own copy of the folder before a major change; do not put someone else's private `data` folder in a shared copy.
 
 To update, **Save and exit** first. Download and extract the newer Windows zip, then replace the program files in your existing **Dashboard Plus** folder **while keeping your existing `data` folder**. Do not replace or delete `data`. The next start makes a backup before changing stored records. The [project README](../../../README.md#where-your-data-is) has the current update steps.
 
 If a page reports a problem, use **Save a report** and read it before sharing it. It may contain technical details about your household's records. [Report a problem](https://github.com/coreysreid/Dashboard-Plus/issues) without including names, numbers or private details.
+
+## Next
+
+One short page for each thing you may want to do next: [calendars](CALENDARS.md), [charts and bars](CHARTS.md), [what happened](TIMELINE.md), [what you paid and money back](PRICES.md), [private details and Show](PRIVATE_AND_SHOW.md), [bringing in an old tracker](BRING_IN.md), [your other computers](SHARING.md) and [what the app never keeps](NEVER_KEPT.md).
