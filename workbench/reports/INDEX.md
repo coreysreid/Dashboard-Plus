@@ -53,3 +53,4 @@ expected, actual, severity (blocker, important, minor), suggested change.
 | 2026-11-21-mac-preview-readthrough.md | Exact household wording changes and physical-Mac checks for the unsigned preview. | improving Mac preview guidance |
 | 2026-11-21-routine-checklists-ux.md | Three-household, four-tab phone and desktop walk of Things to do, including done and Undo. | fixing the year-view overflow |
 | 2026-11-21-drills-ux.md | Three complete 320px drills, exact missing words, local numbers and private-answer checks. | accepting the shipped Think it through screens |
+| 2026-11-27-store-what-must-not-be-stored.md | Card, bank, password and ID values tried against 0141's checks, with gaps and false alarms, worst first. | hardening the fraud-grade guard |
