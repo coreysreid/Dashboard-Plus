@@ -1,6 +1,6 @@
 [tables.commitments]
 empty = "Add a bill or policy and the next date you want to check it."
-form = ["name", "kind", "category", "provider", "amount", "frequency", "next_due", "covers", "vehicle", "place", "reference", "notes"]
+form = ["name", "kind", "category", "provider", "amount", "frequency", "next_due", "covers", "vehicle", "place", "reference_last4", "notes"]
 list = ["name", "kind", "category", "provider", "frequency", "next_due", "vehicle", "place"]
 columns.name = { label = "Name", help = "Use a broad name you recognise, such as Home electricity or Car insurance. This name can appear in reminders and exports; leave account and policy numbers out." }
 columns.kind = { label = "Bill or policy" }
@@ -13,7 +13,7 @@ columns.covers = { label = "What it covers", help = "Optional and private on thi
 # Decision 0115: Vehicles and Household stock are optional. These are the words while one is off, or a saved record is gone.
 columns.vehicle = { label = "Vehicle, if any", help = "Choose an existing vehicle. Leave blank for a household bill or non-vehicle policy.", optional = { off_help = "Vehicles are available if you switch on Vehicles. You can save this without one.", kept_help = "A vehicle link is saved. Switch on Vehicles to see or change it.", kept = "Vehicle link saved; switch on Vehicles to see it.", none = "No vehicle linked.", gone = "The linked vehicle is no longer there.", missing = "The linked vehicle is no longer there. Choose another, or leave it blank." } }
 columns.place = { label = "Place, if any", help = "Choose an existing Place. Leave blank if the commitment applies to the whole household.", optional = { off_help = "Places are available if you switch on Household stock. You can save this without one.", kept_help = "A place link is saved. Switch on Household stock to see or change it.", kept = "Place link saved; switch on Household stock to see it.", none = "No place linked.", gone = "The linked place is no longer there.", missing = "The linked place is no longer there. Choose another, or leave it blank." } }
-columns.reference = { label = "Account or policy reference", help = "Optional and private on this computer. Do not enter a password or payment card number." }
+columns.reference_last4 = { label = "Last 4 digits of the account or policy", help = "Optional and private on this computer. Only the last 4 digits, such as ••••1234, so you can tell policies apart. The full number stays on your own bill or policy." }
 columns.notes = { label = "Private notes", help = "Optional and private on this computer. Do not enter passwords, codes or card details." }
 
 # One reminder per policy (decision 0117): the words around keeping Vehicle insurance reminders in Vehicles or

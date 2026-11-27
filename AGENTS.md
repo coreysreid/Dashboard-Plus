@@ -13,6 +13,11 @@ and the files you may edit before changing anything.
 - Never name the project owner or their household in files, commit messages,
   pull requests or comments. Write **User 1** for the owner and **User 2** for
   their partner, and leave out their home town, region and real belongings.
+- The program never stores fraud-grade details (decision 0141): no field may ask for a password, PIN, alarm,
+  door, safe or Wi-Fi code, full card or bank account number, tax, health card, passport or licence number, a
+  scan or copy of ID, or a security answer. Ask who to call, where it is kept (`guard = "where_kept"`) or only
+  the last 4 digits (`guard = "last_digits"`); a module that declares such a field does not load. Example data
+  models the safe forms.
 - Every technical decision needs a record in `docs/decisions/` (copy
   `TEMPLATE.md`): what was chosen, why, the downsides, and how to undo it.
 - Every folder has a short `INDEX.md` (25 lines or fewer, one row per entry).

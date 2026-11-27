@@ -14,7 +14,7 @@ from collections import Counter
 from datetime import datetime, timezone
 from decimal import Decimal, InvalidOperation
 
-from dashboard.core import actions, dates, db
+from dashboard.core import actions, dates, db, fraud_guard
 from dashboard.core.records import Records
 from dashboard.core.schema import target_table
 from dashboard.core.units import _SINGULAR, unit_for
@@ -25,7 +25,6 @@ EARLIER_LIMIT = 1000  # receipts compared, newest first: enough for years of sho
 # A line that is a total, tax, payment, change, coupon or refund: never a good that was bought.
 _NOT_A_GOOD = re.compile(r"^\W*(sub\s*-?\s*total|total|tax|gst|vat|change|cash|card|eftpos|visa|mastercard|amex|"
                          r"coupon|discount|refund|payment|balance|rounding|savings?|loyalty|points)\b", re.I)
-_DIGITS = re.compile(r"(?<!\d)\d(?:[ -]?\d){14,18}(?!\d)")  # 15 to 19 digits, the lengths of payment cards
 
 
 class RepeatHeld(PlainError):
@@ -50,15 +49,10 @@ def not_a_good(line: str) -> bool:
 
 
 def looks_like_a_card(text: str) -> bool:
-    """True if the text holds a 15 to 19 digit number that passes the card check digit (Luhn): a payment card.
+    """True if the text holds a payment card number: the one check every text value gets (decision 0141).
 
-    Barcodes are 8, 12, 13 or 14 digits, so they are never caught."""
-    for match in _DIGITS.finditer(text or ""):
-        digits = [int(d) for d in re.sub(r"\D", "", match.group(0))]
-        total = sum(d if i % 2 == 0 else (d * 2 - 9 if d > 4 else d * 2) for i, d in enumerate(reversed(digits)))
-        if total % 10 == 0:
-            return True
-    return False
+    13 to 19 digits passing the card check digit (Luhn); a shop barcode with its own valid check digit is not one."""
+    return fraud_guard.has_card_number(text)
 
 
 # ----- which table a receipt line becomes -------------------------------------------------------------

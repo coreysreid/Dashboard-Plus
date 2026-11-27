@@ -4,7 +4,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 from decimal import Decimal
 
-from dashboard.core import dates, naming, optional_links
+from dashboard.core import dates, fraud_guard, naming, optional_links
 from dashboard.core.modules import Column
 from dashboard.core.records import Records, TableInfo
 from dashboard.core.schema import target_table
@@ -221,7 +221,7 @@ class Formatter:
         if kind == "links":
             target = self.target(info, column)
             return ", ".join(self.link_name(target, v) for v in value)
-        return str(value)
+        return fraud_guard.mask_cards(str(value))  # a card number saved before decision 0141 shows as ••••1234
 
 
 @dataclass
@@ -279,7 +279,7 @@ def input_value(column: Column, value):
         return str(value)[:16]
     if column.type == "links":
         return [str(v) for v in value]
-    return value
+    return fraud_guard.mask_cards(value)  # never put a card number saved before decision 0141 back on a page
 
 
 BLANK_STARTS_NEW = "Start a new batch"

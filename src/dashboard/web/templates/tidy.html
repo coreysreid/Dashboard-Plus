@@ -1,0 +1,71 @@
+{% extends "base.html" %}
+{% block title %}Tidy sensitive details · Dashboard Plus{% endblock %}
+{% block body %}
+<p class="muted"><a href="/">Home</a></p>
+<h1>Tidy sensitive details</h1>
+<p class="lead">Dashboard Plus no longer keeps passwords, PINs, alarm or door codes, full card numbers or full account
+and policy numbers. If someone ever copied this computer's records, those are the details that could be used for fraud.
+This page lists any that were saved before, so you can tidy each one.</p>
+{% if notice %}<p class="notice" role="status">{{ notice }}</p>{% endif %}
+{% if problem %}<p class="problem" role="alert">{{ problem }}</p>{% endif %}
+
+{% if items %}
+<div class="card">
+  <h2 style="margin-top:0">{{ items | length }} saved detail{{ "" if items | length == 1 else "s" }} to tidy</h2>
+  <p>Until you tidy them, these are hidden everywhere: on lists and sheets, in exports, from helpers and from your other
+  computers. Each choice makes a backup first and can be undone below.</p>
+  {% if not show %}
+  <form method="post" action="/tidy/show">
+    <input type="hidden" name="_csrf" value="{{ csrf_token }}">
+    <button type="submit" class="quiet">Show what is saved</button>
+    <span class="help">Shown on this screen once; nothing is remembered.</span>
+  </form>
+  {% endif %}
+</div>
+{% for item in items %}
+<div class="card">
+  <h3 style="margin-top:0">{{ item.list }}: {{ item.name }}{% if item.deleted %} (deleted){% endif %}</h3>
+  <p class="muted">{{ item.field }} · {{ item.kind }}</p>
+  {% if show %}<p><strong>Saved now:</strong> {{ item.value }}</p>{% else %}<p class="muted">Hidden. Press Show what is saved to see it.</p>{% endif %}
+  <form method="post" action="/tidy/do" class="record">
+    <input type="hidden" name="_csrf" value="{{ csrf_token }}">
+    <input type="hidden" name="key" value="{{ item.key }}">
+    {% if item.where %}
+    <div><label for="hint-{{ loop.index }}">Who to ask, or where it is kept</label>
+      <input id="hint-{{ loop.index }}" name="hint" maxlength="{{ max_hint }}" autocomplete="off">
+      <p class="help">For example “In the password manager” or “Ask Alex next door”. Never the code or number itself.</p></div>
+    {% endif %}
+    <div class="actions">{% for value, words in item.choices %}<button type="submit" name="choice" value="{{ value }}"{% if value != "where" %} class="quiet"{% endif %}>{{ words }}</button> {% endfor %}</div>
+  </form>
+</div>
+{% endfor %}
+{% else %}
+<div class="card"><p style="margin-top:0">Nothing to tidy. No codes, full card numbers or full account numbers are saved.</p></div>
+{% endif %}
+
+{% if done %}
+<h2>Tidied</h2>
+<ul>
+{% for entry in done %}
+  <li>{{ entry.at[:16] | replace("T", " ") }}: {{ entry.list }}, {{ entry.name }}, {{ entry.field }}. {{ entry.words }}
+  {% if entry.undone %}<span class="muted">Undone.</span>
+  {% elif not entry.forgotten %}
+  <form method="post" action="/tidy/undo" style="display:inline">
+    <input type="hidden" name="_csrf" value="{{ csrf_token }}">
+    <button type="submit" name="tidy" value="{{ entry.id }}" class="quiet">Undo</button>
+  </form>{% endif %}</li>
+{% endfor %}
+</ul>
+{% if keeping %}
+<div class="card">
+  <p>So that Undo works, the old values are still kept on this computer. When you are happy with what you tidied, forget
+  them: they are then cleared from these records' history too. The backups made before each tidy keep them until they are
+  replaced by newer backups.</p>
+  <form method="post" action="/tidy/forget">
+    <input type="hidden" name="_csrf" value="{{ csrf_token }}">
+    <button type="submit">Forget the old values</button>
+  </form>
+</div>
+{% endif %}
+{% endif %}
+{% endblock %}

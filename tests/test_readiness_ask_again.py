@@ -106,7 +106,7 @@ class EightQuestionTests(AskAgainTestCase):
                                                              "place": nook, "last_tested": "2026-10-01"})
         self.confirm("fire-alarm-location")
         self.edit("home_layout__equipment", alarm, battery_changed="2026-11-01", next_check="2027-02-01",
-                  notes="Ten-year battery", access_details="Ladder in the shed")
+                  notes="Ten-year battery", access_hint="Ladder in the shed")
         self.edit("stock__places", hall, notes="Painted")
         self.store.create("home_layout__equipment", {"name": "Bedroom alarm", "kind": "smoke_alarm", "place": landing,
                                                      "last_tested": "2026-10-01"})
@@ -123,7 +123,7 @@ class EightQuestionTests(AskAgainTestCase):
         tap = self.store.create("home_layout__shutoffs", {"name": "Main tap", "kind": "water", "place": laundry,
                                                           "how_to_find": "Behind the panel"})
         self.confirm("flood-flood-utilities")
-        self.edit("home_layout__shutoffs", tap, access_details="Code 4821", notes="Stiff")
+        self.edit("home_layout__shutoffs", tap, access_hint="Ask Alex next door", notes="Stiff")
         self.store.create("home_layout__meters", {"name": "Water meter", "kind": "water", "place": laundry})
         self.quiet("flood-flood-utilities", "private access details, notes and a meter")
         client = self.client()
@@ -243,7 +243,7 @@ class DrillStepTests(AskAgainTestCase):
         run_id = drills.start(self.store, self.prompt_set, "pipe-in-wall", today=TODAY)
         drills.save_step(self.store, self.prompt_set, run_id, "pipe-shutoff", "plan", record=key, today=TODAY)
         self.assertTrue(self.step_answer(run_id, "pipe-shutoff")["record_check"].startswith("2:"))
-        self.edit("home_layout__shutoffs", tap, notes="Stiff", access_details="Code 4821")
+        self.edit("home_layout__shutoffs", tap, notes="Stiff", access_hint="Ask Alex next door")
         self.assertFalse(self.changed(run_id, "pipe-shutoff"))
         self.edit("home_layout__shutoffs", tap, how_to_find="Behind the washing machine")
         self.assertTrue(self.changed(run_id, "pipe-shutoff"))

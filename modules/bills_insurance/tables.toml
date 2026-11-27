@@ -17,7 +17,10 @@ columns.covers = { type = "longtext", sensitive = true, travels = "never" }
 # Optional links (decision 0115): Vehicles and Household stock may be off; the link is then kept by its ID.
 columns.vehicle = { type = "link", to = "vehicles.vehicles", on_delete = "clear" }
 columns.place = { type = "link", to = "stock.places", on_delete = "clear" }
-columns.reference = { type = "text", sensitive = true, travels = "never" }
+# Decision 0141: a policy or account number can be enough to make a claim or change an account, so only its last
+# 4 digits are kept. The old full reference column is retired: what was saved stays, unseen, until tidied.
+columns.reference_last4 = { type = "text", guard = "last_digits", sensitive = true, travels = "never" }
+columns.reference = { type = "text", sensitive = true, travels = "never", retired = { replaced_by = "reference_last4", note_to = "notes", label = "Account or policy reference" } }
 columns.notes = { type = "longtext", sensitive = true, travels = "never" }
 
 [tables.commitments.watch.expiring]

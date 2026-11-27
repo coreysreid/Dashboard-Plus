@@ -37,7 +37,10 @@ class SharingTestCase(TempDirTestCase):
                                            "price": "3.80", "price_basis": "total"})
         self.store.create(REFUNDS, {"movement": bought, "amount": "1.20", "happened_on": "2026-11-19"})
         self.bought = bought
-        self.store.create(EXITS, {"name": "Back door", "access_details": "Invented code 4321"})
+        door = self.store.create(EXITS, {"name": "Back door"})
+        # A code saved before decision 0141: its column is retired, still fixed, and never read by sync.
+        self.conn.execute(f"UPDATE {EXITS} SET access_details = 'Invented code 4321' WHERE id = ?", (door,))
+        self.conn.commit()
         person = self.store.create(PEOPLE, {"name": "User 1"})
         self.store.create(INFO, {"person": person, "kind": "allergy", "detail": "Invented allergy"})
         self.store.create(INFO, {"person": person, "kind": "access", "detail": "Invented key place"})
@@ -155,17 +158,17 @@ class TighteningTests(SharingTestCase):
 
 class FixedTests(SharingTestCase):
     def test_codes_are_fixed_with_a_reason_and_cannot_be_shared(self):
-        column = self.registry[EXITS].table.columns["access_details"]
+        column = self.registry[EXITS].table.retired["access_details"]  # retired by decision 0141, still fixed
         self.assertIn("passwords", sharing.fixed_reason(column))
         self.assertEqual(sharing.detail_options(column), [])
         with self.assertRaises(sharing.SharingError):
             sharing.apply(self.conn, self.registry, {f"{EXITS}.access_details": "shared"})
         client = self.client()
         page = client.get("/settings/sharing", base_url=BASE).get_data(as_text=True)
-        self.assertIn("always only on this computer", page)
         self.assertNotIn(f'name="c:{EXITS}.access_details"', page)
-        refused = self.post(client, "/settings/sharing", **{f"c:{EXITS}.access_details": "shared"})
-        self.assertEqual(refused.status_code, 400)
+        self.assertNotIn("Codes or access details", page)  # a retired column is not offered at all (0141)
+        ignored = self.post(client, "/settings/sharing", **{f"c:{EXITS}.access_details": "shared"})
+        self.assertEqual(ignored.status_code, 303)  # a retired column is no choice at all: nothing is kept (0141)
         self.assertEqual(self.conn.execute("SELECT COUNT(*) FROM core__sharing_choices").fetchone()[0], 0)
         self.fill()
         self.assertNotIn("4321", str(self.lines()))

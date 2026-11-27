@@ -13,9 +13,9 @@ class ExtraCheckTests(SyncTestCase):
         return {r["id"]: r for r in sync.snapshot(self.conn, self.registry)["records"]}
 
     def test_utilities_private_fields_stay_here_and_the_pets_microchip_travels(self):  # S1-12
-        sentinels = {"account": "SENTINEL-ACCOUNT-5b27", "notes": "SENTINEL-UTILITY-NOTES-9e10"}
+        sentinels = {"account": "••••5227", "notes": "SENTINEL-UTILITY-NOTES-9e10"}
         service = self.records.create("utilities__services", {
-            "name": "Invented water", "kind": "water", "account_number": sentinels["account"],
+            "name": "Invented water", "kind": "water", "account_last4": sentinels["account"],
             "notes": sentinels["notes"]})
         pet = self.records.create("pets__pets", {"name": "Invented dog", "species": "dog",
                                                  "microchip": "INVENTED-CHIP-0042"})
@@ -28,16 +28,16 @@ class ExtraCheckTests(SyncTestCase):
             for derived in fingerprints(value):
                 self.assertNotIn(derived, text, label)
         row = self.snap()[self.gid("utilities__services", service)]
-        self.assertEqual(row["withheld"], ["account_number", "notes"])
-        self.assertNotIn("account_number", row["values"])
+        self.assertEqual(row["withheld"], ["account_last4", "notes"])
+        self.assertNotIn("account_last4", row["values"])
         entries = [e for e in self.log() if e["table_name"] == "utilities__services"]
         self.assertEqual([e["action"] for e in entries], ["create", "update", "delete", "restore"])
-        self.assertEqual(entries[0]["withheld"], ["account_number", "notes"])
+        self.assertEqual(entries[0]["withheld"], ["account_last4", "notes"])
         for entry in entries:
             self.assertTrue(set(entry["patch"]) <= {"name", "kind", "provider", "fault_contact", "meter"}, entry["patch"])
         local = self.records.get("utilities__services", service)  # still kept here, and in the local history
-        self.assertEqual((local["account_number"], local["notes"]), (sentinels["account"], sentinels["notes"]))
-        self.assertTrue(any(sentinels["account"] in (r[7] or "") for r in self.conn.execute("SELECT * FROM core__audit")))
+        self.assertEqual((local["account_last4"], local["notes"]), (sentinels["account"], sentinels["notes"]))
+        self.assertTrue(any(sentinels["account"][-4:] in (r[7] or "") for r in self.conn.execute("SELECT * FROM core__audit")))
         pet_row = self.snap()[self.gid("pets__pets", pet)]
         self.assertEqual(pet_row["values"]["microchip"], "INVENTED-CHIP-0042")
         self.assertEqual(pet_row["withheld"], [])
@@ -51,7 +51,7 @@ class ExtraCheckTests(SyncTestCase):
     def test_a_held_people_detail_is_listed_and_cleared_only_by_typing_it_again(self):  # S1-11
         person = self.records.create("people__people", {"name": "Invented Person"})
         access = self.records.create("people__important_info", {"person": person, "kind": "access",
-                                                                "detail": "SENTINEL-DOOR-CODE-61"})
+                                                                "detail": "SENTINEL-ASK-THE-NEIGHBOUR"})
         key = self.gid("people__important_info", access)
         self.assertEqual(self.held(), [])
         self.records.update("people__important_info", access, {"kind": "medication"})
@@ -62,7 +62,7 @@ class ExtraCheckTests(SyncTestCase):
         self.records.update("people__important_info", access, {"detail": "Invented evening tablet"})
         self.assertEqual(self.held(), [])
         self.assertEqual(self.log(start)[-1]["patch"], {"detail": "Invented evening tablet"})
-        self.assertNotIn("SENTINEL-DOOR-CODE-61", self.snapshot_text() + self.log_text())
+        self.assertNotIn("SENTINEL-ASK-THE-NEIGHBOUR", self.snapshot_text() + self.log_text())
         self.assertEqual(self.records.get("people__important_info", access)["detail"], "Invented evening tablet")
         allergy = self.records.create("people__important_info", {"person": person, "kind": "allergy",
                                                                  "detail": "Invented nut allergy"})

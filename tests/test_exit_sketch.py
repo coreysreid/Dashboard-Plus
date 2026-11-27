@@ -282,14 +282,17 @@ class PrivacyTests(SketchTestCase):
         self.smith()
         self.store.update(PLACES, self.bed, {"notes": SECRETS[5]})
         self.store.update(CONNECTIONS, self.front_door, {"notes": SECRETS[6]})
-        self.store.create("home_layout__exits", {"name": "Front door", "place": self.front,
-                                                 "access_details": SECRETS[0], "route": "Down the stairs"})
-        self.store.create("home_layout__shutoffs", {"name": "Meter box", "kind": "other",
-                                                    "place": self.front, "access_details": SECRETS[1]})
+        door = self.store.create("home_layout__exits", {"name": "Front door", "place": self.front,
+                                                        "route": "Down the stairs"})
+        box = self.store.create("home_layout__shutoffs", {"name": "Meter box", "kind": "other", "place": self.front})
+        # Codes saved before decision 0141, in the retired column, are never read either.
+        self.conn.execute("UPDATE home_layout__exits SET access_details = ? WHERE id = ?", (SECRETS[0], door))
+        self.conn.execute("UPDATE home_layout__shutoffs SET access_details = ? WHERE id = ?", (SECRETS[1], box))
         person = self.store.create("people__people", {"name": "Made-up Person"})
         self.store.create("people__important_info", {"person": person, "kind": "condition", "detail": SECRETS[4]})
-        self.store.create("utilities__services", {"name": "Power", "kind": "electricity",
-                                                  "account_number": SECRETS[2], "notes": SECRETS[3]})
+        power = self.store.create("utilities__services", {"name": "Power", "kind": "electricity", "notes": SECRETS[3]})
+        self.conn.execute("UPDATE utilities__services SET account_number = ? WHERE id = ?", (SECRETS[2], power))
+        self.conn.commit()
         for path in PAGES:
             page = self.text(path)
             for secret in SECRETS:

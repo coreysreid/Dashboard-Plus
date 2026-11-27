@@ -3,7 +3,8 @@ from __future__ import annotations
 
 from flask import Blueprint, abort, current_app, jsonify, make_response, redirect, render_template, request, url_for
 
-from dashboard.core import actions, confirm, dates, calendars_corrections, records, schema, settings, suggest
+from dashboard.core import actions, confirm, dates, calendars_corrections, fraud_guard, records, schema, settings, \
+    suggest
 from dashboard.core.units import unit_for
 from dashboard.web import display
 
@@ -441,7 +442,8 @@ def create_record(table):
             return _render_form(info, store, _raw_form(info), {}, True, back=back, confirm_warnings=held, then=then)
         record_id = store.create(table, values)
     except records.ValidationError as error:
-        return _render_form(info, store, _raw_form(info), error.problems, True, status=422, back=back)
+        return _render_form(info, store, fraud_guard.unechoed(_raw_form(info), error.problems), error.problems, True,
+                            status=422, back=back)
     if then == "another":
         return redirect(url_for("pages.new_record", table=table, saved=display.display_name(
             info, store.get(table, record_id), store)))
@@ -492,7 +494,8 @@ def update_record(table, record_id):
             return _render_form(info, store, _raw_form(info), {}, True, record=record, confirm_warnings=held)
         store.update(table, record_id, values)
     except records.ValidationError as error:
-        return _render_form(info, store, _raw_form(info), error.problems, True, record=record, status=422)
+        return _render_form(info, store, fraud_guard.unechoed(_raw_form(info), error.problems), error.problems, True,
+                            record=record, status=422)
     return redirect(url_for("pages.edit_record", table=table, record_id=record_id, saved="1"))
 
 

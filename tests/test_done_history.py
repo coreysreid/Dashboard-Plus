@@ -198,7 +198,7 @@ class EarlierDaysTests(HistoryCase):
     def test_alarm_tests_show_every_earlier_test(self):
         alarm = self.store.create(EQUIPMENT, {"name": "Hall smoke alarm", "kind": "smoke_alarm",
                                               "last_tested": "2026-05-04", "next_check": "2026-12-04",
-                                              "access_details": SECRET})
+                                              "notes": SECRET})
         self.on("2026-08-05", EQUIPMENT, alarm, {"last_tested": "2026-08-04"})
         self.on("2026-11-05", EQUIPMENT, alarm, {"last_tested": "2026-11-04"})
         may = self.page(f"/calendar/{EQUIPMENT}?month=2026-05")

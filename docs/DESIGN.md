@@ -95,6 +95,22 @@ Each column may declare: `required`, `default`, `min`, `max`, `unit`,
 `sensitive` (hidden by default, kept from helpers unless granted; see
 section 12) and `help` text.
 
+**Never fraud-grade details** (decision 0141). A text column may say `guard =
+"last_digits"` (only up to 4 digits, kept as "••••1234") or `guard =
+"where_kept"` (who to ask or where a code is kept; four digits in a row or a
+secret after its word, such as "PIN 4821", are refused), optionally only while
+a choice holds listed values (`guard_when = { kind = ["access"] }`). Every text
+value anywhere is refused if it holds a full payment card number (13 to 19
+digits starting 2 to 6 that pass the card check digit; a shop barcode with a
+valid barcode check digit is not one). A column that used to invite such a
+detail is kept for what was saved with `retired = { replaced_by = "…", note_to
+= "…", label = "…" }` (private, never travelling): it is taken out of the
+table's columns when the module loads, so no page, sheet, export, helper or
+change log ever sees it, until a person tidies it on **Tidy sensitive
+details** (`/tidy`). A module whose column name or label asks for a password,
+PIN, access code, card or bank number, ID number, copy of ID or security answer
+does not load.
+
 **What may travel to another computer** (decision 0100): `travels = "never"`
 keeps a column's value on the computer where it was typed; `travels =
 "always"` is the default for ordinary columns; `travels_when = { kind =
@@ -102,7 +118,7 @@ keeps a column's value on the computer where it was typed; `travels =
 of the same table (which always travels) holds one of those choices. A
 `sensitive` column that says none of these stays local and is reported as not
 yet reviewed. People's Important details travel for the medical kinds and stay
-local for access instructions and "other"; Home layout access details and
+local for access instructions and "other"; Home layout's retired access details and
 vehicle registration never travel; a pet's microchip does (decision 0089).
 
 **The household's sharing choice** (decision 0140): these rules are only where
@@ -1843,6 +1859,14 @@ only to choose which pack applies; nothing is looked up online.
   chooses to show them, are kept from helpers unless granted, and are included
   in the person's own export and backups like all other data. They never appear
   in the repository, in logs, or in a *Save a report* file.
+- **No fraud-grade details** (decision 0141): passwords, PINs, alarm or door
+  codes, full card and bank or policy numbers, ID numbers and copies of ID are
+  never asked for and are refused on every form, helper suggestion and
+  spreadsheet import, with words saying what to write instead (who to ask,
+  where it is kept, or the last 4 digits) and without repeating the value.
+  Anything saved before is hidden until tidied on Tidy sensitive details, with
+  a backup first and Undo; Forget the old values also clears them from the
+  records' history.
 - **Secrets** (API keys, token hashes) live in `data/secrets/`, never in the
   repository, never in exports, and never in backups of the config unless the
   person chooses.
