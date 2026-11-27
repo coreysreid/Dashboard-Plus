@@ -2,6 +2,8 @@
 
 Designed **21 November 2026** for batch 19 item 87. These are proposed screens, not a shipped phone app. The phone is a **member** under decision 0089: it reads the last accepted copy from main, saves its own work offline, and sends each change to main's Review. Only main can accept a change. Stage 1 (decision 0100) supplies stable IDs and a local change log; pairing and transfer have yet to be built.
 
+**27 November update:** [PLAN.md](PLAN.md) adds pet feeding, doses, weigh-ins and Mark done to the first quick-entry scope. It also follows decision 0140's household sharing choices and decision 0141's retired sensitive boxes. The screens below are starting copy for Needs attention, Stock, Changes and pairing, not the full launch specification.
+
 The invented Smith household below uses kidney beans at **Kitchen › Pantry › Lower shelf**. Its last accepted copy has **13 tins** across two batches. Times, counts and people in this document are example data.
 
 ## Shared frame and language
@@ -49,7 +51,7 @@ Computer features omitted: main's full Review queue (helpers, imports, receipts,
 3. With a pull six days old, Needs attention says when records were received and may have changed; a pending Stock in does not clear its warning or claim the household is ready.
 4. Accept one operation, reject another and leave a third staged on main. After a pull, the phone shows three distinct outcomes and keeps the rejected content available for a deliberate edit.
 5. Change a batch on main before an offline count arrives. Review on main sees observed amount and base revision; phone neither computes a correction nor silently switches batches.
-6. Turn on a medical warning and local-only fields. Reveal safety detail only through Show; search UI, list preview, notification, status, logs and outgoing payload contain no local-only value. Vehicle registration and access instructions remain on their origin device.
+6. Turn on a medical warning and local-only fields. Reveal shared safety detail only through Show; search UI, list preview, notification, status, logs and outgoing payload contain no local-only value. Registration follows the household's choice; retired code values do not enter the phone copy.
 7. A phone member cannot open main's Review approval, helper key, import, backup/restore or server settings through navigation, deep link or offline cache. Test Android TalkBack and iOS VoiceOver on real devices before release.
 
 ## Basis
