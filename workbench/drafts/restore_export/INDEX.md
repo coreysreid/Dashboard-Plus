@@ -6,3 +6,4 @@
 | ACCEPTANCE.md | Numbered tests using made-up households | building and testing restore/export |
 | NOTES.md | Core work needed and safety boundaries | implementing the M2 services |
 | MY_COMPUTER_DIED.md | Four household recovery days and current feature limits | writing recovery help |
+| NEW_COMPUTER_DRILL.md | Practice for restoring a backup onto a new Windows or Mac computer, run once, with seven confusing points | before replacing a computer |
