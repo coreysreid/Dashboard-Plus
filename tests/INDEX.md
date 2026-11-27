@@ -1,5 +1,4 @@
-# tests/  (summary: automatic tests; synthetic data only)
-How to run them is in AGENTS.md.
+# tests/  (summary: automatic tests; synthetic data only; AGENTS.md says how to run them)
 | Entry | What it is | Open it when |
 |---|---|---|
 | support.py | Shared helpers for tests: temporary folders and made-up (synthetic) modules. | writing a new test |
@@ -7,6 +6,7 @@ How to run them is in AGENTS.md.
 | test_migrations.py | Tests for numbered migrations: tracks, checksums, newer databases, rollback and backups. | changing migrations |
 | test_csv_import.py | Tests for Import from a spreadsheet: reading a CSV, matching columns, the dry run, staging for Review and Accept. | changing spreadsheet import |
 | test_bring_in_history.py | Tests for Bring in earlier entries (decision 0137): a person's own CSV of doses, weigh-ins or feedings, previewed, added at once and undone at once. | changing Bring in earlier entries |
+| test_lane_b_batch23_fixes.py | Tests for decision 0144: Lane B's batch 23 findings 112, 113, 124 and 126 (Bring in dates, skip links, read-me words). | changing those words or Bring in dates |
 | test_modules.py | Tests for loading module folders and the plain-language problems they report. | changing module rules |
 | test_actions.py | Tests for actions: one-step buttons like Mark returned, the date order rule `not_before` (decision 0075), and the checks on actions that add a record (decision 0091). | changing actions or date order |
 | test_routine_checklists.py | Tests for Things to do and Routines (decision 0107): the eleven checks in Lane B's routine checklist draft, and more. | changing Things to do, Routines or repeats |
@@ -88,3 +88,4 @@ How to run them is in AGENTS.md.
 | test_csp_0139.py | Tests for decision 0139: a strict Content-Security-Policy on every response, and no inline scripts or event handlers left in any page. | changing the security headers or adding a script to a page |
 | test_helper_guide_0138.py | Tests for decision 0138: the helper guide, connector words and published description say which lists a helper may fill, which it never may, and how units and the household's day apply. All data is invented. | changing the helper guide, its examples or the connector words |
 | test_no_fraud_grade_data_0141.py | Tests for decision 0141: no fraud-grade details are kept, and what was saved before can be tidied with Undo. | changing the card check, guarded or retired fields, or Tidy sensitive details |
+| test_lane_b_batch23_privacy.py | Tests for decision 0143: Lane B's batch 23 privacy findings: card spacing, codes, bank and ID numbers, helpers, Review and sharing words. | changing the card, code, bank or ID checks, helper refusals, Review date checks or the sharing page |

@@ -310,7 +310,7 @@ Why it may matter, its official source and the date checked, a record that may a
 
 ### Things to do, Today
 
-What is due today and anything late, each shown once as Due since, with the button its own list uses: Mark done, Mark this occurrence done, or Open record to update.
+What is due today and anything late, each shown once as Due since, with the button its own list uses: Mark done, or Open to update.
 
 ![Things to do, Today](screenshots/smith/18v-things-to-do.png)
 
@@ -700,7 +700,7 @@ Why it may matter, its official source and the date checked, a record that may a
 
 ### Things to do, Today
 
-What is due today and anything late, each shown once as Due since, with the button its own list uses: Mark done, Mark this occurrence done, or Open record to update.
+What is due today and anything late, each shown once as Due since, with the button its own list uses: Mark done, or Open to update.
 
 ![Things to do, Today](screenshots/garcia/18v-things-to-do.png)
 
@@ -1090,7 +1090,7 @@ Why it may matter, its official source and the date checked, a record that may a
 
 ### Things to do, Today
 
-What is due today and anything late, each shown once as Due since, with the button its own list uses: Mark done, Mark this occurrence done, or Open record to update.
+What is due today and anything late, each shown once as Due since, with the button its own list uses: Mark done, or Open to update.
 
 ![Things to do, Today](screenshots/taylor/18v-things-to-do.png)
 

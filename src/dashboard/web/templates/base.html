@@ -71,7 +71,7 @@
     .chart-svg .chart-axis { stroke: var(--fg); }
     .chart-svg .chart-grid { stroke: var(--line); }
     .chart-svg .chart-line { stroke: var(--muted); stroke-width: 1.5; }  /* only where a chart allows it (0119) */
-    .chart-svg a:focus { outline: none; }
+    .chart-svg a:focus { outline: 3px solid currentColor; outline-offset: 2px; }
     .chart-svg a:focus .chart-bar, .chart-svg a:focus .chart-dot, .chart-svg a:hover .chart-dot { stroke-width: 3; }
     .chart-svg a:focus text { text-decoration: underline; }
     .chart-table tr:target { outline: 3px solid var(--accent); outline-offset: -3px; }
@@ -116,6 +116,7 @@
     }
     /* Month calendars (decision 0119): a small fixed palette, and every look also has its own symbol, and a
        pattern or a dashed edge where colours could be confused, so nothing is told apart by colour alone. */
+    .card-name { display: block; font-size: 1rem; font-weight: normal; }
     .vh { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
     :root { --cal-done: #d3ecdd; --cal-done-edge: #1b6b45; --cal-recorded: #d8e6f5; --cal-recorded-edge: #1d5a9e;
             --cal-skipped: #ebebe8; --cal-skipped-edge: #5c645e; --cal-due: #fbe1bf; --cal-due-edge: #8a4b00;
@@ -175,10 +176,14 @@
     @media (forced-colors: active) { .tl-mark { border-color: CanvasText; } }
     @media print { .tl-nav, .timeline form, .timeline a[data-hide-details], .timeline .tl-text a { display: none; } .tl-mark { color: #000; } .tl-item { break-inside: avoid; }
                    .tl-item { flex-wrap: wrap; } .tl-text { flex: 1 1 100%; } .tl-entries { flex: 1 1 100%; } }
+    .skip-main { position: absolute; left: -999px; top: 0; background: var(--card); padding: .5rem 1rem; z-index: 10; }
+    .skip-main:focus { left: 0; }
+    #main:focus { outline: none; }
     footer { color: var(--muted); font-size: .85rem; max-width: var(--wide); margin: 0 auto; padding: 0 1rem 2rem; }
   </style>
 </head>
 <body>
+  <a class="skip-main" href="#main">Skip to main content</a>
   <header><nav>
     <a class="brand" href="/">Dashboard Plus</a>
     <a class="mode" href="/settings/helpers" title="Your records are kept on this computer and shared with no other device (decision 0082).">On this computer only{% if helper_count %} · {{ helper_count }} helper{{ "s" if helper_count != 1 }} can look{% endif %}</a>
@@ -189,6 +194,7 @@
     <a href="/close">Save and exit</a>
   </nav></header>
   <main>
+    <span id="main" tabindex="-1"></span>
     {% block body %}{% endblock %}
   </main>
   <footer>Runs on this computer only. Dashboard Plus itself sends nothing anywhere; a helper you connect sees only what you tick. Version {{ version }}.</footer>

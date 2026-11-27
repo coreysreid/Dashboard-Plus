@@ -89,7 +89,8 @@ To start:    double-click Dashboard Plus. Look for a new page in your browser;
 To stop:     click "Save and exit" on the page and wait for "Saved and closed".
 To get the page back: open Dashboard Plus again.
 To update:   Save and exit, then drag the new app into Applications and choose
-             Replace. Do not delete your records folder.
+             Replace. Do not delete your records folder. The next start backs up your
+             records before changing anything; check your records are there.
 
 The first time, macOS says it "could not verify" Dashboard Plus. Click Done
 (not Move to Bin). Then open System Settings, Privacy & Security, scroll down
@@ -101,7 +102,9 @@ Do not turn off Mac security checks.
 Your records are kept in your own Mac account, in
 Library/Application Support/Dashboard Plus (in your home folder), not inside
 the app. Replacing or deleting the app does not erase them. Someone with access
-to this Mac account or its backups may be able to read them.
+to this Mac account or its backups may be able to read them. A second backup
+copy is kept in .local/share/dashboard-plus in your home folder (a hidden
+folder: in Finder press Command-Shift-. to see it).
 
 Dashboard Plus runs on this Mac and does not send your records to an online
 service by itself. If you connect an online helper, information you allow it to

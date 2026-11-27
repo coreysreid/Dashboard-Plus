@@ -150,7 +150,7 @@ class Words:
         if self.rule["show"] == "all":
             what = f"{self.subject(mark.subject_id)}: {what}"
         if mark.earlier:  # not the date the record keeps now, but one its history shows (decision 0129)
-            what = f"{what} (an earlier time, from its history)"
+            what = f"{what} (an earlier date you recorded)"
         if mark.moment is not None:
             what = f"{mark.moment.hour % 12 or 12}:{mark.moment.minute:02d} {'am' if mark.moment.hour < 12 else 'pm'} · {what}"
         return {"look": mark.look, "symbol": calendars.SYMBOLS[mark.look], "words": what,

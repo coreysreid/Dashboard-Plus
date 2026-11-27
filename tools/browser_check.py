@@ -74,7 +74,7 @@ US = {"household": "garcia", "locale": "en-US", "timezone": "America/Los_Angeles
                 "keep": "Keep this as another dose"},
       # Bring in earlier entries (decision 0137): an old tracker says only "Metformin", so Rosa's medicine is chosen.
       "bringIn": {"person": "Rosa Garcia", "secret": "Metformin 500 mg", "typed": "Metformin",
-                  "text": "Date,Time,Given to,Medicine,Amount,Unit\n02/13/26,8:00 am,Rosa Garcia,Metformin,1,tablet\n"}}
+                  "text": "Date,Time,Given to,Medicine,Amount,Unit\n02/13/26,8:00 am,Rosa Garcia,Metformin,1,tablet\n,8:00 pm,Rosa Garcia,Metformin,1,tablet\n"}}
 UK = {"household": "taylor", "locale": "en-GB", "timezone": "Europe/London",
       "dates": {"item": "Browser check tins", "typed": "20/05/27", "words": "20 May 2027",
                 "wrongOrder": "05/20/27", "hint": "Use DD/MM/YY"}}

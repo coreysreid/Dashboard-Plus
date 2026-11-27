@@ -115,7 +115,8 @@
     {% endif %}
     {% set waiting_dates = unclear and not dates_ok %}
     {% if waiting_dates %}<p class="notice" role="status" style="margin:.4rem 0">Tick "These dates are read the way I meant" above, then press Check again. Nothing has been added.</p>{% endif %}
-    <div class="actions"><button type="submit" formaction="/bring-in/{{ info.name }}/add"{% if waiting_dates or not sending %} disabled aria-disabled="true"{% endif %}>Bring in {{ sending }} {{ one if sending == 1 else many }}</button></div>
+    {% if sending %}<div class="actions"><button type="submit" formaction="/bring-in/{{ info.name }}/add"{% if waiting_dates %} disabled aria-disabled="true"{% endif %}>Bring in {{ sending }} {{ one if sending == 1 else many }}</button></div>
+    {% else %}<p class="notice" role="status" style="margin:.4rem 0">Nothing is ready to bring in yet.</p>{% endif %}
     <p class="muted" style="margin:0">They are added straight away, each with its own history entry. One Undo on the next page takes them all off again.</p>
   </section>
   {% endif %}

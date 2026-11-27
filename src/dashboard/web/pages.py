@@ -196,6 +196,16 @@ def _under(store, info, record) -> list[dict]:
     return found
 
 
+def _history_time(stamp: str, style: str) -> str:
+    """A history line's time the household's way ("27/11/26, 3:38 pm"), not as 2026-11-27 15:38 (decision 0144)."""
+    day, _, clock = str(stamp).replace(" ", "T").partition("T")
+    try:
+        hour, minute = int(clock[:2]), clock[3:5]
+    except ValueError:
+        return str(stamp)[:16]
+    return f"{dates.show(day, style)}, {hour % 12 or 12}:{minute} {'pm' if hour >= 12 else 'am'}"
+
+
 def _render_form(info, store, values, errors, from_form, record=None, status=200, saved=None, back=None,
                  done=None, notice=None, confirm_warnings=None, then=None):
     fields = display.build_fields(store, info, values, errors, from_form, editing=record is not None, saved=record)
@@ -203,6 +213,7 @@ def _render_form(info, store, values, errors, from_form, record=None, status=200
     if record:
         formatter = display.Formatter(store)
         columns = info.table.columns
+        style = dates.household_style(store.conn)
         taken_off = set(calendars_corrections.removed(store.conn, info.name).values())  # still off the calendar (0132)
         for entry in reversed(store.history(info.name, record["id"])):
             changes = []
@@ -214,10 +225,12 @@ def _render_form(info, store, values, errors, from_form, record=None, status=200
                                     "after": formatter.text(info, columns[name], after),
                                     "sensitive": columns[name].sensitive})
             op = (entry["after"] or {}).get("operation") if entry["action"] == calendars_corrections.OFF else None
-            history.append({"at": entry["at"].replace("T", " ")[:16], "who": display.actor_text(entry["actor"]),
-                            "action": display.operation_text(store, info, entry) or
-                            calendars_corrections.history_words(store.conn, entry) or
-                            display.ACTION_TEXT.get(entry["action"], entry["action"]), "changes": changes,
+            action = (display.operation_text(store, info, entry) or calendars_corrections.history_words(store.conn, entry)
+                      or display.ACTION_TEXT.get(entry["action"], entry["action"]))
+            added = bool(changes) and all(not c["sensitive"] and c["before"] == "" for c in changes)
+            history.append({"at": _history_time(entry["at"], style), "who": display.actor_text(entry["actor"]),
+                            "action": "added" if added and action == display.ACTION_TEXT.get("update") else action,
+                            "changes": changes, "added": added,
                             "put_back": {"href": f"/calendar/{info.name}/put-back", "op": op}
                             if op in taken_off else None})
     record_name = display.display_name(info, record, store) if record else None

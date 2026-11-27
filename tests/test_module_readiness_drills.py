@@ -25,7 +25,7 @@ PORT = 5143
 BASE = f"http://127.0.0.1:{PORT}"
 TODAY = date(2026, 11, 21)
 MODULES = ("people", "stock", "home_layout", "medical", "pets", "vehicles", "readiness")
-WORDS = "Synthetic-plan: hide-key under the blue pot, back door code 4417"
+WORDS = "Synthetic-plan: hide-key under the blue pot, back door tag 4417"  # never a real code (0141, 0143)
 CODE = "Synthetic access code 9931"
 SCENARIOS = ["pipe-in-wall", "bedroom-fire-night", "kitchen-fire", "break-in-night", "car-breakdown",
              "power-72-hours", "water-warning", "cyclone-forecast"]

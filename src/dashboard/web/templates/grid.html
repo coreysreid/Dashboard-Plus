@@ -41,7 +41,7 @@
 </form>{% endif %}
 {% else %}
 <p id="more-wrap" class="actions" {% if next_offset is none %}hidden{% endif %}>
-  <button class="quiet" id="more" type="button" data-rows-url="/t/{{ info.name }}/rows" data-offset="{{ next_offset or '' }}">Show more</button>
+  <button class="quiet" id="more" type="button" data-rows-url="/t/{{ info.name }}/rows" data-offset="{{ next_offset or '' }}">Next 50 rows</button>
 </p>
 <script src="/static/more-rows.js" defer></script>
 {% endif %}

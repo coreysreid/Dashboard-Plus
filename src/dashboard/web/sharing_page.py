@@ -40,6 +40,29 @@ def _name(registry, key: str) -> str:
     return f"{table_title(info)}, {column_label(info, found) if found else column.replace('_', ' ')}"
 
 
+def _label(info, column) -> str:
+    """A detail's name, marked "(private)" once: a label that already says so is not marked again (decision 0143)."""
+    label = column_label(info, column)
+    return label + " (private)" if column.sensitive and not label.endswith("(private)") else label
+
+
+def _changed(groups: list[dict]) -> list[str]:
+    """Each list and detail set differently from its usual, with what it is now: "People, Notes (Only on this
+    computer)". Shown at the top of the page so a household sees what it changed without scrolling (0143)."""
+    found = []
+    for group in groups:
+        for item in group["lists"]:
+            now = [o["words"] for o in item["options"] if o["checked"]]
+            if item["changed"]:
+                found.append(f"{item['title']} ({now[0]})" if now else item["title"])
+            for detail in item["details"]:
+                now = [o["words"] for o in detail["options"] if o["checked"]]
+                if detail["changed"] and not detail["fixed"]:
+                    found.append(f"{item['title']}, {detail['label']} ({now[0]})" if now else
+                                 f"{item['title']}, {detail['label']}")
+    return found
+
+
 def _groups(conn, registry) -> list[dict]:
     """Module by module, each list with its choice and each detail with its own, in the household's words."""
     now = sharing.current(conn, registry)
@@ -53,7 +76,7 @@ def _groups(conn, registry) -> list[dict]:
             reason = sharing.fixed_reason(column)
             options = sharing.detail_options(column)
             details.append({
-                "key": key, "label": column_label(info, column), "private": column.sensitive, "fixed": reason,
+                "key": key, "label": _label(info, column), "private": column.sensitive, "fixed": reason,
                 "choice": now.get(key, "local"),
                 "usual": _words(registry, key, sharing.detail_default(column)),
                 "changed": key in now and now[key] != sharing.detail_default(column),
@@ -92,7 +115,8 @@ def _page(problem: str | None = None, status: int = 200, saved: list[int] = ()):
     conn, registry = _conn(), _registry()
     history = _history(conn, registry)
     just_saved = [h for h in history if h["id"] in saved]
-    return render_template("sharing.html", groups=_groups(conn, registry), history=history, problem=problem,
+    groups = _groups(conn, registry)
+    return render_template("sharing.html", groups=groups, changed=_changed(groups), history=history, problem=problem,
                            just_saved=just_saved, undone=request.args.get("undone") == "1"), status
 
 
@@ -123,7 +147,7 @@ def _starts_words(found: list[dict]) -> list[dict]:
     lines = []
     for item in found:
         info = item["info"]
-        parts = [column_label(info, c) + (" (private)" if c.sensitive else "") for c in item["columns"]]
+        parts = [_label(info, c) for c in item["columns"]]
         lines.append({"title": table_title(info), "list_starts": item["list_starts"], "details": parts,
                       "private": item["private"]})
     return lines
