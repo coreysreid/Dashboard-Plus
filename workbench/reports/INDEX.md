@@ -63,3 +63,4 @@ expected, actual, severity (blocker, important, minor), suggested change.
 | 2026-11-27-bring-in-messy-trackers.md | Three messy invented trackers through Bring in earlier entries, worst first (a crash). | fixing Bring in |
 | 2026-11-27-be-a-helper.md | An invented move-in using only the generated helper guide, and what Review showed, worst first. | improving the helper guide and Review |
 | 2026-11-27-sharing-choices-check.md | Settings, What your other computers get (0140), at 320px with keep, share, confirm and Undo, worst first. | refining sharing choices |
+| 2026-11-27-store-what-must-not-be-stored.md | Card, bank, password and ID values tried against 0141's checks, with gaps and false alarms, worst first. | hardening the fraud-grade guard |
