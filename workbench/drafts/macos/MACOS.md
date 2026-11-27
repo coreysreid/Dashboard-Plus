@@ -1,6 +1,6 @@
 # Dashboard Plus on macOS: build and household plan
 
-Researched **20 November 2026** for batch 17 item 72. This is a proposed distribution path, not a Mac release. The current source can run on a Mac with Python and pinned dependencies, but `tools/build_portable.py` makes a **Windows-only** folder: it downloads Windows's embeddable Python, installs `win_amd64` wheels and writes `.bat` launchers. `README.md` currently says the portable folder is Windows only. The proposed Mac build needs separate packaging and real-device checks.
+Researched **20 November 2026** for batch 17 item 72. Decision 0096 has since produced an unsigned Apple silicon `.app` preview, separate from the Windows-only portable folder built by `tools/build_portable.py`. This document preserves the earlier release proposal; [RELEASE_PLAN.md](RELEASE_PLAN.md), updated **27 November 2026**, starts from the actual preview and covers the signed-release path, real-Mac test, Dock/menu choice and update gates. This is still a plan, not a signed Mac release.
 
 ## Recommendation
 
