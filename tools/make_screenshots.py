@@ -141,7 +141,7 @@ STAGES = [
      "already answer it for the household to confirm, and Yes, Not relevant, Not yet or Tell me more.",
      {"goto": "/questions/readiness/medical-kit-location", "module": "readiness"}),
     ("18v-things-to-do", "Things to do, Today", "What is due today and anything late, each shown once as Due since, "
-     "with the button its own list uses: Mark done, Mark this occurrence done, or Open record to update.",
+     "with the button its own list uses: Mark done, or Open to update.",
      {"goto": "/to-do", "module": "routines"}),
     ("18w-things-to-do-month", "Things to do, This month", "The calendar month by week, from the dates the household "
      "recorded; a task with no date is under No date yet.", {"goto": "/to-do/month", "module": "routines"}),
