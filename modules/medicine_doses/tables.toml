@@ -65,3 +65,11 @@ entry = ["dose", "doses"]
 words = "{medication}"
 summarise = "day"
 look = "done"
+
+# Bring in earlier entries (decision 0137): the person, never a helper, may add doses from their own old tracker,
+# saved as CSV, after pressing Show. The medicine is matched only to that person's own medication details by its
+# exact words, or chosen by the person; nothing is ever created. A dose for the same person at the same minute as
+# one already recorded is a possible repeat, skipped unless the person ticks Add anyway. One Undo removes them all.
+[tables.doses.bring_in]
+when = "given_at"
+per = "recipient"

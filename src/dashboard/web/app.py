@@ -280,6 +280,8 @@ def create_app(shutdown_token: str, on_shutdown: Callable[[], None], report=None
     app.register_blueprint(bar_pages)
     from dashboard.web.timeline_pages import timeline_pages  # one record's timeline (decision 0126)
     app.register_blueprint(timeline_pages)
+    from dashboard.web.bring_in import bring_in_pages  # earlier entries from a spreadsheet (decision 0137)
+    app.register_blueprint(bring_in_pages)
     from dashboard.web.drills import drill_pages
     app.register_blueprint(drill_pages)
     from dashboard.web.exit_sketch import exit_pages

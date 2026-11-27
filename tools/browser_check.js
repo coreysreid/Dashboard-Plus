@@ -893,6 +893,30 @@ function expect(condition, message) { if (!condition) throw new Failed(message);
     ok(`${plan.locale}: ${seen.size} pages fit a 320 pixel phone screen`);
   }
 
+  async function checkBringIn() {  // Bring in earlier entries (decision 0137): Show first, a medicine chosen, added, undone
+    const b = plan.bringIn;
+    await goto('/t/medicine_doses__doses');
+    await Promise.all([page.waitForNavigation(), page.click('a[data-bring-in-link]')]);
+    expect(!(await html()).includes(b.secret), 'Bring in earlier entries sent a medicine before Show was pressed.');
+    expect(await page.locator('input[type=file]').count() === 0, 'A private list should ask for Show before the file.');
+    await submit('button[data-show-bring-in]');
+    await page.setInputFiles('#bring-in-file', { name: 'old-doses.csv', mimeType: 'text/csv', buffer: Buffer.from(b.text, 'utf8') });
+    await submit('button[type=submit]:has-text("Read the file")');
+    await Promise.all([page.waitForNavigation(), page.click('button:has-text("Check the rows")')]);
+    const pick = page.locator('select[id^="pick_"]');
+    expect(await pick.count() === 1, `"${b.typed}" is not the exact words of ${b.person}'s medicine, so it should be one choice.`);
+    await pick.selectOption({ index: 1 });
+    await Promise.all([page.waitForNavigation(), page.click('button:has-text("Check again")')]);
+    expect((await text('#preview')).includes('1 dose to bring in'), `After choosing the medicine the preview should say "1 dose to bring in"; it says "${await text('#preview')}".`);
+    expect((await html()).includes(b.secret), 'After Show the preview should list the chosen medicine.');
+    await Promise.all([page.waitForNavigation(), page.click('button:has-text("Bring in 1 dose")')]);
+    expect((await text('[data-bring-in-done]')).includes('1 dose brought in'), 'The page after Bring in should say "1 dose brought in".');
+    expect(!(await html()).includes(b.secret) && !page.url().includes(b.typed), 'The page after Bring in showed a medicine or put it in the address.');
+    await submit('button[data-undo-bring-in]');
+    expect((await text('main')).includes('Undone: 1 dose taken off again'), 'Undo should take the brought-in dose off again.');
+    ok(`bring in earlier entries: Show first, "${b.typed}" matched by the person's choice, 1 dose added and undone (0137)`);
+  }
+
   async function checkClose() {
     await goto('/close');
     await Promise.all([page.waitForNavigation(), page.click('form button[type=submit]')]);
@@ -919,6 +943,7 @@ function expect(condition, message) { if (!condition) throw new Failed(message);
       if (plan.feeding) await checkFeeding();
       if (plan.calendar) await checkCalendar();
       if (plan.doses) await checkDoses();
+      if (plan.bringIn) await checkBringIn();
       if (plan.running) await checkRunning();
       if (plan.drills) await checkDrills();
       if (plan.bills) await checkBills();
