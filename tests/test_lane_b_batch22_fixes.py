@@ -21,11 +21,11 @@ def plain(page: str) -> str:
 
 class PrintTests(TempDirTestCase):
     def test_every_calendar_day_list_is_opened_for_paper(self):
-        text = (TEMPLATES / "_calendar.html").read_text()
+        text = (TEMPLATES / "_calendar.html").read_text(encoding="utf-8")
         self.assertIn('<details class="cal-list" data-print-open', text)
 
     def test_the_print_rules_hide_dead_buttons_and_stack_the_timeline(self):
-        base = (TEMPLATES / "base.html").read_text()
+        base = (TEMPLATES / "base.html").read_text(encoding="utf-8")
         timeline = base[base.index("@media print { .tl-nav"):]
         timeline = timeline[:timeline.index("footer {")]
         for part in ("a[data-hide-details]", ".tl-text a", "flex: 1 1 100%"):
@@ -90,7 +90,7 @@ class BarsFixTests(FeedingTestCase):
 class TimelineWordsTests(TempDirTestCase):
     def test_no_wrong_possessive_in_the_back_links(self):
         for name in ("timeline.html", "bars.html", "calendar.html", "daily.html"):
-            self.assertNotIn("'s page</a>", (TEMPLATES / name).read_text().replace("person's page", ""), name)
+            self.assertNotIn("'s page</a>", (TEMPLATES / name).read_text(encoding="utf-8").replace("person's page", ""), name)
 
 
 class FeedingTimelineTests(FeedingTestCase):
@@ -105,12 +105,12 @@ class FeedingTimelineTests(FeedingTestCase):
 
 class StockExampleTests(TempDirTestCase):
     def test_no_example_stock_item_names_a_medicine_and_a_person(self):
-        found = (ROOT / "examples" / "households" / "garcia.toml").read_text()
+        found = (ROOT / "examples" / "households" / "garcia.toml").read_text(encoding="utf-8")
         self.assertNotIn("Metformin 500 mg (Rosa)", found)
         self.assertIn("Prescription tablets (blister packs)", found)
 
     def test_the_stock_name_field_explains_where_medicines_belong(self):
-        labels = (ROOT / "modules" / "stock" / "labels.toml").read_text()
+        labels = (ROOT / "modules" / "stock" / "labels.toml").read_text(encoding="utf-8")
         self.assertIn("Keep a medicine's name, strength and who takes it in that person's medication details", labels)
 
 

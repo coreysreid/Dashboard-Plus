@@ -172,15 +172,15 @@ class SteadyAddressTests(TempDirTestCase):
         address_file.parent.mkdir(parents=True)
         address_file.write_text(json.dumps(stale))  # left behind by an earlier run that crashed
         first = self.start()
-        written = json.loads(address_file.read_text())
+        written = json.loads(address_file.read_text(encoding="utf-8"))
         self.assertNotEqual(written["run_id"], stale["run_id"])
         self.assertEqual(written["url"], f"http://127.0.0.1:{server.read_state(self.data).port}/api/v1")
         self.assertFalse(helper_address.remove(self.data, stale["run_id"]))  # an old run ID removes nothing
-        dashboard_json = (self.data / "run" / "dashboard.json").read_text()
+        dashboard_json = (self.data / "run" / "dashboard.json").read_text(encoding="utf-8")
         state = server.read_state(self.data)
         for secret in (state.token, state.session):
             self.assertIn(secret, dashboard_json)
-            self.assertNotIn(secret, address_file.read_text())
+            self.assertNotIn(secret, address_file.read_text(encoding="utf-8"))
         conn = db.connect(self.data / "dashboard.db")
         self.addCleanup(conn.close)
         _helper, key = helpers.issue(conn, self.data, "Pantry helper", "read", ["stock"])
@@ -263,7 +263,7 @@ class LiveAddressTests(TempDirTestCase):
         a = self.live("data")
         connector = connector_for(a["file"], a["key"])
         self.assertFalse(me(connector)[0])
-        good = a["file"].read_text()
+        good = a["file"].read_text(encoding="utf-8")
         web, url = start_fake(self, lambda handler, body: (200, {"hello": "dashboard-plus-hello-v1"}, ()))
         a["file"].write_text(json.dumps({"version": 1, "url": url, "run_id": "2" * 32}))
         self.assertEqual(me(connector)[2], "not_dashboard")

@@ -333,7 +333,7 @@ class BillsModuleTests(BillsCase):
         module = modules.load_module(ROOT / "modules" / "bills_insurance")
         from dashboard.core.schema import next_migration_sql
         self.assertIsNone(next_migration_sql(module))
-        sql = (ROOT / "modules" / "bills_insurance" / "migrations" / "0001_initial.sql").read_text()
+        sql = (ROOT / "modules" / "bills_insurance" / "migrations" / "0001_initial.sql").read_text(encoding="utf-8")
         self.assertIn("provider INTEGER REFERENCES people__people", sql)
         self.assertIn("vehicle INTEGER,", sql)
         self.assertIn("place INTEGER,", sql)

@@ -74,7 +74,7 @@ class HelperKeyTests(TempDirTestCase):
         helper, key = self.issue()
         helpers.turn_off(self.conn, self.data, helper.id)
         self.assertIsNone(helpers.verify(self.conn, self.data, self.header(key)))
-        self.assertEqual(json.loads((self.data / "secrets" / "helper_keys.json").read_text()), {})
+        self.assertEqual(json.loads((self.data / "secrets" / "helper_keys.json").read_text(encoding="utf-8")), {})
         self.assertIsNotNone(helpers.get(self.conn, helper.id).revoked_at)
         actions = [r["action"] for r in self.conn.execute("SELECT action FROM core__audit WHERE action LIKE 'helper_%' ORDER BY id")]
         self.assertEqual(actions, ["helper_add", "helper_off"])
