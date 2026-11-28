@@ -1,0 +1,121 @@
+key,group_key,name_au,name_us,name_uk,also_called
+housing_rent,housing,Rent,Rent,Rent,
+housing_mortgage_interest,housing,Mortgage interest only,Mortgage interest only,Mortgage interest only,
+housing_property_tax,housing,Council rates,Property tax,Council tax,rates|real estate tax
+housing_strata_hoa,housing,Strata fees,HOA fees,Service charges,body corporate|owners corporation|management charge
+housing_repairs,housing,Home repairs,Home repairs,Home repairs,maintenance
+housing_improvements,housing,Home improvements,Home improvements,Home improvements,renovation
+housing_home_services,housing,Home services,Home services,Home services,cleaner|gardener
+housing_moving,housing,Moving home,Moving home,Moving home,removalist|movers|removals
+utilities_electricity,utilities,Electricity,Electricity,Electricity,power
+utilities_gas,utilities,Gas for the home,Gas for the home,Gas for the home,natural gas
+utilities_water,utilities,Water supply,Water supply,Water supply,water bill
+utilities_sewer,utilities,Sewerage,Sewer service,Sewerage,sewage
+utilities_waste,utilities,Waste collection,Trash collection,Waste collection,rubbish|garbage|bin
+utilities_internet,utilities,Home internet,Home internet,Home broadband,broadband
+utilities_mobile,utilities,Mobile phone,Cell phone,Mobile phone,cellular|mobile plan
+utilities_landline,utilities,Landline phone,Landline phone,Landline phone,home phone
+groceries_produce,groceries,Fruit and vegetables,Fruit and vegetables,Fruit and vegetables,produce
+groceries_meat_seafood,groceries,Meat and seafood,Meat and seafood,Meat and seafood,fish
+groceries_dairy_eggs,groceries,Dairy and eggs,Dairy and eggs,Dairy and eggs,milk
+groceries_bread_bakery,groceries,Bread and bakery,Bread and bakery,Bread and bakery,baked goods
+groceries_pantry,groceries,Pantry food,Pantry food,Pantry food,tinned|canned
+groceries_frozen,groceries,Frozen food,Frozen food,Frozen food,
+groceries_drinks,groceries,Drinks for home,Drinks for home,Drinks for home,nonalcoholic beverages
+groceries_other_grocery,groceries,Other groceries,Other groceries,Other groceries,mixed groceries
+dining_restaurant,dining,Restaurants,Restaurants,Restaurants,
+dining_takeaway,dining,Takeaway food,Takeout food,Takeaway food,take-away|takeout
+dining_cafe,dining,Cafes and coffee,Cafes and coffee,Cafes and coffee,coffee shop
+dining_food_delivery,dining,Delivered meals,Delivered meals,Delivered meals,meal delivery
+dining_pub_bar,dining,Pubs and bars,Bars and pubs,Pubs and bars,drinks out
+dining_work_meal,dining,Meals at work,Meals at work,Meals at work,work lunch
+dining_school_meal,dining,School meals,School meals,School meals,canteen
+dining_other_dining,dining,Other eating out,Other eating out,Other eating out,
+transport_fuel,transport,Petrol and diesel,Gas and diesel,Petrol and diesel,fuel|gasoline
+transport_charging,transport,Vehicle charging,Vehicle charging,Vehicle charging,electric car charging|EV
+transport_vehicle_maintenance,transport,Vehicle service and repair,Vehicle service and repair,Vehicle service and repair,mechanic|tyres|tires
+transport_registration_tax,transport,Vehicle registration,Vehicle registration,Vehicle tax,rego|road tax
+transport_parking_tolls,transport,Parking and tolls,Parking and tolls,Parking and tolls,road toll
+transport_public_transport,transport,Public transport,Public transit,Public transport,bus|tram|subway|underground
+transport_taxi_rideshare,transport,Taxi and rideshare,Taxi and rideshare,Taxi and rideshare,cab
+transport_other_transport,transport,Other local transport,Other local transport,Other local transport,ferry|cycling
+health_clinician,health,Doctor or clinic,Doctor or clinic,Doctor or clinic,GP|physician
+health_dental,health,Dental care,Dental care,Dental care,dentist
+health_optical,health,Eye care,Eye care,Eye care,optometrist|glasses
+health_pharmacy,health,Pharmacy,Pharmacy,Pharmacy,chemist|prescriptions
+health_therapy,health,Therapy and counselling,Therapy and counseling,Therapy and counselling,counselor|counsellor
+health_hospital,health,Hospital care,Hospital care,Hospital care,
+health_medical_equipment,health,Medical equipment,Medical equipment,Medical equipment,mobility aid
+health_other_health,health,Other health care,Other health care,Other health care,
+family_education_childcare,family_education,Childcare,Childcare,Childcare,daycare|day nursery
+family_education_school_fees,family_education,School fees,School fees,School fees,school tuition
+family_education_tuition,family_education,Courses and tuition,Courses and tuition,Courses and tuition,college|university
+family_education_school_supplies,family_education,School supplies,School supplies,School supplies,stationery
+family_education_lessons,family_education,Lessons and tutoring,Lessons and tutoring,Lessons and tutoring,music lesson
+family_education_elder_care,family_education,Care for an older person,Care for an older person,Care for an older person,aged care|senior care
+family_education_child_activities,family_education,Children's activities,Children's activities,Children's activities,kids activities
+family_education_books,family_education,Learning books,Learning books,Learning books,textbooks
+pets_food,pets,Pet food,Pet food,Pet food,
+pets_vet,pets,Vet care,Vet care,Vet care,veterinarian
+pets_medicine,pets,Pet medicine,Pet medicine,Pet medicine,
+pets_grooming,pets,Pet grooming,Pet grooming,Pet grooming,
+pets_boarding,pets,Pet boarding,Pet boarding,Pet boarding,pet sitting
+pets_insurance,pets,Pet insurance,Pet insurance,Pet insurance,
+pets_supplies,pets,Pet supplies,Pet supplies,Pet supplies,litter|toys
+pets_training,pets,Pet training,Pet training,Pet training,obedience
+home_goods_appliances,home_goods,Appliances,Appliances,Appliances,whitegoods
+home_goods_furniture,home_goods,Furniture,Furniture,Furniture,
+home_goods_kitchenware,home_goods,Kitchenware,Kitchenware,Kitchenware,crockery|cutlery
+home_goods_bedding,home_goods,Bedding and linens,Bedding and linens,Bedding and linens,sheets|towels
+home_goods_cleaning_products,home_goods,Cleaning products,Cleaning products,Cleaning products,detergent
+home_goods_tools,home_goods,Tools and hardware,Tools and hardware,Tools and hardware,
+home_goods_garden_supplies,home_goods,Garden supplies,Garden supplies,Garden supplies,plants|compost
+home_goods_electronics,home_goods,Home electronics,Home electronics,Home electronics,computer|television
+personal_adult_clothing,personal,Adult clothing,Adult clothing,Adult clothing,apparel
+personal_child_clothing,personal,Children's clothing,Children's clothing,Children's clothing,kids clothes
+personal_shoes,personal,Shoes,Shoes,Shoes,footwear
+personal_toiletries,personal,Toiletries,Toiletries,Toiletries,soap|shampoo
+personal_haircut,personal,Haircuts,Haircuts,Haircuts,barber|salon
+personal_cosmetics,personal,Cosmetics,Cosmetics,Cosmetics,makeup
+personal_laundry,personal,Laundry supplies and service,Laundry supplies and service,Laundry supplies and service,laundromat
+personal_dry_cleaning,personal,Dry cleaning,Dry cleaning,Dry cleaning,
+leisure_streaming,leisure,Streaming,Streaming,Streaming,video subscription
+leisure_software,leisure,Software subscriptions,Software subscriptions,Software subscriptions,app subscription
+leisure_books_media,leisure,Books and media,Books and media,Books and media,newspaper|magazine
+leisure_games,leisure,Games,Games,Games,video games|board games
+leisure_sport_fitness,leisure,Sport and fitness,Sports and fitness,Sport and fitness,gym
+leisure_events,leisure,Events and tickets,Events and tickets,Events and tickets,concert|cinema|movie
+leisure_hobbies,leisure,Hobbies and crafts,Hobbies and crafts,Hobbies and crafts,art supplies
+leisure_memberships,leisure,Memberships,Memberships,Memberships,club dues
+travel_flights,travel,Flights,Flights,Flights,airfare
+travel_lodging,travel,Accommodation,Lodging,Accommodation,hotel
+travel_trip_rail,travel,Long-distance train,Long-distance train,Long-distance train,rail trip
+travel_trip_car_rental,travel,Hire car for a trip,Rental car for a trip,Hire car for a trip,car hire
+travel_trip_local_transport,travel,Local travel on a trip,Local travel on a trip,Local travel on a trip,holiday taxi
+travel_trip_meals,travel,Meals on a trip,Meals on a trip,Meals on a trip,holiday food
+travel_attractions,travel,Trip attractions,Trip attractions,Trip attractions,tour|museum
+travel_travel_insurance,travel,Travel insurance,Travel insurance,Travel insurance,
+insurance_finance_home_insurance,insurance_finance,Home insurance,Homeowners or renters insurance,Home insurance,contents insurance
+insurance_finance_vehicle_insurance,insurance_finance,Vehicle insurance,Auto insurance,Motor insurance,car insurance
+insurance_finance_health_insurance,insurance_finance,Health insurance,Health insurance,Health insurance,private health
+insurance_finance_life_insurance,insurance_finance,Life insurance,Life insurance,Life insurance,
+insurance_finance_income_protection,insurance_finance,Income protection insurance,Disability insurance,Income protection insurance,salary protection
+insurance_finance_bank_fees,insurance_finance,Bank fees,Bank fees,Bank fees,account fee
+insurance_finance_card_fees,insurance_finance,Card fees,Card fees,Card fees,credit card annual fee
+insurance_finance_other_loan_interest,insurance_finance,Other loan interest,Other loan interest,Other loan interest,
+giving_other_charity,giving_other,Charity,Charity,Charity,donation
+giving_other_gifts,giving_other,Gifts,Gifts,Gifts,birthday present
+giving_other_family_support,giving_other,Support for family or friends,Support for family or friends,Support for family or friends,personal support
+giving_other_faith,giving_other,Faith community giving,Faith community giving,Faith community giving,religious donation
+giving_other_fines,giving_other,Fines and penalties,Fines and penalties,Fines and penalties,parking fine
+giving_other_income_tax,giving_other,Income tax paid,Income tax paid,Income tax paid,tax payment
+giving_other_postage,giving_other,Postage and parcels,Postage and parcels,Postage and parcels,shipping
+giving_other_uncategorized,giving_other,Uncategorised,Uncategorized,Uncategorised,
+income_wages,income,Wages and salary,Wages and salary,Wages and salary,paycheque|paycheck
+income_self_employment,income,Self-employment income,Self-employment income,Self-employment income,freelance
+income_pension,income,Pension income,Retirement income,Pension income,superannuation distribution
+income_benefits,income,Benefits and support,Benefits and support,Benefits and support,government payment
+income_interest,income,Interest received,Interest received,Interest received,savings interest
+income_dividends,income,Dividends received,Dividends received,Dividends received,
+income_rent_received,income,Rent received,Rent received,Rent received,rental income
+income_gifts_received,income,Money given to us,Money given to us,Money given to us,cash gift
