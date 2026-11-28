@@ -362,7 +362,7 @@ class ProposalTests(TempDirTestCase):
         real = proposals.used_today
         looks = []
 
-        def racing(conn, helper):
+        def racing(conn, helper, now=None):
             looks.append(1)
             return 0 if len(looks) == 1 else proposals.MAX_PER_DAY
         proposals.used_today = racing
