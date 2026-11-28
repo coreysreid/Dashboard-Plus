@@ -5,6 +5,7 @@ and made-up example rows. Add a row here for each draft folder you create.
 | Entry | What it is | Open it when |
 |---|---|---|
 | catalogue/ | 800 common goods after round three, with water-count rules | reviewing stocktake choices |
+| finance_categories/ | Original AU/US/UK starter money categories, free tags and Review-only merchant rules | planning Finance labels |
 | private_erase/ | Private-field erase scope, warnings and backup checks | designing erase |
 | stocktake_corrections/ | Batch count flow and explicit correction movements | designing counted amounts |
 | agent_api/ | Agent API misuse, contracts and helper flows | reviewing M2 helpers |
