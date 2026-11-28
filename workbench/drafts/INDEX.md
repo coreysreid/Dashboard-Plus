@@ -25,6 +25,7 @@ and made-up example rows. Add a row here for each draft folder you create.
 | question_loop/ | Twenty plausible analysis questions and forty rejected pairings | building M4 questions |
 | charts/ | Four household chart sketches with data and accessibility needs | building M4 graphing |
 | correlations/ | Honest two-measure chart plan and invented Rex-year records | planning comparisons |
+| my_views/ | Household-built Home views from checked chart and calendar declarations | planning custom displays |
 | home_inventory/ | Private room-by-room belongings and claim-list draft | planning insurance inventory |
 | user1_test/ | One-hour solo Windows test and BACKLOG-ready feedback form | planning User 1's hands-on round |
 | speed_fixture/ | Large made-up household file for speed testing | measuring scale |
