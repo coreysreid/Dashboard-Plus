@@ -5,7 +5,7 @@ branch): made-up Kidney beans, 3 tins at Kitchen › Pantry › Shelf 3 and 10 i
 import shutil
 from datetime import date, timedelta
 
-from support import ROOT, TempDirTestCase
+from support import ROOT, TempDirTestCase, freeze_today
 from dashboard.core import db, records, settings, startup, watch
 from dashboard.web.app import create_app
 
@@ -21,6 +21,7 @@ def day(offset):
 class StocktakeTests(TempDirTestCase):
     def setUp(self):
         super().setUp()
+        freeze_today(self, TODAY)  # TODAY was read when this file loaded; the app must agree with it
         shutil.copytree(ROOT / "modules" / "stock", self.tmp / "modules" / "stock")
         self.data = self.tmp / "data"
         self.report = startup.prepare(self.data, self.tmp / "modules")

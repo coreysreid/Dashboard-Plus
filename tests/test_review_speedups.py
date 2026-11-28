@@ -312,17 +312,18 @@ class LayoutTests(SpeedTestCase):
 
 class AllowanceTests(SpeedTestCase):
     def test_each_press_adds_two_hundred_for_today_only(self):
-        self.assertEqual(proposals.limit_today(self.conn, self.helper), 200)
-        self.assertEqual(proposals.allow_more(self.conn, self.helper.id), 400)
-        self.assertEqual(proposals.allow_more(self.conn, self.helper.id), 600)
-        yesterday = datetime.now(timezone.utc) - timedelta(days=1)
+        now = datetime.now(timezone.utc)  # read once, so midnight passing mid-test cannot change "today"
+        self.assertEqual(proposals.limit_today(self.conn, self.helper, now=now), 200)
+        self.assertEqual(proposals.allow_more(self.conn, self.helper.id, now=now), 400)
+        self.assertEqual(proposals.allow_more(self.conn, self.helper.id, now=now), 600)
+        yesterday = now - timedelta(days=1)
         proposals.allow_more(self.conn, self.helper.id, now=yesterday)
-        self.assertEqual(proposals.limit_today(self.conn, self.helper), 600)  # yesterday's press counts for nothing
+        self.assertEqual(proposals.limit_today(self.conn, self.helper, now=now), 600)  # yesterday's press counts for nothing
         self.assertEqual(proposals.limit_today(self.conn, self.helper, now=yesterday), 400)
-        tomorrow = datetime.now(timezone.utc) + timedelta(days=1)
+        tomorrow = now + timedelta(days=1)
         self.assertEqual(proposals.limit_today(self.conn, self.helper, now=tomorrow), 200)
         other, _key = helpers.issue(self.conn, self.data, "Other helper", "suggest", ["stock"])
-        self.assertEqual(proposals.limit_today(self.conn, other), 200)  # only that helper
+        self.assertEqual(proposals.limit_today(self.conn, other, now=now), 200)  # only that helper
 
     def test_a_press_is_in_the_history_with_who_and_when(self):
         proposals.allow_more(self.conn, self.helper.id)
@@ -361,8 +362,10 @@ class AllowanceTests(SpeedTestCase):
         self.assertEqual(len(looks), 2)
 
     def test_the_day_is_the_households_own_and_used_today_follows_it(self):
+        before = datetime.now().astimezone().date().isoformat()
         day, began = proposals.today()
-        self.assertEqual(day, datetime.now().astimezone().date().isoformat())
+        after = datetime.now().astimezone().date().isoformat()
+        self.assertIn(day, {before, after})  # the clock is read inside the call, so midnight may fall either side
         self.fill(3, at=(datetime.fromisoformat(began + "+00:00") - timedelta(seconds=1)).isoformat())
         self.fill(2, at=(datetime.fromisoformat(began + "+00:00") + timedelta(seconds=1)).isoformat())
         self.assertEqual(proposals.used_today(self.conn, self.helper), 2)

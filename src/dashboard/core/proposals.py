@@ -94,7 +94,8 @@ def near_limit(conn: sqlite3.Connection, helper: helpers.Helper) -> dict | None:
     {"used": n, "limit": n, "left": n}, or None when it is not near its limit."""
     if not helper.active or not helper.may_suggest:
         return None
-    used, limit = used_today(conn, helper), limit_today(conn, helper)
+    now = datetime.now(timezone.utc)  # one reading, so the limit and the count are for the same day
+    used, limit = used_today(conn, helper, now), limit_today(conn, helper, now)
     if limit - used >= MAX_ENTRIES:
         return None
     return {"used": used, "limit": limit, "left": max(0, limit - used)}
@@ -116,8 +117,9 @@ def allow_more(conn: sqlite3.Connection, helper_id: int, now: datetime | None = 
         raise AllowanceRefused(f"{helper.name}'s access is off, so it cannot send suggestions.")
     if not helper.may_suggest:
         raise AllowanceRefused(f"{helper.name} may only look, so it has no suggestions to allow.")
+    now = now or datetime.now(timezone.utc)  # one reading for the day, the stored time and the new limit
     day = today(now)[0]
-    at = (now or datetime.now(timezone.utc)).astimezone(timezone.utc).isoformat(timespec="seconds")
+    at = now.astimezone(timezone.utc).isoformat(timespec="seconds")
     with db.transaction(conn):
         allowance_id = conn.execute(
             "INSERT INTO core__helper_allowances (helper_id, day, extra, granted_at, granted_by) "
@@ -555,7 +557,8 @@ def submit(conn: sqlite3.Connection, registry: dict, helper: helpers.Helper, bod
 
 def _check_limits(conn: sqlite3.Connection, helper: helpers.Helper, adding: int, queue_limit: int) -> None:
     """The daily limit and the Review queue cap (decision 0085), refused whole if either would be passed."""
-    limit, used = limit_today(conn, helper), used_today(conn, helper)
+    now = datetime.now(timezone.utc)  # one reading, so the limit and the count are for the same day
+    limit, used = limit_today(conn, helper, now), used_today(conn, helper, now)
     if used + adding > limit:
         raise ProposalError(429, "daily_limit", daily_limit_message(limit, limit - used))
     waiting = waiting_for(conn, helper)

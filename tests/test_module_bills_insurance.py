@@ -10,7 +10,7 @@ import sqlite3
 import zipfile
 from datetime import date, datetime, timedelta, timezone
 
-from support import ROOT, TempDirTestCase
+from support import ROOT, TempDirTestCase, freeze_today
 from dashboard import __version__
 from dashboard.core import (backups, checklist, db, export, helpers, modules, proposals, records, reminder_moves,
                             restore, settings, startup, sync, watch)
@@ -40,6 +40,7 @@ class BillsCase(TempDirTestCase):
 
     def setUp(self):
         super().setUp()
+        freeze_today(self, TODAY)  # TODAY was read when this file loaded; the app must agree with it
         for name in self.MODULES:
             shutil.copytree(ROOT / "modules" / name, self.tmp / "modules" / name)
         self.data = self.tmp / "data"
