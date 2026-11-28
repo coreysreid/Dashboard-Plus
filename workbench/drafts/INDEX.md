@@ -29,6 +29,7 @@ and made-up example rows. Add a row here for each draft folder you create.
 | sync/ | Optional main/member household sync, conflicts, privacy and offline bundles | deciding sync |
 | macos/ | Researched app-bundle build, data location and release checks | preparing a Mac release |
 | phone/ | Android and iOS member app options, first screens and acceptance checks | designing mobile sync |
+| finance/ | Private account and transaction ledger, staged file import and reports | planning household money |
 | windows_release/ | Installer and Store route beyond the USB zip, with recovery and signing checks | planning Windows installation |
 | helper_move_in/ | First-time helper move checklist and remaining traps | guiding household imports |
 | person_visits/ | Private record of a person's doctor, dentist and other visits, with timeline and follow-up design | planning people's visits |

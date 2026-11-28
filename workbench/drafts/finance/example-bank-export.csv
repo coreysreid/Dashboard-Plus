@@ -1,0 +1,7 @@
+date,account_label,description,debit,credit,currency,bank_row_id
+2026-11-01,Everyday account,Example Grocer,24.00,,AUD,DEMO-A01
+2026-11-02,Everyday account,Move to Savings,100.00,,AUD,DEMO-A02
+2026-11-02,Savings,Move from Everyday account,,100.00,AUD,DEMO-S01
+2026-11-03,Everyday account,Sample Bus,3.50,,AUD,DEMO-A03
+2026-11-03,Everyday account,Sample Bus,3.50,,AUD,DEMO-A04
+2026-11-07,Everyday account,Example Grocer money back,,5.00,AUD,DEMO-A05
