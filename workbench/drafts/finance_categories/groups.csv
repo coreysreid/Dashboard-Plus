@@ -1,0 +1,16 @@
+key,name_au,name_us,name_uk,flow,sort_order
+housing,Home and housing,Home and housing,Home and housing,expense,1
+utilities,Utilities and phones,Utilities and phones,Utilities and phones,expense,2
+groceries,Groceries,Groceries,Groceries,expense,3
+dining,Eating out,Eating out,Eating out,expense,4
+transport,Getting around,Getting around,Getting around,expense,5
+health,Health,Health,Health,expense,6
+family_education,Family and learning,Family and learning,Family and learning,expense,7
+pets,Pets,Pets,Pets,expense,8
+home_goods,Things for the home,Things for the home,Things for the home,expense,9
+personal,Clothes and personal care,Clothes and personal care,Clothes and personal care,expense,10
+leisure,Leisure and subscriptions,Leisure and subscriptions,Leisure and subscriptions,expense,11
+travel,Trips away,Trips away,Trips away,expense,12
+insurance_finance,Insurance and fees,Insurance and fees,Insurance and fees,expense,13
+giving_other,Giving and other,Giving and other,Giving and other,expense,14
+income,Money coming in,Money coming in,Money coming in,income,15
